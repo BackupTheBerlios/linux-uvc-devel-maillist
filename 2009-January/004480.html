@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Developing a UVC camera
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Developing%20a%20UVC%20camera&In-Reply-To=%3Cc92f85270901112343n7957f927ie87a8e0328c86dff%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004479.html">
+   <LINK REL="Next"  HREF="004488.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Developing a UVC camera</H1>
+    <B>John Mathew</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Developing%20a%20UVC%20camera&In-Reply-To=%3Cc92f85270901112343n7957f927ie87a8e0328c86dff%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Developing a UVC camera">johnm.uvc at gmail.com
+       </A><BR>
+    <I>Mon Jan 12 08:43:39 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004479.html">[Linux-uvc-devel] Developing a UVC camera
+</A></li>
+        <LI>Next message: <A HREF="004488.html">[Linux-uvc-devel] Developing a UVC camera
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4480">[ date ]</a>
+              <a href="thread.html#4480">[ thread ]</a>
+              <a href="subject.html#4480">[ subject ]</a>
+              <a href="author.html#4480">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Dear UVC Developers,
+
+[Sorry for the second message, the earlier message was an HTML
+formatted message, sorry!]
+
+I am working on developing a UVC camera. The camera itself runs linux kernel
+and uses the gadget mode. We have a gadget driver written and an application
+running on the device, which pushes data over USB to the host when host
+requests data. The camera works in Isochronous mode and copies 1024 bytes
+every microframe.
+
+With a bit of effort (which mostly involved correcting some of the
+descriptor values on the device side), I could get uvcvideo driver on the
+host to work with the camera. luvcview works fine, so is a simpe gstreamer
+viewer which uses the v4l2src element.
+
+We would like to get the camera working well with the uvcvideo and is
+completely standards compliant.
+
+Below are some of the issues observed, I would appreciate any tips to debug
+the issue.
+
+The kernel message on the host says that the the uvcvideo invokes quirks=1.
+
+kernel: [88819.299222] uvcvideo: Forcing device quirks 0x1 by module
+parameter for testing purpose.
+kernel: [88819.299227] uvcvideo: Please report required quirks to the
+linux-uvc-devel mailing list.
+
+I am wondering why quirks was turned on to a value of 1 and see what can be
+done at the device side to fix it.
+
+I am using gstreamer to stream from the camera and display the frames. with
+the pipeline arranged as follows.
+
+  gst-launch v4l2src ! jpegdec ! ffmpegcolorspace ! xvimagesink
+
+I see that the gstreamer quits after streaming for afew hours saying that
+there is an error in the JPEG stream. It looks like some corruption is
+happening to the JPEG frames inside the camera. But I see no USB messages on
+the host or the device. To narrow down the problem, we have an application
+which takes  one JPEG image and keep streaming them continuously, instead of
+using the ones from the camera. This probably will validate the USB data
+path.
+
+It will be great if uvc developers can throw some light on how to debug
+these issues.
+
+regards
+John
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004479.html">[Linux-uvc-devel] Developing a UVC camera
+</A></li>
+	<LI>Next message: <A HREF="004488.html">[Linux-uvc-devel] Developing a UVC camera
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4480">[ date ]</a>
+              <a href="thread.html#4480">[ thread ]</a>
+              <a href="subject.html#4480">[ subject ]</a>
+              <a href="author.html#4480">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

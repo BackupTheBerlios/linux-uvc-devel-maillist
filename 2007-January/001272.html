@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] 046d:08c1 Logitech, Inc. Fusion and UVC !
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20046d%3A08c1%20Logitech%2C%20Inc.%20Fusion%20and%20UVC%20%21&In-Reply-To=%3C200701210124.41064.antonio.bertoni%40infinito.it%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001270.html">
+   <LINK REL="Next"  HREF="001273.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] 046d:08c1 Logitech, Inc. Fusion and UVC !</H1>
+    <B>Antonio Bertoni</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20046d%3A08c1%20Logitech%2C%20Inc.%20Fusion%20and%20UVC%20%21&In-Reply-To=%3C200701210124.41064.antonio.bertoni%40infinito.it%3E"
+       TITLE="[Linux-uvc-devel] 046d:08c1 Logitech, Inc. Fusion and UVC !">antonio.bertoni at infinito.it
+       </A><BR>
+    <I>Sun Jan 21 02:24:40 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001270.html">[Linux-uvc-devel] 046d:08c1 Logitech,	Inc. Fusion and qc-usb-0.6.6
+</A></li>
+        <LI>Next message: <A HREF="001273.html">[Linux-uvc-devel] 046d:08c1 Logitech, Inc. Fusion and UVC !
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1272">[ date ]</a>
+              <a href="thread.html#1272">[ thread ]</a>
+              <a href="subject.html#1272">[ subject ]</a>
+              <a href="author.html#1272">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>It' s my error ... sorry  ;-(
+I have try first the  UVC driver but 
+without success :
+
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at Storm</A>:/home/antonio/trunk# modprobe uvcvideo
+FATAL: Error inserting uvcvideo 
+(/lib/modules/2.6.19.1/kernel/drivers/usb/image/uvcvideo.ko): Unknown symbol 
+in module, or unknown parameter (see dmesg)
+
+dmesg output :
+uvcvideo: disagrees about version of symbol v4l_compat_translate_ioctl
+uvcvideo: Unknown symbol v4l_compat_translate_ioctl
+uvcvideo: disagrees about version of symbol video_devdata
+uvcvideo: Unknown symbol video_devdata
+uvcvideo: disagrees about version of symbol video_unregister_device
+uvcvideo: Unknown symbol video_unregister_device
+uvcvideo: disagrees about version of symbol video_device_alloc
+uvcvideo: Unknown symbol video_device_alloc
+uvcvideo: disagrees about version of symbol video_register_device
+uvcvideo: Unknown symbol video_register_device
+uvcvideo: disagrees about version of symbol video_usercopy
+uvcvideo: Unknown symbol video_usercopy
+uvcvideo: disagrees about version of symbol video_device_release
+uvcvideo: Unknown symbol video_device_release
+
+The compilation was ok :
+
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at Storm</A>:/home/antonio/trunk# make
+Building USB Video Class driver...
+make[1]: Entering directory `/usr/src/linux-2.6.19.1'
+  Building modules, stage 2.
+  MODPOST 1 modules
+make[1]: Leaving directory `/usr/src/linux-2.6.19.1'
+
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at Storm</A>:/home/antonio/trunk# make install
+Installing USB Video Class driver...
+make[1]: Entering directory `/usr/src/linux-2.6.19.1'
+  INSTALL /home/antonio/trunk/uvcvideo.ko
+  DEPMOD  2.6.19.1
+make[1]: Leaving directory `/usr/src/linux-2.6.19.1'
+depmod -ae
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at Storm</A>:/home/antonio/trunk#                              
+
+Best Regards
+Antonio
+
+
+
+On Saturday 20 January 2007 14:53, Laurent Pinchart wrote:
+&gt;<i> Hi Antonio,
+</I>&gt;<i>
+</I>&gt;<i> &gt; I have some problems with Logitech Fusion webcam.
+</I>&gt;<i> &gt; I try the latest qc-usb-0.6.6 driver with
+</I>&gt;<i> &gt; the kernel 2.6.19.1  ( x86_64 AMD Athlon )
+</I>&gt;<i> &gt; But when i do a modprobe quickcam i get the error message:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at Storm</A>:/home/antonio/qc-usb-0.6.6# modprobe quickcam
+</I>&gt;<i> &gt; FATAL: Error inserting quickcam (/lib/modules/2.6.19.1/misc/quickcam.ko):
+</I>&gt;<i> &gt; Invalid module format
+</I>&gt;<i> &gt; quickcam: disagrees about version of symbol struct_module
+</I>&gt;<i>
+</I>&gt;<i> Your module and your running kernel have probably been compiled with
+</I>&gt;<i> different source trees.
+</I>&gt;<i>
+</I>&gt;<i> Just out of curiosity, as this mailing list is about the Linux UVC driver,
+</I>&gt;<i> which supports the Logitech Fusion webcam, and as the qc-usb driver doesn't
+</I>&gt;<i> support the Logitech Fusion webcam, what are you trying to do ? :-)
+</I>&gt;<i>
+</I>&gt;<i> Cheers,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001270.html">[Linux-uvc-devel] 046d:08c1 Logitech,	Inc. Fusion and qc-usb-0.6.6
+</A></li>
+	<LI>Next message: <A HREF="001273.html">[Linux-uvc-devel] 046d:08c1 Logitech, Inc. Fusion and UVC !
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1272">[ date ]</a>
+              <a href="thread.html#1272">[ thread ]</a>
+              <a href="subject.html#1272">[ subject ]</a>
+              <a href="author.html#1272">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Driver improvement suggestion: Prefer	device	node, and more?consistant messaging
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Driver%20improvement%20suggestion%3A%20Prefer%0A%09device%09node%2C%20and%20more%3Fconsistant%20messaging&In-Reply-To=%3C20080325232900.GA7405%40sunshine.barsnick.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003299.html">
+   <LINK REL="Next"  HREF="003268.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Driver improvement suggestion: Prefer	device	node, and more?consistant messaging</H1>
+    <B>Moritz Barsnick</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Driver%20improvement%20suggestion%3A%20Prefer%0A%09device%09node%2C%20and%20more%3Fconsistant%20messaging&In-Reply-To=%3C20080325232900.GA7405%40sunshine.barsnick.net%3E"
+       TITLE="[Linux-uvc-devel] Driver improvement suggestion: Prefer	device	node, and more?consistant messaging">barsnick at gmx.net
+       </A><BR>
+    <I>Wed Mar 26 00:29:00 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003299.html">[Linux-uvc-devel] Driver improvement suggestion: Prefer device node, and more	consistant messaging
+</A></li>
+        <LI>Next message: <A HREF="003268.html">[Linux-uvc-devel] Driver improvement suggestion: Use quirks	parameter to mask unsafe	code, reset patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3302">[ date ]</a>
+              <a href="thread.html#3302">[ thread ]</a>
+              <a href="subject.html#3302">[ subject ]</a>
+              <a href="author.html#3302">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+On Tue, Mar 25, 2008 at 22:58:44 +0100, Laurent Pinchart wrote:
+
+&gt;<i> &gt; I have a small suggestion for the linux-uvc driver. Currently, the
+</I>&gt;<i> &gt; driver lets V4L2 automatically select the device node (/dev/videoX).
+</I>&gt;<i> &gt; But we all know that order of loading modules, init times, et.al. may
+</I>&gt;<i> &gt; influence the order, therefore I thought it might by practical to
+</I>&gt;<i> &gt; introduce a module option to request a specific device node.
+</I>[...]
+&gt;<i> This should be done using udev rules. You can then assign a device node to a 
+</I>&gt;<i> camera based on various parameters such as the device serial number, its 
+</I>&gt;<i> VID/PID or the module name. This is much more flexible than forcing a 
+</I>&gt;<i> specific minor with a module parameter.
+</I>
+I wasn't aware that udev could do that. I'll dive into its docs (have
+to search first ;-&gt;). This totally obsoletes my method (albeit only for
+udev based systems, but are any systems without udev supported
+nowadays?).
+
+&gt;<i> The device minor can be useful, but the message in your patch can be 
+</I>&gt;<i> misleading as well. The video0 device node doesn't have to be 
+</I>&gt;<i> called /dev/video0. Some distributions name the device node /dev/v4l/video0. 
+</I>&gt;<i> The allocated device minor can easily be found using sysfs and I'm a bit 
+</I>&gt;<i> scared an incorrect /dev/videoX reference in the kernel log messages might 
+</I>&gt;<i> confuse users.
+</I>
+Again, I wasn't aware. Correct, I only see minor. So, first
+observation, other kernel modules are reporting incorrectly. ;)
+Am I right in assuming that only the higher layers (or even udev)
+actually know the proper name of the assigned device node? To me, it's
+still a reporting problem. &quot;Oops, where has my TV card landed?
+/dev/v4l/video1? Ah, there it is!&quot; (Unfortunately, very few apps
+actually detect available V4L devices.)
+
+So currently, I think at least the minor number should be reported. But
+I'll have another think about it.
+
+Merci beaucoup,
+Moritz
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003299.html">[Linux-uvc-devel] Driver improvement suggestion: Prefer device node, and more	consistant messaging
+</A></li>
+	<LI>Next message: <A HREF="003268.html">[Linux-uvc-devel] Driver improvement suggestion: Use quirks	parameter to mask unsafe	code, reset patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3302">[ date ]</a>
+              <a href="thread.html#3302">[ thread ]</a>
+              <a href="subject.html#3302">[ subject ]</a>
+              <a href="author.html#3302">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

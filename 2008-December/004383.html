@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] vflip &amp; hflip options for uvcvideo
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20vflip%20%26%20hflip%20options%20for%20uvcvideo&In-Reply-To=%3Cfca60f3a0812181000q7f8ac07bu6fa9b6989afb42de%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004378.html">
+   <LINK REL="Next"  HREF="004353.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] vflip &amp; hflip options for uvcvideo</H1>
+    <B>Khashayar Naderehvandi</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20vflip%20%26%20hflip%20options%20for%20uvcvideo&In-Reply-To=%3Cfca60f3a0812181000q7f8ac07bu6fa9b6989afb42de%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] vflip &amp; hflip options for uvcvideo">khashayar.lists at gmail.com
+       </A><BR>
+    <I>Thu Dec 18 19:00:52 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004378.html">[Linux-uvc-devel] vflip &amp; hflip options for uvcvideo
+</A></li>
+        <LI>Next message: <A HREF="004353.html">[Linux-uvc-devel] UVC-Compliant webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4383">[ date ]</a>
+              <a href="thread.html#4383">[ thread ]</a>
+              <a href="subject.html#4383">[ subject ]</a>
+              <a href="author.html#4383">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed, Dec 17, 2008 at 10:51 PM, Laurent Pinchart
+&lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+&gt;<i> Hi Khashayar,
+</I>&gt;<i>
+</I>&gt;<i> On Sunday 14 December 2008, Khashayar Naderehvandi wrote:
+</I>&gt;&gt;<i> Hi all,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I'm one of those unlucky people who has the notorious problem of an
+</I>&gt;&gt;<i> upside-down mounted web camera in my notebook. The uvcvideo module
+</I>&gt;&gt;<i> itself works perfectly well with this webcam, which is a Suyin
+</I>&gt;&gt;<i> (064e:a116).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I came across these patches [1] posted on the Ubuntu forums that
+</I>&gt;&gt;<i> allows the uvcvideo module to flip the image. I was wondering if there
+</I>&gt;&gt;<i> are any plans to incorporate those patches in uvc to accomplish
+</I>&gt;&gt;<i> something similar to the syntek driver's hflip &amp; vflip options?
+</I>&gt;<i>
+</I>&gt;<i> A little background first. Most UVC cameras are made of a video sensor and a
+</I>&gt;<i> USB bridge. Sensors can usually be read in any direction, offering horizontal
+</I>&gt;<i> and vertical flip options. Unfortunately, firmware developers often forget to
+</I>&gt;<i> expose those functions through the UVC interface, making hardware horizontal
+</I>&gt;<i> and vertical flipping impossible.
+</I>&gt;<i>
+</I>&gt;<i> When a camera mounted upside-down doesn't offer any hardware flip control, the
+</I>&gt;<i> image must be rotated by software. Image processing isn't allowed in the
+</I>&gt;<i> Linux kernel (or at least hardly discouraged), so I'm not keen on
+</I>&gt;<i> implementing software-based image rotation in the UVC driver. I could be
+</I>&gt;<i> convinced otherwise if the proposed implementation didn't impact
+</I>&gt;<i> performances. This is in theory be possible, as the UVC driver copies data
+</I>&gt;<i> from USB buffers to V4L buffers. 'Backward' copy could be implemented without
+</I>&gt;<i> hurting the source code readability and performances (please not this isn't
+</I>&gt;<i> possible for compressed formats).
+</I>&gt;<i>
+</I>&gt;<i> However, an alternative now exists through libv4l. The library supports
+</I>&gt;<i> software-based image rotation in userspace. If your application is linked to
+</I>&gt;<i> libv4l the HFLIP and VFLIP controls should be available (I haven't tried it
+</I>&gt;<i> myself so this might require some tweaking). It might be possible to achieve
+</I>&gt;<i> the same result for applications not designed for libv4l by preloading the
+</I>&gt;<i> library.
+</I>&gt;<i>
+</I>&gt;<i> In your and David's case, the webcam supports direct access to the I2C bus
+</I>&gt;<i> from the host driver, making it possible (at least in theory) to enable image
+</I>&gt;<i> rotation on the sensor from the driver. This would require access to the
+</I>&gt;<i> datasheet of the video sensor used in the camera. I can assist you with
+</I>&gt;<i> driver hacking if you want to experiment with that.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>Thank you so much for this very helpful background information. I
+think I understand a bit more of these things now. Unfortunately, I
+have no programming skills, and as tempting as driver hacking does
+sound, I'm afraid I'm completely at a loss there. Coding is on my
+to-learn-list, though, and if I ever manage to learn anything usefull,
+I'll be sure to start hacking on uvcvideo. In the meanwhile, I'll be
+ready to help out in any other way I can.
+
+&gt;<i> Best regards,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i>
+</I>All the best,
+Khashayar
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004378.html">[Linux-uvc-devel] vflip &amp; hflip options for uvcvideo
+</A></li>
+	<LI>Next message: <A HREF="004353.html">[Linux-uvc-devel] UVC-Compliant webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4383">[ date ]</a>
+              <a href="thread.html#4383">[ thread ]</a>
+              <a href="subject.html#4383">[ subject ]</a>
+              <a href="author.html#4383">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

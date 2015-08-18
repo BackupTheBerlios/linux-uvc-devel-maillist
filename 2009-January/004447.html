@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech QuickCam E 3500 questions: hibernate,	reset, and settings
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20E%203500%20questions%3A%20hibernate%2C%0A%09reset%2C%20and%20settings&In-Reply-To=%3C200901040058.27600.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004459.html">
+   <LINK REL="Next"  HREF="004450.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech QuickCam E 3500 questions: hibernate,	reset, and settings</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20E%203500%20questions%3A%20hibernate%2C%0A%09reset%2C%20and%20settings&In-Reply-To=%3C200901040058.27600.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Logitech QuickCam E 3500 questions: hibernate,	reset, and settings">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sun Jan  4 00:58:27 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004459.html">[Linux-uvc-devel] Pro 9000 and uvcvideo issue
+</A></li>
+        <LI>Next message: <A HREF="004450.html">[Linux-uvc-devel] I can see them; they can't see me.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4447">[ date ]</a>
+              <a href="thread.html#4447">[ thread ]</a>
+              <a href="subject.html#4447">[ subject ]</a>
+              <a href="author.html#4447">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Gabriel,
+
+On Tuesday 30 December 2008, Gabriel Schulhof wrote:
+&gt;<i> Hi!
+</I>&gt;<i>
+</I>&gt;<i> I have just bought such a camera, and it worked out of the box with a
+</I>&gt;<i> laptop running Fedora 9. Excellent!
+</I>&gt;<i>
+</I>&gt;<i> The camera has to work for a person who is over 60 years old and is only
+</I>&gt;<i> now (very enthusiastic about) learning to use a computer. Thus, I would
+</I>&gt;<i> like to configure a few things to make the camera work more reliably:
+</I>&gt;<i>
+</I>&gt;<i> 1. == This is a bit of a bug report: after recovering from hibernation,
+</I>&gt;<i> the camera has to be unplugged/plugged back in. Does/Will uvcvideo have
+</I>&gt;<i> hibernate/suspend support?
+</I>
+The uvcvideo driver should already support suspend/resume. Please give us a 
+more detailed report of what goes wrong.
+
+&gt;<i> 2. == Sometimes, when the camera comes back to life, it forgets the
+</I>&gt;<i> brightness/contrast/etc. settings it used to have.
+</I>
+The driver is supposed to restore control values when a device is resumed (I'm 
+not sure if the camera itself is supposed to retain those settings or not, I 
+guess it depends if the computer removes power from the USB ports during 
+suspend). Please have a look at the kernel log (using dmesg) when this 
+happens to see if the driver prints any error or informational message.
+
+&gt;<i> Thus, I was wondering 
+</I>&gt;<i> if there is a console-based utility that I can run, setting reasonable
+</I>&gt;<i> default values either automatically or at the click of a button.
+</I>&gt;<i> Currently, I can use ekiga or xawtv to set brightness, contrast, and
+</I>&gt;<i> colour intensity. However, I think it's too complicated to teach. Thus,
+</I>&gt;<i> the utility would have to accept brightness/contrast/colour intensity
+</I>&gt;<i> values on the command line and (probably) use v4l2 to set the values.
+</I>&gt;<i>
+</I>&gt;<i> For example the quickcam messenger driver had a utility called qc-set,
+</I>&gt;<i> whose command line allowed me to specify values for brightness, contrast,
+</I>&gt;<i> colour, etc. and which would set up the camera accordingly.
+</I>
+The v4l2-ctl utility (found in the v4l-dvb repository on <A HREF="http://linuxtv.org/">http://linuxtv.org/</A>) 
+can be used to set V4L2 controls on the command line.
+
+&gt;<i> Alternatively, can I specify such values using module parameters? I
+</I>&gt;<i> noticed that uvcvideo (v0.1.0, according to modinfo) doesn't have any
+</I>&gt;<i> brightness/contrast/etc. module parameters:
+</I>&gt;<i>
+</I>&gt;<i> parm:           quirks:Forced device quirks (uint)
+</I>&gt;<i> parm:           trace:Trace level bitmask (uint)
+</I>&gt;<i>
+</I>&gt;<i> Is it possible to add such parameters to the module so as to specify
+</I>&gt;<i> default brightness/contrast/etc. values? I realize that the module may be
+</I>&gt;<i> responsible for multiple webcams, so addressing the
+</I>&gt;<i> brightness/contrast/etc. values to the right webcam may not be a trivial
+</I>&gt;<i> task.
+</I>
+Module parameters are not really suited for that job. You should use a command 
+line application instead, possibly in relation with udev/hal.
+
+&gt;<i> 3. == I have observed that, after multiple hibernate/resume cycles,
+</I>&gt;<i> /dev/video0 stops working. Even after
+</I>&gt;<i>
+</I>&gt;<i>   1. Unplugging the camera
+</I>&gt;<i>   2. modprobe -r uvcvideo
+</I>&gt;<i>   3. Plugging in the camera
+</I>&gt;<i>
+</I>&gt;<i> the resulting /dev/video0 does not work. mplayer <A HREF="tv://">tv://</A> says:
+</I>&gt;<i>
+</I>&gt;<i> MPlayer dev-SVN-r27514-4.3.0 (C) 2000-2008 MPlayer Team
+</I>&gt;<i> CPU: Mobile AMD Sempron(tm) Processor 2600+ (Family: 15, Model: 8,
+</I>&gt;<i> Stepping: 2)
+</I>&gt;<i> CPUflags:  MMX: 1 MMX2: 1 3DNow: 1 3DNow2: 1 SSE: 1 SSE2: 1
+</I>&gt;<i> Compiled with runtime CPU detection.
+</I>&gt;<i> mplayer: could not connect to socket
+</I>&gt;<i> mplayer: No such file or directory
+</I>&gt;<i> Failed to open LIRC support. You will not be able to use your remote
+</I>&gt;<i> control.
+</I>&gt;<i>
+</I>&gt;<i> Playing <A HREF="tv://.">tv://.</A>
+</I>&gt;<i> TV file format detected.
+</I>&gt;<i> Selected driver: v4l2
+</I>&gt;<i>  name: Video 4 Linux 2 input
+</I>&gt;<i>  author: Martin Olschewski &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">olschewski at zpr.uni-koeln.de</A>&gt;
+</I>&gt;<i>  comment: first try, more to come ;-)
+</I>&gt;<i> v4l2: your device driver does not support VIDIOC_G_STD ioctl,
+</I>&gt;<i> VIDIOC_G_PARM was used instead.
+</I>&gt;<i> Selected device: UVC Camera (046d:09a4)
+</I>&gt;<i>  Capabilites:  video capture  streaming
+</I>&gt;<i>  supported norms:
+</I>&gt;<i>  inputs: 0 = Camera 1;
+</I>&gt;<i>  Current input: 0
+</I>&gt;<i>  Current format: MJPEG
+</I>&gt;<i> v4l2: ioctl set format failed: Input/output error
+</I>&gt;<i> v4l2: ioctl set mute failed: Invalid argument
+</I>&gt;<i> v4l2: 0 frames successfully processed, 0 frames dropped.
+</I>&gt;<i>
+</I>&gt;<i> Is there a way to reset the camera so that it continues to work after
+</I>&gt;<i> arbitrary numbers of hibernate/resume cycles?
+</I>
+Please check the kernel log for error messages that could help diagnose this 
+problem.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004459.html">[Linux-uvc-devel] Pro 9000 and uvcvideo issue
+</A></li>
+	<LI>Next message: <A HREF="004450.html">[Linux-uvc-devel] I can see them; they can't see me.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4447">[ date ]</a>
+              <a href="thread.html#4447">[ thread ]</a>
+              <a href="subject.html#4447">[ subject ]</a>
+              <a href="author.html#4447">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

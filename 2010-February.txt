@@ -1,0 +1,2029 @@
+From xsdg at xsdg.org  Mon Feb  1 18:14:26 2010
+From: xsdg at xsdg.org (Omari Stephens)
+Date: Mon, 01 Feb 2010 17:14:26 +0000
+Subject: [Linux-uvc-devel] Thinkpad T410 support
+Message-ID: <4B670BF2.6060802@xsdg.org>
+
+Howdy, all
+
+So, it turns out that the new camera in the Lenovo Thinkpad T410 is 
+(mostly) supported by the uvcvideo driver.  The USB id is 17ef:480f.  I 
+copied the stanza from 17ef:480b (another Lenovo-branded camera) in 
+uvc_driver.c and it Just Worked... well... mostly.
+
+After a quick recompile (I'm running 2.6.33-rc6 with uvcvideo as a 
+module), it's been pretty straightforward to get JPEG out of the webcam, 
+but that "M" is still a challenge ? I only seem to get a single frame 
+each time I start a recording.  I've tried with  a bunch of different 
+luvcview params, as well as with an ffmpeg incantation I found on the 
+antiquated OpenFacts UVC page.
+
+I also noticed that using guvcview, I can consistently get a frame out 
+every time I change the resolution, even going up to 1600x1200. 
+Furthermore, I get that frame regardless of whether I'm in MJPEG or YUYV 
+mode.  But I still never get two frames. I found a historical post ([1]) 
+describing the exact same problem I'm running into, but unfortunately it 
+looks like the solution was "this was fixed in subversion", not any 
+actual hints.
+
+I've attached the output of `lsusb -v -s 1:4` as root, in case it helps 
+give some insight.  Any help getting the camera to display more than one 
+frame at a time would be appreciated.
+
+Cheers,
+--xsdg
+
+-------------- next part --------------
+An embedded and charset-unspecified text was scrubbed...
+Name: t410_lsusb.txt
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100201/0a077e27/attachment.txt>
+
+From bernard.oboeuf at orange.fr  Mon Feb  1 22:04:17 2010
+From: bernard.oboeuf at orange.fr (Bernard OBOEUF)
+Date: Mon,  1 Feb 2010 22:04:17 +0100 (CET)
+Subject: [Linux-uvc-devel]  Looking for upside down uvc cams
+Message-ID: <21557765.6814.1265058257943.JavaMail.www@wwinf1g07>
+
+Hello,
+
+I buy a laptop and the webcam seems a upside down uvc cam.
+I send the dmi and lsusb log.
+
+Thanks for your working
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: dmi.log
+Type: application/octet-stream
+Size: 14558 bytes
+Desc: not available
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100201/86a3370d/attachment.obj>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: lsusb.log
+Type: application/octet-stream
+Size: 478 bytes
+Desc: not available
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100201/86a3370d/attachment-0001.obj>
+
+From celejar at gmail.com  Mon Feb  1 22:52:56 2010
+From: celejar at gmail.com (Celejar)
+Date: Mon, 1 Feb 2010 16:52:56 -0500
+Subject: [Linux-uvc-devel] Looking for upside down uvc cams
+In-Reply-To: <21557765.6814.1265058257943.JavaMail.www@wwinf1g07>
+References: <21557765.6814.1265058257943.JavaMail.www@wwinf1g07>
+Message-ID: <20100201165256.5da8d71b.celejar@gmail.com>
+
+On Mon,  1 Feb 2010 22:04:17 +0100 (CET)
+Bernard OBOEUF <bernard.oboeuf at orange.fr> wrote:
+
+> Hello,
+> 
+> I buy a laptop and the webcam seems a upside down uvc cam.
+
+http://linux-uvc.berlios.de/#footnote-3
+
+Celejar
+-- 
+foffl.sourceforge.net - Feeds OFFLine, an offline RSS/Atom aggregator
+mailmin.sourceforge.net - remote access via secure (OpenPGP) email
+ssuds.sourceforge.net - A Simple Sudoku Solver and Generator
+
+
+
+From bernard.oboeuf at orange.fr  Mon Feb  1 23:20:45 2010
+From: bernard.oboeuf at orange.fr (Bernard OBOEUF)
+Date: Mon,  1 Feb 2010 23:20:45 +0100 (CET)
+Subject: [Linux-uvc-devel]
+	=?utf-8?q?=C2=A0Looking_for_upside_down_uvc_cam?= =?utf-8?q?s?=
+In-Reply-To: <20100201165256.5da8d71b.celejar@gmail.com>
+References: <21557765.6814.1265058257943.JavaMail.www@wwinf1g07>
+	<20100201165256.5da8d71b.celejar@gmail.com>
+Message-ID: <32093854.12341.1265062845367.JavaMail.www@wwinf1g25>
+
+Thanks for your reponse,
+
+Yes, I know but the webcam give an upside down picture in some application (ekiga, amsn, cheese). I think the result depends on the implementation of the webcam
+
+> Message du 01/02/10 22:53
+> De : "Celejar" 
+> A : "Bernard OBOEUF" 
+> Copie ? : linux-uvc-devel at lists.berlios.de
+> Objet : Re: [Linux-uvc-devel] ?Looking for upside down uvc cams
+> 
+> 
+> On Mon, 1 Feb 2010 22:04:17 +0100 (CET)
+> Bernard OBOEUF  wrote:
+> 
+> > Hello,
+> > 
+> > I buy a laptop and the webcam seems a upside down uvc cam.
+> 
+> http://linux-uvc.berlios.de/#footnote-3
+> 
+> Celejar
+> -- 
+> foffl.sourceforge.net - Feeds OFFLine, an offline RSS/Atom aggregator
+> mailmin.sourceforge.net - remote access via secure (OpenPGP) email
+> ssuds.sourceforge.net - A Simple Sudoku Solver and Generator
+> 
+> 
+> 
+
+
+
+
+From laurent.pinchart at ideasonboard.com  Wed Feb  3 01:10:09 2010
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Wed, 3 Feb 2010 01:10:09 +0100
+Subject: [Linux-uvc-devel] MSI starcam mini+ compatible with Linux
+In-Reply-To: <56cbd4381001251131s4e73356cs1a35c97045e9046d@mail.gmail.com>
+References: <56cbd4381001251131s4e73356cs1a35c97045e9046d@mail.gmail.com>
+Message-ID: <201002030110.09518.laurent.pinchart@ideasonboard.com>
+
+Hi Sergio,
+
+On Monday 25 January 2010 20:31:32 Sergio wrote:
+> Hello,
+> 
+> I think that the camera MSI starcam mini+ isn't compatible with Linux,
+> because the command doesn't output anything. I thought that it could be
+> compatible becouse other model from MSI "1b3b:2951 MSI StarCam 370i" is
+> compatible with the uvc driver.
+> 
+> # lsusb -v -d 1b3b:2937 | grep "14 Video"
+> Doesn't print anything.
+
+That means the camera isn't UVC compatible, so it won't be supported by the 
+uvcvideo driver.
+
+Your webcam can still be supported by another Linux driver, such as gspca.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at ideasonboard.com  Wed Feb  3 01:23:25 2010
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Wed, 3 Feb 2010 01:23:25 +0100
+Subject: [Linux-uvc-devel] Unlisted partially-supported webcam
+In-Reply-To: <1e0de1821001260712t59f5e468y6dec85871dab2289@mail.gmail.com>
+References: <1e0de1821001260712t59f5e468y6dec85871dab2289@mail.gmail.com>
+Message-ID: <201002030123.25367.laurent.pinchart@ideasonboard.com>
+
+Hi Bram,
+
+On Tuesday 26 January 2010 16:12:02 Bram Senders wrote:
+> Hi there,
+> 
+> I have here a partially working webcam which is unlisted on the list
+> of known cameras; it's the built-in camera found in the Asus EeePC T91
+> netbook.
+
+Thanks for the report.
+
+> "dmesg" says:
+> ===
+> [    3.683885] uvcvideo: Found UVC 1.00 device USB 2.0 Camera (13d3:509b)
+> [    3.685259] Error: Driver 'pcspkr' is already registered, aborting...
+> [    3.695705] input: USB 2.0 Camera as
+> /devices/pci0000:00/0000:00:1d.7/usb1/1-7/1-7:1.0/input/input6
+> [    3.695886] usbcore: registered new interface driver uvcvideo
+> [    3.695898] USB Video Class driver (v0.1.0)
+> ===
+> 
+> "lsusb -v" says:
+
+[snip]
+
+> Now, as far as the working status of this camera is concerned, some
+> apps work and others don't.  For example, I can display video with the
+> GUVCView application, and I can record video with FFmpeg using "ffmpeg
+> -f video4linux2 -s 640x480 -r 30 -i /dev/video0 -vcodec copy bla.avi".
+>  However, particularly GStreamer-based applications seem not to work
+> at all; for example the standard GNOME webcam app Cheese does not
+> work.
+> 
+> This seems to be the case because GStreamer's v4l2src element want to
+> get a camera attribute which seems to be not supported by the driver.
+> For example, gst-launch says:
+> ====
+> $ gst-launch v4l2src ! filesink location=foo
+> Setting pipeline to PAUSED ...
+> ERROR: Pipeline doesn't want to pause.
+> ERROR: from element /GstPipeline:pipeline0/GstV4l2Src:v4l2src0: Failed
+> getting controls attributes on device '/dev/video0'.
+> Additional debug info:
+> v4l2_calls.c(264): gst_v4l2_fill_lists ():
+> /GstPipeline:pipeline0/GstV4l2Src:v4l2src0:
+> Failed querying control 9963795 on device '/dev/video0'. (5 -
+> Input/output error)
+> Setting pipeline to NULL ...
+> Freeing pipeline ...
+> ====
+> 
+> When I execute this command, I get the following message from dmesg:
+> ====
+> [ 1799.428886] uvcvideo: Failed to query (135) UVC control 4 (unit 3)
+> 
+> : -32 (exp. 2).
+> 
+> ====
+> 
+> This is using kernel 2.6.32-trunk-686 from Debian unstable.
+> 
+> Now I don't really know what control 9963795 is, or what UVC control 4
+> (unit 3) is,
+
+That's V4L2_CID_GAIN.
+
+> but since I would like to do some simple GStreamer-based development with
+> this webcam myself, any help on getting this to work would be appreciated! 
+> I don't know whether this is a bug in the kernel driver or in GStreamer or
+> possibly in the camera itself,
+
+It looks like a camera bug. The camera claims to support the gain control, but
+ any attempt to access it fails.
+
+> but any way in which I could try to get this to work (either by patching
+> the kernel driver, or possibly trying to patch the GStreamer v4l2src
+> element to not query the relevant control?) or further debug this
+> thing would be really really helpful.
+
+Could you please try the following patch and let me know if it helps ?
+
+diff --git a/drivers/media/video/uvc/uvc_ctrl.c b/drivers/media/video/uvc/uvc_ctrl.c
+index f90319e..60f40d9 100644
+--- a/drivers/media/video/uvc/uvc_ctrl.c
++++ b/drivers/media/video/uvc/uvc_ctrl.c
+@@ -1453,6 +1453,7 @@ uvc_ctrl_prune_entity(struct uvc_device *dev, struct uvc_entity *entity)
+ 		struct usb_device_id id;
+ 		u8 index;
+ 	} blacklist[] = {
++		{ { USB_DEVICE(0x13d3, 0x509b) }, 4 }, /* Gain */
+ 		{ { USB_DEVICE(0x1c4f, 0x3000) }, 6 }, /* WB Temperature */
+ 		{ { USB_DEVICE(0x5986, 0x0241) }, 2 }, /* Hue */
+ 	};
+
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at ideasonboard.com  Wed Feb  3 01:28:51 2010
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Wed, 3 Feb 2010 01:28:51 +0100
+Subject: [Linux-uvc-devel] Yet another unlisted, supported webcam
+In-Reply-To: <20100130195953.8354b323.celejar@gmail.com>
+References: <20100112181227.16e0472e.celejar@gmail.com>
+	<201001150132.03689.laurent.pinchart@ideasonboard.com>
+	<20100130195953.8354b323.celejar@gmail.com>
+Message-ID: <201002030128.51787.laurent.pinchart@ideasonboard.com>
+
+Hi Celejar,
+
+On Sunday 31 January 2010 01:59:53 Celejar wrote:
+> On Fri, 15 Jan 2010 01:32:03 +0100
+> Laurent Pinchart <laurent.pinchart at ideasonboard.com> wrote:
+> > On Wednesday 13 January 2010 00:12:27 Celejar wrote:
+> > > Hi,
+> 
+> ...
+> 
+> > > Thanks for your work on this project!
+> >
+> > You're welcome. Thanks for the report. I'll update the supported devices
+> > list as soon as Berlios become responsive again.
+> 
+> Hi Laurent,
+> 
+> Just a reminder to add my camera to the list (unless Berlios is still
+> unresponsive):
+> 
+> https://lists.berlios.de/pipermail/linux-uvc-devel/2010-January/005483.html
+> 
+> [The web archive seems to have chopped off much of my message,
+> including the log output and the lsusb output - I can repost them if
+> necessary.]
+
+Berlios is now responsive again, the website has been updated.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at ideasonboard.com  Wed Feb  3 02:06:38 2010
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Wed, 3 Feb 2010 02:06:38 +0100
+Subject: [Linux-uvc-devel] Webcam report
+In-Reply-To: <d7ba218d1001310758w30f7b5a5m3743316b4d792119@mail.gmail.com>
+References: <d7ba218d1001310758w30f7b5a5m3743316b4d792119@mail.gmail.com>
+Message-ID: <201002030206.38485.laurent.pinchart@ideasonboard.com>
+
+Hi Yury,
+
+On Sunday 31 January 2010 16:58:35 Chudnovsky Yury wrote:
+> Hi, All!
+> I've just tested UVC webcam Genius iSlim 2000 AF (ID 0458:705d KYE
+> Systems Corp. (Mouse Systems)), not listed in
+> http://linux-uvc.berlios.de/#devices and found it good working,
+> including microphone (ALSA). Not working only camera buttons, but who
+> care of this :)
+> Thanks to all of you who worked on GNU/Linux UVC support!
+
+Thanks for the report.
+
+Could you please send me the output of
+
+lsusb -v -d 0458:705d
+
+I will then update the supported devices list.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at ideasonboard.com  Wed Feb  3 02:10:28 2010
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Wed, 3 Feb 2010 02:10:28 +0100
+Subject: [Linux-uvc-devel] Thinkpad T410 support
+In-Reply-To: <4B670BF2.6060802@xsdg.org>
+References: <4B670BF2.6060802@xsdg.org>
+Message-ID: <201002030210.28604.laurent.pinchart@ideasonboard.com>
+
+Hi,
+
+On Monday 01 February 2010 18:14:26 Omari Stephens wrote:
+> Howdy, all
+> 
+> So, it turns out that the new camera in the Lenovo Thinkpad T410 is
+> (mostly) supported by the uvcvideo driver.  The USB id is 17ef:480f.  I
+> copied the stanza from 17ef:480b (another Lenovo-branded camera) in
+> uvc_driver.c and it Just Worked... well... mostly.
+> 
+> After a quick recompile (I'm running 2.6.33-rc6 with uvcvideo as a
+> module), it's been pretty straightforward to get JPEG out of the webcam,
+> but that "M" is still a challenge ? I only seem to get a single frame
+> each time I start a recording.  I've tried with  a bunch of different
+> luvcview params, as well as with an ffmpeg incantation I found on the
+> antiquated OpenFacts UVC page.
+> 
+> I also noticed that using guvcview, I can consistently get a frame out
+> every time I change the resolution, even going up to 1600x1200.
+> Furthermore, I get that frame regardless of whether I'm in MJPEG or YUYV
+> mode.  But I still never get two frames. I found a historical post ([1])
+> describing the exact same problem I'm running into, but unfortunately it
+> looks like the solution was "this was fixed in subversion", not any
+> actual hints.
+> 
+> I've attached the output of `lsusb -v -s 1:4` as root, in case it helps
+> give some insight.  Any help getting the camera to display more than one
+> frame at a time would be appreciated.
+
+Have you tried using the driver without adding the USB VID:PID to uvc_driver.c 
+? What happens then ?
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From palmax at gmail.com  Wed Feb  3 12:11:31 2010
+From: palmax at gmail.com (palmax at gmail.com)
+Date: Wed, 3 Feb 2010 12:11:31 +0100
+Subject: [Linux-uvc-devel] [UVC] VS_PROBE_CONTROL
+Message-ID: <209499a1002030311x3fc6d046h800e643ce0f5fc72@mail.gmail.com>
+
+Hello there,
+
+
+I want to get some information about my webcam: size of still image
+captures, size of transfers, ... I think that I have to use
+VS_PROBE_CONTROL, but I don't know how.
+
+Could you explain my one example?
+
+
+Thanks
+Palmax
+
+
+From laurent.pinchart at ideasonboard.com  Thu Feb  4 02:31:52 2010
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Thu, 4 Feb 2010 02:31:52 +0100
+Subject: [Linux-uvc-devel] [UVC] VS_PROBE_CONTROL
+In-Reply-To: <209499a1002030311x3fc6d046h800e643ce0f5fc72@mail.gmail.com>
+References: <209499a1002030311x3fc6d046h800e643ce0f5fc72@mail.gmail.com>
+Message-ID: <201002040231.52542.laurent.pinchart@ideasonboard.com>
+
+Hi Palmax,
+
+On Wednesday 03 February 2010 12:11:31 palmax at gmail.com wrote:
+> Hello there,
+> 
+> I want to get some information about my webcam: size of still image
+> captures, size of transfers, ... I think that I have to use
+> VS_PROBE_CONTROL, but I don't know how.
+> 
+> Could you explain my one example?
+
+Most information available can be retrieved from the USB descriptors. You 
+won't need to issue any UVC request for that.
+
+The VS_PROBE_CONTROL is used to negotiate frame format, size and interval with 
+the camera and retrieve streaming parameters (such as the required bandwidth). 
+Have a look at the uvc_get_video_ctrl function in uvc_ctrl.c. It queries the 
+VS_PROBE_CONTROL (when probe == 1) or VS_COMMIT_CONTROL (when probe == 0) 
+using GET_CUR/DEF/MIN/MAX/RES depending on the query parameter. The data 
+retrieved from the camera is then converted to a uvc_streaming_control 
+structure.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From palmax at gmail.com  Thu Feb  4 19:56:18 2010
+From: palmax at gmail.com (palmax at gmail.com)
+Date: Thu, 4 Feb 2010 19:56:18 +0100
+Subject: [Linux-uvc-devel] [UVC] VS_PROBE_CONTROL
+In-Reply-To: <201002040231.52542.laurent.pinchart@ideasonboard.com>
+References: <209499a1002030311x3fc6d046h800e643ce0f5fc72@mail.gmail.com>
+	<201002040231.52542.laurent.pinchart@ideasonboard.com>
+Message-ID: <209499a1002041056n5ba1bdd0r2bc267c649432038@mail.gmail.com>
+
+Thanks. I'm studying this struct uvc_streaming_control (
+http://lxr.linux.no/linux+v2.6.32/drivers/media/video/uvc/uvcvideo.h#L176
+).
+
+Good bye!
+Palmax
+
+2010/2/4 Laurent Pinchart <laurent.pinchart at ideasonboard.com>:
+> Hi Palmax,
+>
+> On Wednesday 03 February 2010 12:11:31 palmax at gmail.com wrote:
+>> Hello there,
+>>
+>> I want to get some information about my webcam: size of still image
+>> captures, size of transfers, ... I think that I have to use
+>> VS_PROBE_CONTROL, but I don't know how.
+>>
+>> Could you explain my one example?
+>
+> Most information available can be retrieved from the USB descriptors. You
+> won't need to issue any UVC request for that.
+>
+> The VS_PROBE_CONTROL is used to negotiate frame format, size and interval with
+> the camera and retrieve streaming parameters (such as the required bandwidth).
+> Have a look at the uvc_get_video_ctrl function in uvc_ctrl.c. It queries the
+> VS_PROBE_CONTROL (when probe == 1) or VS_COMMIT_CONTROL (when probe == 0)
+> using GET_CUR/DEF/MIN/MAX/RES depending on the query parameter. The data
+> retrieved from the camera is then converted to a uvc_streaming_control
+> structure.
+>
+> --
+> Regards,
+>
+> Laurent Pinchart
+>
+
+
+From bram at luon.net  Fri Feb  5 14:30:32 2010
+From: bram at luon.net (Bram Senders)
+Date: Fri, 5 Feb 2010 14:30:32 +0100
+Subject: [Linux-uvc-devel] Unlisted partially-supported webcam
+In-Reply-To: <201002030123.25367.laurent.pinchart@ideasonboard.com>
+References: <1e0de1821001260712t59f5e468y6dec85871dab2289@mail.gmail.com>
+	<201002030123.25367.laurent.pinchart@ideasonboard.com>
+Message-ID: <1e0de1821002050530h4b5d3c19i1f22b7f3717d40dd@mail.gmail.com>
+
+Hi Laurent,
+
+Thanks for your help so far!
+
+On Wed, Feb 3, 2010 at 1:23 AM, Laurent Pinchart
+<laurent.pinchart at ideasonboard.com> wrote:
+> Hi Bram,
+>
+> On Tuesday 26 January 2010 16:12:02 Bram Senders wrote:
+>> Hi there,
+>>
+>> I have here a partially working webcam which is unlisted on the list
+>> of known cameras; it's the built-in camera found in the Asus EeePC T91
+>> netbook.
+>
+> Thanks for the report.
+>
+>> "dmesg" says:
+>> ===
+>> [ ? ?3.683885] uvcvideo: Found UVC 1.00 device USB 2.0 Camera (13d3:509b)
+[snip]
+>> but any way in which I could try to get this to work (either by patching
+>> the kernel driver, or possibly trying to patch the GStreamer v4l2src
+>> element to not query the relevant control?) or further debug this
+>> thing would be really really helpful.
+>
+> Could you please try the following patch and let me know if it helps ?
+>
+> diff --git a/drivers/media/video/uvc/uvc_ctrl.c b/drivers/media/video/uvc/uvc_ctrl.c
+> index f90319e..60f40d9 100644
+> --- a/drivers/media/video/uvc/uvc_ctrl.c
+> +++ b/drivers/media/video/uvc/uvc_ctrl.c
+> @@ -1453,6 +1453,7 @@ uvc_ctrl_prune_entity(struct uvc_device *dev, struct uvc_entity *entity)
+> ? ? ? ? ? ? ? ?struct usb_device_id id;
+> ? ? ? ? ? ? ? ?u8 index;
+> ? ? ? ?} blacklist[] = {
+> + ? ? ? ? ? ? ? { { USB_DEVICE(0x13d3, 0x509b) }, 4 }, /* Gain */
+> ? ? ? ? ? ? ? ?{ { USB_DEVICE(0x1c4f, 0x3000) }, 6 }, /* WB Temperature */
+> ? ? ? ? ? ? ? ?{ { USB_DEVICE(0x5986, 0x0241) }, 2 }, /* Hue */
+> ? ? ? ?};
+
+Unfortunately this patch does not work for me; the errors I get from
+GStreamer and in dmesg are exactly the same as without this patch.  I
+see in the kernel source that some debug info should be printed using
+uvc_trace when performing the actual blacklisting; how can I get at
+this debug info?
+
+PS: I see you're doing a talk at FOSDEM -- I'll be there!
+
+Thanks,
+Bram
+
+
+From laurent.pinchart at ideasonboard.com  Sat Feb  6 13:43:34 2010
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Sat, 6 Feb 2010 13:43:34 +0100
+Subject: [Linux-uvc-devel] Unlisted partially-supported webcam
+In-Reply-To: <1e0de1821002050530h4b5d3c19i1f22b7f3717d40dd@mail.gmail.com>
+References: <1e0de1821001260712t59f5e468y6dec85871dab2289@mail.gmail.com>
+	<201002030123.25367.laurent.pinchart@ideasonboard.com>
+	<1e0de1821002050530h4b5d3c19i1f22b7f3717d40dd@mail.gmail.com>
+Message-ID: <201002061343.34909.laurent.pinchart@ideasonboard.com>
+
+Hi Bram,
+
+On Friday 05 February 2010 14:30:32 Bram Senders wrote:
+> Hi Laurent,
+> 
+> Thanks for your help so far!
+> 
+> On Wed, Feb 3, 2010 at 1:23 AM, Laurent Pinchart
+> 
+> <laurent.pinchart at ideasonboard.com> wrote:
+> > Hi Bram,
+> >
+> > On Tuesday 26 January 2010 16:12:02 Bram Senders wrote:
+> >> Hi there,
+> >>
+> >> I have here a partially working webcam which is unlisted on the list
+> >> of known cameras; it's the built-in camera found in the Asus EeePC T91
+> >> netbook.
+> >
+> > Thanks for the report.
+> >
+> >> "dmesg" says:
+> >> ===
+> >> [    3.683885] uvcvideo: Found UVC 1.00 device USB 2.0 Camera
+> >> (13d3:509b)
+> 
+> [snip]
+> 
+> >> but any way in which I could try to get this to work (either by patching
+> >> the kernel driver, or possibly trying to patch the GStreamer v4l2src
+> >> element to not query the relevant control?) or further debug this
+> >> thing would be really really helpful.
+> >
+> > Could you please try the following patch and let me know if it helps ?
+> >
+> > diff --git a/drivers/media/video/uvc/uvc_ctrl.c
+> > b/drivers/media/video/uvc/uvc_ctrl.c index f90319e..60f40d9 100644
+> > --- a/drivers/media/video/uvc/uvc_ctrl.c
+> > +++ b/drivers/media/video/uvc/uvc_ctrl.c
+> > @@ -1453,6 +1453,7 @@ uvc_ctrl_prune_entity(struct uvc_device *dev,
+> > struct uvc_entity *entity) struct usb_device_id id;
+> >                u8 index;
+> >        } blacklist[] = {
+> > +               { { USB_DEVICE(0x13d3, 0x509b) }, 4 }, /* Gain */
+> >                { { USB_DEVICE(0x1c4f, 0x3000) }, 6 }, /* WB Temperature
+> > */ { { USB_DEVICE(0x5986, 0x0241) }, 2 }, /* Hue */
+> >        };
+> 
+> Unfortunately this patch does not work for me; the errors I get from
+> GStreamer and in dmesg are exactly the same as without this patch.  I
+> see in the kernel source that some debug info should be printed using
+> uvc_trace when performing the actual blacklisting; how can I get at
+> this debug info?
+> 
+> PS: I see you're doing a talk at FOSDEM -- I'll be there!
+
+Let's debug that live at the FOSDEM then :-)
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From oztiks at yewnix.net  Sat Feb  6 17:47:35 2010
+From: oztiks at yewnix.net (Seth W)
+Date: Sat, 6 Feb 2010 11:47:35 -0500
+Subject: [Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)
+	bandwidth reservation issues?
+In-Reply-To: <201001231418.25611.laurent.pinchart@ideasonboard.com>
+References: <e77a8d391001050754h69f2886of2ab391d74169bc1@mail.gmail.com>
+	<e77a8d391001141950m513751a7i536b0ba7171bb15a@mail.gmail.com>
+	<e77a8d391001201954u297a3847xdebbeada931b824e@mail.gmail.com>
+	<201001231418.25611.laurent.pinchart@ideasonboard.com>
+Message-ID: <e77a8d391002060847s8ed3c2by9ef3f30dd6207db4@mail.gmail.com>
+
+FYI, I did as you said -
+
+bandwidth = 2048 seems to do the trick.
+
+Is this going to have a suitable 'workaround'/hack built into the driver at
+some point, or something I will need to manually define for the near future?
+
+
+Thanks,
+-Seth
+
+On Sat, Jan 23, 2010 at 8:18 AM, Laurent Pinchart <
+laurent.pinchart at ideasonboard.com> wrote:
+
+> Hi Seth,
+>
+> On Thursday 21 January 2010 04:54:34 Seth W wrote:
+> > Hi Laurent,
+> >
+> > I hate to be a pest
+>
+> Don't worry. I may be slow to answer due to my current work load, but I'm
+> not
+> ignoring you :-)
+>
+> > but am curious as to whether or not you think this issue will be
+> solvable.
+> > I am trying to determine if I will be keeping these two cameras or
+> returning
+> > them, as they are only useful to me if they will both work
+> (simultaneously)
+> > within the uvcvideo project. Thanks again for your time.
+>
+> From the kernel log messages, it seems your camera requests the highest
+> bandwidth even though it should be able to work with a much lower one. It's
+> worth a try giving the camera less bandwidth that it asks for.
+>
+> Bandwidth supported by the camera are 128, 256, 512, 1024, 2048 and 3072.
+> Could you try to replace
+>
+>        bandwidth = stream->ctrl.dwMaxPayloadTransferSize;
+>
+> in uvc_video.c by all of the above bandwidths in turn to see which one work
+> in
+> 1280x720 (MJPEG) ?
+>
+> --
+> Regards,
+>
+> Laurent Pinchart
+>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100206/efcde657/attachment.html>
+
+From hdegoede at redhat.com  Mon Feb  8 09:56:52 2010
+From: hdegoede at redhat.com (Hans de Goede)
+Date: Mon, 08 Feb 2010 09:56:52 +0100
+Subject: [Linux-uvc-devel] Looking for upside down uvc cams
+In-Reply-To: <004501caa848$7b4ee480$71ecad80$@com>
+References: <004501caa848$7b4ee480$71ecad80$@com>
+Message-ID: <4B6FD1D4.4020207@redhat.com>
+
+Hi,
+
+On 02/07/2010 11:54 PM, Lee Frankel wrote:
+>
+>
+> Hans,
+>
+> The camera on my Asus N20S is upside down and I can?t get it to flip the
+> image. I went into the Command Prompt and typed in the commands you
+> listed in your post, but all I got was ?Access is denied?. Any help you
+> can give me is greatly appreciated!
+>
+
+Please execute the following 2 commands *as root*:
+
+lsusb > lsusb.log
+dmidecode > dmi.log
+
+This will generate 2 files (in the home dir of your root user):
+lsusb.log
+dmi.log
+
+copy these to the homedir of your regular user, and then send me a mail
+with these 2 files attached. Once I have these I can make sure the necessary
+info is in the upside down devices table of libv4l, and I'll get back to you
+with instructions how to install an updated libv4l.
+
+Regards,
+
+Hans
+
+
+> Regards,
+>
+> Lee
+>
+> --
+>
+> Lee Frankel
+>
+> Director
+>
+> Academic Studies Abroad
+>
+> www.academicstudies.com
+>
+> Toll-free (888) 845-4272
+>
+> Fax (617) 327-9390
+>
+
+
+From s.lumma at gmail.com  Wed Feb 10 12:25:06 2010
+From: s.lumma at gmail.com (Sascha Lumma)
+Date: Wed, 10 Feb 2010 12:25:06 +0100
+Subject: [Linux-uvc-devel] Logitech QC 9000 camera on ARM platform
+Message-ID: <4B729792.10209@gmail.com>
+
+Hi all,
+
+I've a problem with that setup and it's quite difficult to explain. I 
+searched on the Internet for that issue but I found nothing appropriate, 
+hence I will try to explain it here...
+
+I am using a Logitech QC Pro 9000 connected with a beagleboard (OMAP35 - 
+ARM Cortex 8 & TMS320C64x DSP) running Angstrom (kernel 2.6.29). That 
+setup is running fine so far and I can use all of the required features 
+(fps from ~10 to ~15 with VGA resolution). But the frames I get from the 
+camera contain some errors (stripes with inverted colors) randomly. 
+Unfortunately, there is no regularity (position and length) and it 
+happens not in all frames. I am using memory mapped buffers to get the 
+frames. The first idea rising up in my mind is it could be caused by a 
+race condition somewhere, but it's only an idea.
+
+I tried already two other cameras (but same type) and other beagleboards 
+as well, no change. Furthermore, I compiled my program on an 686-Box and 
+it is working there without that errors (unfortunately with a newer 
+kernel 2.6.31 and 32). Were there related Issues in 2.6.29?
+
+Many thanks for any hint or suggestion!
+
+Sascha
+
+
+
+Kernel version:
+    Linux version 2.6.29-omap1 (slumma at aare) (gcc version 4.3.1 (GCC) ) 
+#5 PREEMPT Thu Jan 28 18:11:42 CET 2010
+
+modprobe uvcvideo trace=7 -> dmsg output:
+[ 2721.473754] Linux video capture interface: v2.00
+[ 2721.518920] uvcvideo: Adding mapping Brightness to control 
+00000000-0000-0000-0000-000000000101/2.
+[ 2721.518951] uvcvideo: Adding mapping Contrast to control 
+00000000-0000-0000-0000-000000000101/3.
+[ 2721.518981] uvcvideo: Adding mapping Hue to control 
+00000000-0000-0000-0000-000000000101/6.
+[ 2721.519012] uvcvideo: Adding mapping Saturation to control 
+00000000-0000-0000-0000-000000000101/7.
+[ 2721.519042] uvcvideo: Adding mapping Sharpness to control 
+00000000-0000-0000-0000-000000000101/8.
+[ 2721.519073] uvcvideo: Adding mapping Gamma to control 
+00000000-0000-0000-0000-000000000101/9.
+[ 2721.519104] uvcvideo: Adding mapping Backlight Compensation to 
+control 00000000-0000-0000-0000-00.
+[ 2721.519134] uvcvideo: Adding mapping Gain to control 
+00000000-0000-0000-0000-000000000101/4.
+[ 2721.519165] uvcvideo: Adding mapping Power Line Frequency to control 
+00000000-0000-0000-0000-0000.
+[ 2721.519226] uvcvideo: Adding mapping Hue, Auto to control 
+00000000-0000-0000-0000-000000000101/16.
+[ 2721.519256] uvcvideo: Adding mapping Exposure, Auto to control 
+00000000-0000-0000-0000-0000000000.
+[ 2721.519287] uvcvideo: Adding mapping Exposure, Auto Priority to 
+control 00000000-0000-0000-0000-0.
+[ 2721.519317] uvcvideo: Adding mapping Exposure (Absolute) to control 
+00000000-0000-0000-0000-00000.
+[ 2721.519378] uvcvideo: Adding mapping White Balance Temperature, Auto 
+to control 00000000-0000-000.
+[ 2721.519409] uvcvideo: Adding mapping White Balance Temperature to 
+control 00000000-0000-0000-0000.
+[ 2721.519439] uvcvideo: Adding mapping White Balance Component, Auto to 
+control 00000000-0000-0000-.
+[ 2721.519470] uvcvideo: Adding mapping White Balance Blue Component to 
+control 00000000-0000-0000-0.
+[ 2721.519500] uvcvideo: Adding mapping White Balance Red Component to 
+control 00000000-0000-0000-00.
+[ 2721.519561] uvcvideo: Adding mapping Focus (absolute) to control 
+00000000-0000-0000-0000-00000000.
+[ 2721.519592] uvcvideo: Adding mapping Focus, Auto to control 
+00000000-0000-0000-0000-000000000001/.
+[ 2721.519622] uvcvideo: Adding mapping Zoom, Absolute to control 
+00000000-0000-0000-0000-0000000000.
+[ 2721.519897] uvcvideo: Adding mapping Zoom, Continuous to control 
+00000000-0000-0000-0000-00000000.
+[ 2721.519927] uvcvideo: Adding mapping Privacy to control 
+00000000-0000-0000-0000-000000000001/17.
+[ 2721.520111] uvcvideo: Probing generic UVC device 2.1
+[ 2721.520202] uvcvideo: Found format MJPEG.
+[ 2721.520202] uvcvideo: - 160x120 (30.0 fps)
+[ 2721.520233] uvcvideo: - 176x144 (30.0 fps)
+[ 2721.520233] uvcvideo: - 320x240 (15.0 fps)
+[ 2721.520263] uvcvideo: - 352x288 (15.0 fps)
+[ 2721.520263] uvcvideo: - 640x480 (15.0 fps)
+[ 2721.520294] uvcvideo: - 800x600 (15.0 fps)
+[ 2721.520324] uvcvideo: - 960x720 (10.0 fps)
+[ 2721.520324] uvcvideo: Found format YUV 4:2:2 (YUYV).
+[ 2721.520355] uvcvideo: - 160x120 (30.0 fps)
+[ 2721.520355] uvcvideo: - 176x144 (30.0 fps)
+[ 2721.520385] uvcvideo: - 320x240 (15.0 fps)
+[ 2721.520385] uvcvideo: - 352x288 (15.0 fps)
+[ 2721.520416] uvcvideo: - 640x480 (15.0 fps)
+[ 2721.520416] uvcvideo: - 800x600 (15.0 fps)
+[ 2721.520446] uvcvideo: - 960x720 (10.0 fps)
+[ 2721.520446] uvcvideo: - 1600x1200 (5.0 fps)
+[ 2721.520507] uvcvideo: Found a Status endpoint (addr 87).
+[ 2721.520538] uvcvideo: Found UVC 1.00 device <unnamed> (046d:0990)
+[ 2721.540740] uvcvideo: Added control 
+00000000-0000-0000-0000-000000000101/2 to device 2.1 entity 2
+[ 2721.540771] uvcvideo: Added control 
+00000000-0000-0000-0000-000000000101/3 to device 2.1 entity 2
+[ 2721.540802] uvcvideo: Added control 
+00000000-0000-0000-0000-000000000101/7 to device 2.1 entity 2
+[ 2721.540832] uvcvideo: Added control 
+00000000-0000-0000-0000-000000000101/8 to device 2.1 entity 2
+[ 2721.540863] uvcvideo: Added control 
+00000000-0000-0000-0000-000000000101/10 to device 2.1 entity 2
+[ 2721.540924] uvcvideo: Added control 
+00000000-0000-0000-0000-000000000101/1 to device 2.1 entity 2
+[ 2721.540954] uvcvideo: Added control 
+00000000-0000-0000-0000-000000000101/4 to device 2.1 entity 2
+[ 2721.540985] uvcvideo: Added control 
+00000000-0000-0000-0000-000000000101/5 to device 2.1 entity 2
+[ 2721.541015] uvcvideo: Added control 
+00000000-0000-0000-0000-000000000101/11 to device 2.1 entity 2
+[ 2721.541046] uvcvideo: Added control 
+00000000-0000-0000-0000-000000000001/2 to device 2.1 entity 1
+[ 2721.541076] uvcvideo: Added control 
+00000000-0000-0000-0000-000000000001/3 to device 2.1 entity 1
+[ 2721.541107] uvcvideo: Added control 
+00000000-0000-0000-0000-000000000001/4 to device 2.1 entity 1
+[ 2721.541168] uvcvideo: Scanning UVC chain: OT 5 <- XU 4 (-> XU 10 12 8 
+11 9) <- PU 2 (-> XU 13) <-1
+[ 2721.541229] uvcvideo: Found a valid video chain (1 -> 5).
+[ 2721.581329] input: UVC Camera (046d:0990) as 
+/devices/platform/ehci-omap.0/usb1/1-2/1-2.1/1-2.1:14
+[ 2721.643798] uvcvideo: UVC device initialized.
+[ 2721.649505] usbcore: registered new interface driver uvcvideo
+[ 2721.690673] USB Video Class driver (v0.1.0)
+
+
+   
+
+
+
+From JacobFehr at smarttech.com  Wed Feb 10 23:41:09 2010
+From: JacobFehr at smarttech.com (Jacob Fehr)
+Date: Wed, 10 Feb 2010 15:41:09 -0700
+Subject: [Linux-uvc-devel] module parameter for UVC_CTRL_CONTROL_TIMEOUT
+Message-ID: <833B0B09C5041D42A9924A3BA6A12B9A047DCF9BC1@CALMAIL-CMS.smarttech.inc>
+
+Hey Laurent,
+
+
+
+A little while ago you converted UVC_CTRL_STREAMING_TIMEOUT into a module parameter. I actually needed UVC_CTRL_CONTROL_TIMEOUT as a module parameter because of an issue that I have an extension unit on my camera. Would you consider converting this into a module parameter as well? I've attached a patch with the necessary changes.
+
+
+
+Jacob Fehr
+
+SMART Technologies ULC
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100210/af5e9417/attachment.html>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: dfb2a0357aaf.gz
+Type: application/x-gzip
+Size: 862 bytes
+Desc: dfb2a0357aaf.gz
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100210/af5e9417/attachment.bin>
+
+From JacobFehr at smarttech.com  Wed Feb 10 23:45:27 2010
+From: JacobFehr at smarttech.com (Jacob Fehr)
+Date: Wed, 10 Feb 2010 15:45:27 -0700
+Subject: [Linux-uvc-devel] Timestamp Accuracy Patch
+In-Reply-To: <201001012240.59920.laurent.pinchart@ideasonboard.com>
+References: <833B0B09C5041D42A9924A3BA6A12B9A028FB22085@CALMAIL-CMS.smarttech.inc>
+	<200911250217.19104.laurent.pinchart@ideasonboard.com>
+	<833B0B09C5041D42A9924A3BA6A12B9A0375E949D3@CALMAIL-CMS.smarttech.inc>
+	<201001012240.59920.laurent.pinchart@ideasonboard.com>
+Message-ID: <833B0B09C5041D42A9924A3BA6A12B9A047DCF9BC2@CALMAIL-CMS.smarttech.inc>
+
+Hey Laurent,
+
+Would you accept a patch for a quirk that adjusts the timestamp for the latency caused by urb_submit(). The adjustment would be done by counting ISO packets. The quirk would be disabled by default. It's a hack but it would do what I need. The URB completion routine runs every 125us - 4 ms depending on the size of the video frame. At 4 ms it limits the resolution of v4l2_buffer.buf.timestamp to 250 Hz. With the proposed patch, the resolution would always be 8 kHz.
+
+I think skew/jitter is a little out of scope for what I am trying to accomplish. I am trying to establish the time at which the photo was taken with as much accuracy as possible. I'm tracking a fast moving target in 3 dimensional space using two webcams. For this, 4 ms accuracy is not enough but 125 microseconds is. The cameras run independent clocks so I need to correlate them to a common clock. At the moment my best option is to correlate it to the PC system time. My application isn't susceptible to clock skew/jitter. It doesn't buffer any data and can accept video whenever it becomes available. 
+
+Thoughts?
+Jake
+
+-----Original Message-----
+From: Laurent Pinchart [mailto:laurent.pinchart at ideasonboard.com] 
+Sent: Friday, January 01, 2010 2:41 PM
+To: Jacob Fehr
+Cc: linux-uvc-devel at lists.berlios.de
+Subject: Re: [Linux-uvc-devel] Timestamp Accuracy Patch
+
+Hi Jacob,
+
+On Tuesday 22 December 2009 19:32:38 Jacob Fehr wrote:
+> Hey Laurent,
+> 
+> I'm just having a quick look at section 2.4.3.3 in the UVC spec. If I read
+> that correctly, the SCR SOF counter is not necessarily the same as the USB
+> SOF frame number. The device can maintain it's own 1 KHz counter and send
+> that instead of the USBS SOF frame number.
+
+That's correct.
+
+> That would mean that there is no way to correlate device time to USB time
+> for devices that maintain their own counter. The only thing the PTS, SCR
+> could be used for is to determine interframe jitter/skew.
+>
+> I have a camera that seems to take advantage of this. I modified the UVC
+> driver to print out the SCR SOF and urb.start_frame then I plugged two
+> cameras into the same USB controller. This is a sample log:
+> 
+> [  249.799452] uvcvideo: stream = 0xe9ea2000, urb->start_frame = 7590
+> [  249.812207] uvcvideo: stream = 0xe9ea5000, sof = 1158
+> [  249.812217] uvcvideo: stream = 0xe9ea5000, urb->start_frame = 7700
+> [  249.815195] uvcvideo: stream = 0xe9ea2000, sof = 843
+> [  249.815203] uvcvideo: stream = 0xe9ea2000, urb->start_frame = 7723
+> [  249.830206] uvcvideo: stream = 0xe9ea5000, sof = 1174
+> [  249.830216] uvcvideo: stream = 0xe9ea5000, urb->start_frame = 7834
+> [  249.833196] uvcvideo: stream = 0xe9ea2000, sof = 860
+> [  249.833205] uvcvideo: stream = 0xe9ea2000, urb->start_frame = 7857
+> [  249.845958] uvcvideo: stream = 0xe9ea5000, sof = 1191
+> [  249.845967] uvcvideo: stream = 0xe9ea5000, urb->start_frame = 7967
+> [  249.848949] uvcvideo: stream = 0xe9ea2000, sof = 877
+> [  249.848957] uvcvideo: stream = 0xe9ea2000, urb->start_frame = 7990
+> [  249.861710] uvcvideo: stream = 0xe9ea5000, sof = 1208
+> [  249.861720] uvcvideo: stream = 0xe9ea5000, urb->start_frame = 8100
+> [  249.864701] uvcvideo: stream = 0xe9ea2000, sof = 893
+> [  249.864710] uvcvideo: stream = 0xe9ea2000, urb->start_frame = 8123
+> [  249.879704] uvcvideo: stream = 0xe9ea5000, sof = 1224
+> [  249.879714] uvcvideo: stream = 0xe9ea5000, urb->start_frame = 41
+> [  249.882696] uvcvideo: stream = 0xe9ea2000, sof = 910
+> [  249.882705] uvcvideo: stream = 0xe9ea2000, urb->start_frame = 64
+> [  249.895457] uvcvideo: stream = 0xe9ea5000, sof = 1241
+> [  249.895466] uvcvideo: stream = 0xe9ea5000, urb->start_frame = 175
+> [  249.898451] uvcvideo: stream = 0xe9ea2000, sof = 927
+> 
+> Camera 0xe9ea5000 seems to be running off a different time reference from
+> camera 0xe9ea2000. If the cameras did echo the USB SOF into the SCR they
+> should track with urb->start_frame.
+
+Just for the sake of correctness, the start_frame field isn't the SOF counter. 
+It seems to wrap around at 8192, so I guess it's a micro-frame count for high-
+speed transfers.
+
+> As far as I can tell there is no way to correlate the SCR SOF counter to
+> the USB SOF. It looks like there is no way to (generically) determine the
+> device latency...
+
+The SCR SOF and USB SOF *are* correlated. They run at the same speed and 
+differ by a fixed (but non-deterministic) value.
+
+The PTS/SCR relationship can be computed using the PTS/SCR fields in video 
+data headers. The SCR/SOF relationship is known (except for the constant 
+difference), and the SOF/host clock relationship can be computed using the SOF 
+counter and the system time. With all those information, the PTS timestamp 
+associated with the image can be converted to a system time, eliminating clock 
+drift between the camera and system clocks. That's what the PTS/SCR fields are 
+for.
+
+> I can't tell when a device will use it's own counter or when it'll echo the
+> USB SOF frame number.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+
+
+From palmax at gmail.com  Thu Feb 11 13:30:16 2010
+From: palmax at gmail.com (palmax at gmail.com)
+Date: Thu, 11 Feb 2010 13:30:16 +0100
+Subject: [Linux-uvc-devel] [UVC] Rats results
+Message-ID: <209499a1002110430y493eb7e0hc726796fb34ca597@mail.gmail.com>
+
+Hello there,
+
+In order to do a good documentation, I was finding a static code
+analyzer (do you know a good one?) when I found a "auditing tool"
+called Rats, and it thinks that some parts of linux-uvc code can be
+problematic.
+
+I don't believe so much in this kind of programs, but I prefer to
+contact you with Rats results warnings.
+
+I use "rats -i -r -w 3 --html --columns --context
+/usr/src/linux/drivers/media/video/uvc > ~/rats_results.html" for
+getting this errors (it needs 0.01 second to study all uvc driver :D).
+
+
+Good Bye
+Palmax
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100211/a2f96514/attachment.html>
+
+From barsnick at gmx.net  Thu Feb 11 15:06:15 2010
+From: barsnick at gmx.net (Moritz Barsnick)
+Date: Thu, 11 Feb 2010 15:06:15 +0100
+Subject: [Linux-uvc-devel] [UVC] Rats results
+In-Reply-To: <209499a1002110430y493eb7e0hc726796fb34ca597@mail.gmail.com>
+References: <209499a1002110430y493eb7e0hc726796fb34ca597@mail.gmail.com>
+Message-ID: <20100211140615.GA31332@sunshine.barsnick.net>
+
+Hi,
+
+On Thu, Feb 11, 2010 at 13:30:16 +0100, palmax at gmail.com wrote:
+> In order to do a good documentation, I was finding a static code
+> analyzer (do you know a good one?)
+
+I like cppcheck myself, it has helped me find several minor and major
+bloopers in my code:
+http://cppcheck.wiki.sourceforge.net/
+
+> I don't believe so much in this kind of programs, but I prefer to
+> contact you with Rats results warnings.
+
+Looks like a lot of "please double-check here" hints. And I am
+convinced that kernel code commits are double-checked in this manner
+quite extensively.
+
+Never hurts having yet another tool though.
+
+Moritz
+
+
+From JacobFehr at smarttech.com  Thu Feb 11 18:53:57 2010
+From: JacobFehr at smarttech.com (Jacob Fehr)
+Date: Thu, 11 Feb 2010 10:53:57 -0700
+Subject: [Linux-uvc-devel] Timestamp Accuracy Patch
+In-Reply-To: <833B0B09C5041D42A9924A3BA6A12B9A047DCF9BC2@CALMAIL-CMS.smarttech.inc>
+References: <833B0B09C5041D42A9924A3BA6A12B9A028FB22085@CALMAIL-CMS.smarttech.inc>
+	<200911250217.19104.laurent.pinchart@ideasonboard.com>
+	<833B0B09C5041D42A9924A3BA6A12B9A0375E949D3@CALMAIL-CMS.smarttech.inc>
+	<201001012240.59920.laurent.pinchart@ideasonboard.com>
+	<833B0B09C5041D42A9924A3BA6A12B9A047DCF9BC2@CALMAIL-CMS.smarttech.inc>
+Message-ID: <833B0B09C5041D42A9924A3BA6A12B9A047DCF9BC7@CALMAIL-CMS.smarttech.inc>
+
+Perhaps a patch like the one attached?
+
+It implements a quirk for my specific camera. All other cameras are left alone...unless someone sets the quirks module parameter.
+
+Jacob
+
+-----Original Message-----
+From: linux-uvc-devel-bounces at lists.berlios.de [mailto:linux-uvc-devel-bounces at lists.berlios.de] On Behalf Of Jacob Fehr
+Sent: Wednesday, February 10, 2010 3:45 PM
+To: 'Laurent Pinchart'
+Cc: linux-uvc-devel at lists.berlios.de
+Subject: Re: [Linux-uvc-devel] Timestamp Accuracy Patch
+
+Hey Laurent,
+
+Would you accept a patch for a quirk that adjusts the timestamp for the latency caused by urb_submit(). The adjustment would be done by counting ISO packets. The quirk would be disabled by default. It's a hack but it would do what I need. The URB completion routine runs every 125us - 4 ms depending on the size of the video frame. At 4 ms it limits the resolution of v4l2_buffer.buf.timestamp to 250 Hz. With the proposed patch, the resolution would always be 8 kHz.
+
+I think skew/jitter is a little out of scope for what I am trying to accomplish. I am trying to establish the time at which the photo was taken with as much accuracy as possible. I'm tracking a fast moving target in 3 dimensional space using two webcams. For this, 4 ms accuracy is not enough but 125 microseconds is. The cameras run independent clocks so I need to correlate them to a common clock. At the moment my best option is to correlate it to the PC system time. My application isn't susceptible to clock skew/jitter. It doesn't buffer any data and can accept video whenever it becomes available. 
+
+Thoughts?
+Jake
+
+-----Original Message-----
+From: Laurent Pinchart [mailto:laurent.pinchart at ideasonboard.com] 
+Sent: Friday, January 01, 2010 2:41 PM
+To: Jacob Fehr
+Cc: linux-uvc-devel at lists.berlios.de
+Subject: Re: [Linux-uvc-devel] Timestamp Accuracy Patch
+
+Hi Jacob,
+
+On Tuesday 22 December 2009 19:32:38 Jacob Fehr wrote:
+> Hey Laurent,
+> 
+> I'm just having a quick look at section 2.4.3.3 in the UVC spec. If I read
+> that correctly, the SCR SOF counter is not necessarily the same as the USB
+> SOF frame number. The device can maintain it's own 1 KHz counter and send
+> that instead of the USBS SOF frame number.
+
+That's correct.
+
+> That would mean that there is no way to correlate device time to USB time
+> for devices that maintain their own counter. The only thing the PTS, SCR
+> could be used for is to determine interframe jitter/skew.
+>
+> I have a camera that seems to take advantage of this. I modified the UVC
+> driver to print out the SCR SOF and urb.start_frame then I plugged two
+> cameras into the same USB controller. This is a sample log:
+> 
+> [  249.799452] uvcvideo: stream = 0xe9ea2000, urb->start_frame = 7590
+> [  249.812207] uvcvideo: stream = 0xe9ea5000, sof = 1158
+> [  249.812217] uvcvideo: stream = 0xe9ea5000, urb->start_frame = 7700
+> [  249.815195] uvcvideo: stream = 0xe9ea2000, sof = 843
+> [  249.815203] uvcvideo: stream = 0xe9ea2000, urb->start_frame = 7723
+> [  249.830206] uvcvideo: stream = 0xe9ea5000, sof = 1174
+> [  249.830216] uvcvideo: stream = 0xe9ea5000, urb->start_frame = 7834
+> [  249.833196] uvcvideo: stream = 0xe9ea2000, sof = 860
+> [  249.833205] uvcvideo: stream = 0xe9ea2000, urb->start_frame = 7857
+> [  249.845958] uvcvideo: stream = 0xe9ea5000, sof = 1191
+> [  249.845967] uvcvideo: stream = 0xe9ea5000, urb->start_frame = 7967
+> [  249.848949] uvcvideo: stream = 0xe9ea2000, sof = 877
+> [  249.848957] uvcvideo: stream = 0xe9ea2000, urb->start_frame = 7990
+> [  249.861710] uvcvideo: stream = 0xe9ea5000, sof = 1208
+> [  249.861720] uvcvideo: stream = 0xe9ea5000, urb->start_frame = 8100
+> [  249.864701] uvcvideo: stream = 0xe9ea2000, sof = 893
+> [  249.864710] uvcvideo: stream = 0xe9ea2000, urb->start_frame = 8123
+> [  249.879704] uvcvideo: stream = 0xe9ea5000, sof = 1224
+> [  249.879714] uvcvideo: stream = 0xe9ea5000, urb->start_frame = 41
+> [  249.882696] uvcvideo: stream = 0xe9ea2000, sof = 910
+> [  249.882705] uvcvideo: stream = 0xe9ea2000, urb->start_frame = 64
+> [  249.895457] uvcvideo: stream = 0xe9ea5000, sof = 1241
+> [  249.895466] uvcvideo: stream = 0xe9ea5000, urb->start_frame = 175
+> [  249.898451] uvcvideo: stream = 0xe9ea2000, sof = 927
+> 
+> Camera 0xe9ea5000 seems to be running off a different time reference from
+> camera 0xe9ea2000. If the cameras did echo the USB SOF into the SCR they
+> should track with urb->start_frame.
+
+Just for the sake of correctness, the start_frame field isn't the SOF counter. 
+It seems to wrap around at 8192, so I guess it's a micro-frame count for high-
+speed transfers.
+
+> As far as I can tell there is no way to correlate the SCR SOF counter to
+> the USB SOF. It looks like there is no way to (generically) determine the
+> device latency...
+
+The SCR SOF and USB SOF *are* correlated. They run at the same speed and 
+differ by a fixed (but non-deterministic) value.
+
+The PTS/SCR relationship can be computed using the PTS/SCR fields in video 
+data headers. The SCR/SOF relationship is known (except for the constant 
+difference), and the SOF/host clock relationship can be computed using the SOF 
+counter and the system time. With all those information, the PTS timestamp 
+associated with the image can be converted to a system time, eliminating clock 
+drift between the camera and system clocks. That's what the PTS/SCR fields are 
+for.
+
+> I can't tell when a device will use it's own counter or when it'll echo the
+> USB SOF frame number.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+_______________________________________________
+Linux-uvc-devel mailing list
+Linux-uvc-devel at lists.berlios.de
+https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: 22fa28605ccd.gz
+Type: application/x-gzip
+Size: 1187 bytes
+Desc: 22fa28605ccd.gz
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100211/cdc99f48/attachment.bin>
+
+From s.lumma at gmail.com  Fri Feb 12 14:28:28 2010
+From: s.lumma at gmail.com (Sascha Lumma)
+Date: Fri, 12 Feb 2010 14:28:28 +0100
+Subject: [Linux-uvc-devel] Logitech QC 9000 camera on ARM platform
+Message-ID: <4B75577C.2030701@gmail.com>
+
+Hi all,
+
+Unfortunately nobody answered till now :-(
+
+However, just a short remark. If I stop capturing (VIDIOC_STREAMOFF) and 
+unmap the buffers I get "dma_free_coherent: bad page in kernel page 
+table" through the kernel log. Maybe it helps to get a clue.
+
+Thanks again for any hint...
+
+Sascha
+
+
+From arunprasathsp at gmail.com  Mon Feb 15 12:22:23 2010
+From: arunprasathsp at gmail.com (Arun Prasath S.P.)
+Date: Mon, 15 Feb 2010 16:52:23 +0530
+Subject: [Linux-uvc-devel] Model: LPC-UC35
+Message-ID: <521f2c251002150322p17dbab9am4ce3a03ada127f5e@mail.gmail.com>
+
+Hi ,
+
+USB Webcam with the following details is not supported/listed in the UVC
+supported devices' list.
+
+Model: LPC-UC35
+Manufacturer: LG
+Device details: Bus 003 Device 005: ID 043e:8585 LG Electronics USA, Inc.
+LPC-UC35 Webcam
+
+
+*Machine details:*
+Processor: X86 Core2Duo
+OS: Linux Fedora
+Kernel: 2.6.27.41-170.2.117.fc10.i686
+
+The device is detected as a USB device, but not detected as a video class
+device. Is there any device drivers for this device.
+
+
+-- 
+--
+Thanks & Regards,
+Arun Prasath S.P. | Kerala: +919746926636; TN: +919952046551  |
+Save a tree...please do not print any document unless you really need to.
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100215/9836b9e2/attachment.html>
+
+From gentoo at mgorny.alt.pl  Mon Feb 15 18:50:10 2010
+From: gentoo at mgorny.alt.pl (=?utf-8?B?TWljaGHFgiBHw7Nybnk=?=)
+Date: Mon, 15 Feb 2010 18:50:10 +0100
+Subject: [Linux-uvc-devel] Motorola ROKR E6 'webcam' and resolution issues
+Message-ID: <op.u76jtsfohdzqqm@asus.lan>
+
+Hello,
+
+I am using an Motorola ROKR E6 cell phone as a webcam and although it is  
+listed on 'Supported devices' list as working, I am unable to get it fully  
+working.
+
+The driver reports five different modes (resolutions) for the device,  
+which are (output of guvcview):
+
+{ pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+{ discrete: width = 352, height = 288 }
+	Time interval between frame: 1/20,
+{ discrete: width = 176, height = 144 }
+	Time interval between frame: 1/20,
+{ discrete: width = 640, height = 480 }
+	Time interval between frame: 1/15,
+{ discrete: width = 320, height = 240 }
+	Time interval between frame: 1/20,
+{ discrete: width = 160, height = 120 }
+	Time interval between frame: 1/20,
+
+But in fact only 640x480 works correctly. 320x240 shows only quarter of  
+the image which three other quarters lightly overlaying on it, and 160x120  
+works on similar manner. The 352x288 and 176x144 modes show only junk.  
+This makes the webcam unusable for applications such as Skype which  
+request one of the smaller modes.
+
+I was able to workaround the issue through hardcoding the 640x480 mode in  
+the driver (applications used software scaling then) but that's only an  
+ugly workaround. I would appreciate if you could give me further tips on  
+diagnosing the issue or simply implement a quirk allowing to drop unusable  
+video modes (or even leave only the one with largest resolution).
+
+I attach the output of 'lsusb -v'.
+
+-- 
+Best regards,
+Micha? G?rny
+
+http://mgorny.alt.pl/
+-------------- next part --------------
+An embedded and charset-unspecified text was scrubbed...
+Name: lsusb.txt
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100215/bf1cc576/attachment.txt>
+
+From bram at luon.net  Tue Feb 16 11:19:28 2010
+From: bram at luon.net (Bram Senders)
+Date: Tue, 16 Feb 2010 11:19:28 +0100
+Subject: [Linux-uvc-devel] Unlisted partially-supported webcam
+In-Reply-To: <201002100124.59593.laurent.pinchart@ideasonboard.com>
+References: <1e0de1821001260712t59f5e468y6dec85871dab2289@mail.gmail.com>
+	<201002070118.12394.laurent.pinchart@ideasonboard.com>
+	<1e0de1821002070428x2d905d49yc13c1f1bf94c469@mail.gmail.com>
+	<201002100124.59593.laurent.pinchart@ideasonboard.com>
+Message-ID: <1e0de1821002160219m6e41d955t9ec76d2099976ef6@mail.gmail.com>
+
+Hey Laurent,
+
+On Wed, Feb 10, 2010 at 1:24 AM, Laurent Pinchart
+<laurent.pinchart at ideasonboard.com> wrote:
+> I think I made a small mistake, could you replace the index 4 by 9 in the
+> patch I've sent you ?
+
+Yes!  Now the webcam works correctly :-)  Thank you very much!  Can
+this be updated on the list of UVC devices?  If there is anything else
+you need from me, feel free to ask :-)
+
+Greetings,
+Bram
+
+
+From lct at mail.ru  Tue Feb 16 15:19:32 2010
+From: lct at mail.ru (lct at mail.ru)
+Date: Tue, 16 Feb 2010 17:19:32 +0300
+Subject: [Linux-uvc-devel] Techsolo TCA-4900  is supported!
+Message-ID: <20100216171932.12e858fc@ghost.local>
+
+Hello!
+
+The Techsolo webcam TCA-4900 is supported by UVC, no drivers
+needed! Techsolo has some linux "drivers", but they not for this model.
+
+It is actually:
+Bus 002 Device 005: ID 0ac8:332d Z-Star Microelectronics Corp. Vega USB 2.0 Camera
+And works!
+
+The product link:
+http://www.techsolo.net/site/product.php?lang=en&do=show&product_id=224&&class_id=53
+:)
+
+
+From laurent.pinchart at ideasonboard.com  Thu Feb 18 22:10:30 2010
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Thu, 18 Feb 2010 22:10:30 +0100
+Subject: [Linux-uvc-devel] Logitech QC 9000 camera on ARM platform
+In-Reply-To: <4B729792.10209@gmail.com>
+References: <4B729792.10209@gmail.com>
+Message-ID: <201002182210.32118.laurent.pinchart@ideasonboard.com>
+
+Hi Sascha,
+
+On Wednesday 10 February 2010 12:25:06 Sascha Lumma wrote:
+> Hi all,
+> 
+> I've a problem with that setup and it's quite difficult to explain. I
+> searched on the Internet for that issue but I found nothing appropriate,
+> hence I will try to explain it here...
+> 
+> I am using a Logitech QC Pro 9000 connected with a beagleboard (OMAP35 -
+> ARM Cortex 8 & TMS320C64x DSP) running Angstrom (kernel 2.6.29). That
+> setup is running fine so far and I can use all of the required features
+> (fps from ~10 to ~15 with VGA resolution). But the frames I get from the
+> camera contain some errors (stripes with inverted colors) randomly.
+> Unfortunately, there is no regularity (position and length) and it
+> happens not in all frames. I am using memory mapped buffers to get the
+> frames. The first idea rising up in my mind is it could be caused by a
+> race condition somewhere, but it's only an idea.
+> 
+> I tried already two other cameras (but same type) and other beagleboards
+> as well, no change. Furthermore, I compiled my program on an 686-Box and
+> it is working there without that errors (unfortunately with a newer
+> kernel 2.6.31 and 32). Were there related Issues in 2.6.29?
+
+That kind of problem is usually caused by lost USB packets. There's not much 
+the driver can do. It could be anything from a USB controller driver bug to 
+bad USB cable, through a USB bandwidth limitation on the OMAP35xx processor 
+(in that case you could try capturing in MJPEG instead of YUYV) or a board 
+routing issue.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at ideasonboard.com  Thu Feb 18 22:11:06 2010
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Thu, 18 Feb 2010 22:11:06 +0100
+Subject: [Linux-uvc-devel] Logitech QC 9000 camera on ARM platform
+In-Reply-To: <4B75577C.2030701@gmail.com>
+References: <4B75577C.2030701@gmail.com>
+Message-ID: <201002182211.08267.laurent.pinchart@ideasonboard.com>
+
+Hi Sascha,
+
+On Friday 12 February 2010 14:28:28 Sascha Lumma wrote:
+> Hi all,
+> 
+> Unfortunately nobody answered till now :-(
+> 
+> However, just a short remark. If I stop capturing (VIDIOC_STREAMOFF) and
+> unmap the buffers I get "dma_free_coherent: bad page in kernel page
+> table" through the kernel log. Maybe it helps to get a clue.
+
+Could you send me a copy of the kernel log ?
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at ideasonboard.com  Thu Feb 18 22:32:08 2010
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Thu, 18 Feb 2010 22:32:08 +0100
+Subject: [Linux-uvc-devel] [UVC] Rats results
+In-Reply-To: <209499a1002110430y493eb7e0hc726796fb34ca597@mail.gmail.com>
+References: <209499a1002110430y493eb7e0hc726796fb34ca597@mail.gmail.com>
+Message-ID: <201002182232.10505.laurent.pinchart@ideasonboard.com>
+
+Hi Palmax,
+
+On Thursday 11 February 2010 13:30:16 palmax at gmail.com wrote:
+> Hello there,
+> 
+> In order to do a good documentation, I was finding a static code
+> analyzer (do you know a good one?) when I found a "auditing tool"
+> called Rats, and it thinks that some parts of linux-uvc code can be
+> problematic.
+> 
+> I don't believe so much in this kind of programs, but I prefer to
+> contact you with Rats results warnings.
+> 
+> I use "rats -i -r -w 3 --html --columns --context
+> /usr/src/linux/drivers/media/video/uvc > ~/rats_results.html" for
+> getting this errors (it needs 0.01 second to study all uvc driver :D).
+
+Thank you for testing the uvcvideo driver and helping improving its quality.
+
+I've checked the report you've attached to your e-mail, and it turned out that 
+the problems were false positives. Less work for me :-) But thanks anyway.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at ideasonboard.com  Thu Feb 18 22:40:07 2010
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Thu, 18 Feb 2010 22:40:07 +0100
+Subject: [Linux-uvc-devel] Model: LPC-UC35
+In-Reply-To: <521f2c251002150322p17dbab9am4ce3a03ada127f5e@mail.gmail.com>
+References: <521f2c251002150322p17dbab9am4ce3a03ada127f5e@mail.gmail.com>
+Message-ID: <201002182240.09358.laurent.pinchart@ideasonboard.com>
+
+Hi Arun,
+
+On Monday 15 February 2010 12:22:23 Arun Prasath S.P. wrote:
+> Hi ,
+> 
+> USB Webcam with the following details is not supported/listed in the UVC
+> supported devices' list.
+> 
+> Model: LPC-UC35
+> Manufacturer: LG
+> Device details: Bus 003 Device 005: ID 043e:8585 LG Electronics USA, Inc.
+> LPC-UC35 Webcam
+> 
+> 
+> *Machine details:*
+> Processor: X86 Core2Duo
+> OS: Linux Fedora
+> Kernel: 2.6.27.41-170.2.117.fc10.i686
+> 
+> The device is detected as a USB device, but not detected as a video class
+> device. Is there any device drivers for this device.
+
+If the camera isn't a video class device it won't work with the uvcvideo 
+driver. The gspca driver supports many webcams, you might have more luck with 
+it.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at ideasonboard.com  Thu Feb 18 22:51:06 2010
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Thu, 18 Feb 2010 22:51:06 +0100
+Subject: [Linux-uvc-devel] Motorola ROKR E6 'webcam' and resolution
+	issues
+In-Reply-To: <op.u76jtsfohdzqqm@asus.lan>
+References: <op.u76jtsfohdzqqm@asus.lan>
+Message-ID: <201002182251.10671.laurent.pinchart@ideasonboard.com>
+
+Hi Micha?,
+
+On Monday 15 February 2010 18:50:10 Micha? G?rny wrote:
+> Hello,
+> 
+> I am using an Motorola ROKR E6 cell phone as a webcam and although it is
+> listed on 'Supported devices' list as working, I am unable to get it fully
+> working.
+
+Sorry for that. The report I got 2 years and a half ago was thus inaccurate, 
+the reporter had probably tested 640x480 only (or your device is broken and 
+his wasn't :-)).
+
+> The driver reports five different modes (resolutions) for the device,
+> which are (output of guvcview):
+> 
+> { pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+> { discrete: width = 352, height = 288 }
+> 	Time interval between frame: 1/20,
+> { discrete: width = 176, height = 144 }
+> 	Time interval between frame: 1/20,
+> { discrete: width = 640, height = 480 }
+> 	Time interval between frame: 1/15,
+> { discrete: width = 320, height = 240 }
+> 	Time interval between frame: 1/20,
+> { discrete: width = 160, height = 120 }
+> 	Time interval between frame: 1/20,
+> 
+> But in fact only 640x480 works correctly. 320x240 shows only quarter of
+> the image which three other quarters lightly overlaying on it, and 160x120
+> works on similar manner. The 352x288 and 176x144 modes show only junk.
+> This makes the webcam unusable for applications such as Skype which
+> request one of the smaller modes.
+
+Ouch.
+
+> I was able to workaround the issue through hardcoding the 640x480 mode in
+> the driver (applications used software scaling then) but that's only an
+> ugly workaround. I would appreciate if you could give me further tips on
+> diagnosing the issue or simply implement a quirk allowing to drop unusable
+> video modes (or even leave only the one with largest resolution).
+
+Would you be able to test the device in Windows ? If it works there we could 
+try to capture USB traffic to find out how the Windows driver initializes it.
+
+I've seen similar problems with Ricoh webcams. It was caused by the uvcvideo 
+driver selecting an alternate setting with a too high bandwidth (which is 
+allowed, but not very optimum). Your device has a single alternate setting for 
+the streaming interface, so it doesn't seem to be the same issue.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at ideasonboard.com  Thu Feb 18 23:06:02 2010
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Thu, 18 Feb 2010 23:06:02 +0100
+Subject: [Linux-uvc-devel] Unlisted partially-supported webcam
+In-Reply-To: <1e0de1821002160219m6e41d955t9ec76d2099976ef6@mail.gmail.com>
+References: <1e0de1821001260712t59f5e468y6dec85871dab2289@mail.gmail.com>
+	<201002100124.59593.laurent.pinchart@ideasonboard.com>
+	<1e0de1821002160219m6e41d955t9ec76d2099976ef6@mail.gmail.com>
+Message-ID: <201002182306.04326.laurent.pinchart@ideasonboard.com>
+
+Hi Bram,
+
+On Tuesday 16 February 2010 11:19:28 Bram Senders wrote:
+> Hey Laurent,
+> 
+> On Wed, Feb 10, 2010 at 1:24 AM, Laurent Pinchart
+> 
+> <laurent.pinchart at ideasonboard.com> wrote:
+> > I think I made a small mistake, could you replace the index 4 by 9 in the
+> > patch I've sent you ?
+> 
+> Yes!  Now the webcam works correctly :-)  Thank you very much!  Can
+> this be updated on the list of UVC devices?  If there is anything else
+> you need from me, feel free to ask :-)
+
+You're welcome.
+
+I've added the camera to the supported devices list.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at ideasonboard.com  Thu Feb 18 23:08:47 2010
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Thu, 18 Feb 2010 23:08:47 +0100
+Subject: [Linux-uvc-devel] Techsolo TCA-4900  is supported!
+In-Reply-To: <20100216171932.12e858fc@ghost.local>
+References: <20100216171932.12e858fc@ghost.local>
+Message-ID: <201002182308.48549.laurent.pinchart@ideasonboard.com>
+
+Hi,
+
+On Tuesday 16 February 2010 15:19:32 lct at mail.ru wrote:
+> Hello!
+> 
+> The Techsolo webcam TCA-4900 is supported by UVC, no drivers
+> needed! Techsolo has some linux "drivers", but they not for this model.
+> 
+> It is actually:
+> Bus 002 Device 005: ID 0ac8:332d Z-Star Microelectronics Corp. Vega USB 2.0
+> Camera And works!
+> 
+> The product link:
+> http://www.techsolo.net/site/product.php?lang=en&do=show&product_id=224&&cl
+> ass_id=53
+
+Thanks for the report. The device was already listed, albeit not under that 
+name. I've updated the website.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From bram at luon.net  Thu Feb 18 23:43:59 2010
+From: bram at luon.net (Bram Senders)
+Date: Thu, 18 Feb 2010 23:43:59 +0100
+Subject: [Linux-uvc-devel] Unlisted partially-supported webcam
+In-Reply-To: <201002182306.04326.laurent.pinchart@ideasonboard.com>
+References: <1e0de1821001260712t59f5e468y6dec85871dab2289@mail.gmail.com>
+	<201002100124.59593.laurent.pinchart@ideasonboard.com>
+	<1e0de1821002160219m6e41d955t9ec76d2099976ef6@mail.gmail.com>
+	<201002182306.04326.laurent.pinchart@ideasonboard.com>
+Message-ID: <1e0de1821002181443k4169dca7mdf6586958447e317@mail.gmail.com>
+
+Hey Laurent,
+
+On Thu, Feb 18, 2010 at 11:06 PM, Laurent Pinchart
+<laurent.pinchart at ideasonboard.com> wrote:
+>> <laurent.pinchart at ideasonboard.com> wrote:
+>> > I think I made a small mistake, could you replace the index 4 by 9 in the
+>> > patch I've sent you ?
+>>
+>> Yes! ?Now the webcam works correctly :-) ?Thank you very much! ?Can
+>> this be updated on the list of UVC devices? ?If there is anything else
+>> you need from me, feel free to ask :-)
+>
+> You're welcome.
+>
+> I've added the camera to the supported devices list.
+
+Thanks!  Does this mean that the kernel blacklist patch will also go upstream?
+
+Cheers,
+Bram
+
+
+From laurent.pinchart at ideasonboard.com  Thu Feb 18 23:47:54 2010
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Thu, 18 Feb 2010 23:47:54 +0100
+Subject: [Linux-uvc-devel] Unlisted partially-supported webcam
+In-Reply-To: <1e0de1821002181443k4169dca7mdf6586958447e317@mail.gmail.com>
+References: <1e0de1821001260712t59f5e468y6dec85871dab2289@mail.gmail.com>
+	<201002182306.04326.laurent.pinchart@ideasonboard.com>
+	<1e0de1821002181443k4169dca7mdf6586958447e317@mail.gmail.com>
+Message-ID: <201002182347.56149.laurent.pinchart@ideasonboard.com>
+
+Hi Bram,
+
+On Thursday 18 February 2010 23:43:59 Bram Senders wrote:
+> Hey Laurent,
+> 
+> On Thu, Feb 18, 2010 at 11:06 PM, Laurent Pinchart
+> 
+> <laurent.pinchart at ideasonboard.com> wrote:
+> >> <laurent.pinchart at ideasonboard.com> wrote:
+> >> > I think I made a small mistake, could you replace the index 4 by 9 in
+> >> > the patch I've sent you ?
+> >> 
+> >> Yes!  Now the webcam works correctly :-)  Thank you very much!  Can
+> >> this be updated on the list of UVC devices?  If there is anything else
+> >> you need from me, feel free to ask :-)
+> > 
+> > You're welcome.
+> > 
+> > I've added the camera to the supported devices list.
+> 
+> Thanks!  Does this mean that the kernel blacklist patch will also go
+> upstream?
+
+Yes, it should be in 2.6.34.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From arunprasathsp at gmail.com  Mon Feb 22 06:23:01 2010
+From: arunprasathsp at gmail.com (Arun Prasath S.P.)
+Date: Mon, 22 Feb 2010 10:53:01 +0530
+Subject: [Linux-uvc-devel] Model: LPC-UC35
+In-Reply-To: <201002182240.09358.laurent.pinchart@ideasonboard.com>
+References: <521f2c251002150322p17dbab9am4ce3a03ada127f5e@mail.gmail.com>
+	<201002182240.09358.laurent.pinchart@ideasonboard.com>
+Message-ID: <521f2c251002212123h6f2d829ewe7e51c04ba7378@mail.gmail.com>
+
+Dear All,
+
+I tried with gspca driver also. It is not supporting my webcam. Is there any
+other solution?
+Thanks for your suggestion, Mr.Laurent Pinchart.
+
+On Fri, Feb 19, 2010 at 3:10 AM, Laurent Pinchart <
+laurent.pinchart at ideasonboard.com> wrote:
+
+> Hi Arun,
+>
+> On Monday 15 February 2010 12:22:23 Arun Prasath S.P. wrote:
+> > Hi ,
+> >
+> > USB Webcam with the following details is not supported/listed in the UVC
+> > supported devices' list.
+> >
+> > Model: LPC-UC35
+> > Manufacturer: LG
+> > Device details: Bus 003 Device 005: ID 043e:8585 LG Electronics USA, Inc.
+> > LPC-UC35 Webcam
+> >
+> >
+> > *Machine details:*
+> > Processor: X86 Core2Duo
+> > OS: Linux Fedora
+> > Kernel: 2.6.27.41-170.2.117.fc10.i686
+> >
+> > The device is detected as a USB device, but not detected as a video class
+> > device. Is there any device drivers for this device.
+>
+> If the camera isn't a video class device it won't work with the uvcvideo
+> driver. The gspca driver supports many webcams, you might have more luck
+> with
+> it.
+>
+> --
+> Regards,
+>
+> Laurent Pinchart
+>
+
+
+
+-- 
+--
+Thanks & Regards,
+Arun Prasath S.P. | Kerala: +919746926636; TN: +919952046551  |
+Save a tree...please do not print any document unless you really need to.
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100222/76895c5b/attachment.html>
+
+From cmaciel.atl at gmail.com  Tue Feb 23 01:48:10 2010
+From: cmaciel.atl at gmail.com (Cesar Maciel)
+Date: Mon, 22 Feb 2010 19:48:10 -0500
+Subject: [Linux-uvc-devel] frame rate dropping when capturing from webcam
+Message-ID: <4B8325CA.8050207@gmail.com>
+
+Hello,
+
+I am trying to capture from a webcam with a fixed frame rate. I am using 
+ffmpeg (svn revision 21498) with the following options:
+
+
+./ffmpeg -y -t 00:01:00 -f video4linux2  -r 30 -s 352x288   -i 
+/dev/video0 -vcodec msmpeg4v2 -f avi -r 30 video.avi
+
+
+I used two webcams where uvcvideo shows being capable of 352x288 at 
+30fps. For some reason, ffmpeg cannot keep the input frame rate, and it 
+starts to go down. There are processing resources available in the 
+system (Ubuntu Karmic 9.10, and also Voyage Linux 0.62 (Debian-based). I 
+have tried specifying the qscale option, but it did not make any 
+difference. Also, both cameras can output raw and mjpeg, but it also did 
+not make a difference.
+
+I have updated uvc on Karmic to the version available as a gzip file on 
+the official website. dmesg shows tons of
+
+uvcvideo: Dropping payload (out of sync).
+
+and every now and then:
+
+[28339.492016] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[28339.492022] uvcvideo: Queuing buffer 30.
+[28339.492030] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+
+
+for both cameras. On Voyage Linux (kernel 2.6.30), it shows several msgs 
+like the following ones
+
+[26440.191029] uvcvideo: Queuing buffer 3.
+[26440.191405] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[26440.201496] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[26440.211579] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[26440.221661] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[26440.230034] uvcvideo: Frame complete (EOF found).
+[26440.231743] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[26440.231753] uvcvideo: Dequeuing buffer 4 (3, 14800 bytes).
+[26440.249905] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[26440.249921] uvcvideo: Queuing buffer 4.
+[26440.249950] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+
+
+Cameras are Microsoft NX-3000 and Genius eFace 1325R
+
+Does anyone have an idea, or need more info?
+
+Thanks
+
+Cesar
+
+
+
+
+
+From andriulopiero at yahoo.it  Tue Feb 23 17:16:13 2010
+From: andriulopiero at yahoo.it (Pietro Andriulo)
+Date: Tue, 23 Feb 2010 17:16:13 +0100
+Subject: [Linux-uvc-devel]  Looking for upside down uvc cams
+Message-ID: <1266941773.6098.1.camel@jook3r-laptop>
+
+Dear Hans,
+i'm sending you my webcam's file specifications for corrections.
+Thank you.
+
+Pietro Andriulo.
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: lsusb.log
+Type: text/x-log
+Size: 400 bytes
+Desc: not available
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100223/dcf54678/attachment.bin>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: dmi.log
+Type: text/x-log
+Size: 10931 bytes
+Desc: not available
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100223/dcf54678/attachment-0001.bin>
+
+From miloody at gmail.com  Thu Feb 25 10:28:42 2010
+From: miloody at gmail.com (loody)
+Date: Thu, 25 Feb 2010 17:28:42 +0800
+Subject: [Linux-uvc-devel] USB utility?
+Message-ID: <3a665c761002250128k4240a13r5b1ddd39462fe52b@mail.gmail.com>
+
+Dear all:
+is there any usb utility under linux which can help me to parse all
+the configurations, interfaces and endpoints for UVC devices?
+thanks for your help in advance,
+miloody
+
+
+From rdunlap at xenotime.net  Thu Feb 25 17:15:46 2010
+From: rdunlap at xenotime.net (Randy Dunlap)
+Date: Thu, 25 Feb 2010 08:15:46 -0800
+Subject: [Linux-uvc-devel] USB utility?
+In-Reply-To: <3a665c761002250128k4240a13r5b1ddd39462fe52b@mail.gmail.com>
+References: <3a665c761002250128k4240a13r5b1ddd39462fe52b@mail.gmail.com>
+Message-ID: <20100225081546.b6da31bc.rdunlap@xenotime.net>
+
+On Thu, 25 Feb 2010 17:28:42 +0800 loody wrote:
+
+> Dear all:
+> is there any usb utility under linux which can help me to parse all
+> the configurations, interfaces and endpoints for UVC devices?
+> thanks for your help in advance,
+
+Hopefully 'lsusb' in the usbutils package can do that.
+
+From miloody at gmail.com  Fri Feb 26 04:25:45 2010
+From: miloody at gmail.com (loody)
+Date: Fri, 26 Feb 2010 11:25:45 +0800
+Subject: [Linux-uvc-devel] USB utility?
+In-Reply-To: <20100225081546.b6da31bc.rdunlap@xenotime.net>
+References: <3a665c761002250128k4240a13r5b1ddd39462fe52b@mail.gmail.com>
+	<20100225081546.b6da31bc.rdunlap@xenotime.net>
+Message-ID: <3a665c761002251925l405d50a0raab39c4f9e3d6771@mail.gmail.com>
+
+hi randy:
+
+2010/2/26 Randy Dunlap <rdunlap at xenotime.net>:
+> On Thu, 25 Feb 2010 17:28:42 +0800 loody wrote:
+>
+>> Dear all:
+>> is there any usb utility under linux which can help me to parse all
+>> the configurations, interfaces and endpoints for UVC devices?
+>> thanks for your help in advance,
+>
+> Hopefully 'lsusb' in the usbutils package can do that.
+> From your distro packaging or from http://sourceforge.net/projects/linux-usb/
+>
+> If lsusb can't do it, we need to have it fixed to do that.
+thanks for your help :)
+miloody
+
+
+From emnazli at ath.forthnet.gr  Sat Feb 27 02:29:23 2010
+From: emnazli at ath.forthnet.gr (Manolis Nazlidis)
+Date: Sat, 27 Feb 2010 03:29:23 +0200
+Subject: [Linux-uvc-devel] Support for Vimicro USB 2.0 PC Camera (0ac8:3420)
+Message-ID: <4B887573.30400@ath.forthnet.gr>
+
+
+Hello everyone,
+
+I own this webcamera: Vimicro USB 2.0 PC Camera (Venus) (0ac8:3420)
+Kernel I use is: 2.6.31-19-generic #56-Ubuntu SMP
+
+My webcamera seems to be found ok
+when i try to test it using guvcview i get a black picture and this message 
+(repeated)
+
+   Could not grab image (select timeout): Resource temporarily unavailable
+
+and at my syslog i get (repeated)
+
+   uvcvideo: USB isochronous frame lost (-71).
+
+when i change image controls values i may get a picture which seems like a 
+sequence of random size blocks, arranged horizontally (if attachments of such 
+files are allowed here, i can include one)
+
+Webcamera has this behaviour also with other programs including luvcview, 
+mplayer, amsn etc. I could make it work with no program.
+
+I have tried the drivers provided by my distro for this camera.
+I have also compiled latest drivers as found at 
+http://linuxtv.org/hg/~pinchartl/uvcvideo/
+I havent tried vanilla kernel drivers
+I 've experimented a bit with the quirks= module parameter
+
+nevertheless nothing changed this behaviour.
+
+Any suggestions?
+
+I also attach out of `lsusb -d 0ac8:3420 -v`
+
+Thanx in advance, for your time and support.
+
+Regards,
+Manolis Nazlidis.
+-------------- next part --------------
+An embedded and charset-unspecified text was scrubbed...
+Name: lsusb-v.out
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100227/7f17c929/attachment.ksh>
+
+From gentoo at mgorny.alt.pl  Thu Feb 18 23:05:17 2010
+From: gentoo at mgorny.alt.pl (=?utf-8?B?TWljaGHFgiBHw7Nybnk=?=)
+Date: Thu, 18 Feb 2010 23:05:17 +0100
+Subject: [Linux-uvc-devel] Motorola ROKR E6 'webcam' and resolution
+	issues
+In-Reply-To: <201002182251.10671.laurent.pinchart@ideasonboard.com>
+References: <op.u76jtsfohdzqqm@asus.lan>
+	<201002182251.10671.laurent.pinchart@ideasonboard.com>
+Message-ID: <op.u8cfm1bwhdzqqm@asus.lan>
+
+I'm sorry, it seems like I missed CC last time.
+
+On Thu, 18 Feb 2010 22:51:06 +0100, Laurent Pinchart
+<laurent.pinchart at ideasonboard.com> wrote:
+
+> Would you be able to test the device in Windows ? If it works there we  
+> could
+> try to capture USB traffic to find out how the Windows driver  
+> initializes it.
+
+I've used it in Windows before I discovered what was really happening in
+Windows. The fact is that the cam worked perfectly both within the system
+preview application (the one in 'My Computer' AFAIR) and with Skype. I
+haven't been able, though, to test it thoroughly and I just have to guess
+that Skype demanded the same resolution it does on Linux.
+
+I would be glad to check more if You could provide me a tool which would
+allow me to test different modes on Windows.
+
+-- 
+Best regards,
+Micha? G?rny
+
+http://mgorny.alt.pl/
+
+

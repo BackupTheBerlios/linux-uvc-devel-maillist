@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel]  Apple iSight
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%20Apple%20iSight&In-Reply-To=%3C20070123085905.GA27363%40idiap.ch%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001282.html">
+   <LINK REL="Next"  HREF="001289.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel]  Apple iSight</H1>
+    <B>Olivier Bornet</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%20Apple%20iSight&In-Reply-To=%3C20070123085905.GA27363%40idiap.ch%3E"
+       TITLE="[Linux-uvc-devel]  Apple iSight">Olivier.Bornet at idiap.ch
+       </A><BR>
+    <I>Tue Jan 23 09:59:05 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001282.html">[Linux-uvc-devel] Microsoft NX-6000
+</A></li>
+        <LI>Next message: <A HREF="001289.html">[Linux-uvc-devel] Apple iSight
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1288">[ date ]</a>
+              <a href="thread.html#1288">[ thread ]</a>
+              <a href="subject.html#1288">[ subject ]</a>
+              <a href="author.html#1288">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+On Mon, Jan 22, 2007 at 11:07:53PM +0100, Laurent Pinchart wrote:
+&gt;<i> I haven't made any progress myself (as I don't own any Mac), and haven't heard 
+</I>&gt;<i> of my Mac developers yet. I tried to put together patches from a few months 
+</I>&gt;<i> ago with the latest driver revision. Please test the attached patch. If it 
+</I>&gt;<i> doesn't work, push the trace level to a higher value and send me the kernel 
+</I>&gt;<i> log.
+</I>
+Seems that the patch don't detect the iSight at all. Here is the trace
+(setting uvc_trace_param to 0xff before loading the module):
+
+  [17182291.148000] uvcvideo: Adding mapping Brightness to control 00000000-0000-0000-0000-000000000101/2.
+  [17182291.148000] uvcvideo: Adding mapping Contrast to control 00000000-0000-0000-0000-000000000101/3.
+  [17182291.148000] uvcvideo: Adding mapping Hue to control 00000000-0000-0000-0000-000000000101/6.
+  [17182291.148000] uvcvideo: Adding mapping Saturation to control 00000000-0000-0000-0000-000000000101/7.
+  [17182291.148000] uvcvideo: Adding mapping Sharpness to control 00000000-0000-0000-0000-000000000101/8.
+  [17182291.148000] uvcvideo: Adding mapping Gamma to control 00000000-0000-0000-0000-000000000101/9.
+  [17182291.148000] uvcvideo: Adding mapping Backlight Compensation to control 00000000-0000-0000-0000-000000000101/1.
+  [17182291.148000] uvcvideo: Adding mapping Gain to control 00000000-0000-0000-0000-000000000101/4.
+  [17182291.148000] uvcvideo: Adding mapping Power Line Frequency to control 00000000-0000-0000-0000-000000000101/5.
+  [17182291.148000] uvcvideo: Adding mapping Hue, Auto to control 00000000-0000-0000-0000-000000000101/16.
+  [17182291.148000] uvcvideo: Adding mapping Pan (relative) to control 63610682-5070-49ab-b8cc-b3855e8d2256/1.
+  [17182291.148000] uvcvideo: Adding mapping Tilt (relative) to control 63610682-5070-49ab-b8cc-b3855e8d2256/1.
+  [17182291.148000] uvcvideo: Adding mapping Pan/Tilt (reset) to control 63610682-5070-49ab-b8cc-b3855e8d2256/2.
+  [17182291.152000] uvcvideo: Adding mapping Exposure, Auto to control 00000000-0000-0000-0000-000000000001/2.
+  [17182291.152000] uvcvideo: Adding mapping Exposure (Absolute) to control 00000000-0000-0000-0000-000000000001/4.
+  [17182291.152000] uvcvideo: Adding mapping White Balance Temperature, Auto to control 00000000-0000-0000-0000-000000000101/11.
+  [17182291.152000] uvcvideo: Adding mapping White Balance Temperature to control 00000000-0000-0000-0000-000000000101/10.
+  [17182291.152000] usbcore: registered new driver uvcvideo
+  [17182291.152000] USB Video Class driver (v0.1.0)
+
+Using a Logitech QuickCam Fusion with this patch is OK:
+
+  [17181893.840000] usb 5-3: new high speed USB device using ehci_hcd and address 9
+  [17181894.148000] usb 5-3: configuration #1 chosen from 1 choice
+  [17181894.148000] uvcvideo: Probing known UVC device 3 (046d:08c1)
+  [17181894.148000] uvcvideo: Found format MJPEG.
+  ...
+
+I have loaded the firmware with the &quot;original&quot; extract tool from Ronald
+S. Bultje.
+
+Using the patched version from Ronald S. Bultje you can find here:
+
+  <A HREF="http://blogs.gnome.org/view/rbultje/2006/10/27/0">http://blogs.gnome.org/view/rbultje/2006/10/27/0</A>
+
+detect the cam:
+
+  [17182258.156000] uvcvideo: Found UVC 1.00 device Built-in iSight (05ac:8501)
+
+So, I suspect that the loading of the firmware is OK.
+
+I'm ready to make more tests. ;)
+
+Have a nice day.
+
+        Olivier
+-- 
+Olivier Bornet, IDIAP, CP 592, CH-1920 Martigny
+<A HREF="http://www.idiap.ch/~bornet/">http://www.idiap.ch/~bornet/</A>
+<A HREF="http://www.idiap.ch/~bornet/pgp/">http://www.idiap.ch/~bornet/pgp/</A>
+PGP-key: 0xC53D9218
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: Digital signature
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070123/b4849f47/attachment.pgp">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070123/b4849f47/attachment.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001282.html">[Linux-uvc-devel] Microsoft NX-6000
+</A></li>
+	<LI>Next message: <A HREF="001289.html">[Linux-uvc-devel] Apple iSight
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1288">[ date ]</a>
+              <a href="thread.html#1288">[ thread ]</a>
+              <a href="subject.html#1288">[ subject ]</a>
+              <a href="author.html#1288">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

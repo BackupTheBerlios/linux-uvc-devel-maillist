@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] error proofing mjpeg stream
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20error%20proofing%20mjpeg%20stream&In-Reply-To=%3C4E42D07F.2050809%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006783.html">
+   <LINK REL="Next"  HREF="006785.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] error proofing mjpeg stream</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20error%20proofing%20mjpeg%20stream&In-Reply-To=%3C4E42D07F.2050809%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] error proofing mjpeg stream">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Wed Aug 10 20:39:59 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006783.html">[Linux-uvc-devel] error proofing mjpeg stream
+</A></li>
+        <LI>Next message: <A HREF="006785.html">[Linux-uvc-devel] error proofing mjpeg stream
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6784">[ date ]</a>
+              <a href="thread.html#6784">[ thread ]</a>
+              <a href="subject.html#6784">[ subject ]</a>
+              <a href="author.html#6784">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Am 10.08.2011 19:20, schrieb Carl Michal:
+&gt;<i> Hi Alexey,
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> On Tue, 9 Aug 2011, Alexey Fisher wrote:
+</I>&gt;<i>
+</I>&gt;&gt;<i> Hall all, Laurent, Carl,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> i just was looking on how my webcam do mjpeg stream and created some
+</I>&gt;&gt;<i> &quot;visualisation&quot; patch. I got some interesting results (may be it can
+</I>&gt;&gt;<i> help you Carl with your webcam).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> The idea is as fallow, use jpeg bits for error corection. According to
+</I>&gt;&gt;<i> uvc documentation, webcam should set SOI (start of image) and EOI (end
+</I>&gt;&gt;<i> of image) magic. In some situations it is possible to use it if FID is
+</I>&gt;&gt;<i> brocken.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I got fallowing result (N - mean header is ok, but no data is present;
+</I>&gt;&gt;<i> !SOI - mean new SOI without EOI; * - image data):
+</I>&gt;&gt;<i>
+</I>
+&gt;&gt;<i> [ 5132.944079] N
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> As you can see, my webcam try to resent SOI lots of times and only
+</I>&gt;&gt;<i> last try is correct. For next example i added logic to send ENODATA on
+</I>&gt;&gt;<i> each packet with correct header but no data. Here is the result:
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Your camera sounds weirder than mine!
+</I>&gt;<i>
+</I>&gt;<i> One potential issue to make sure of if you want to throw away packets
+</I>&gt;<i> with valid headers but no data: my camera (Quanta integrated webcam:
+</I>&gt;<i> 0408:2fb1, sends EOF (usually) in an empty packet - I think you want to
+</I>&gt;<i> make sure that this is looked for before discarding the packet. This
+</I>&gt;<i> maybe what happens with your filter - I didn't look closely enough to see.
+</I>&gt;<i>
+</I>&gt;<i> My camera actually works more or less perfectly now with the patch I
+</I>&gt;<i> sent in earlier. My camera has several distinct problems:
+</I>&gt;<i>
+</I>&gt;<i> 1) In YUV mode the camera sometimes gives up on a frame part way
+</I>&gt;<i> through, when this happens it doesn't give an EOF, but toggles FID. The
+</I>&gt;<i> released driver checks the length of YUV frames if the frame is
+</I>&gt;<i> terminated with EOF but it doesn't if the frame is terminated with FID.
+</I>&gt;<i> So I check that uncompressed frames terminated with FID are the correct
+</I>&gt;<i> length. This is something that should probably be added globally.
+</I>&gt;<i>
+</I>&gt;<i> 2) In MJPG mode the camera sometimes toggles FID one or two packets
+</I>&gt;<i> early. Fortunately EOF is reliable in MJPG, so in MJPG I ignore FID
+</I>&gt;<i> fully (based on a patch you supplied).
+</I>&gt;<i>
+</I>&gt;<i> Sadly I need EOF for MJPG and need FID in YUV...
+</I>&gt;<i>
+</I>&gt;<i> 3) Sometimes payload packets get broken in chunks that are 1/3 or 2/3
+</I>&gt;<i> their proper size. This is bad - since the later chunks don't have
+</I>&gt;<i> headers, and left uncorrected the raw image data gets interpreted by the
+</I>&gt;<i> driver as header - and all sorts of random things happen. It turns out
+</I>&gt;<i> to be not so difficult to reassemble these packets though, just based on
+</I>&gt;<i> lengths.
+</I>
+I'll send you one more patch to visualize some info from header, may be 
+we can filter some thing.
+
+&gt;<i> 4) The camera sometimes doesn't start. This turns out to be a problem
+</I>&gt;<i> people have seen in windows too. Somebody finally figured out a
+</I>&gt;<i> work-around - if the camera doesn't start, you can just point it at a
+</I>&gt;<i> light and then it starts.
+</I>&gt;<i>
+</I>&gt;<i> The very strange thing about all of this is that none of these issues
+</I>&gt;<i> appear to be universal. Many people have complained of #4, but other
+</I>&gt;<i> linux users do not appear to have problems 1, 2, or 3.
+</I>&gt;<i>
+</I>&gt;<i> 5) The camera lies about the frame rates it can do in high resolution
+</I>&gt;<i> YUV. It says it can do 30fps at 1600x1200 (and 1280x720 and 1024x768)
+</I>&gt;<i> yuv - but that's way more bits than USB 2 can carry. I don't think this
+</I>&gt;<i> causes any real problems though - you just don't get the frame rate
+</I>&gt;<i> advertised.
+</I>&gt;<i>
+</I>&gt;<i> Carl
+</I>
+We can do size check for yuv, but nothing for jpeg. Jpeg stream has 
+really good chance to be more error proof, since jpeg has markers on the 
+start and end of image. The idea is to use this jpeg markers instead of 
+FID or EOF. In my patch this markers are not used, but displayed. SOI 
+and EOI are jpeg marker for start and end of image.
+
+Since your webcam is so brocken, it is a good test case :) Can you 
+please send me dmesg with output from my patch by capturing jpeg stream.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006783.html">[Linux-uvc-devel] error proofing mjpeg stream
+</A></li>
+	<LI>Next message: <A HREF="006785.html">[Linux-uvc-devel] error proofing mjpeg stream
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6784">[ date ]</a>
+              <a href="thread.html#6784">[ thread ]</a>
+              <a href="subject.html#6784">[ subject ]</a>
+              <a href="author.html#6784">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

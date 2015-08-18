@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Running multiple webcams on the same hub
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Running%20multiple%20webcams%20on%20the%20same%20hub&In-Reply-To=%3C201009161539.57699.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005977.html">
+   <LINK REL="Next"  HREF="005966.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Running multiple webcams on the same hub</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Running%20multiple%20webcams%20on%20the%20same%20hub&In-Reply-To=%3C201009161539.57699.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Running multiple webcams on the same hub">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu Sep 16 15:39:56 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005977.html">[Linux-uvc-devel] Running multiple webcams on the same hub
+</A></li>
+        <LI>Next message: <A HREF="005966.html">[Linux-uvc-devel] help
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5978">[ date ]</a>
+              <a href="thread.html#5978">[ thread ]</a>
+              <a href="subject.html#5978">[ subject ]</a>
+              <a href="author.html#5978">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Martin,
+
+On Tuesday 14 September 2010 11:36:56 Martin wrote:
+&gt;<i> On 13/09/10 00:11, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; On Friday 27 August 2010 16:14:52 Martin wrote:
+</I>&gt;<i> &gt;&gt; The problem:
+</I>&gt;<i> [...]
+</I>&gt;<i> 
+</I>&gt;<i> &gt; The webcam sends a frame at high speed and then waits a (relatively) long
+</I>&gt;<i> &gt; time before sending the next frame.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;&gt; *A possible solution* ?
+</I>&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt;&gt; Instead, could the UVC driver 'simulate' a reduced framerate by instead
+</I>&gt;<i> &gt;&gt; using the &quot;STILL_IMAGE_FRAME&quot; mode of the webcam and grab for itself a
+</I>&gt;<i> &gt;&gt; set number of images per second? Or even only when polled by a read from
+</I>&gt;<i> &gt;&gt; the user application?
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Still image capture isn't supported yet. The reason is that most webcams
+</I>&gt;<i> &gt; just ask the driver to take the next picture in the video stream to
+</I>&gt;<i> &gt; emulate still image capture. Very few cameras support out-of-band still
+</I>&gt;<i> &gt; image capture, and I don't own any that support that.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; As most cameras just ask the driver to capture the next frame in an
+</I>&gt;<i> &gt; active video stream this won't solve your problem anyway.
+</I>&gt;<i> 
+</I>&gt;<i> That's quite a shame... And very wasteful of bandwidth.
+</I>&gt;<i> 
+</I>&gt;<i> I guess we need slightly more expensive webcams that buffer an image into
+</I>&gt;<i> local ram before forwarding it on at whatever USB rate might be available.
+</I>&gt;<i> No go on that one I guess...
+</I>
+That's unfortunately not the kind of features found in consumer webcams. The 
+problem with buffering is also that it can introduce lag.
+
+&gt;<i> &gt;&gt; Further details:
+</I>&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt;&gt; I'm trying to use two webcams simultaneously:
+</I>&gt;<i> &gt;&gt;   iManufacturer           1 Sweex
+</I>&gt;<i> &gt;&gt;   iProduct                2 WC060 Series HD Webcam
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Please post the whole USB descriptors (lsusb -v)
+</I>&gt;<i> 
+</I>&gt;<i> I've attached &quot;lsusb -v -d 177f:0060&quot;.
+</I>
+Thanks. I've added the camera to the supported devices list.
+
+&gt;<i> &gt;&gt; Can I tweak the UVC driver to preferentially choose the slower frame
+</I>&gt;<i> &gt;&gt; rate available?
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; You can select a frame rate explictly with VIDIOC_S_PARM.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;&gt; Aside: The MJPG format doesn't seem to work, nor are any compression
+</I>&gt;<i> &gt;&gt; settings visible...
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Maybe your webcam doesn't support MJPG.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;&gt; Given a few hints or a patch, I can hack the kernel module to test :-)
+</I>&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt;&gt; This is running on Gentoo, kernel 2.6.34 using the in-kernel uvc module.
+</I>&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt;&gt; Any comment/ideas welcomed.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; If you don't need to capture frames simultaneously, you can just start
+</I>&gt;<i> &gt; the video stream, capture a frame, stop the video stream, and repeat the
+</I>&gt;<i> &gt; sequence on the second webcam.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; If you need higher frame rates, search the mailing list archives for
+</I>&gt;<i> &gt; discussions about bandwidth (dwMaxPayloadTransferSize is a keyword). You
+</I>&gt;<i> &gt; can also have a look at the &quot;Multiple camera framerate.&quot; mail thread
+</I>&gt;<i> &gt; started by Dennis Muhlestein.
+</I>&gt;<i> 
+</I>&gt;<i> Thanks for the pointers.
+</I>&gt;<i> 
+</I>&gt;<i> I've had mixed results with (bash):
+</I>&gt;<i> 
+</I>&gt;<i> while true
+</I>&gt;<i> do
+</I>&gt;<i> 	ffmpeg -v 5 -y -r 5 -vframes 2 -s xga -f video4linux2 -i /dev/video0
+</I>&gt;<i> -sameq -f image2 foo0-%03d.jpg
+</I>&gt;<i> 	sleep 5
+</I>&gt;<i> 	ffmpeg -v 5 -y -r 5 -vframes 2 -s xga -f video4linux2 -i /dev/video1
+</I>&gt;<i> -sameq -f image2 foo1-%03d.jpg
+</I>&gt;<i> 	sleep 5
+</I>&gt;<i> 	date -R
+</I>&gt;<i> done
+</I>&gt;<i> 
+</I>&gt;<i> That sometimes works fine, and then can randomly freeze at the point
+</I>&gt;<i> where ffmpeg is to capture a frame. Usually, the freeze-up scenario is
+</I>&gt;<i> that /dev/video0 is captured fine and then ffmpeg freezes on /dev/video1.
+</I>&gt;<i> 
+</I>&gt;<i> The &quot;-r 5&quot; may well not be needed. &quot;-vframes 1&quot; also works for if you
+</I>&gt;<i> just want one frame, although I've found the first frame can be
+</I>&gt;<i> overexposed compared to the following frames.
+</I>&gt;<i> 
+</I>&gt;<i> Not sure if -sameq is doing anything. Trying -bitexact always caused an
+</I>&gt;<i> error for the options.
+</I>&gt;<i> 
+</I>&gt;<i> The &quot;sleep 5&quot; appears to help to allow operation for longer (a minute or
+</I>&gt;<i> so) before ffmpeg freezing.
+</I>&gt;<i> 
+</I>&gt;<i> Running ffmpeg manually, one webcam at a time usually works fine.
+</I>&gt;<i> 
+</I>&gt;<i> Using &quot;-r 30 -s vga&quot; for the default framerate and 640x480 always works...
+</I>&gt;<i> 
+</I>&gt;<i> So... Is there some timing race or other untidiness whereby ffmpeg jams
+</I>&gt;<i> or the video stream otherwise doesn't start?
+</I>
+A 5 seconds sleep should be more than enough. It would be interested to find 
+out what happens when ffmpeg freezes. You can attach strace to the frozen 
+ffmpeg process to find out on which syscall it gets stuck (if any).
+
+&gt;<i> I've only got one PCI slot... Are there any PCI cards with multiple
+</I>&gt;<i> separate USB hubs?! (I suspect not...)
+</I>
+I suppose you mean with separate USB controllers. I don't know.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005977.html">[Linux-uvc-devel] Running multiple webcams on the same hub
+</A></li>
+	<LI>Next message: <A HREF="005966.html">[Linux-uvc-devel] help
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5978">[ date ]</a>
+              <a href="thread.html#5978">[ thread ]</a>
+              <a href="subject.html#5978">[ subject ]</a>
+              <a href="author.html#5978">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

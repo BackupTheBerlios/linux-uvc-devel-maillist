@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] [media] uvcvideo: Fix control mapping for devices with multiple chains
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20%5Bmedia%5D%20uvcvideo%3A%20Fix%20control%20mapping%20for%0A%20devices%20with%20multiple%20chains&In-Reply-To=%3C1306880661.2916.39.camel%40svmlwks101%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="006646.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] [media] uvcvideo: Fix control mapping for devices with multiple chains</H1>
+    <B>Stephan Lachowsky</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20%5Bmedia%5D%20uvcvideo%3A%20Fix%20control%20mapping%20for%0A%20devices%20with%20multiple%20chains&In-Reply-To=%3C1306880661.2916.39.camel%40svmlwks101%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] [media] uvcvideo: Fix control mapping for devices with multiple chains">stephan.lachowsky at maxim-ic.com
+       </A><BR>
+    <I>Wed Jun  1 00:24:21 CEST 2011</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="006646.html">[Linux-uvc-devel] [PATCH] [media] uvcvideo: Fix control mapping	for devices with multiple chains
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6544">[ date ]</a>
+              <a href="thread.html#6544">[ thread ]</a>
+              <a href="subject.html#6544">[ subject ]</a>
+              <a href="author.html#6544">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The search for matching extension units fails to take account of the
+current chain.  In the case where you have two distinct video chains,
+both containing an XU with the same GUID but different unit ids, you
+will be unable to perform a mapping on the second chain because entity
+on the first chain will always be found first
+
+Fix this by only searching the current chain when performing a control
+mapping.  This is analogous to the search used by uvc_find_control(),
+and is the correct behaviour.
+
+Signed-off-by: Stephan Lachowsky &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">stephan.lachowsky at maxim-ic.com</A>&gt;
+---
+ drivers/media/video/uvc/uvc_ctrl.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/media/video/uvc/uvc_ctrl.c b/drivers/media/video/uvc/uvc_ctrl.c
+index 59f8a9a..a77648f 100644
+--- a/drivers/media/video/uvc/uvc_ctrl.c
++++ b/drivers/media/video/uvc/uvc_ctrl.c
+@@ -1565,8 +1565,8 @@ int uvc_ctrl_add_mapping(struct uvc_video_chain *chain,
+ 		return -EINVAL;
+ 	}
+ 
+-	/* Search for the matching (GUID/CS) control in the given device */
+-	list_for_each_entry(entity, &amp;dev-&gt;entities, list) {
++	/* Search for the matching (GUID/CS) control on the current chain */
++	list_for_each_entry(entity, &amp;chain-&gt;entities, chain) {
+ 		unsigned int i;
+ 
+ 		if (UVC_ENTITY_TYPE(entity) != UVC_VC_EXTENSION_UNIT ||
+-- 
+1.7.4.4
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="006646.html">[Linux-uvc-devel] [PATCH] [media] uvcvideo: Fix control mapping	for devices with multiple chains
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6544">[ date ]</a>
+              <a href="thread.html#6544">[ thread ]</a>
+              <a href="subject.html#6544">[ subject ]</a>
+              <a href="author.html#6544">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

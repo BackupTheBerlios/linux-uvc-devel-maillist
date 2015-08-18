@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Multiple camera framerate.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multiple%20camera%20framerate.&In-Reply-To=%3C4BE03F29.4080706%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005731.html">
+   <LINK REL="Next"  HREF="005728.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Multiple camera framerate.</H1>
+    <B>Dennis Muhlestein</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multiple%20camera%20framerate.&In-Reply-To=%3C4BE03F29.4080706%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Multiple camera framerate.">djmuhlestein at gmail.com
+       </A><BR>
+    <I>Tue May  4 17:37:13 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005731.html">[Linux-uvc-devel] Framerate of Quickcam Pro 9000
+</A></li>
+        <LI>Next message: <A HREF="005728.html">[Linux-uvc-devel] Multiple camera framerate.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5721">[ date ]</a>
+              <a href="thread.html#5721">[ thread ]</a>
+              <a href="subject.html#5721">[ subject ]</a>
+              <a href="author.html#5721">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 04/29/2010 12:40 PM, Dennis Muhlestein wrote:
+&gt;<i>
+</I>&gt;<i> One idea I've been toying with is to add a semaphore around submitting
+</I>&gt;<i> the URBs.
+</I>&gt;<i>
+</I>&gt;<i> In uvc_video.c, where the URBs are submitted, I'd acquire a semephore
+</I>&gt;<i> for each device currently submitting URBs. The semaphore would limit the
+</I>&gt;<i> number of devices to whatever number I decide can safely submit URBs
+</I>&gt;<i> simultaneously on the bus without throwing out of space errors.
+</I>&gt;<i>
+</I>&gt;<i> I did an initial test of this and it looks promising. I can configure
+</I>&gt;<i> all the cameras. As long as I don't submit the URBs for the number of
+</I>&gt;<i> devices beyond that which will work at the same time, the other cameras
+</I>&gt;<i> simply drop the data.
+</I>&gt;<i>
+</I>&gt;<i> I'm not sure the best places to control the locking and unlocking of the
+</I>&gt;<i> semaphore are. Right now, I lock it before submitting URBs in
+</I>&gt;<i> uvc_init_video. In uvc_video_complete, I unlock it and relock it if the
+</I>&gt;<i> buffer is complete (allowing another camera to acquire it and capture a
+</I>&gt;<i> frame).
+</I>&gt;<i>
+</I>&gt;<i> Anyway, it isn't working perfectly yet but I think I can debug it and at
+</I>&gt;<i> least get to a point where I know if it's worth pursuing. I'm curious if
+</I>&gt;<i> anyone can provide thoughts or alternatives.
+</I>
+
+I have two solutions that I've come up with this so far.
+1) Modify the uvc_video.c to queue urbs in a list in the urb completion 
+handler.  A driver level semaphore controls the number of currently 
+submitting cameras.  You can adjust the initial sem_count in 
+uvc_driver.c.  Ideally, that would be a module parameter but I'm just 
+getting things to work.
+
+I found capture speeds quite a bit slower than I'd like with this method 
+though.  I can capture with 8 cameras at 10 FPS without overwhelming the 
+ISO bus but if I change to 15 FPS I can only capture with 3 cameras at a 
+time.  Adding the patch, I then can configure and capture from all 8 
+cameras running at 15 FPS but only submitting URBs for 3 at a time. 
+Depending on how many frames I let those cameras capture I got captured 
+frame rates from around 4 to 6.
+
+I'm attaching the patch in case anyone wants to play with this or 
+suggest ways to improve it.  One thing I had a problem with is that it 
+seems some of the capture images are corrupted.  This patch was against 
+2.6.27.2.  A little old I know but I'm working on an embedded device.
+
+2) I modified ehci-sched.c to not raise the ENOSPC error.  That solution 
+actually lets me capture on all 8 cameras at 15 FPS.  This has other 
+implications though and I'm not sure it is a very good solution.  It 
+does tell me that perhaps the Linux ISO scheduler could perhaps use look 
+through.  One major discrepancy is that bandwidth is allocated based on 
+the max packet size I think but for my compressed images (MJPG) each 
+frame is only a fraction of the max allocated bandwidth.
+
+-Dennis
+
+-------------- next part --------------
+An embedded and charset-unspecified text was scrubbed...
+Name: urb_queue.patch
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100504/4263f813/attachment.ksh">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100504/4263f813/attachment.ksh</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005731.html">[Linux-uvc-devel] Framerate of Quickcam Pro 9000
+</A></li>
+	<LI>Next message: <A HREF="005728.html">[Linux-uvc-devel] Multiple camera framerate.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5721">[ date ]</a>
+              <a href="thread.html#5721">[ thread ]</a>
+              <a href="subject.html#5721">[ subject ]</a>
+              <a href="author.html#5721">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

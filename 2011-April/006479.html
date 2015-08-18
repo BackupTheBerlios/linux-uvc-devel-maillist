@@ -1,0 +1,238 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH v3] media:uvc_driver: add uvc support on	no-mmu arch
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%20v3%5D%20media%3Auvc_driver%3A%20add%20uvc%20support%20on%0A%09no-mmu%20arch&In-Reply-To=%3C1303355862-17507-1-git-send-email-lliubbo%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006478.html">
+   <LINK REL="Next"  HREF="006480.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH v3] media:uvc_driver: add uvc support on	no-mmu arch</H1>
+    <B>Bob Liu</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%20v3%5D%20media%3Auvc_driver%3A%20add%20uvc%20support%20on%0A%09no-mmu%20arch&In-Reply-To=%3C1303355862-17507-1-git-send-email-lliubbo%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] [PATCH v3] media:uvc_driver: add uvc support on	no-mmu arch">lliubbo at gmail.com
+       </A><BR>
+    <I>Thu Apr 21 05:17:42 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006478.html">[Linux-uvc-devel] Fwd: [PATCH v2] media: uvc_driver: add NO-MMU	arch support
+</A></li>
+        <LI>Next message: <A HREF="006480.html">[Linux-uvc-devel] [PATCH v3] media:uvc_driver: add uvc support	on no-mmu arch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6479">[ date ]</a>
+              <a href="thread.html#6479">[ thread ]</a>
+              <a href="subject.html#6479">[ subject ]</a>
+              <a href="author.html#6479">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>UVC driver used to have partial no-mmu arch support, but it's removed by
+commit c29fcff3daafbf46d64a543c1950bbd206ad8c1c.
+
+This patch added them back and expanded to fully support no-mmu arch, so that
+uvc cameras can be used on no-mmu platforms like Blackfin.
+
+Signed-off-by: Bob Liu &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">lliubbo at gmail.com</A>&gt;
+---
+ drivers/media/video/uvc/uvc_queue.c |   30 ++++++++++++++++++++++++++++++
+ drivers/media/video/uvc/uvc_v4l2.c  |   13 +++++++++++++
+ drivers/media/video/uvc/uvcvideo.h  |    6 ++++++
+ drivers/media/video/v4l2-dev.c      |   18 ++++++++++++++++++
+ include/media/v4l2-dev.h            |    2 ++
+ 5 files changed, 69 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/media/video/uvc/uvc_queue.c b/drivers/media/video/uvc/uvc_queue.c
+index f14581b..448a753 100644
+--- a/drivers/media/video/uvc/uvc_queue.c
++++ b/drivers/media/video/uvc/uvc_queue.c
+@@ -424,7 +424,11 @@ int uvc_queue_mmap(struct uvc_video_queue *queue, struct vm_area_struct *vma)
+ 			break;
+ 	}
+ 
++#ifdef CONFIG_MMU
+ 	if (i == queue-&gt;count || size != queue-&gt;buf_size) {
++#else
++	if (i == queue-&gt;count || PAGE_ALIGN(size) != queue-&gt;buf_size) {
++#endif
+ 		ret = -EINVAL;
+ 		goto done;
+ 	}
+@@ -436,6 +440,7 @@ int uvc_queue_mmap(struct uvc_video_queue *queue, struct vm_area_struct *vma)
+ 	vma-&gt;vm_flags |= VM_IO;
+ 
+ 	addr = (unsigned long)queue-&gt;mem + buffer-&gt;buf.m.offset;
++#ifdef CONFIG_MMU
+ 	while (size &gt; 0) {
+ 		page = vmalloc_to_page((void *)addr);
+ 		if ((ret = vm_insert_page(vma, start, page)) &lt; 0)
+@@ -445,6 +450,7 @@ int uvc_queue_mmap(struct uvc_video_queue *queue, struct vm_area_struct *vma)
+ 		addr += PAGE_SIZE;
+ 		size -= PAGE_SIZE;
+ 	}
++#endif
+ 
+ 	vma-&gt;vm_ops = &amp;uvc_vm_ops;
+ 	vma-&gt;vm_private_data = buffer;
+@@ -489,6 +495,30 @@ done:
+ }
+ 
+ /*
++ * Get unmapped area.
++ *
++ * NO-MMU arch need this function to make mmap() work correctly.
++ */
++unsigned long uvc_queue_get_unmapped_area(struct uvc_video_queue *queue,
++		unsigned long addr, unsigned long len, unsigned long pgoff)
++{
++	struct uvc_buffer *buffer;
++	unsigned int i;
++	int ret = 0;
++
++	mutex_lock(&amp;queue-&gt;mutex);
++	for (i = 0; i &lt; queue-&gt;count; ++i) {
++		buffer = &amp;queue-&gt;buffer[i];
++		if ((buffer-&gt;buf.m.offset &gt;&gt; PAGE_SHIFT) == pgoff)
++			break;
++	}
++	addr = (unsigned long)queue-&gt;mem + buffer-&gt;buf.m.offset;
++	ret = addr;
++	mutex_unlock(&amp;queue-&gt;mutex);
++	return ret;
++}
++
++/*
+  * Enable or disable the video buffers queue.
+  *
+  * The queue must be enabled before starting video acquisition and must be
+diff --git a/drivers/media/video/uvc/uvc_v4l2.c b/drivers/media/video/uvc/uvc_v4l2.c
+index 9005a8d..9efab61 100644
+--- a/drivers/media/video/uvc/uvc_v4l2.c
++++ b/drivers/media/video/uvc/uvc_v4l2.c
+@@ -1081,6 +1081,18 @@ static unsigned int uvc_v4l2_poll(struct file *file, poll_table *wait)
+ 	return uvc_queue_poll(&amp;stream-&gt;queue, file, wait);
+ }
+ 
++static unsigned long uvc_v4l2_get_unmapped_area(struct file *file,
++		unsigned long addr, unsigned long len, unsigned long pgoff,
++		unsigned long flags)
++{
++	struct uvc_fh *handle = file-&gt;private_data;
++	struct uvc_streaming *stream = handle-&gt;stream;
++
++	uvc_trace(UVC_TRACE_CALLS, &quot;uvc_v4l2_get_unmapped_area\n&quot;);
++
++	return uvc_queue_get_unmapped_area(&amp;stream-&gt;queue, addr, len, pgoff);
++}
++
+ const struct v4l2_file_operations uvc_fops = {
+ 	.owner		= THIS_MODULE,
+ 	.open		= uvc_v4l2_open,
+@@ -1089,5 +1101,6 @@ const struct v4l2_file_operations uvc_fops = {
+ 	.read		= uvc_v4l2_read,
+ 	.mmap		= uvc_v4l2_mmap,
+ 	.poll		= uvc_v4l2_poll,
++	.get_unmapped_area = uvc_v4l2_get_unmapped_area,
+ };
+ 
+diff --git a/drivers/media/video/uvc/uvcvideo.h b/drivers/media/video/uvc/uvcvideo.h
+index 45f01e7..48a2378 100644
+--- a/drivers/media/video/uvc/uvcvideo.h
++++ b/drivers/media/video/uvc/uvcvideo.h
+@@ -580,6 +580,12 @@ extern int uvc_queue_mmap(struct uvc_video_queue *queue,
+ 		struct vm_area_struct *vma);
+ extern unsigned int uvc_queue_poll(struct uvc_video_queue *queue,
+ 		struct file *file, poll_table *wait);
++#ifdef CONFIG_MMU
++#define uvc_queue_get_unmapped_area NULL
++#else
++extern unsigned long uvc_queue_get_unmapped_area(struct uvc_video_queue *queue,
++		unsigned long addr, unsigned long len, unsigned long pgoff);
++#endif
+ extern int uvc_queue_allocated(struct uvc_video_queue *queue);
+ static inline int uvc_queue_streaming(struct uvc_video_queue *queue)
+ {
+diff --git a/drivers/media/video/v4l2-dev.c b/drivers/media/video/v4l2-dev.c
+index 498e674..221e73f 100644
+--- a/drivers/media/video/v4l2-dev.c
++++ b/drivers/media/video/v4l2-dev.c
+@@ -368,6 +368,23 @@ static int v4l2_mmap(struct file *filp, struct vm_area_struct *vm)
+ 	return ret;
+ }
+ 
++#ifdef CONFIG_MMU
++#define v4l2_get_unmapped_area NULL
++#else
++static unsigned long v4l2_get_unmapped_area(struct file *filp,
++		unsigned long addr, unsigned long len, unsigned long pgoff,
++		unsigned long flags)
++{
++	struct video_device *vdev = video_devdata(filp);
++
++	if (!vdev-&gt;fops-&gt;get_unmapped_area)
++		return -ENOSYS;
++	if (!video_is_registered(vdev))
++		return -ENODEV;
++	return vdev-&gt;fops-&gt;get_unmapped_area(filp, addr, len, pgoff, flags);
++}
++#endif
++
+ /* Override for the open function */
+ static int v4l2_open(struct inode *inode, struct file *filp)
+ {
+@@ -452,6 +469,7 @@ static const struct file_operations v4l2_fops = {
+ 	.write = v4l2_write,
+ 	.open = v4l2_open,
+ 	.mmap = v4l2_mmap,
++	.get_unmapped_area = v4l2_get_unmapped_area,
+ 	.unlocked_ioctl = v4l2_ioctl,
+ #ifdef CONFIG_COMPAT
+ 	.compat_ioctl = v4l2_compat_ioctl32,
+diff --git a/include/media/v4l2-dev.h b/include/media/v4l2-dev.h
+index 8266d5a..0616a43 100644
+--- a/include/media/v4l2-dev.h
++++ b/include/media/v4l2-dev.h
+@@ -63,6 +63,8 @@ struct v4l2_file_operations {
+ 	long (*ioctl) (struct file *, unsigned int, unsigned long);
+ 	long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
+ 	int (*mmap) (struct file *, struct vm_area_struct *);
++	unsigned long (*get_unmapped_area) (struct file *, unsigned long,
++			unsigned long, unsigned long, unsigned long);
+ 	int (*open) (struct file *);
+ 	int (*release) (struct file *);
+ };
+-- 
+1.6.3.3
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006478.html">[Linux-uvc-devel] Fwd: [PATCH v2] media: uvc_driver: add NO-MMU	arch support
+</A></li>
+	<LI>Next message: <A HREF="006480.html">[Linux-uvc-devel] [PATCH v3] media:uvc_driver: add uvc support	on no-mmu arch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6479">[ date ]</a>
+              <a href="thread.html#6479">[ thread ]</a>
+              <a href="subject.html#6479">[ subject ]</a>
+              <a href="author.html#6479">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

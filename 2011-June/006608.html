@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] test results and a patch for timestamps in UVC
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20test%20results%20and%20a%20patch%20for%20timestamps%20in%20UVC&In-Reply-To=%3C4DF731A1.9010603%40minet.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006612.html">
+   <LINK REL="Next"  HREF="006611.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] test results and a patch for timestamps in UVC</H1>
+    <B>Yann Sionneau</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20test%20results%20and%20a%20patch%20for%20timestamps%20in%20UVC&In-Reply-To=%3C4DF731A1.9010603%40minet.net%3E"
+       TITLE="[Linux-uvc-devel] test results and a patch for timestamps in UVC">yann at minet.net
+       </A><BR>
+    <I>Tue Jun 14 12:02:09 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006612.html">[Linux-uvc-devel] Webcam works intermittently - [18e3:9512] built-in in Hannspree SN12E2 netbook
+</A></li>
+        <LI>Next message: <A HREF="006611.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6608">[ date ]</a>
+              <a href="thread.html#6608">[ thread ]</a>
+              <a href="subject.html#6608">[ subject ]</a>
+              <a href="author.html#6608">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Alexey,
+
+Thanks a lot for your testing and report ! :)
+
+Your test and mine show that webcams seem to be implementing the UVC 
+spec correctly regarding timestamping.
+
+I mean :
+
+(*) Putting PTS for each packet
+(*) Putting SCR for each packet
+(*) Having the same PTS for each packet of the same frame
+(*) Having different SCR for each packet of the same frame
+
+Well, about FID/EOF bugs, I guess a change of PTS can be interpreted as 
+&quot;the beginning of a new frame&quot;, so it may be useful in case of a webcam 
+having troubles signaling new frames using the usual FID/EOF bits.
+
+I am new to this (UVC), so you may need to confirm with someone else 
+(Laurent ?) what I just wrote, but to me it makes sense to interpret a 
+change of PTS as a &quot;new frame&quot;.
+
+Reading the code I noticed a few &quot;quirks&quot; used to workaround webcams not 
+implementing correctly the UVC spec regarding FID and EOF bits.
+
+Are there webcams which have both problems ? (not making FID toggle, and 
+not specifying EOF ?)
+
+Thanks !
+
+Regards,
+
+Yann
+
+On 06/12/2011 09:53 PM, Alexey Fisher wrote:
+&gt;<i> Hi Yann,
+</I>&gt;<i>
+</I>&gt;<i> here is the log from one of my cams. It is really cheap webcam
+</I>&gt;<i> integrated in my netboo&#7729;. lsusb info and kernel log are attached.
+</I>&gt;<i>
+</I>&gt;<i> If i understand correctly, PTS can be used to work with some FID/EOF
+</I>&gt;<i> bugs?
+</I>&gt;<i>
+</I>&gt;<i> On So, 2011-06-12 at 17:33 +0200, Yann Sionneau wrote:
+</I>&gt;&gt;<i> Hi Alexey,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Agreed, but bear in mind this patch I submitted is not for inclusion and
+</I>&gt;&gt;<i> merge in the git tree, it is just for testing purpose, it will never be
+</I>&gt;&gt;<i> merged in the git.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> This is just a one shot patch to show some informations and then you can
+</I>&gt;&gt;<i> throw it away once you have the informations.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> But yes I could make it use the uvc_trace() API, it won't kill me :)
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Thanks for your feed back on the patch, do you have the time to test it
+</I>&gt;&gt;<i> on your webcams and to publish part of your syslog ?
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Regards,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Yann
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Le 12/06/11 08:24, Alexey Fisher a &#233;crit :
+</I>&gt;&gt;&gt;<i> Hi,
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> please use &quot;uvc_trace(UVC_TRACE_DESCR,&quot; or pr_debug instead of printk.
+</I>&gt;&gt;&gt;<i> So you can enable verbosity only if you need.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> On Di, 2011-06-07 at 17:56 +0200, Yann Sionneau wrote:
+</I>&gt;&gt;&gt;&gt;<i> Hi again,
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> here is as attached file a new patch that applies to linux 2.6.39 tree
+</I>&gt;&gt;&gt;&gt;<i> (linux-2.6.git, tag v2.6.39).
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> This patch now prints at the end of each stream :
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> (*) total number of PTS (taking into account each packet)
+</I>&gt;&gt;&gt;&gt;<i> (*) total number of SCR
+</I>&gt;&gt;&gt;&gt;<i> (*) total number of ERR
+</I>&gt;&gt;&gt;&gt;<i> (*) number of packets without PTS (nb_missing_pts)
+</I>&gt;&gt;&gt;&gt;<i> (*) number of packets without SCR (nb_missing_scr)
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> It will print as well for each packet (beware, it will hugely flood your
+</I>&gt;&gt;&gt;&gt;<i> syslog) :
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> (*) SCR
+</I>&gt;&gt;&gt;&gt;<i> (*) diff with previous packet's SCR
+</I>&gt;&gt;&gt;&gt;<i> (*) PTS
+</I>&gt;&gt;&gt;&gt;<i> (*) diff with previous packet's PTS
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> Beware, to see the &quot;end of stream&quot; statistics, you have to scroll up a
+</I>&gt;&gt;&gt;&gt;<i> little bit, it will be somewhere in the end of the per-packet
+</I>&gt;&gt;&gt;&gt;<i> information flood.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> Some results inline in the e-mail.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> On 06/06/2011 11:22 PM, Yann Sionneau wrote:
+</I>&gt;&gt;&gt;&gt;&gt;<i> Le 06/06/11 19:42, Laurent Pinchart a &#233;crit :
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> Hi Yann,
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> Thanks for the patch.
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> On Friday 03 June 2011 15:48:59 Yann Sionneau wrote:
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> Hi Laurent and the UVC list,
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> Here is a patch [snip]
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> You should take all UVC packets into account, not just the first one for each
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> frame.
+</I>&gt;&gt;&gt;&gt;&gt;<i> Yes I don't know why in my head I thought only the first uvc packet
+</I>&gt;&gt;&gt;&gt;&gt;<i> would have a header for the frame with timestamps and such, but it makes
+</I>&gt;&gt;&gt;&gt;&gt;<i> no sense, each packet has its own header and the start of frame is just
+</I>&gt;&gt;&gt;&gt;&gt;<i> signaled by the toggling of the FID :)
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> the important information are
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> - do all frames have a PTS timestamp in their first packet ?
+</I>&gt;&gt;&gt;&gt;&gt;<i> It seems so yes, at least on the two webcams I tried with the patch.
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> - do all non-empty packets for a frame have a PTS timestamp, and is it
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> constant through the whole frame as it should be ?
+</I>&gt;&gt;&gt;&gt;&gt;<i> Let's modify the patch to count the PTS and SCR of all packets instead
+</I>&gt;&gt;&gt;&gt;&gt;<i> of only one per frame in order to sort this out !
+</I>&gt;&gt;&gt;&gt;<i> I tested with the Logitech HD Pro C910, all packets have a PTS.
+</I>&gt;&gt;&gt;&gt;<i> PTS are indeed constant through the whole frame as it should be.
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> - how many SCR timestamps do we have per frame ? are they constant through the
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> whole frame or do they vary as they should ?
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i> Same here !
+</I>&gt;&gt;&gt;&gt;<i> With the same webcam, all packets have a SCR.
+</I>&gt;&gt;&gt;&gt;<i> The SCR value does vary through each frame, as it should do.
+</I>&gt;&gt;&gt;&gt;<i> The difference between the previous SCR is usually the same, except at a
+</I>&gt;&gt;&gt;&gt;<i> regular interval where there is a &quot;jump&quot; in SCR values.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> for example, SCR - SCR_prev would be 7 times the same difference, and
+</I>&gt;&gt;&gt;&gt;<i> then it will change for just one time, and then go back to the old
+</I>&gt;&gt;&gt;&gt;<i> difference for 7 times etc.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> [snip]
+</I>&gt;&gt;&gt;&gt;&gt;<i> Thanks for your review and comments, will submit a new patch ASAP !
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006612.html">[Linux-uvc-devel] Webcam works intermittently - [18e3:9512] built-in in Hannspree SN12E2 netbook
+</A></li>
+	<LI>Next message: <A HREF="006611.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6608">[ date ]</a>
+              <a href="thread.html#6608">[ thread ]</a>
+              <a href="subject.html#6608">[ subject ]</a>
+              <a href="author.html#6608">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

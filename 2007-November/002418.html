@@ -1,0 +1,208 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] Apple iSight
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Apple%20iSight&In-Reply-To=%3C200711070122.34239.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002406.html">
+   <LINK REL="Next"  HREF="002419.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] Apple iSight</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Apple%20iSight&In-Reply-To=%3C200711070122.34239.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] Apple iSight">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Nov  7 01:22:34 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002406.html">[Linux-uvc-devel] [PATCH] Apple iSight
+</A></li>
+        <LI>Next message: <A HREF="002419.html">[Linux-uvc-devel] [PATCH] Apple iSight
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2418">[ date ]</a>
+              <a href="thread.html#2418">[ thread ]</a>
+              <a href="subject.html#2418">[ subject ]</a>
+              <a href="author.html#2418">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Ivan,
+
+On Monday 05 November 2007, Ivan N. Zlatev wrote:
+&gt;<i> On 11/5/07, Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+</I>&gt;<i> &gt; Hi Ivan,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Monday 05 November 2007, Ivan N. Zlatev wrote:
+</I>&gt;<i> &gt; &gt; On 11/5/07, Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+</I>&gt;<i> &gt; &gt; &gt; Hi Ivan,
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; On Sunday 04 November 2007, Ivan N. Zlatev wrote:
+</I>&gt;<i> &gt; &gt; &gt; &gt; Hello,
+</I>&gt;<i> &gt; &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; Attached you will find a patch that adds iSight support to uvcvideo
+</I>&gt;<i> &gt; &gt; &gt; &gt; and applies to HEAD (revision 140). This patch has existed for some
+</I>&gt;<i> &gt; &gt; &gt; &gt; time now. Initially it was very instrusive to the uvcvideo code,
+</I>&gt;<i> &gt; &gt; &gt; &gt; but this has been fixed.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; I can see that, it got better :-)
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; Please, lets get this reviewed and merged with uvcvideo. It's very
+</I>&gt;<i> &gt; &gt; &gt; &gt; time consuming for me to keep it in sync with uvcvideo head.
+</I>&gt;<i> &gt; &gt; &gt; &gt; openSUSE patches uvcvideo with this patch, Gentoo too, possibly
+</I>&gt;<i> &gt; &gt; &gt; &gt; others. It would make our life much easier if we could get this
+</I>&gt;<i> &gt; &gt; &gt; &gt; upstream.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Ok, let's try. I agree keeping patches in sync isn't exactly fun.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; This patch enables the isight camera found in all apple macs fully,
+</I>&gt;<i> &gt; &gt; &gt; &gt; including suspend and resume support.
+</I>&gt;<i> &gt; &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; iSight is an uvc device, but not fully. I am not an expert but it
+</I>&gt;<i> &gt; &gt; &gt; &gt; seems to use a custom packet format on top of the uvc, has
+</I>&gt;<i> &gt; &gt; &gt; &gt; different guid, has partially broken video descriptors and requires
+</I>&gt;<i> &gt; &gt; &gt; &gt; firmware. This patch deals with those in the most intrusive way I
+</I>&gt;<i> &gt; &gt; &gt; &gt; could.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; I suppose you mean the less intrusive way.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Yes indeed. :-)
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; Inside the uvcvideo code it will only change the decoding queue if
+</I>&gt;<i> &gt; &gt; &gt; &gt; the device is recognized as an isight device. In addition it will
+</I>&gt;<i> &gt; &gt; &gt; &gt; call uvc_load_firmware during the uvc initialization.
+</I>&gt;<i> &gt; &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; Outside in the self-contained isight.c|h it will handle the
+</I>&gt;<i> &gt; &gt; &gt; &gt; firmware loading, patching the usb descriptors and the decoding.
+</I>&gt;<i> &gt; &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; I would like to express my gratitude to Martin Szulecki who worked
+</I>&gt;<i> &gt; &gt; &gt; &gt; with me on getting the patch in sync with latest uvcvideo and
+</I>&gt;<i> &gt; &gt; &gt; &gt; testing it for the past two days.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; There are two issues left that bother me.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; 1. I'm still not convinced firmware loading belongs in the kernel.
+</I>&gt;<i> &gt; &gt; &gt; Let's discuss the second issue first.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; 2. If I'm not mistaken, some iSight firmware revisions set the
+</I>&gt;<i> &gt; &gt; &gt; bInterfaceClass and bInterfaceSubClass fields to 0xff. This won't be
+</I>&gt;<i> &gt; &gt; &gt; compatible with various tests in uvc_driver.c that check for
+</I>&gt;<i> &gt; &gt; &gt; SC_VIDEOSTREAMING or SC_VIDEOCONTROL in the bInterfaceSubClass field.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Are you aware of the second problem ?
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Yes. There are two workarounds we thought of. One is to introduce an
+</I>&gt;<i> &gt; &gt; ISIGHT_BROKEN_INTF quirk and the other one is to patch the descriptors
+</I>&gt;<i> &gt; &gt; as far as see. Currently we do the second as it is less intrusive to
+</I>&gt;<i> &gt; &gt; the uvcvideo code. After the firmware is loaded (and the device
+</I>&gt;<i> &gt; &gt; reinitialized) isight_patch_usb_descriptor[1] from isight.c is called
+</I>&gt;<i> &gt; &gt; by the firmware loading just before the control is passed back to
+</I>&gt;<i> &gt; &gt; uvcvideo. I am not convinced that this is a 100% reliable way to do
+</I>&gt;<i> &gt; &gt; it, but me and a couple of other people tested on different machines
+</I>&gt;<i> &gt; &gt; and it seems to work quite well.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; [1]
+</I>&gt;<i> &gt; &gt; static void isight_patch_usb_descriptor (struct usb_device *dev)
+</I>&gt;<i> &gt; &gt; {
+</I>&gt;<i> &gt; &gt;       struct usb_interface *intf = NULL;
+</I>&gt;<i> &gt; &gt;       struct usb_host_interface *setting = NULL;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;       isight_printk (&quot;Patching broken iSight USB interface
+</I>&gt;<i> &gt; &gt; descriptors\n&quot;);
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;       intf = usb_ifnum_to_if (dev, 0);
+</I>&gt;<i> &gt; &gt;     if (intf != NULL) {
+</I>&gt;<i> &gt; &gt;         setting = &amp;intf-&gt;altsetting[0];
+</I>&gt;<i> &gt; &gt;         setting-&gt;desc.bInterfaceClass         = USB_CLASS_VIDEO;
+</I>&gt;<i> &gt; &gt;         setting-&gt;desc.bInterfaceSubClass      = SC_VIDEOCONTROL;
+</I>&gt;<i> &gt; &gt;         setting-&gt;desc.bInterfaceProtocol      = PC_PROTOCOL_UNDEFINED;
+</I>&gt;<i> &gt; &gt;     }
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;       intf = usb_ifnum_to_if (dev, 1);
+</I>&gt;<i> &gt; &gt;     if (intf != NULL) {
+</I>&gt;<i> &gt; &gt;         setting = &amp;intf-&gt;altsetting[0];
+</I>&gt;<i> &gt; &gt;         setting-&gt;desc.bInterfaceClass         = USB_CLASS_VIDEO;
+</I>&gt;<i> &gt; &gt;         setting-&gt;desc.bInterfaceSubClass      = SC_VIDEOSTREAMING;
+</I>&gt;<i> &gt; &gt;         setting-&gt;desc.bInterfaceProtocol      = PC_PROTOCOL_UNDEFINED;
+</I>&gt;<i> &gt; &gt;         setting = &amp;intf-&gt;altsetting[1];
+</I>&gt;<i> &gt; &gt;         setting-&gt;desc.bInterfaceClass         = USB_CLASS_VIDEO;
+</I>&gt;<i> &gt; &gt;         setting-&gt;desc.bInterfaceSubClass      = SC_VIDEOSTREAMING;
+</I>&gt;<i> &gt; &gt;         setting-&gt;desc.bInterfaceProtocol      = PC_PROTOCOL_UNDEFINED;
+</I>&gt;<i> &gt; &gt;     }
+</I>&gt;<i> &gt; &gt; }
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I like the second solution better as well. I should have read isight.c in
+</I>&gt;<i> &gt; details before asking sorry.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Wouldn't it be possible to extract the firmware and patch it in
+</I>&gt;<i> &gt; userspace, even if we keep firmware loading in the driver ? That's how
+</I>&gt;<i> &gt; the bcm43xx driver works for instance. It would then be easier to update
+</I>&gt;<i> &gt; the firmware extraction code. Descriptor patching would happen in
+</I>&gt;<i> &gt; userspace as well during the extraction phase.
+</I>&gt;<i>
+</I>&gt;<i> It would be possible but there is one complication that imho makes it
+</I>&gt;<i> pointless
+</I>
+&gt;<i> The problem is that I do not know how to verify the 
+</I>&gt;<i> extracted firmware, but I know how to verify the non-extracted via the
+</I>&gt;<i> sha1 sums. So the only way I can think of is to hardcode the the
+</I>&gt;<i> hashes of the extracted firmware into the firmware loading, but that's
+</I>&gt;<i> a bit pointless because it's already done.
+</I>
+What do you want to protect against exactly ? Once the firmware has been 
+extracted from the Mac OS X driver and has been verified using it's sha1 sum, 
+what are the possible reasons for firmware corruption ?
+
+&gt;<i> I am not familiar with 
+</I>&gt;<i> bcm43xx's code base and I do not know if they have such a problem or
+</I>&gt;<i> not and if and how they solve it. I am assuming that uploading random
+</I>&gt;<i> firmware data to the device might damage it.
+</I>
+I don't know either. The Cypress chip used in the iSight doesn't validate the 
+firmware.
+
+Random firmwares might damage the hardware, but the odds are extremely small. 
+You would have to upload random data that make a valid 8051 program, and that 
+program would have to setup I/Os that would conflict with the hardware. Even 
+then it wouldn't necessarily damage the hardware.
+
+If firmware loading were to be carried from userspace there wouldn't be any 
+issue on the driver side :-) The UVC driver will require a userspace tool to 
+configure extension unit controls anyway, so I think we could distribute a 
+userspace firmware handling tool along with it.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002406.html">[Linux-uvc-devel] [PATCH] Apple iSight
+</A></li>
+	<LI>Next message: <A HREF="002419.html">[Linux-uvc-devel] [PATCH] Apple iSight
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2418">[ date ]</a>
+              <a href="thread.html#2418">[ thread ]</a>
+              <a href="subject.html#2418">[ subject ]</a>
+              <a href="author.html#2418">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,309 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] drop incomplete frames
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20drop%20incomplete%20frames&In-Reply-To=%3C444014.75701.qm%40web50002.mail.re2.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002873.html">
+   <LINK REL="Next"  HREF="002876.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] drop incomplete frames</H1>
+    <B>J&#246;rg Hermsdorf</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20drop%20incomplete%20frames&In-Reply-To=%3C444014.75701.qm%40web50002.mail.re2.yahoo.com%3E"
+       TITLE="[Linux-uvc-devel] drop incomplete frames">funtasyspace at yahoo.com
+       </A><BR>
+    <I>Mon Jan 28 20:17:07 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002873.html">[Linux-uvc-devel] Little questions about uvcvideos... And	possible solutions to my problem.
+</A></li>
+        <LI>Next message: <A HREF="002876.html">[Linux-uvc-devel] Logitech Quickcam Deluxe (0x046d:0x0992) is	temperamental
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2875">[ date ]</a>
+              <a href="thread.html#2875">[ thread ]</a>
+              <a href="subject.html#2875">[ subject ]</a>
+              <a href="author.html#2875">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Tom,
+
+no, I think it has nothing to do with low light conditions...
+
+ffmpeg aborts and reports errors like this:
+&gt;<i> 
+</I>[video4linux2 
+@ 
+0x2b91704f3220]The 
+v4l2 
+frame 
+is 
+25600 
+bytes, 
+but 
+153600
+&gt;<i> 
+</I>bytes 
+are 
+expected 
+....
+
+Here's an excerpt of the conversation I had with Laurent in October:
+J&#246;rg:
+&gt;&gt;<i> 
+</I>It's 
+always 
+the 
+same 
+error, 
+ffmpeg 
+aborts 
+because 
+at 
+some 
+point 
+it 
+receives
+&gt;&gt;<i> 
+</I>a 
+v4l2 
+frame 
+that 
+has 
+a 
+smaller 
+size 
+than 
+expected. 
+The 
+actual 
+frame 
+size
+&gt;&gt;<i> 
+</I>of 
+the 
+erroneous 
+frame 
+is 
+always 
+different 
+(I 
+posted 
+two 
+examples 
+above) 
+.
+&gt;&gt;<i> 
+</I>So 
+it 
+seems 
+to 
+me, 
+that's 
+a 
+problem 
+with 
+uvcvideo, 
+which 
+at 
+some 
+point 
+just
+&gt;&gt;<i> 
+</I>delivers 
+a 
+corrupt/incomplete 
+frame. 
+ffmpeg 
+can't 
+handle 
+that 
+and 
+aborts.
+&gt;&gt;<i> 
+</I>But 
+the 
+file 
+that 
+has 
+been 
+captured 
+so 
+far 
+(until 
+ffmpeg 
+aborts) 
+looks 
+good
+&gt;&gt;<i> 
+</I>and 
+can 
+be 
+played 
+with 
+vlc, 
+so 
+I 
+have 
+hope 
+that 
+this 
+issue 
+can 
+be 
+fixed 
+and
+&gt;&gt;<i> 
+</I>that 
+piping 
+ffmpeg's 
+output 
+to 
+vlc 
+should 
+be 
+possible 
+to 
+stream 
+my 
+cam
+&gt;&gt;<i> 
+</I>mpeg4 
+encoded 
+via 
+http.
+
+Laruents answer:
+&gt;<i> The 
+</I>USB 
+isochronous 
+transfers 
+are 
+not 
+error 
+free. 
+Packets 
+can 
+be 
+lost, 
+which 
+&gt;<i> result 
+</I>in 
+incomplete/erroneous 
+frames. 
+The 
+only 
+way 
+I 
+can 
+think 
+of 
+to 
+detect 
+&gt;<i> those 
+</I>erroneous/incomplete 
+frames 
+is 
+to 
+look 
+at 
+the 
+frame 
+size. 
+This 
+can 
+be 
+&gt;<i> done 
+</I>for 
+uncompressed 
+formats, 
+but 
+will 
+obviously 
+be 
+useless 
+for 
+compressed 
+&gt;<i> format.
+</I>
+&gt;<i> The 
+</I>driver 
+currently 
+handles 
+complete 
+and 
+incomplete 
+frames 
+the 
+same 
+way. 
+I 
+&gt;<i> can 
+</I>add 
+a 
+driver 
+option 
+to 
+make 
+it 
+drop 
+incomplete 
+frames, 
+returning 
+complete 
+&gt;<i> frames 
+</I>only 
+to 
+the 
+application. 
+Would 
+you 
+be 
+able 
+to 
+test 
+that 
+?
+
+Regards,
+J&#246;rg
+
+
+
+
+        __________________________________  Ihr erstes Baby? Holen Sie sich Tipps von anderen Eltern.  www.yahoo.de/clever
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080128/e9dae9f1/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080128/e9dae9f1/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002873.html">[Linux-uvc-devel] Little questions about uvcvideos... And	possible solutions to my problem.
+</A></li>
+	<LI>Next message: <A HREF="002876.html">[Linux-uvc-devel] Logitech Quickcam Deluxe (0x046d:0x0992) is	temperamental
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2875">[ date ]</a>
+              <a href="thread.html#2875">[ thread ]</a>
+              <a href="subject.html#2875">[ subject ]</a>
+              <a href="author.html#2875">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

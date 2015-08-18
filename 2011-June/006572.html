@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] luvcview does not record video in avi
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20luvcview%20does%20not%20record%20video%20in%20avi&In-Reply-To=%3CBANLkTimfHBd%2BKWV_uJkk9XOOBLwwCjp0BQ%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006571.html">
+   <LINK REL="Next"  HREF="006575.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] luvcview does not record video in avi</H1>
+    <B>JITENDRA SINGH</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20luvcview%20does%20not%20record%20video%20in%20avi&In-Reply-To=%3CBANLkTimfHBd%2BKWV_uJkk9XOOBLwwCjp0BQ%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] luvcview does not record video in avi">narukajsingh at gmail.com
+       </A><BR>
+    <I>Thu Jun  9 15:50:08 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006571.html">[Linux-uvc-devel] luvcview does not record video in avi
+</A></li>
+        <LI>Next message: <A HREF="006575.html">[Linux-uvc-devel] luvcview does not record video in avi
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6572">[ date ]</a>
+              <a href="thread.html#6572">[ thread ]</a>
+              <a href="subject.html#6572">[ subject ]</a>
+              <a href="author.html#6572">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I think I see the problem in luvcview code, avi file is not initialized for
+V4L2_PIX_FMT_YUYV, its is initialized only for MJPG fmt.
+
+./v4l2uvc.c:650:            vd-&gt;avifile =
+AVI_open_output_file(vd-&gt;avifilename);
+
+Now all I want to know is, does luvcview doesnt support recording of avi
+file from YUV frames ?
+Any suggestions, what I can do for that support ?
+
+Any help will be gr8!!
+
+Thanks,
+Naruka
+
+On Thu, Jun 9, 2011 at 6:15 PM, JITENDRA SINGH &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">narukajsingh at gmail.com</A>&gt;wrote:
+
+&gt;<i> Hi all,
+</I>&gt;<i>
+</I>&gt;<i> I am trying to save video(its ok without audio) via luvcvideo, but I cant
+</I>&gt;<i> see any .avi file generated, though it shows &quot;avi recording
+</I>&gt;<i> started/stopped&quot;.
+</I>&gt;<i> I am pressing p/clicking record button to record:
+</I>&gt;<i>
+</I>&gt;<i> $sudo luvcview -d /dev/video0 -f yuv -s 176x144 -i 3 -o ./vid.avi
+</I>&gt;<i> luvcview 0.2.6
+</I>&gt;<i>
+</I>&gt;<i> SDL information:
+</I>&gt;<i> Video driver: x11
+</I>&gt;<i> A window manager is available
+</I>&gt;<i> Device information:
+</I>&gt;<i> Device path: /dev/video0
+</I>&gt;<i> Stream settings:
+</I>&gt;<i> Frame format: YUYV
+</I>&gt;<i> Frame size: 176x144
+</I>&gt;<i> Frame rate: 5 fps (requested frame rate 3 fps is not supported by device)
+</I>&gt;<i> avi recording started
+</I>&gt;<i> frame rate: 5.01253
+</I>&gt;<i> avi recording stopped (4s)
+</I>&gt;<i> avi recording started
+</I>&gt;<i> frame rate: 4.98753
+</I>&gt;<i> avi recording stopped (4s)
+</I>&gt;<i> Cleanup done. Exiting ...
+</I>&gt;<i>
+</I>&gt;<i> Does anybody has a clue, I found no info anywhere about such problem.
+</I>&gt;<i> PS: luvcview is able to capture still image, raw frames as well.
+</I>&gt;<i>
+</I>&gt;<i> $luvcview -L
+</I>&gt;<i> luvcview 0.2.6
+</I>&gt;<i>
+</I>&gt;<i> SDL information:
+</I>&gt;<i>   Video driver: x11
+</I>&gt;<i>   A window manager is available
+</I>&gt;<i> Device information:
+</I>&gt;<i>   Device path:  /dev/video0
+</I>&gt;<i> /dev/video0 does not support read i/o
+</I>&gt;<i> { pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i>     Time interval between frame: 1/60, 1/50, 1/40, 1/30, 1/20, 1/15, 1/10,
+</I>&gt;<i> 1/5,
+</I>&gt;<i> { discrete: width = 352, height = 288 }
+</I>&gt;<i>     Time interval between frame: 1/60, 1/50, 1/40, 1/30, 1/20, 1/15, 1/10,
+</I>&gt;<i> 1/5,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i>     Time interval between frame: 1/60, 1/50, 1/40, 1/30, 1/20, 1/15, 1/10,
+</I>&gt;<i> 1/5,
+</I>&gt;<i> { discrete: width = 176, height = 144 }
+</I>&gt;<i>     Time interval between frame: 1/60, 1/50, 1/40, 1/30, 1/20, 1/15, 1/10,
+</I>&gt;<i> 1/5,
+</I>&gt;<i> { discrete: width = 160, height = 120 }
+</I>&gt;<i>     Time interval between frame: 1/60, 1/50, 1/40, 1/30, 1/20, 1/15, 1/10,
+</I>&gt;<i> 1/5,
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Thanks in adv,
+</I>&gt;<i> Naruka
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110609/ff1af98f/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110609/ff1af98f/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006571.html">[Linux-uvc-devel] luvcview does not record video in avi
+</A></li>
+	<LI>Next message: <A HREF="006575.html">[Linux-uvc-devel] luvcview does not record video in avi
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6572">[ date ]</a>
+              <a href="thread.html#6572">[ thread ]</a>
+              <a href="subject.html#6572">[ subject ]</a>
+              <a href="author.html#6572">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

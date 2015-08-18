@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] -Werror fixes for uvcvideo
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20-Werror%20fixes%20for%20uvcvideo&In-Reply-To=%3C20070207022442.A63529%40xorpc.icir.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001355.html">
+   <LINK REL="Next"  HREF="001313.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] -Werror fixes for uvcvideo</H1>
+    <B>Luigi Rizzo</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20-Werror%20fixes%20for%20uvcvideo&In-Reply-To=%3C20070207022442.A63529%40xorpc.icir.org%3E"
+       TITLE="[Linux-uvc-devel] -Werror fixes for uvcvideo">rizzo at icir.org
+       </A><BR>
+    <I>Wed Feb  7 11:24:42 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001355.html">[Linux-uvc-devel] -Werror fixes for uvcvideo
+</A></li>
+        <LI>Next message: <A HREF="001313.html">[Linux-uvc-devel]  Jumbled images from Logitech Quickcam 500
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1356">[ date ]</a>
+              <a href="thread.html#1356">[ thread ]</a>
+              <a href="subject.html#1356">[ subject ]</a>
+              <a href="author.html#1356">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed, Feb 07, 2007 at 11:10:24AM +0100, Laurent Pinchart wrote:
+&gt;<i> Hi Luigi,
+</I>&gt;<i> 
+</I>&gt;<i> &gt; attached are just a couple of trivial patches to
+</I>&gt;<i> &gt; uvcvideo to suppress some compiler warnings - one
+</I>&gt;<i> &gt; related to a missing const, one related to
+</I>&gt;<i> &gt; pointer arithmetic done on a void *
+</I>&gt;<i> 
+</I>&gt;<i> I applied the missing const and the missing static modifications.
+</I>&gt;<i> 
+</I>&gt;<i> I'm not sure to agree with the void* arithmetic patch. Have a look at 
+</I>&gt;<i> <A HREF="http://kerneltrap.org/node/3848.">http://kerneltrap.org/node/3848.</A> The mem field is a pointer to a storage 
+</I>&gt;<i> area, which is not supposed to be accessed by the driver. Keeping the pointer 
+</I>&gt;<i> void helps catching illegal accesses to the memory. I'd rather cast the 
+</I>&gt;<i> pointer to an integer type before performing arithmetic.
+</I>
+I am all for having compiler checks as strict as possible.
+
+Thing is, you have two pieces of code (uvcvideo.h and uvc_video.c)
+which conflict in the use of this field, so one way or the other
+you need to sort it out :)
+
+The alternative then could be to fix uvc_video.c::uvc_video_decode()
+around line 296:
+
+        /* Copy the video data to the buffer. */
+        len -= data[0];
+        maxlen = buf-&gt;buf.length - buf-&gt;buf.bytesused;
+-       mem = queue-&gt;mem + buf-&gt;buf.m.offset + buf-&gt;buf.bytesused;
++       mem = (char *)queue-&gt;mem + buf-&gt;buf.m.offset + buf-&gt;buf.bytesused;
+        nbytes = min(len, maxlen);
+        memcpy(mem, data + data[0], nbytes);
+        buf-&gt;buf.bytesused += nbytes;
+
+
+&gt;<i> &gt; On passing - i notice that in a couple of structs
+</I>&gt;<i> &gt; in uvcvideo.h you are used unnamed unions, which are
+</I>&gt;<i>..
+</I>&gt;<i> I don't plan to make anonymous unions widespread in the driver. The two 
+</I>&gt;<i> anonymous unions have been made anonymous to make the code easier to read, 
+</I>&gt;<i> and not to mimic videodev2.h. I don't think they are an issue for internal 
+</I>&gt;<i> driver structures.
+</I>
+ok it was just a portability issue, which i can handle locally
+on FreeBSD.
+
+thanks
+luigi
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001355.html">[Linux-uvc-devel] -Werror fixes for uvcvideo
+</A></li>
+	<LI>Next message: <A HREF="001313.html">[Linux-uvc-devel]  Jumbled images from Logitech Quickcam 500
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1356">[ date ]</a>
+              <a href="thread.html#1356">[ thread ]</a>
+              <a href="subject.html#1356">[ subject ]</a>
+              <a href="author.html#1356">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

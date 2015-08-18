@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] support for 05ca:183a
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20support%20for%2005ca%3A183a&In-Reply-To=%3C200903020014.59805.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004617.html">
+   <LINK REL="Next"  HREF="004610.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] support for 05ca:183a</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20support%20for%2005ca%3A183a&In-Reply-To=%3C200903020014.59805.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] support for 05ca:183a">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Mar  2 00:14:59 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004617.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+        <LI>Next message: <A HREF="004610.html">[Linux-uvc-devel] getting vid:pid
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4609">[ date ]</a>
+              <a href="thread.html#4609">[ thread ]</a>
+              <a href="subject.html#4609">[ subject ]</a>
+              <a href="author.html#4609">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Saturday 21 February 2009 19:58:02 Pivo wrote:
+&gt;<i> Hi Laurent,
+</I>&gt;<i> I have the same webcam, the same problems than petr but the problem is not
+</I>&gt;<i> solve and I think you didn't get the answers you wanted.
+</I>&gt;<i>
+</I>&gt;<i> &gt; Hi Petr,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Monday 10 November 2008, Petr Men&#353;&#237;k wrote:
+</I>&gt;<i> &gt; &gt; hi,
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; i found interesting news. my camera will change its resolution, but
+</I>&gt;<i> &gt; &gt; only to 640x480 and 1280x1024 correctly. I was astonished when high
+</I>&gt;<i> &gt; &gt; resolution worked, i did not expect that. I got working svn version of
+</I>&gt;<i> &gt; &gt; luvcview, but really lower resolutions are still wrong in that also.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Could you please send me the USB descriptors of your camera ? You can
+</I>&gt;<i> &gt; retrieve them with 'lsusb -v'.
+</I>&gt;<i>
+</I>&gt;<i> Bus 001 Device 002: ID 05ca:183b Ricoh Co., Ltd
+</I>&gt;<i> Device Descriptor:
+</I>&gt;<i>   bLength                18
+</I>&gt;<i>   bDescriptorType         1
+</I>&gt;<i>   bcdUSB               2.00
+</I>&gt;<i>   bDeviceClass          239 Miscellaneous Device
+</I>&gt;<i>   bDeviceSubClass         2 ?
+</I>&gt;<i>   bDeviceProtocol         1 Interface Association
+</I>&gt;<i>   bMaxPacketSize0        64
+</I>&gt;<i>   idVendor           0x05ca Ricoh Co., Ltd
+</I>&gt;<i>   idProduct          0x183b
+</I>&gt;<i>   bcdDevice            1.00
+</I>&gt;<i>   iManufacturer           0
+</I>&gt;<i>   iProduct                0
+</I>&gt;<i>   iSerial                 0
+</I>&gt;<i>   bNumConfigurations      1
+</I>
+[snip]
+
+Thanks for the descriptors.
+
+Ricoh cameras are not renowned for their UVC compatibility :-/
+
+&gt;<i> &gt; &gt; Yes, lower resolutions worked fine in ekiga before, i believe it is
+</I>&gt;<i> &gt; &gt; using lowest one, 160x120.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; So there's probably a problem on the host side (or at least in the host
+</I>&gt;<i> &gt; &lt;-&gt; device communication). Your tests seem to point to the resolution
+</I>&gt;<i> &gt; change not being understood by the camera.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; To confirm that, I'd like you to check the kernel log with the uvcvideo
+</I>&gt;<i> &gt; trace parameter set to 128 (either when loading the driver, or later with
+</I>&gt;<i> &gt; 'echo 128 &gt; /sys/modules/uvcvideo/parameters/trace').
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Clear the kernel log (dmesg -c), run a video application in 640x480 for a
+</I>&gt;<i> &gt; second or two (longer would write too much messages to the log), close
+</I>&gt;<i> &gt; the application and capture the kernel log. Rerun the same test procedure
+</I>&gt;<i> &gt; in a lower, faulty resolution such as 320x240.
+</I>&gt;<i>
+</I>&gt;<i> # luvcview -s 640x480 -f yuv -i 30
+</I>&gt;<i> luvcview version 0.2.1
+</I>&gt;<i>  size width: 640 height: 480
+</I>&gt;<i>  interval: 30 fps
+</I>&gt;<i> Video driver: x11
+</I>&gt;<i> A window manager is available
+</I>&gt;<i> video /dev/video0
+</I>&gt;<i>
+</I>&gt;<i> Stop asked
+</I>&gt;<i>  Clean Up done Quit
+</I>&gt;<i>
+</I>&gt;<i> # dmesg
+</I>&gt;<i> [20451.408588] uvcvideo: Frame complete (EOF found).
+</I>[snip]
+&gt;<i> [20456.138594] uvcvideo: Frame complete (EOF found).
+</I>
+Looks pretty normal.
+
+&gt;<i> # luvcview -s 320x240 -f yuv -i 30
+</I>&gt;<i> luvcview version 0.2.1
+</I>&gt;<i>  size width: 320 height: 240
+</I>&gt;<i>  interval: 30 fps
+</I>&gt;<i> Video driver: x11
+</I>&gt;<i> A window manager is available
+</I>&gt;<i> video /dev/video0
+</I>&gt;<i> ^C
+</I>&gt;<i> Stop asked
+</I>&gt;<i>  Clean Up done Quit
+</I>&gt;<i>
+</I>&gt;<i> # dmesg
+</I>&gt;<i> [20516.062625] uvcvideo: Frame complete (overflow).
+</I>&gt;<i> [20516.062637] uvcvideo: Dropping payload (out of sync).
+</I>[snip]
+&gt;<i> [20516.067631] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i>
+</I>&gt;<i> Many and many lines like that!
+</I>&gt;<i>
+</I>&gt;<i> &gt; If, as I suspect, the camera doesn't understand the resolution change
+</I>&gt;<i> &gt; properly, it should send a whole 640x480 frame even when the driver
+</I>&gt;<i> &gt; expects a lower resolution. Excess video data should be dropped and logged
+</I>&gt;<i> &gt; by the driver with a &quot;Dropping payload (out of sync)&quot; message. Those
+</I>&gt;<i> &gt; messages should not occur in 640x480 (or at least be way less frequent
+</I>&gt;<i> &gt; than in 320x240).
+</I>&gt;<i>
+</I>&gt;<i> You are right!
+</I>
+Unfortunately :-/
+
+I don't know why the device didn't understand the resolution change request. 
+It could be anything from a bug in the camera, a mostly-but-not-really UVC 
+compatible firmware, or just an inability to stream at lower resolutions.
+
+Capturing a USB trace on Windows might help understanding what's going on.
+
+Best regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004617.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+	<LI>Next message: <A HREF="004610.html">[Linux-uvc-devel] getting vid:pid
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4609">[ date ]</a>
+              <a href="thread.html#4609">[ thread ]</a>
+              <a href="subject.html#4609">[ subject ]</a>
+              <a href="author.html#4609">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

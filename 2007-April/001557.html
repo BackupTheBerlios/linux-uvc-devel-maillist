@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Zoom, crop and scaling device capabilities
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Zoom%2C%20crop%20and%20scaling%20device%20capabilities&In-Reply-To=%3Ca0580c510704021206q408a4832wffa704cb8d0ecdc7%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001555.html">
+   <LINK REL="Next"  HREF="001576.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Zoom, crop and scaling device capabilities</H1>
+    <B>Eduardo Valentin</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Zoom%2C%20crop%20and%20scaling%20device%20capabilities&In-Reply-To=%3Ca0580c510704021206q408a4832wffa704cb8d0ecdc7%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Zoom, crop and scaling device capabilities">edubezval at gmail.com
+       </A><BR>
+    <I>Mon Apr  2 21:06:38 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001555.html">[Linux-uvc-devel] LQC Pro 5000 picture quality settings
+</A></li>
+        <LI>Next message: <A HREF="001576.html">[Linux-uvc-devel] Zoom, crop and scaling device capabilities
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1557">[ date ]</a>
+              <a href="thread.html#1557">[ thread ]</a>
+              <a href="subject.html#1557">[ subject ]</a>
+              <a href="author.html#1557">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello all,
+
+
+   I'm currently starting to work with v4l. I'm not sure if this is
+the right place to post this question, but as this group has relation
+with v4l, I'll try also here.
+
+   The question is about digital zoom capabilities. I'm a little
+confused about how to implement crop related ioctls in a v4l2 driver.
+
+   First of all, what is the common application flow to probe zoom
+capabilities from
+a v4l2 driver? What is the common application flow to get and set current zoom
+settings from a v4l2 driver? AFAIU, applications must combine
+VIDIOC_CROPCAP, VIDIOC_[S,G]_CROP with VIDIOC_[S,G]_FMT.
+What application is a good example for this issue?
+
+   Suppose a device which supports following modes:
+- mode 1 (640, 480),
+- mode 2 (320, 240) from window (0,0) to (640, 480) and
+- mode 3 (320, 240) from  window (161, 121) to (480, 360)
+
+   What is the best way to implement this support? I can see at least
+one option here: export the bounds and defrect for cropcap as 640x480.
+When applications request formats, return to them what best fits
+between 640x480 or 320x240. And then, when applications request crop
+window modification, the behaviour would be, if they request a crop
+window equal to defrect, the device is changed to mode 1 or 2
+(depending on the current format).  however if the crop window
+requested is smaller then defrect, the mode 3 is configured. Is this
+behaviour expected or I misunderstood something?
+
+
+Cheers,
+
+--
+Eduardo Bezerra Valentin
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001555.html">[Linux-uvc-devel] LQC Pro 5000 picture quality settings
+</A></li>
+	<LI>Next message: <A HREF="001576.html">[Linux-uvc-devel] Zoom, crop and scaling device capabilities
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1557">[ date ]</a>
+              <a href="thread.html#1557">[ thread ]</a>
+              <a href="subject.html#1557">[ subject ]</a>
+              <a href="author.html#1557">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Software Autofocus stand-alone application
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Software%20Autofocus%20stand-alone%20application&In-Reply-To=%3C20071126101258.GA7976%40sdg.at%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002491.html">
+   <LINK REL="Next"  HREF="002494.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Software Autofocus stand-alone application</H1>
+    <B>Dr. Alexander K. Seewald</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Software%20Autofocus%20stand-alone%20application&In-Reply-To=%3C20071126101258.GA7976%40sdg.at%3E"
+       TITLE="[Linux-uvc-devel] Software Autofocus stand-alone application">alex at seewald.at
+       </A><BR>
+    <I>Mon Nov 26 11:12:58 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002491.html">[Linux-uvc-devel] Sanyo au W33SA cellphone web-cam support?
+</A></li>
+        <LI>Next message: <A HREF="002494.html">[Linux-uvc-devel] Software Autofocus stand-alone application
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2490">[ date ]</a>
+              <a href="thread.html#2490">[ thread ]</a>
+              <a href="subject.html#2490">[ subject ]</a>
+              <a href="author.html#2490">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all,
+
+I've written a stand-alone software autofocus application to be used
+with Logitech USB cameras with proprietary focus extension (e.g. the
+QuickCam Pro 9000). It can be downloaded from
+<A HREF="http://alex.seewald.at/projects,">http://alex.seewald.at/projects,</A> current version is 0.05.
+
+
+What this is: A stand-alone program you can start _before_ using the
+USB cam in a given setting (e.g. video conferencing) and which will
+compute the correct focus once for a given scene. This focus will
+remain constant even when the scene changes afterwards.
+
+
+What this is not: A continuous adaptation of the focus during camera
+usage (similar to the autofocus under Windows). This is because necessary
+frameworks are not yet in place.
+
+
+Enjoy!
+
+
+The used algorithm would be able to do a continuous on-line autofocus:
+* stable performance from 176x144 to 640x480 resolution
+* quite fast (&lt;15ms to process 640x480, &lt;2ms to process 176x144 frame)
+  [still some 10-20% potential for optimization]
+* Only for MJPEG video format, YUV currently not supported.
+
+However, I would need a framework that allows to...
+1)process all raw frames displayed by a second application. V4L2 does not
+  allow concurrent access, and there is no universal video splitter.
+2)set the focus under exclusive control of the autofocus [should be ok]
+3)prevent some frames being forwarded to the application [optional,
+  to prevent blurry images during refocussing]
+4)recode raw frames to a different format [optional, e.g. for
+  YUV-&gt;JPEG encoding to make the autofocus work with YUV video]
+
+Processing for 1-4) should be done in userspace. It would be possible to
+patch the driver, but such a patch would never make it upstream into the
+kernel because of JPEG licensing issues. And of course it would be
+really messy. :-&gt;&gt;
+
+This is probably out-of-scope for the linux-uvc driver, and will soon be
+raised on the V4L2 mailing list. Helpful suggestions and volunteers
+are of course welcome.
+
+Best,
+  Alex
+-- 
+Dr. Alexander K. Seewald         +43(664)1106886
+              Seewald Solutions                 
+------------------------------------------------
+         Information wants to be free;
+Information also wants to be expensive (S.Brant)
+--------------- alex.seewald.at ----------------
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002491.html">[Linux-uvc-devel] Sanyo au W33SA cellphone web-cam support?
+</A></li>
+	<LI>Next message: <A HREF="002494.html">[Linux-uvc-devel] Software Autofocus stand-alone application
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2490">[ date ]</a>
+              <a href="thread.html#2490">[ thread ]</a>
+              <a href="subject.html#2490">[ subject ]</a>
+              <a href="author.html#2490">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

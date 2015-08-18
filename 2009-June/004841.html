@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20suyin%20crystal%20eye%20webcam%20064e%3Aa103%20not%20working&In-Reply-To=%3C200906041314.56464.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004838.html">
+   <LINK REL="Next"  HREF="004849.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20suyin%20crystal%20eye%20webcam%20064e%3Aa103%20not%20working&In-Reply-To=%3C200906041314.56464.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Thu Jun  4 13:14:56 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004838.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+        <LI>Next message: <A HREF="004849.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4841">[ date ]</a>
+              <a href="thread.html#4841">[ thread ]</a>
+              <a href="subject.html#4841">[ subject ]</a>
+              <a href="author.html#4841">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Bruce,
+
+On Thursday 04 June 2009 00:25:22 bruce m beach wrote:
+
+[snip]
+&gt;<i> &gt;
+</I>&gt;<i> &gt; It seems the device doesn't toggle the FID bit in the UVC
+</I>&gt;<i> &gt; packet header. Could you try loading the driver with
+</I>&gt;<i> &gt; quirks=16 ?
+</I>&gt;<i>
+</I>&gt;<i> First of all it sure looks light the camera is indeed streaming since I get
+</I>&gt;<i> the line
+</I>&gt;<i>
+</I>&gt;<i>          uvcvideo: Dequeuing buffer 0 (3, 307789 bytes)
+</I>&gt;<i>
+</I>&gt;<i> which is very close to the format
+</I>&gt;<i>
+</I>&gt;<i>          640x480=307200 + 589 control bytes (whatever they are)
+</I>
+You're streaming in MJPEG so the data size can (and will) vary.
+
+The application is able to dequeue a single buffer only. This led me to 
+believe that the driver is able to fill a single video buffer and then drops 
+all further data (or doesn't receive any more data) for some reason.
+
+&gt;<i> Okay I tried the following command (and a million other variations)
+</I>&gt;<i>
+</I>&gt;<i>          modprobe -v uvcvideo trace=255 quirks=16
+</I>&gt;<i>
+</I>&gt;<i> and got the line from the kernel log
+</I>&gt;<i>
+</I>&gt;<i>          kernel: uvcvideo: Forcing device quirks 0x10
+</I>&gt;<i>                             by module parameter for testing purpose.
+</I>
+What bothers me in the trace is
+
+May 28 10:53:28 lapsystemx kernel: uvcvideo: Dropping payload (out of sync).
+May 28 10:53:59 lapsystemx last message repeated 30784 times
+May 28 10:55:00 lapsystemx last message repeated 60992 times
+May 28 10:55:24 lapsystemx last message repeated 24351 times
+
+The &quot;out of sync&quot; message means that the device didn't toggle the FID bit. 
+Quirk 0x10 is supposed to work around that by ignoring the FID bit.
+
+&gt;<i> This has no effect at all, same output as the trace above, so I thought it
+</I>&gt;<i> might be a good idea to see what was happening in the header.  Now if I went
+</I>&gt;<i> to the wrong place then all my data is wrong.
+</I>&gt;<i>
+</I>&gt;<i> I went to the call
+</I>&gt;<i>
+</I>&gt;<i>     &quot;static int uvc_video_decode_start&quot;
+</I>&gt;<i>
+</I>&gt;<i> in the file &quot;uvc_video.c&quot;
+</I>&gt;<i>
+</I>&gt;<i> I added the lines
+</I>&gt;<i>
+</I>&gt;<i>     __u8 packet_header;
+</I>&gt;<i>     packet_header=data[1] &amp; 255;
+</I>&gt;<i>
+</I>&gt;<i>     uvc_trace(UVC_TRACE_FRAME, &quot;packet header=%d\n&quot;,
+</I>&gt;<i>                                    packet_header);
+</I>&gt;<i>
+</I>&gt;<i> After compiling, installing and reloading
+</I>&gt;<i> I immediately got many pages of
+</I>&gt;<i>
+</I>&gt;<i>    packet header=141
+</I>&gt;<i>
+</I>&gt;<i> so I tried the following, see if the header ever changes.
+</I>&gt;<i>
+</I>&gt;<i>     if (packet_header != 141)
+</I>&gt;<i>     uvc_trace(UVC_TRACE_FRAME, &quot;packet header=%d\n&quot;,
+</I>&gt;<i>                                    packet_header);
+</I>&gt;<i>
+</I>&gt;<i> which never got printed. In other words the packet header is
+</I>&gt;<i> always 141 and we have the information below
+</I>&gt;<i>
+</I>&gt;<i>             UVC_STREAM_EOH  (1 &lt;&lt; 7)  1 (set)
+</I>&gt;<i>             UVC_STREAM_ERR  (1 &lt;&lt; 6)  0 (reset)
+</I>&gt;<i>             UVC_STREAM_STI  (1 &lt;&lt; 5)  0 (reset)
+</I>&gt;<i>             UVC_STREAM_RES  (1 &lt;&lt; 4)  0 (reset)
+</I>&gt;<i>             UVC_STREAM_SCR  (1 &lt;&lt; 3)  1 (set)
+</I>&gt;<i>             UVC_STREAM_PTS  (1 &lt;&lt; 2)  1 (set)
+</I>&gt;<i>             UVC_STREAM_EOF  (1 &lt;&lt; 1)  0 (reset)
+</I>&gt;<i>             UVC_STREAM_FID  (1 &lt;&lt; 0)  1 (set)
+</I>
+EOF should be set at the end of every frame, and FID should be toggled for 
+every frame. The other bits look correct.
+
+Could you please print the packet length as well as the header flags ? I'd 
+like to know if the driver isn't supplied with data at all, or if it drops it 
+for some reason.
+
+Best regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004838.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+	<LI>Next message: <A HREF="004849.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4841">[ date ]</a>
+              <a href="thread.html#4841">[ thread ]</a>
+              <a href="subject.html#4841">[ subject ]</a>
+              <a href="author.html#4841">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

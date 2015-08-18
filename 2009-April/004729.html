@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] URBs and user buffers (uvc_queue.c)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20URBs%20and%20user%20buffers%20%28uvc_queue.c%29&In-Reply-To=%3C200904201941.33931.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004725.html">
+   <LINK REL="Next"  HREF="004726.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] URBs and user buffers (uvc_queue.c)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20URBs%20and%20user%20buffers%20%28uvc_queue.c%29&In-Reply-To=%3C200904201941.33931.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] URBs and user buffers (uvc_queue.c)">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Apr 20 19:41:33 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004725.html">[Linux-uvc-devel] URBs and user buffers (uvc_queue.c)
+</A></li>
+        <LI>Next message: <A HREF="004726.html">[Linux-uvc-devel] Fwd:  rotate image quirk
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4729">[ date ]</a>
+              <a href="thread.html#4729">[ thread ]</a>
+              <a href="subject.html#4729">[ subject ]</a>
+              <a href="author.html#4729">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi C&#233;dric,
+
+On Saturday 18 April 2009 19:29:32 <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">lescopc at esiee.fr</A> wrote:
+&gt;<i> Hello everyone,
+</I>&gt;<i>
+</I>&gt;<i> I am using the webcam to do some traking. I noticed some latency during
+</I>&gt;<i> fast motion.
+</I>&gt;<i>
+</I>&gt;<i> For example, with luvcview, when I do a movement with my hand and stop, I
+</I>&gt;<i> can see my hand on the screen trying to catch up and stops about 1 sec
+</I>&gt;<i> after I actually stopped.
+</I>&gt;<i>
+</I>&gt;<i> In the source code, I saw that Laurent Pinchart uses 4 user buffers. I am
+</I>&gt;<i> pretty sure they are not the main reason of this latency. So, I went
+</I>&gt;<i> through the uvcvideo driver source code and I saw that is is also 5 URBs.
+</I>&gt;<i>
+</I>&gt;<i> If I understood well, URBs are for IRQs.
+</I>&gt;<i> Is there a minimum of URBs to use?
+</I>
+URB stands for USB Request Block. See 
+<A HREF="http://www.mjmwired.net/kernel/Documentation/usb/URB.txt">http://www.mjmwired.net/kernel/Documentation/usb/URB.txt</A> for more information.
+
+&gt;<i> Is there a way to not use any user buffer (in the queue-&gt;mainqueue)?
+</I>&gt;<i> Or basically, what is the minimale configuration?
+</I>&gt;<i> (2URBs &amp; 2user buffers)?
+</I>&gt;<i> (2URBs &amp; 0user buffers)?
+</I>&gt;<i> (0URBs &amp; 2user buffers)?
+</I>&gt;<i> (1URBs &amp; 1user buffers)?
+</I>
+You definitely need both URBs and V4L2 buffers, otherwise no data will be 
+transferred at all (this will get rid of latency, but probably not the way you 
+want it to :-)).
+
+Decreasing the number of URBs or buffers will not reduce latency per se. 
+Isochronous URBs (I assume your device uses an isochronous endpoint to stream 
+video data) group several isochronous packet transfers. The more packets per 
+URB, the bigger the delay between uvcvideo driver video completion callbacks. 
+However, this only matters for the last URB of each frame, as the driver has 
+to wait until the end of frame before handing it to the application.
+
+For example, when using 32 packets per URB, there can be at most a 31 packets 
+delay between the last packet of a frame and the time the completion callback 
+is called. This introduces latency.
+
+Lowering the number of packets per URB will reduce latency, but will also eats 
+CPU cycles. Make sure you increase the number of URBs if you reduce the number 
+of packets, otherwise you might lose packets if the CPU doesn't cope with the 
+higher number of interrupts.
+
+Similarly, V4L2 buffers don't introduce latency. They are used to transfer 
+video data between the driver and the userspace application in such a way that 
+short temporary increases in the userspace processing delay doesn't result in 
+frame loss. The buffer queue can, however, hold frames, making latency more 
+noticeable if the application can't cope with incoming data fast enough.
+
+As a summary, latency is the sum of
+
+- camera latency
+- USB transfer time
+- interrupt latency on the host (lowering the number of packets per URB can 
+reduce this)
+- userspace application latency
+
+The first thing to do, before hacking the driver, is to make sure the 
+userspace application is fast enough and can cope with the frame rate. If it 
+can't, you could drop a frame from times to times.
+
+Best regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004725.html">[Linux-uvc-devel] URBs and user buffers (uvc_queue.c)
+</A></li>
+	<LI>Next message: <A HREF="004726.html">[Linux-uvc-devel] Fwd:  rotate image quirk
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4729">[ date ]</a>
+              <a href="thread.html#4729">[ thread ]</a>
+              <a href="subject.html#4729">[ subject ]</a>
+              <a href="author.html#4729">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] How to record audio and video from a webcam?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20How%20to%20record%20audio%20and%20video%20from%20a%20webcam%3F&In-Reply-To=%3C47195D93.8080608%40astronomicalresearchaustralia.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002336.html">
+   <LINK REL="Next"  HREF="002253.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] How to record audio and video from a webcam?</H1>
+    <B>Brian</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20How%20to%20record%20audio%20and%20video%20from%20a%20webcam%3F&In-Reply-To=%3C47195D93.8080608%40astronomicalresearchaustralia.org%3E"
+       TITLE="[Linux-uvc-devel] How to record audio and video from a webcam?">bnc at astronomicalresearchaustralia.org
+       </A><BR>
+    <I>Sat Oct 20 03:44:51 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002336.html">[Linux-uvc-devel] How to record audio and video from a webcam?
+</A></li>
+        <LI>Next message: <A HREF="002253.html">[Linux-uvc-devel] Unsupported webcam from Chicony
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2337">[ date ]</a>
+              <a href="thread.html#2337">[ thread ]</a>
+              <a href="subject.html#2337">[ subject ]</a>
+              <a href="author.html#2337">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+&gt;<i> Any updates on this?
+</I>&gt;<i> (application to record synchronized video and audio from webcam...
+</I>&gt;<i> something like luvcview but with sound support)
+</I>&gt;<i> 
+</I>I posted a similar question some months back and posted the 'solution'
+below. However, I too would like to get both working in an app.
+
+Brian
+
+Both luvcview and Motion do not do it as far as I can tell.
+Anyway I have been playing around for a week and finally got some sound
+output. Below is what I did in case you need it.
+
+1)This gives you the number of the usb sound card in my case it was 2/0
+ cat /proc/asound/cards
+ 0 [Live           ]: EMU10K1 - SBLive! Value [CT4832]
+    SBLive! Value [CT4832] (rev.6, serial:0x80271102) at 0xc800, irq 217
+ 1 [V8235          ]: VIA8233 - VIA 8235
+                      VIA 8235 with ALC650F at 0xe000, irq 193
+ 2 [U0x46d0x8c1    ]: USB-Audio - USB Device 0x46d:0x8c1
+               USB Device 0x46d:0x8c1 at usb-0000:00:10.3-2, high speed
+
+2) I assume you have alsa available and can issue alsa commands.
+aplay -h will give you what formats are available and it is a matter of
+finding one that works for your camera, mine worked with this
+
+arecord -D plughw:2,0 -c 1 -f S16_LE --buffer-size=48000 -v | aplay -f
+S16_LE -c 1 --buffer-size=48000 -v
+
+The w:2,0 is the card number
+The -c 1 says only one channel but I do not think this works.
+The -f is my chosen format, -f cd also worked
+The buffer is to prevent underruns it defaults to 24000
+All this is piped into aplay and the sound comes out of my speakers.
+
+Now all I have to figure out is how to put both this and the luvcview
+output into an avi.
+
+Hope this is of some interest and would like to know if you come across
+a better way.
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002336.html">[Linux-uvc-devel] How to record audio and video from a webcam?
+</A></li>
+	<LI>Next message: <A HREF="002253.html">[Linux-uvc-devel] Unsupported webcam from Chicony
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2337">[ date ]</a>
+              <a href="thread.html#2337">[ thread ]</a>
+              <a href="subject.html#2337">[ subject ]</a>
+              <a href="author.html#2337">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

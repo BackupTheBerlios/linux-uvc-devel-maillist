@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Discard%20overrun%20%28corrupted%29%20RX%20images&In-Reply-To=%3C201007071216.59456.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005832.html">
+   <LINK REL="Next"  HREF="005836.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Discard%20overrun%20%28corrupted%29%20RX%20images&In-Reply-To=%3C201007071216.59456.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Wed Jul  7 12:16:58 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005832.html">[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+</A></li>
+        <LI>Next message: <A HREF="005836.html">[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5833">[ date ]</a>
+              <a href="thread.html#5833">[ thread ]</a>
+              <a href="subject.html#5833">[ subject ]</a>
+              <a href="author.html#5833">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Wednesday 07 July 2010 02:23:26 P F wrote:
+&gt;<i> On Fri, 7/2/10, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; What models have you tried ?
+</I>&gt;<i> 
+</I>&gt;<i> #1: An OEMed camera from PixArt (093a:2801), similar to PAC7332.
+</I>&gt;<i> #2: Retail Logitech Webcam C600 (046d:0808)
+</I>&gt;<i> 
+</I>&gt;<i> &gt; I've attached a new patch to this e-mail that fixes the problem mentioned
+</I>&gt;<i> &gt; above. Could you please add a printk statement in uvc_queue_next_buffer
+</I>&gt;<i> &gt; when buf-&gt;error is set, to check that every occurrence of the &quot;USB
+</I>&gt;<i> &gt; isochronous frame lost&quot; message results in the frame being dropped in
+</I>&gt;<i> &gt; uvc_queue_next_buffer ?
+</I>&gt;<i> 
+</I>&gt;<i> I applied the updated patch and added the printk.  In MJPG mode, the driver
+</I>&gt;<i> does drop each frame after printing &quot;USB isochronous frame lost&quot;.  However,
+</I>&gt;<i> the isoc frame drops are very rare.  I also tried the Logitech camera in
+</I>&gt;<i> YUYV mode, and it has much more frequent isoc frame drops, but not always
+</I>&gt;<i> a corresponding video frame drop.  I suspect this is because buf is NULL in
+</I>&gt;<i> uvc_video_decode_isoc.
+</I>
+If you use a single buffer in luvcview, probably.
+
+&gt;<i> &gt; It's also quite possible that, due to a buffer underrun, part of the image
+</I>&gt;<i> &gt; gets dropped by the camera. Could you try a YUYV UVC device, and see if
+</I>&gt;<i> &gt; you get any frame dropped by the buffer length test despite no USB
+</I>&gt;<i> &gt; isochronous frame loss being detected ?
+</I>&gt;<i> 
+</I>&gt;<i> I tried this with the Logitech camera in YUYV mode.  I added a printk when
+</I>&gt;<i> buf.length != buf.bytesused in uvc_video_deocode_isoc, and it did trigger
+</I>&gt;<i> a few times.  This printk was always preceded by &quot;USB isochronous frame
+</I>&gt;<i> lost&quot;, so it seems like the condition is properly detected.
+</I>
+OK. I'll then commit the patch to the repository.
+
+&gt;<i> For reference, in my testing I use the Logitech camera mentioned above and
+</I>&gt;<i> set it to 176x144, 15 fps, which it supports with either MJPG or YUYV.  My
+</I>&gt;<i> test application can create MJPG AVIs which are consistently corrupted, but
+</I>&gt;<i> the YUYV AVIs appear fine.  The MJPG corruption appears without any
+</I>&gt;<i> &quot;dropped&quot; messages occurring.
+</I>
+In that case the corruption probably happens on the camera side. Have you 
+enabled the UVC_TRACE_FRAME trace level ? If so, do you get any &quot;Dropping 
+payload (error bit set)&quot; message being printed to the kernel log ?
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005832.html">[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+</A></li>
+	<LI>Next message: <A HREF="005836.html">[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5833">[ date ]</a>
+              <a href="thread.html#5833">[ thread ]</a>
+              <a href="subject.html#5833">[ subject ]</a>
+              <a href="author.html#5833">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

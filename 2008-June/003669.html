@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] iSight problem
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20iSight%20problem&In-Reply-To=%3C200806242308.35349.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003667.html">
+   <LINK REL="Next"  HREF="003658.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] iSight problem</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20iSight%20problem&In-Reply-To=%3C200806242308.35349.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] iSight problem">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Jun 24 23:08:35 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003667.html">[Linux-uvc-devel] iSight problem
+</A></li>
+        <LI>Next message: <A HREF="003658.html">[Linux-uvc-devel] Over-exposed outdoor images with Creative Live!	Cam Optia
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3669">[ date ]</a>
+              <a href="thread.html#3669">[ thread ]</a>
+              <a href="subject.html#3669">[ subject ]</a>
+              <a href="author.html#3669">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Mildred,
+
+On Tuesday 24 June 2008, Mildred wrote:
+&gt;<i> Thanks for your answer :)
+</I>&gt;<i>
+</I>&gt;<i> Le Tue 24/06/2008 &#224; 00:18 Laurent Pinchart &#224; &#233;crit:
+</I>&gt;<i> &gt; bInterfaceClass should be set to '14 Video'. This means your firmware
+</I>&gt;<i> &gt; hasn't been patched.
+</I>&gt;<i>
+</I>&gt;<i> Well, there are three different interface descriptors, and one of these
+</I>&gt;<i> have the correct bInterfaceClass:
+</I>&gt;<i>
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       ...
+</I>&gt;<i>       bInterfaceClass       255 Vendor Specific Class
+</I>&gt;<i>       bInterfaceSubClass    255 Vendor Specific Subclass
+</I>&gt;<i>       bInterfaceProtocol    255 Vendor Specific Protocol
+</I>&gt;<i>       ...
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       ...
+</I>&gt;<i>       bInterfaceClass       255 Vendor Specific Class
+</I>&gt;<i>       bInterfaceSubClass    255 Vendor Specific Subclass
+</I>&gt;<i>       bInterfaceProtocol    255 Vendor Specific Protocol
+</I>&gt;<i>       ...
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       ...
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      2 Video Streaming
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>
+They should all have bInterfaceClass set to '14 Video'. The first interface 
+should have bInterfaceSubClass set to '1 Video Control' and the second to '2 
+Video Streaming'.
+
+&gt;<i> &gt; &gt; Do you have any ideas about this problem ?
+</I>&gt;<i> &gt; &gt; Some months ago, my webcam worked with a driver derived from
+</I>&gt;<i> &gt; &gt; uvcvideo. but that was with the previous kernel. Now it no longer
+</I>&gt;<i> &gt; &gt; compiles.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Try to upgrade the firmware extractor/loader. It should patch your
+</I>&gt;<i> &gt; firmware to make it compatible with the UVC driver.
+</I>&gt;<i>
+</I>&gt;<i> I tried the iSight firmware tools version 1.2 with two different
+</I>&gt;<i> firmwares. Their MD5 sums are:
+</I>&gt;<i>
+</I>&gt;<i> 	8b78709d02d3584f40cc041db9eecfe8  An old version
+</I>&gt;<i> 	28da1ad8c1e468d8533eca68853f0d40  My current Mac OS X version
+</I>&gt;<i>
+</I>&gt;<i> And i also booted from Mac OS X, used the webcam and then rebooted
+</I>&gt;<i> Linux. it should have loaded the firmware corectly, but I didn't have
+</I>&gt;<i> any more success.
+</I>
+That won't work. You need to load a modified firmware, patched by ift-extract.
+
+&gt;<i> ift-extract -a shows to me:
+</I>&gt;<i>
+</I>&gt;<i> ** Message: Found Mac OS X.4 intel driver
+</I>&gt;<i> ** Message: Firmware extracted successfully in /lib/firmware/isight.fw
+</I>&gt;<i> ** Message: Apply patch 0 : Fix video control interface descriptor
+</I>&gt;<i> ** Message: Apply patch 1 : Fix video streaming interface descriptor
+</I>&gt;<i> ** Message: Apply patch 2 : Fix video streaming device qualifier
+</I>&gt;<i> ** Message: Firmware patched successfully
+</I>&gt;<i>
+</I>&gt;<i> and
+</I>&gt;<i>
+</I>&gt;<i> ** Message: Found Mac OS X.5.1 driver
+</I>&gt;<i> ** Message: Firmware extracted successfully in /lib/firmware/isight.fw
+</I>&gt;<i> ** Message: Apply patch 0 : Fix video control interface descriptor
+</I>&gt;<i> ** Message: Apply patch 1 : Fix video streaming interface descriptor
+</I>&gt;<i> ** Message: Apply patch 2 : Fix video streaming device qualifier
+</I>&gt;<i> ** Message: Firmware patched successfully
+</I>&gt;<i>
+</I>&gt;<i> So, do you think the firmware is correctly loaded or not?
+</I>
+I don't know. You should contact the ift-extract author for help.
+
+&gt;<i> In the meantime, I was looking at the driver source code (mainly
+</I>&gt;<i> ucv_driver.c), and I just discovered that the iSight webcam was referred
+</I>&gt;<i> as:
+</I>&gt;<i>
+</I>&gt;<i> 	/* Apple Built-In iSight */
+</I>&gt;<i> 	{ .match_flags          = USB_DEVICE_ID_MATCH_DEVICE
+</I>&gt;<i>
+</I>&gt;<i> 				| USB_DEVICE_ID_MATCH_INT_INFO,
+</I>&gt;<i>
+</I>&gt;<i> 	  .idVendor		= 0x05ac,
+</I>&gt;<i> 	  .idProduct		= 0x8501,
+</I>&gt;<i> 	  .bInterfaceClass      = USB_CLASS_VIDEO,
+</I>&gt;<i> 	  .bInterfaceSubClass   = 1,
+</I>&gt;<i> 	  .bInterfaceProtocol   = 0,
+</I>&gt;<i> 	  .driver_info 		= UVC_QUIRK_PROBE_MINMAX
+</I>&gt;<i>
+</I>&gt;<i> 				| UVC_QUIRK_BUILTIN_ISIGHT },
+</I>&gt;<i>
+</I>&gt;<i> And that my bInterfaceSubClass was 2 instead of 1. Changing that in the
+</I>&gt;<i> driver doesn't seems to help. When I load the driver (trace=255), I
+</I>&gt;<i> don't get any probe message.
+</I>
+bInterfaceSubClass shouldn't be changed. 1 is the right value. As explained 
+above, the first two interfaces look wrong.
+
+&gt;<i> I think i'll have to find some documentation about the USB interface in
+</I>&gt;<i> the Linux kernel.
+</I>&gt;<i>
+</I>&gt;<i> I'd be glad if someone can find a solution to that issue.
+</I>
+I don't own any Mac so I can't really help you on this one. You should ocntact 
+the ift-extract author.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003667.html">[Linux-uvc-devel] iSight problem
+</A></li>
+	<LI>Next message: <A HREF="003658.html">[Linux-uvc-devel] Over-exposed outdoor images with Creative Live!	Cam Optia
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3669">[ date ]</a>
+              <a href="thread.html#3669">[ thread ]</a>
+              <a href="subject.html#3669">[ subject ]</a>
+              <a href="author.html#3669">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

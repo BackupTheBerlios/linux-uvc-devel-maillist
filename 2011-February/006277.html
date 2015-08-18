@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] UVC gadget : implementing setup
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20UVC%20gadget%20%3A%20implementing%20setup&In-Reply-To=%3C201102152006.31107.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006261.html">
+   <LINK REL="Next"  HREF="006262.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] UVC gadget : implementing setup</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20UVC%20gadget%20%3A%20implementing%20setup&In-Reply-To=%3C201102152006.31107.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] UVC gadget : implementing setup">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Tue Feb 15 20:06:30 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006261.html">[Linux-uvc-devel] UVC gadget : implementing setup
+</A></li>
+        <LI>Next message: <A HREF="006262.html">[Linux-uvc-devel] Upside down image for my webcam on ASUS UL30A
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6277">[ date ]</a>
+              <a href="thread.html#6277">[ thread ]</a>
+              <a href="subject.html#6277">[ subject ]</a>
+              <a href="author.html#6277">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Jean-Philippe,
+
+On Tuesday 08 February 2011 16:13:56 jean-philippe francois wrote:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> With the current uvc code, class specific setup request are redirected
+</I>&gt;<i> to userspace.
+</I>&gt;<i> However, in order to decode these request, userspace needs some
+</I>&gt;<i> information, that are currently available in the gadget descriptor. Which
+</I>&gt;<i> is kernel code.
+</I>&gt;<i> 
+</I>&gt;<i> Let's take an example request :
+</I>&gt;<i> 
+</I>&gt;<i> bRequestType = 0xa1
+</I>&gt;<i> bRequest = 0x87 (UVC_GET_DEF)
+</I>&gt;<i> wValue = 0x200;
+</I>&gt;<i> wIndex = 0x200;
+</I>&gt;<i> wLength = 2;
+</I>&gt;<i> 
+</I>&gt;<i> wIndex is (UnitId | Interface)
+</I>&gt;<i> 
+</I>&gt;<i> Interface = 0 means control interface.
+</I>&gt;<i> Now, to translate wValue into a CS (Control Selector Code), I need to map
+</I>&gt;<i> UnitId to an entity type.
+</I>&gt;<i> 
+</I>&gt;<i> To do this, I can look in the driver/usb/gadget/webcam.c file, and
+</I>&gt;<i> find the answer :
+</I>&gt;<i>  UnitID = 2 means processing unit.
+</I>&gt;<i> 
+</I>&gt;<i> I can (and will) hardcode this mapping (UnitId = 2  &lt;=&gt; Processing Unit) in
+</I>&gt;<i> my userspace setup request handling code.
+</I>&gt;<i> 
+</I>&gt;<i> But then I make a camera with two input unit, a selector unit,
+</I>&gt;<i> and my userspace code is broken :(
+</I>&gt;<i> 
+</I>&gt;<i> What's the plan for future enhancement of this code ?
+</I>
+webcam.c is sample code only. For real-world applications you're supposed to 
+write your own gadget driver than instanciates a UVC function, and develop a 
+userspace application (which can be based on uvc-gadget - note the GPL license 
+though) that matches your driver.
+
+There's currently no plan to export the descriptors to the application. Do you 
+think that would be useful ?
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006261.html">[Linux-uvc-devel] UVC gadget : implementing setup
+</A></li>
+	<LI>Next message: <A HREF="006262.html">[Linux-uvc-devel] Upside down image for my webcam on ASUS UL30A
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6277">[ date ]</a>
+              <a href="thread.html#6277">[ thread ]</a>
+              <a href="subject.html#6277">[ subject ]</a>
+              <a href="author.html#6277">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

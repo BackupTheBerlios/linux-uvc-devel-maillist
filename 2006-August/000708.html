@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] luvcview related issue
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20luvcview%20related%20issue&In-Reply-To=%3Cecfaf2a70608150537p25705f45xb6c3158fb5a03aad%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000707.html">
+   <LINK REL="Next"  HREF="000697.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] luvcview related issue</H1>
+    <B>Ajay Mishra</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20luvcview%20related%20issue&In-Reply-To=%3Cecfaf2a70608150537p25705f45xb6c3158fb5a03aad%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] luvcview related issue">mishraka at gmail.com
+       </A><BR>
+    <I>Tue Aug 15 14:37:26 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000707.html">[Linux-uvc-devel] luvcview related issue
+</A></li>
+        <LI>Next message: <A HREF="000697.html">[Linux-uvc-devel] luvcview related issue
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#708">[ date ]</a>
+              <a href="thread.html#708">[ thread ]</a>
+              <a href="subject.html#708">[ subject ]</a>
+              <a href="author.html#708">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Philip,
+
+Thanks for your comments. I did try submitting the jobs in batch modes to
+make it simultaneous. But as frame grabbing happens in less than a second.
+It does not make much of the difference.
+
+Hence, I used POSIX threads to invoke three system commands simultaneously
+in three different threads. All the threads begin at the same time. I have
+verified in millisecond resolution and it seems to work perfectly well.
+
+Let me also talk about another problem of grabbing the frames at regular
+interval of &lt;t&gt; seconds. Here, I must confess that I was wrong about
+uvccapture's -t option in my previous mail on the group. It does work. But
+my requirement was capturing frames at 10FPS which could not be met as
+uvccapture.c calculated time in seconds. Hence, I modified the uvccapture.c.
+I am now reading reference_time and present_time using ftime() function. It
+returns the time difference in milliseconds. And the rest remains the same.
+With this modification, I am able to grab frames at 10 FPS.
+
+thanks for valuable comments by Gabriel.
+
+Rgds,
+Ajay
+
+On 8/11/06, Philip Heron &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">phil at firestorm.cx</A>&gt; wrote:
+&gt;<i>
+</I>&gt;<i> On Fri, 2006-08-11 at 18:42 +0800, Ajay Kumar Mishra wrote:
+</I>&gt;<i> &gt; 2. Can the stream capture be parallelized for the three devices such
+</I>&gt;<i> &gt; that they seem to capture the scene all at once?
+</I>&gt;<i>
+</I>&gt;<i> You could run three instances of uvccapture from the same script at
+</I>&gt;<i> roughly the same time by appending an &amp; at the end of each line. They
+</I>&gt;<i> still won't run at *exactly* the same instance due to variable
+</I>&gt;<i> initialisation times for each camera and other environmental factors but
+</I>&gt;<i> it'll be closer than capturing from the three cameras sequentially.
+</I>&gt;<i>
+</I>&gt;<i> eg:
+</I>&gt;<i>
+</I>&gt;<i> uvccapture -d /dev/video0 &amp;
+</I>&gt;<i> uvccapture -d /dev/video1 &amp;
+</I>&gt;<i> uvccapture -d /dev/video2 &amp;
+</I>&gt;<i>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thanks,
+</I>&gt;<i> &gt; Ajay
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="http://bat.berlios.de/mailman/listinfo/linux-uvc-devel">http://bat.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>
+
+
+-- 
+PhD Student
+National University of Singapore
+Singapore
+Contact No: +65-98694402
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20060815/ae3b16a7/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20060815/ae3b16a7/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000707.html">[Linux-uvc-devel] luvcview related issue
+</A></li>
+	<LI>Next message: <A HREF="000697.html">[Linux-uvc-devel] luvcview related issue
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#708">[ date ]</a>
+              <a href="thread.html#708">[ thread ]</a>
+              <a href="subject.html#708">[ subject ]</a>
+              <a href="author.html#708">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] cropcap ioctl is returning wrong info
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20cropcap%20ioctl%20is%20returning%20wrong%20info&In-Reply-To=%3Cf4586a2e0609072120y2cae931dvd2c3c56a6e26c765%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000764.html">
+   <LINK REL="Next"  HREF="000777.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] cropcap ioctl is returning wrong info</H1>
+    <B>Parag N(&#2346;&#2352;&#2366;&#2394;)</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20cropcap%20ioctl%20is%20returning%20wrong%20info&In-Reply-To=%3Cf4586a2e0609072120y2cae931dvd2c3c56a6e26c765%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] cropcap ioctl is returning wrong info">panemade at gmail.com
+       </A><BR>
+    <I>Fri Sep  8 06:20:45 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000764.html">[Linux-uvc-devel] cropcap ioctl is returning wrong info
+</A></li>
+        <LI>Next message: <A HREF="000777.html">[Linux-uvc-devel] cropcap ioctl is returning wrong info
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#766">[ date ]</a>
+              <a href="thread.html#766">[ thread ]</a>
+              <a href="subject.html#766">[ subject ]</a>
+              <a href="author.html#766">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+On 9/7/06, Martin Rubli &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">martin_rubli at logitech.com</A>&gt; wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> The UVC driver returns the size of the currently set format. So if you do
+</I>&gt;<i> a S_FMT with 640x480 first, CROPCAP should indeed return 640x480.
+</I>&gt;<i>
+</I>&gt;<i> The problem with CROPCAP is that for the most part it doesn't apply to
+</I>&gt;<i> digital devices. For a while, the call wasn't supported at all but it
+</I>&gt;<i> seems that it is mandatory, so we just tried to return _something_ that
+</I>&gt;<i> makes sense. If you have any suggestions as to the interpretation of the
+</I>&gt;<i> V4L2 spec, I'd be happy to hear your view.
+</I>Currently i think very less information is given by uvcvideo driver.
+When i applied one by one ioctl's to get what my webcam can supports
+and what not in terms of frame formats, various width and heights.
+I found if i use  v4l2_enumfrmfmt.h  then i am getting various sizes.
+Is not it possible ti include this header file in uvcviodeo.c and let
+ioctl given in that header file give the various sizes supported by
+webcam hardware. So is it possible to make that VIDIOC_ENUM_FMT be
+included in uvcviudeo.c
+
+OR / ALSO
+in my example when i see this output
+Device /dev/video0 opened: USB Video Class device.
+
+Enumerating frame formats:
+
+{ pixelformat = 'MJPG', description = 'MJPEG' }
+  { discrete: width = 160, height = 120 }
+    { discrete: 1/30 }
+    { discrete: 1/25 }
+    { discrete: 1/20 }
+    { discrete: 1/15 }
+    { discrete: 1/10 }
+    { discrete: 1/5 }
+  { discrete: width = 176, height = 144 }
+    { discrete: 1/30 }
+    { discrete: 1/25 }
+    { discrete: 1/20 }
+    { discrete: 1/15 }
+    { discrete: 1/10 }
+    { discrete: 1/5 }
+  { discrete: width = 320, height = 240 }
+    { discrete: 1/30 }
+    { discrete: 1/25 }
+    { discrete: 1/20 }
+    { discrete: 1/15 }
+    { discrete: 1/10 }
+    { discrete: 1/5 }
+  { discrete: width = 352, height = 288 }
+    { discrete: 1/30 }
+    { discrete: 1/25 }
+    { discrete: 1/20 }
+    { discrete: 1/15 }
+    { discrete: 1/10 }
+    { discrete: 1/5 }
+  { discrete: width = 432, height = 240 }
+    { discrete: 1/30 }
+    { discrete: 1/25 }
+    { discrete: 1/20 }
+    { discrete: 1/15 }
+    { discrete: 1/10 }
+    { discrete: 1/5 }
+  { discrete: width = 480, height = 360 }
+    { discrete: 1/30 }
+    { discrete: 1/25 }
+    { discrete: 1/20 }
+    { discrete: 1/15 }
+    { discrete: 1/10 }
+    { discrete: 1/5 }
+  { discrete: width = 512, height = 288 }
+    { discrete: 1/30 }
+    { discrete: 1/25 }
+    { discrete: 1/20 }
+  { discrete: 1/15 }
+    { discrete: 1/10 }
+    { discrete: 1/5 }
+  { discrete: width = 640, height = 360 }
+    { discrete: 1/30 }
+    { discrete: 1/25 }
+    { discrete: 1/20 }
+    { discrete: 1/15 }
+    { discrete: 1/10 }
+    { discrete: 1/5 }
+  { discrete: width = 640, height = 480 }
+    { discrete: 1/30 }
+    { discrete: 1/25 }
+    { discrete: 1/20 }
+    { discrete: 1/15 }
+    { discrete: 1/10 }
+    { discrete: 1/5 }
+{ pixelformat = 'YUYV', description = 'Uncompressed' }
+  { discrete: width = 640, height = 360 }
+    { discrete: 1/30 }
+    { discrete: 1/25 }
+    { discrete: 1/20 }
+    { discrete: 1/15 }
+    { discrete: 1/10 }
+    { discrete: 1/5 }
+  { discrete: width = 640, height = 480 }
+    { discrete: 1/30 }
+    { discrete: 1/25 }
+    { discrete: 1/20 }
+    { discrete: 1/15 }
+    { discrete: 1/10 }
+    { discrete: 1/5 }
+
+It clearly showed that as MJPG is default frame thru ioclt,s i am
+getting therefore i am getting the first value in above output as
+width=160 and height=120.
+But same output showed max width=640 and height=480. So can it be
+possible to modify ioctl code to return either max values for default
+frame when applied VIDIOC_CROPCAP ??
+
+Or can it be possible in uvcvideo to have max and min width and height
+structure members and let them return max and min values. I know it
+was case for V4l but not for V4l2.
+
+All above are my thought for uvcvideo. This all i am thinking for if
+anyone want to write a video viewer app then how come he will get that
+info to show streaming video in various supported sizes( Me is also
+trying to write video viewer but first to understand all v4l2 API
+well)
+&gt;<i>
+</I>&gt;<i> What are you trying to do in this particular case?
+</I>As said above trying to lean V4l2 APIs and checking ioctl's info.
+&gt;<i>
+</I>&gt;<i> Cheers,
+</I>&gt;<i> Martin
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000764.html">[Linux-uvc-devel] cropcap ioctl is returning wrong info
+</A></li>
+	<LI>Next message: <A HREF="000777.html">[Linux-uvc-devel] cropcap ioctl is returning wrong info
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#766">[ date ]</a>
+              <a href="thread.html#766">[ thread ]</a>
+              <a href="subject.html#766">[ subject ]</a>
+              <a href="author.html#766">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

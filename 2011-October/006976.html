@@ -1,0 +1,234 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] fix uvcvideo crash on device hotplug
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20fix%20uvcvideo%20crash%20on%20device%20hotplug&In-Reply-To=%3C201110271624.14934.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006977.html">
+   <LINK REL="Next"  HREF="006978.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] fix uvcvideo crash on device hotplug</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20fix%20uvcvideo%20crash%20on%20device%20hotplug&In-Reply-To=%3C201110271624.14934.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] fix uvcvideo crash on device hotplug">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu Oct 27 16:24:14 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006977.html">[Linux-uvc-devel] [PATCH] fix uvcvideo crash on device hotplug
+</A></li>
+        <LI>Next message: <A HREF="006978.html">[Linux-uvc-devel] [PATCH] fix uvcvideo crash on device hotplug
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6976">[ date ]</a>
+              <a href="thread.html#6976">[ thread ]</a>
+              <a href="subject.html#6976">[ subject ]</a>
+              <a href="author.html#6976">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Jayakrishnan,
+
+Thank you for the patch.
+
+On Thursday 27 October 2011 16:05:28 Jayakrishnan wrote:
+&gt;<i>   This patch is a fix for uvcvideo crash observed on device hotplug. If
+</I>&gt;<i> the camera is removed when streaming is going on, close(fd) call by the
+</I>&gt;<i> streaming application could lead to a crash.
+</I>&gt;<i> 
+</I>&gt;<i> The issue is that memory allocated to instances of uvc_streaming
+</I>&gt;<i> structure is freed in the handler for device disconnect notification.
+</I>
+I'm surprised by that. When the device is disconnected the USB subsystem will 
+call the driver's disconnection handler, uvc_disconnect(). This in turn calls 
+uvc_unregister_video(), which calls video_unregister_device().
+
+video_unregister_device() will call the uvcvideo release handler 
+(uvc_release()) back when the last reference to the video device is released. 
+This happens when all file handles are closed, so the uvc_streaming instance 
+should not get freed until all uvcvideo file handles are closed by 
+applications.
+
+Could you elaborate on how you produced the crash, and send me a backtrace ?
+
+&gt;<i> But these instances will be accessed when device is closed. The
+</I>&gt;<i> instances of data structure is protected by reference count to avoid
+</I>&gt;<i> this crash. Stream count is removed to avoid redundancy.
+</I>&gt;<i> 
+</I>&gt;<i> This logic is quite similar to what was present in uvcvideo earlier.
+</I>&gt;<i> Commit 716fdee110ceb816cca8c46c0890d08c5a1addb9 had removed kref.
+</I>
+The kref was required back then as the videodev was racy. This has been fixed 
+in videodev a while ago, so the kref got removed from uvcvideo.
+
+&gt;<i> Signed-off-by: Jayakrishnan Memana &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">jayakrishnan.memana at maxim-ic.com</A>&gt;
+</I>&gt;<i> ---
+</I>&gt;<i> 
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> b/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> index 656d4c9..af50624 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> @@ -1593,8 +1593,9 @@ static int uvc_scan_device(struct uvc_device *dev)
+</I>&gt;<i>    * already been canceled by the USB core. There is no need to kill the
+</I>&gt;<i>    * interrupt URB manually.
+</I>&gt;<i>    */
+</I>&gt;<i> -static void uvc_delete(struct uvc_device *dev)
+</I>&gt;<i> +void uvc_delete(struct kref *kref)
+</I>&gt;<i>   {
+</I>&gt;<i> +    struct uvc_device *dev = container_of(kref, struct uvc_device, kref);
+</I>&gt;<i>       struct list_head *p, *n;
+</I>&gt;<i> 
+</I>&gt;<i>       usb_put_intf(dev-&gt;intf);
+</I>&gt;<i> @@ -1648,11 +1649,8 @@ static void uvc_release(struct video_device *vdev)
+</I>&gt;<i>       struct uvc_streaming *stream = video_get_drvdata(vdev);
+</I>&gt;<i>       struct uvc_device *dev = stream-&gt;dev;
+</I>&gt;<i> 
+</I>&gt;<i> -    /* Decrement the registered streams count and delete the device when
+</I>&gt;<i> it -     * reaches zero.
+</I>&gt;<i> -     */
+</I>&gt;<i> -    if (atomic_dec_and_test(&amp;dev-&gt;nstreams))
+</I>&gt;<i> -        uvc_delete(dev);
+</I>&gt;<i> +    /* Delete the device when all references are removed */
+</I>&gt;<i> +    kref_put(&amp;dev-&gt;kref, uvc_delete);
+</I>&gt;<i>   }
+</I>&gt;<i> 
+</I>&gt;<i>   /*
+</I>&gt;<i> @@ -1664,10 +1662,9 @@ static void uvc_unregister_video(struct
+</I>&gt;<i> uvc_device *dev)
+</I>&gt;<i> 
+</I>&gt;<i>       /* Unregistering all video devices might result in uvc_delete() being
+</I>&gt;<i>        * called from inside the loop if there's no open file handle. To
+</I>&gt;<i> avoid
+</I>&gt;<i> -     * that, increment the stream count before iterating over the streams
+</I>&gt;<i> -     * and decrement it when done.
+</I>&gt;<i> +     * that, take a reference now and remove it after the loop
+</I>&gt;<i>        */
+</I>&gt;<i> -    atomic_inc(&amp;dev-&gt;nstreams);
+</I>&gt;<i> +    kref_get(&amp;dev-&gt;kref);
+</I>&gt;<i> 
+</I>&gt;<i>       list_for_each_entry(stream, &amp;dev-&gt;streams, list) {
+</I>&gt;<i>           if (stream-&gt;vdev == NULL)
+</I>&gt;<i> @@ -1677,11 +1674,10 @@ static void uvc_unregister_video(struct
+</I>&gt;<i> uvc_device *dev)
+</I>&gt;<i>           stream-&gt;vdev = NULL;
+</I>&gt;<i>       }
+</I>&gt;<i> 
+</I>&gt;<i> -    /* Decrement the stream count and call uvc_delete explicitly if there
+</I>&gt;<i> -     * are no stream left.
+</I>&gt;<i> +    /* Remove the reference and delete the device if all references are
+</I>&gt;<i> +     * removed
+</I>&gt;<i>        */
+</I>&gt;<i> -    if (atomic_dec_and_test(&amp;dev-&gt;nstreams))
+</I>&gt;<i> -        uvc_delete(dev);
+</I>&gt;<i> +    kref_put(&amp;dev-&gt;kref, uvc_delete);
+</I>&gt;<i>   }
+</I>&gt;<i> 
+</I>&gt;<i>   static int uvc_register_video(struct uvc_device *dev,
+</I>&gt;<i> @@ -1732,7 +1728,6 @@ static int uvc_register_video(struct uvc_device *dev,
+</I>&gt;<i>           return ret;
+</I>&gt;<i>       }
+</I>&gt;<i> 
+</I>&gt;<i> -    atomic_inc(&amp;dev-&gt;nstreams);
+</I>&gt;<i>       return 0;
+</I>&gt;<i>   }
+</I>&gt;<i> 
+</I>&gt;<i> @@ -1816,9 +1811,9 @@ static int uvc_probe(struct usb_interface *intf,
+</I>&gt;<i>       INIT_LIST_HEAD(&amp;dev-&gt;entities);
+</I>&gt;<i>       INIT_LIST_HEAD(&amp;dev-&gt;chains);
+</I>&gt;<i>       INIT_LIST_HEAD(&amp;dev-&gt;streams);
+</I>&gt;<i> -    atomic_set(&amp;dev-&gt;nstreams, 0);
+</I>&gt;<i>       atomic_set(&amp;dev-&gt;users, 0);
+</I>&gt;<i>       atomic_set(&amp;dev-&gt;nmappings, 0);
+</I>&gt;<i> +    kref_init(&amp;dev-&gt;kref);
+</I>&gt;<i> 
+</I>&gt;<i>       dev-&gt;udev = usb_get_dev(udev);
+</I>&gt;<i>       dev-&gt;intf = usb_get_intf(intf);
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvc_v4l2.c
+</I>&gt;<i> b/drivers/media/video/uvc/uvc_v4l2.c
+</I>&gt;<i> index dadf11f..0c21a56 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_v4l2.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_v4l2.c
+</I>&gt;<i> @@ -500,6 +500,8 @@ static int uvc_v4l2_open(struct file *file)
+</I>&gt;<i>       handle-&gt;state = UVC_HANDLE_PASSIVE;
+</I>&gt;<i>       file-&gt;private_data = handle;
+</I>&gt;<i> 
+</I>&gt;<i> +    kref_get(&amp;stream-&gt;dev-&gt;kref);
+</I>&gt;<i> +
+</I>&gt;<i>       return 0;
+</I>&gt;<i>   }
+</I>&gt;<i> 
+</I>&gt;<i> @@ -528,6 +530,7 @@ static int uvc_v4l2_release(struct file *file)
+</I>&gt;<i>           uvc_status_stop(stream-&gt;dev);
+</I>&gt;<i> 
+</I>&gt;<i>       usb_autopm_put_interface(stream-&gt;dev-&gt;intf);
+</I>&gt;<i> +    kref_put(&amp;stream-&gt;dev-&gt;kref, uvc_delete);
+</I>&gt;<i>       return 0;
+</I>&gt;<i>   }
+</I>&gt;<i> 
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvcvideo.h
+</I>&gt;<i> b/drivers/media/video/uvc/uvcvideo.h
+</I>&gt;<i> index 4c1392e..0925642 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvcvideo.h
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvcvideo.h
+</I>&gt;<i> @@ -423,6 +423,7 @@ struct uvc_device {
+</I>&gt;<i>       char name[32];
+</I>&gt;<i> 
+</I>&gt;<i>       enum uvc_device_state state;
+</I>&gt;<i> +    struct kref kref;
+</I>&gt;<i>       atomic_t users;
+</I>&gt;<i>       atomic_t nmappings;
+</I>&gt;<i> 
+</I>&gt;<i> @@ -439,7 +440,6 @@ struct uvc_device {
+</I>&gt;<i> 
+</I>&gt;<i>       /* Video Streaming interfaces */
+</I>&gt;<i>       struct list_head streams;
+</I>&gt;<i> -    atomic_t nstreams;
+</I>&gt;<i> 
+</I>&gt;<i>       /* Status Interrupt Endpoint */
+</I>&gt;<i>       struct usb_host_endpoint *int_ep;
+</I>&gt;<i> @@ -509,6 +509,7 @@ extern unsigned int uvc_timeout_param;
+</I>&gt;<i> 
+</I>&gt;<i>   /* Core driver */
+</I>&gt;<i>   extern struct uvc_driver uvc_driver;
+</I>&gt;<i> +extern void uvc_delete(struct kref *kref);
+</I>&gt;<i> 
+</I>&gt;<i>   extern struct uvc_entity *uvc_entity_by_id(struct uvc_device *dev, int
+</I>&gt;<i> id);
+</I>
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006977.html">[Linux-uvc-devel] [PATCH] fix uvcvideo crash on device hotplug
+</A></li>
+	<LI>Next message: <A HREF="006978.html">[Linux-uvc-devel] [PATCH] fix uvcvideo crash on device hotplug
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6976">[ date ]</a>
+              <a href="thread.html#6976">[ thread ]</a>
+              <a href="subject.html#6976">[ subject ]</a>
+              <a href="author.html#6976">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

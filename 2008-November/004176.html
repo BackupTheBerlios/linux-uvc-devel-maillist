@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Problem with 174f:5a31
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problem%20with%20174f%3A5a31&In-Reply-To=%3C200811060113.16981.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004168.html">
+   <LINK REL="Next"  HREF="004186.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Problem with 174f:5a31</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problem%20with%20174f%3A5a31&In-Reply-To=%3C200811060113.16981.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Problem with 174f:5a31">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Thu Nov  6 01:13:16 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004168.html">[Linux-uvc-devel] Problem with 174f:5a31
+</A></li>
+        <LI>Next message: <A HREF="004186.html">[Linux-uvc-devel] Problem with 174f:5a31
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4176">[ date ]</a>
+              <a href="thread.html#4176">[ thread ]</a>
+              <a href="subject.html#4176">[ subject ]</a>
+              <a href="author.html#4176">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Amelie,
+
+On Tuesday 04 November 2008, Amelie Zapf wrote:
+&gt;<i> Dear Laurent,
+</I>&gt;<i>
+</I>&gt;<i> &gt; &gt; This is weird. Upon rmmodding and re-modprobing the driver, the device
+</I>&gt;<i> &gt; &gt; file /dev/video0 is deleted and not recreated (why, I don't know).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; This is indeed weird. Could you check the kernel log (dmesg) when this
+</I>&gt;<i> &gt; happens to see if the driver prints any error message ?
+</I>&gt;<i>
+</I>&gt;<i> Here's the whole shebang:
+</I>&gt;<i>
+</I>&gt;<i> schlepptop:/home/amelie # lsmod | grep uvc
+</I>&gt;<i> uvcvideo               75912  0
+</I>&gt;<i> compat_ioctl32         25984  1 uvcvideo
+</I>&gt;<i> videodev               52096  2 uvcvideo,compat_ioctl32
+</I>&gt;<i> v4l1_compat            29444  2 uvcvideo,videodev
+</I>&gt;<i> usbcore               188248  7
+</I>&gt;<i> uvcvideo,snd_usb_audio,snd_usb_lib,usbhid,ehci_hcd,ohci_hcd
+</I>&gt;<i> schlepptop:/home/amelie # rmmod uvcvideo
+</I>&gt;<i> schlepptop:/home/amelie # lsmod | grep uvc
+</I>&gt;<i> schlepptop:/home/amelie # modprobe uvcvideo
+</I>&gt;<i> schlepptop:/home/amelie # lsmod | grep uvc
+</I>&gt;<i> uvcvideo               75912  0
+</I>&gt;<i> compat_ioctl32         25984  1 uvcvideo
+</I>&gt;<i> videodev               52096  2 uvcvideo,compat_ioctl32
+</I>&gt;<i> v4l1_compat            29444  2 uvcvideo,videodev
+</I>&gt;<i> usbcore               188248  7
+</I>&gt;<i> uvcvideo,snd_usb_audio,snd_usb_lib,usbhid,ehci_hcd,ohci_hcd
+</I>&gt;<i> schlepptop:/home/amelie # dmesg
+</I>&gt;<i> [...]
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device USB 2.0 Camera (174f:5a31)
+</I>&gt;<i> uvcvideo: Forcing device quirks 0x4 by module parameter for testing
+</I>&gt;<i> purpose. uvcvideo: Please report required quirks to the linux-uvc-devel
+</I>&gt;<i> mailing list. [...]
+</I>&gt;<i> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+</I>&gt;<i> [...]
+</I>&gt;<i> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+</I>&gt;<i> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+</I>&gt;<i> usbcore: deregistering interface driver uvcvideo
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device USB 2.0 Camera (174f:5a31)
+</I>&gt;<i> uvcvideo: Forcing device quirks 0x4 by module parameter for testing
+</I>&gt;<i> purpose. uvcvideo: Please report required quirks to the linux-uvc-devel
+</I>&gt;<i> mailing list. uvcvideo: Failed to query (135) UVC control 1 (unit 0) : -110
+</I>&gt;<i> (exp. 26). uvcvideo: Failed to query (129) UVC control 1 (unit 0) : -110
+</I>&gt;<i> (exp. 26). uvcvideo: Failed to initialize the device (-5).
+</I>&gt;<i> usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> USB Video Class driver (SVN r200)
+</I>&gt;<i> schlepptop:/home/amelie # ls /dev/video*
+</I>&gt;<i> ls: Zugriff auf /dev/video* nicht m&#246;glich: Datei oder Verzeichnis nicht
+</I>&gt;<i> gefunden
+</I>&gt;<i>
+</I>&gt;<i> &gt; What about '-f yuv' ? :-)
+</I>&gt;<i>
+</I>&gt;<i> No better, I'm afraid:
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">amelie at schlepptop</A>:~&gt; luvcview -f yuv
+</I>&gt;<i> luvcview version 0.2.1
+</I>&gt;<i> Video driver: x11
+</I>&gt;<i> A window manager is available
+</I>&gt;<i> video /dev/video0
+</I>&gt;<i> Unable to set format: 5.
+</I>&gt;<i>  Init v4L2 failed !! exit fatal
+</I>&gt;<i>
+</I>&gt;<i> Hope this helps,
+</I>
+No really unfortunately :-( From what you report the camera seems to 
+completely crash.
+
+All error messages report a -110 error, which indicates a timeout 
+(-ETIMEDOUT). Timeouts are usually caused by firmware errors, as bad requests 
+should be answered with an error and not ignored by the device.
+
+When loaded, the driver queries the video probe control (control 1, unit 0) 
+for it's default value (GET_DEF, 135) or, if this fails, for its current 
+value (GET_CUR, 129). As you can see in the log, no such error is reported 
+the first time the driver is loaded.
+
+When an application sets the video format the driver will set (SET_CUR, 1) the 
+video probe control value. The driver reports timeouts, which means that 
+either the first SET_CUR request or the request right before made the device 
+crash. This can be confirmed by the module unloading and reloading, as the 
+device then fails to respond to the initial GET_DEF and GET_CUR.
+
+My guess would be that the SET_CUR request makes the device crash. This could 
+be caused by unexpected values (from the device's point of view) in the 
+request data. If you have access to a Windows box, it would be interesting to 
+try the camera there and, if it works properly, capture a USB trace.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004168.html">[Linux-uvc-devel] Problem with 174f:5a31
+</A></li>
+	<LI>Next message: <A HREF="004186.html">[Linux-uvc-devel] Problem with 174f:5a31
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4176">[ date ]</a>
+              <a href="thread.html#4176">[ thread ]</a>
+              <a href="subject.html#4176">[ subject ]</a>
+              <a href="author.html#4176">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

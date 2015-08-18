@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Possible bug in while enumerating private	controls
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Possible%20bug%20in%20while%20enumerating%20private%0A%09controls&In-Reply-To=%3C200801102236.04374.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002694.html">
+   <LINK REL="Next"  HREF="002733.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Possible bug in while enumerating private	controls</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Possible%20bug%20in%20while%20enumerating%20private%0A%09controls&In-Reply-To=%3C200801102236.04374.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Possible bug in while enumerating private	controls">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Thu Jan 10 22:36:04 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002694.html">[Linux-uvc-devel] Possible bug in while enumerating private	controls
+</A></li>
+        <LI>Next message: <A HREF="002733.html">[Linux-uvc-devel] Possible bug in while enumerating private	controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2730">[ date ]</a>
+              <a href="thread.html#2730">[ thread ]</a>
+              <a href="subject.html#2730">[ subject ]</a>
+              <a href="author.html#2730">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Antoine,
+
+On Thursday 03 January 2008, Antoine Cellerier wrote:
+&gt;<i> Hello,
+</I>&gt;<i>
+</I>&gt;<i> I've stumbled upon a problem when hacking the VLC v4l2 driver:
+</I>&gt;<i>
+</I>&gt;<i> I want to enumerate all the private controls to make them available in
+</I>&gt;<i> the interface. The code used to enumerate the controls uses the same
+</I>&gt;<i> logic as Example 1-8 in the spec:
+</I>&gt;<i> <A HREF="http://v4l2spec.bytesex.org/spec-single/v4l2.html#AEN732">http://v4l2spec.bytesex.org/spec-single/v4l2.html#AEN732</A>
+</I>&gt;<i>
+</I>&gt;<i> Unfortunately it doesn't work as expected. My webcam provides the
+</I>&gt;<i> following private controls:
+</I>&gt;<i> Backlight Compensation -&gt; V4L2_CID_PRIVATE_BASE+0
+</I>&gt;<i> Power Line Frequency -&gt; V4L2_CID_PRIVATE_BASE+1
+</I>&gt;<i> Sharpness -&gt; V4L2_CID_PRIVATE_BASE+2
+</I>&gt;<i> White Balance Temperature Auto -&gt; V4L2_CID_PRIVATE_BASE+12
+</I>&gt;<i> White Balance Temperature -&gt; V4L2_CID_PRIVATE_BASE+13
+</I>&gt;<i> Unfortunately, ioctl( fd, VIDIOC_QUERYCTRL, &amp;queryctrl ) on
+</I>&gt;<i> V4L2_CID_PRIVATE_BASE+3 returns -1, which exits the private controls
+</I>&gt;<i> enumartion code.
+</I>&gt;<i>
+</I>&gt;<i> According to footnote [24] in the spec,
+</I>&gt;<i> &quot;V4L2_CTRL_FLAG_DISABLED was intended for two purposes: Drivers can skip
+</I>&gt;<i> predefined controls not supported by the hardware (although returning
+</I>&gt;<i> EINVAL would do as well), or disable predefined and private controls
+</I>&gt;<i> after hardware detection without the trouble of reordering control
+</I>&gt;<i> arrays and indices (EINVAL cannot be used to skip private controls
+</I>&gt;<i> because it would prematurely end the enumeration).&quot;
+</I>&gt;<i>
+</I>&gt;<i> If I understand that correctly, the ioctl (at least for private
+</I>&gt;<i> controls), should be succesfull for all the private controls supported
+</I>&gt;<i> by the uvcvideo drive and set the V4L2_CTRL_FLAG_DISABLED flag if that
+</I>&gt;<i> control isn't handled by the hardware. This would fix private control
+</I>&gt;<i> enumartion.
+</I>
+Yes and no. Drivers can use V4L2_CTRL_FLAG_DISABLED but are not required to do 
+so.
+
+For most drivers this isn't a problem. The driver support only a limited 
+number of controls, and setting V4L2_CTRL_FLAG_DISABLED when a particular 
+hardware doesn't support a given control is easy.
+
+The UVC driver is different. The UVC spec allows devices to define new 
+controls. The total number of controls could be huge, so using 
+V4L2_CTRL_FLAG_DISABLED is not practical. For this reason, you should use the 
+enumeration method described in 
+<A HREF="http://v4l2spec.bytesex.org/spec-single/v4l2.html#AEN794">http://v4l2spec.bytesex.org/spec-single/v4l2.html#AEN794</A>
+
+&gt;<i> Since I don't know the uvcvideo control code really well I haven't
+</I>&gt;<i> started patching it yet and would like a confirmation from the gurus
+</I>&gt;<i> that I'm reading the spec correctly.
+</I>
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002694.html">[Linux-uvc-devel] Possible bug in while enumerating private	controls
+</A></li>
+	<LI>Next message: <A HREF="002733.html">[Linux-uvc-devel] Possible bug in while enumerating private	controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2730">[ date ]</a>
+              <a href="thread.html#2730">[ thread ]</a>
+              <a href="subject.html#2730">[ subject ]</a>
+              <a href="author.html#2730">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,298 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] device 0e8d:0004 only works with luvcview
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20device%200e8d%3A0004%20only%20works%20with%20luvcview&In-Reply-To=%3C200810041931.18626.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004081.html">
+   <LINK REL="Next"  HREF="004082.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] device 0e8d:0004 only works with luvcview</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20device%200e8d%3A0004%20only%20works%20with%20luvcview&In-Reply-To=%3C200810041931.18626.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] device 0e8d:0004 only works with luvcview">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sat Oct  4 19:31:18 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004081.html">[Linux-uvc-devel] device 0e8d:0004 only works with luvcview
+</A></li>
+        <LI>Next message: <A HREF="004082.html">[Linux-uvc-devel] uvc camera with Cheese and Camorama
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4084">[ date ]</a>
+              <a href="thread.html#4084">[ thread ]</a>
+              <a href="subject.html#4084">[ subject ]</a>
+              <a href="author.html#4084">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Jose,
+
+On Thursday 02 October 2008, Jose Ant. wrote:
+&gt;<i> I'll post the logs. First, loading module (modprobe uvcvideo trace=15):
+</I>&gt;<i>
+</I>&gt;<i> ---
+</I>[snip]
+&gt;<i> ---
+</I>&gt;<i>
+</I>&gt;<i> -&gt; Now i connect the webcam (really is a phone):
+</I>&gt;<i>
+</I>&gt;<i> ---
+</I>&gt;<i> usb 2-2: new full speed USB device using ohci_hcd and address 2
+</I>&gt;<i> usb 2-2: configuration #1 chosen from 1 choice
+</I>&gt;<i> uvcvideo: Probing known UVC device 2 (0e8d:0004)
+</I>&gt;<i> uvcvideo: Found format MJPEG.
+</I>&gt;<i> uvcvideo: - 160x120 (20.0 fps)
+</I>&gt;<i> uvcvideo: - 320x240 (20.0 fps)
+</I>&gt;<i> uvcvideo: - 640x480 (20.0 fps)
+</I>&gt;<i> uvcvideo: Found a Status endpoint (addr 83).
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device OT-C701/ (0e8d:0004)
+</I>[snip]
+&gt;<i> uvcvideo: Scanning UVC chain: OT 2 &lt;- PU 3 &lt;- IT 1
+</I>&gt;<i> uvcvideo: Found a valid video chain (1 -&gt; 2).
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 1 (unit 0) : -62 (exp. 26).
+</I>&gt;<i> uvcvideo: Failed to query (129) UVC control 1 (unit 0) : -62 (exp. 26).
+</I>&gt;<i> uvcvideo: Failed to initialize the device (-5).
+</I>&gt;<i> usb 2-2: USB disconnect, address 2
+</I>&gt;<i> usb 2-2: new full speed USB device using ohci_hcd and address 3
+</I>
+Did you disconnect and reconnect the camera ? Error -62 is -ETIME and can mean 
+that the device has been disconnected but the USB hub (which can be the root 
+hub inside your computer) hasn't notified the operating system yet. The 
+disconnect message hints that this is probably the case.
+
+If you didn't disconnect the device this doesn't seem too serious as the 
+device reconnects and is then properly detected. It can caused by some kind 
+of transient electrical/cable issue.
+
+&gt;<i> usb 2-2: configuration #1 chosen from 1 choice
+</I>&gt;<i> uvcvideo: Probing known UVC device 2 (0e8d:0004)
+</I>&gt;<i> uvcvideo: Found format MJPEG.
+</I>&gt;<i> uvcvideo: - 160x120 (20.0 fps)
+</I>&gt;<i> uvcvideo: - 320x240 (20.0 fps)
+</I>&gt;<i> uvcvideo: - 640x480 (20.0 fps)
+</I>&gt;<i> uvcvideo: Found a Status endpoint (addr 83).
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device OT-C701/ (0e8d:0004)
+</I>[snip]
+&gt;<i> uvcvideo: Scanning UVC chain: OT 2 &lt;- PU 3 &lt;- IT 1
+</I>&gt;<i> uvcvideo: Found a valid video chain (1 -&gt; 2).
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>
+Don't worry about this error. This is not fatal.
+
+&gt;<i> input: OT-C701/ as /class/input/input5
+</I>&gt;<i> ---
+</I>&gt;<i>
+</I>&gt;<i> -&gt; Now I launch luvcview (luvcview -w, because i'm using compiz)
+</I>&gt;<i>
+</I>&gt;<i> ---
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 10000x10000.
+</I>&gt;<i> uvcvideo: Using default frame interval 50000.0 us (20.0 fps).
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 320x240.
+</I>&gt;<i> uvcvideo: Using default frame interval 50000.0 us (20.0 fps).
+</I>&gt;<i> uvcvideo: Setting frame interval to 1/15 (666666).
+</I>&gt;<i> ---
+</I>&gt;<i>
+</I>&gt;<i> -&gt; All's ok. Let's try ekiga (ekiga-2.0.12)
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 10000x10000.
+</I>&gt;<i> uvcvideo: Using default frame interval 50000.0 us (20.0 fps).
+</I>&gt;<i> uvcvideo: Trying format 0x32315559 (YU12): 320x240.
+</I>&gt;<i> uvcvideo: Unsupported format 0x32315559.
+</I>&gt;<i> uvcvideo: Trying format 0x34424752 (RGB4): 320x240.
+</I>&gt;<i> uvcvideo: Unsupported format 0x34424752.
+</I>&gt;<i> uvcvideo: Trying format 0x34524742 (BGR4): 320x240.
+</I>&gt;<i> uvcvideo: Unsupported format 0x34524742.
+</I>&gt;<i> uvcvideo: Trying format 0x33424752 (RGB3): 320x240.
+</I>&gt;<i> uvcvideo: Unsupported format 0x33424752.
+</I>&gt;<i> uvcvideo: Trying format 0x33524742 (BGR3): 320x240.
+</I>&gt;<i> uvcvideo: Unsupported format 0x33524742.
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 320x240.
+</I>&gt;<i> uvcvideo: Using default frame interval 50000.0 us (20.0 fps).
+</I>&gt;<i> uvcvideo: Setting frame interval to 1/20 (500000).
+</I>&gt;<i> uvcvideo: Setting frame interval to 1/30 (333333).
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 10000x10000.
+</I>&gt;<i> uvcvideo: Using default frame interval 50000.0 us (20.0 fps).
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 176x144.
+</I>&gt;<i> uvcvideo: Using default frame interval 50000.0 us (20.0 fps).
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 10000x10000.
+</I>&gt;<i> uvcvideo: Using default frame interval 50000.0 us (20.0 fps).
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 10000x10000.
+</I>&gt;<i> uvcvideo: Using default frame interval 50000.0 us (20.0 fps).
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 10000x10000.
+</I>&gt;<i> uvcvideo: Using default frame interval 50000.0 us (20.0 fps).
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 352x288.
+</I>&gt;<i> uvcvideo: Using default frame interval 50000.0 us (20.0 fps).
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 10000x10000.
+</I>&gt;<i> uvcvideo: Using default frame interval 50000.0 us (20.0 fps).
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 10000x10000.
+</I>&gt;<i> uvcvideo: Using default frame interval 50000.0 us (20.0 fps).
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 352x240.
+</I>&gt;<i> uvcvideo: Using default frame interval 50000.0 us (20.0 fps).
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 10000x10000.
+</I>&gt;<i> uvcvideo: Using default frame interval 50000.0 us (20.0 fps).
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 10000x10000.
+</I>&gt;<i> uvcvideo: Using default frame interval 50000.0 us (20.0 fps).
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 320x240.
+</I>&gt;<i> uvcvideo: Using default frame interval 50000.0 us (20.0 fps).
+</I>&gt;<i> uvcvideo: Setting frame interval to 1/20 (500000).
+</I>&gt;<i> uvcvideo: Failed to query (132) UVC control 2 (unit 3) : -110 (exp. 2).
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 7 (unit 3) : -110 (exp. 2).
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 3 (unit 3) : -110 (exp. 2).
+</I>
+Here the camera starts timing out every request.
+
+&gt;<i> uvcvideo: Non-zero status (-62) in video completion handler.
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 6 (unit 3) : -62 (exp. 2).
+</I>&gt;<i> uvcvideo: Non-zero status (-62) in video completion handler.
+</I>&gt;<i> uvcvideo: Non-zero status (-62) in video completion handler.
+</I>&gt;<i> uvcvideo: Non-zero status (-62) in video completion handler.
+</I>&gt;<i> uvcvideo: Non-zero status (-62) in status completion handler.
+</I>&gt;<i> uvcvideo: Non-zero status (-62) in video completion handler.
+</I>&gt;<i> usb 2-2: USB disconnect, address 3
+</I>
+And it then gets disconnected.
+
+&gt;<i> usb 2-2: new full speed USB device using ohci_hcd and address 4
+</I>
+And reconnected.
+
+&gt;<i> usb 2-2: device descriptor read/64, error -62
+</I>&gt;<i> usb 2-2: device descriptor read/64, error -62
+</I>&gt;<i> usb 2-2: new full speed USB device using ohci_hcd and address 5
+</I>&gt;<i> usb 2-2: device descriptor read/64, error -62
+</I>&gt;<i> usb 2-2: device descriptor read/64, error -62
+</I>&gt;<i> usb 2-2: new full speed USB device using ohci_hcd and address 6
+</I>&gt;<i> usb 2-2: device not accepting address 6, error -62
+</I>&gt;<i> usb 2-2: new full speed USB device using ohci_hcd and address 7
+</I>&gt;<i> usb 2-2: device not accepting address 7, error -62
+</I>&gt;<i> usb 2-2: new full speed USB device using ohci_hcd and address 8
+</I>
+A few times.
+
+&gt;<i> usb 2-2: configuration #1 chosen from 1 choice
+</I>&gt;<i> uvcvideo: Probing known UVC device 2 (0e8d:0004)
+</I>&gt;<i> uvcvideo: Found format MJPEG.
+</I>&gt;<i> uvcvideo: - 160x120 (20.0 fps)
+</I>&gt;<i> uvcvideo: - 320x240 (20.0 fps)
+</I>&gt;<i> uvcvideo: - 640x480 (20.0 fps)
+</I>&gt;<i> uvcvideo: Found a Status endpoint (addr 83).
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device OT-C701/ (0e8d:0004)
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/2 to device
+</I>&gt;<i> 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/3 to device
+</I>&gt;<i> 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/6 to device
+</I>&gt;<i> 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/7 to device
+</I>&gt;<i> 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/8 to device
+</I>&gt;<i> 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/9 to device
+</I>&gt;<i> 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/10 to
+</I>&gt;<i> device 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/1 to device
+</I>&gt;<i> 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/5 to device
+</I>&gt;<i> 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/16 to
+</I>&gt;<i> device 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/11 to
+</I>&gt;<i> device 2 entity 3
+</I>&gt;<i> uvcvideo: Scanning UVC chain: OT 2 &lt;- PU 3 &lt;- IT 1
+</I>&gt;<i> uvcvideo: Found a valid video chain (1 -&gt; 2).
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 1 (unit 0) : -62 (exp. 26).
+</I>&gt;<i> uvcvideo: Failed to query (129) UVC control 1 (unit 0) : -62 (exp. 26).
+</I>&gt;<i> uvcvideo: Failed to initialize the device (-5).
+</I>&gt;<i> usb 2-2: USB disconnect, address 8
+</I>&gt;<i> usb 2-2: new full speed USB device using ohci_hcd and address 9
+</I>&gt;<i> usb 2-2: configuration #1 chosen from 1 choice
+</I>&gt;<i> uvcvideo: Probing known UVC device 2 (0e8d:0004)
+</I>&gt;<i> uvcvideo: Found format MJPEG.
+</I>&gt;<i> uvcvideo: - 160x120 (20.0 fps)
+</I>&gt;<i> uvcvideo: - 320x240 (20.0 fps)
+</I>&gt;<i> uvcvideo: - 640x480 (20.0 fps)
+</I>&gt;<i> uvcvideo: Found a Status endpoint (addr 83).
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device OT-C701/ (0e8d:0004)
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/2 to device
+</I>&gt;<i> 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/3 to device
+</I>&gt;<i> 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/6 to device
+</I>&gt;<i> 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/7 to device
+</I>&gt;<i> 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/8 to device
+</I>&gt;<i> 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/9 to device
+</I>&gt;<i> 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/10 to
+</I>&gt;<i> device 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/1 to device
+</I>&gt;<i> 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/5 to device
+</I>&gt;<i> 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/16 to
+</I>&gt;<i> device 2 entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/11 to
+</I>&gt;<i> device 2 entity 3
+</I>&gt;<i> uvcvideo: Scanning UVC chain: OT 2 &lt;- PU 3 &lt;- IT 1
+</I>&gt;<i> uvcvideo: Found a valid video chain (1 -&gt; 2).
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>&gt;<i> input: OT-C701/ as /class/input/input6
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 10000x10000.
+</I>&gt;<i> uvcvideo: Using default frame interval 50000.0 us (20.0 fps).
+</I>&gt;<i> uvcvideo: UVC device initialized.
+</I>&gt;<i> ---
+</I>&gt;<i>
+</I>&gt;<i> -&gt; As you see, webcam gets reset. Any help, please? Thanks!
+</I>
+There's an issue either with the hardware or with the USB host controller / 
+root hub driver. Device connection/disconnection issues are well beneath the 
+UVC driver.
+
+Your device can be buggy (many webcam firmwares seem to have been badly 
+engineered), your USB controller can be buggy, or the Linux USB core/host 
+controller driver can be buggy. You should contact the linux-usb mailing 
+list, they should be able to give you some more information about the 
+disconnection issue and its possible causes. Please CC me if you do, as I'm 
+interested in the answer.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004081.html">[Linux-uvc-devel] device 0e8d:0004 only works with luvcview
+</A></li>
+	<LI>Next message: <A HREF="004082.html">[Linux-uvc-devel] uvc camera with Cheese and Camorama
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4084">[ date ]</a>
+              <a href="thread.html#4084">[ thread ]</a>
+              <a href="subject.html#4084">[ subject ]</a>
+              <a href="author.html#4084">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20VIDIOC_%5BGS%5D_JPEGCOMP%20support&In-Reply-To=%3C200907231028.41318.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005003.html">
+   <LINK REL="Next"  HREF="005005.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20VIDIOC_%5BGS%5D_JPEGCOMP%20support&In-Reply-To=%3C200907231028.41318.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Thu Jul 23 10:28:40 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005003.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+        <LI>Next message: <A HREF="005005.html">[Linux-uvc-devel] Report new webcam not in the list
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5004">[ date ]</a>
+              <a href="thread.html#5004">[ thread ]</a>
+              <a href="subject.html#5004">[ subject ]</a>
+              <a href="author.html#5004">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Jon,
+
+On Thursday 23 July 2009 10:15:19 Jon Fairbairn wrote:
+&gt;<i> Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; writes:
+</I>&gt;<i> &gt; Hi Jon,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Tuesday 02 June 2009 19:34:55 Jon Fairbairn wrote:
+</I>&gt;<i> &gt;&gt; Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; writes:
+</I>&gt;<i> &gt;&gt; &gt; I would still be interested in messages printed by the
+</I>&gt;<i> &gt;&gt; &gt; uvcvideo driver in the kernel log when running motion.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; With trace=15, there's quite a lot. I've removed what I think
+</I>&gt;<i> &gt;&gt; is boring, but let me know if I've trimmed too much:
+</I>&gt;<i>
+</I>&gt;<i> [...]
+</I>&gt;<i>
+</I>&gt;<i> &gt;&gt; Enabling workaround. [ the next section repeats continually while motion
+</I>&gt;<i> &gt;&gt; is running ]
+</I>&gt;<i> &gt;&gt; uvcvideo: Trying format 0x47504a4d (MJPG): 352x288.
+</I>&gt;<i> &gt;&gt; uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+</I>&gt;<i> &gt;&gt; uvcvideo: Trying format 0x47504a4d (MJPG): 352x288.
+</I>&gt;<i> &gt;&gt; uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+</I>&gt;<i> &gt;&gt; uvcvideo: Setting jpeg quality to 100.
+</I>&gt;<i> &gt;&gt; uvcvideo: Control 0x0098090e not found.
+</I>&gt;<i> &gt;&gt; uvcvideo: Control 0x0098090f not found.
+</I>&gt;<i> &gt;&gt; uvcvideo: Control 0x00980911 not found.
+</I>&gt;<i> &gt;&gt; uvcvideo: Control 0x00980912 not found.
+</I>&gt;<i> &gt;&gt; uvcvideo: Control 0x00980913 not found.
+</I>&gt;<i> &gt;&gt; uvcvideo: Control 0x08000000 not found.
+</I>&gt;<i> &gt;&gt; uvcvideo: Control 0x08000001 not found.
+</I>&gt;<i> &gt;&gt; uvcvideo: device Live! Cam Optia requested null bandwidth, defaulting to
+</I>&gt;<i> &gt;&gt; lowest.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; The problem might be in motion then.
+</I>&gt;<i>
+</I>&gt;<i> It turns out that the problem is that the Creative Live! Cam Optia can't
+</I>&gt;<i> drive 4.8m of cable properly (even though that's less than the spec),
+</I>&gt;<i> and drops/corrupts frames. Then motion is rather too intolerant of bad
+</I>&gt;<i> frames. With no extension lead or a hub (even bus-powered) in the line,
+</I>&gt;<i> the problem disappears.
+</I>&gt;<i>
+</I>&gt;<i> &gt;&gt; &gt; &gt; mplayer with -tv mjpeg
+</I>&gt;<i> &gt;&gt; &gt;
+</I>&gt;<i> &gt;&gt; &gt; It might still be using MJPEG, although this sounds a bit
+</I>&gt;<i> &gt;&gt; &gt; weird.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; It doesn't look like it...
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; And there might be a problem in mplayer as well.
+</I>&gt;<i>
+</I>&gt;<i> That seems likely. If I have time I'll report that. In the meantime, I
+</I>&gt;<i> reckon the JPEGCOMP support is working. Can it go into the released
+</I>&gt;<i> version, please?
+</I>
+Unfortunately, no.
+
+According to V4L2 developers (see this thread 
+<A HREF="http://thread.gmane.org/gmane.linux.drivers.video-input-">http://thread.gmane.org/gmane.linux.drivers.video-input-</A>
+infrastructure/6320/focus=6425), VIDIOC_[GS]_JPEGCOMP ioctls are deprecated 
+and should be replaced by controls. Nobody has had time to write a spec yet, 
+so JPEG support is currently stalled.
+
+Regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005003.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+	<LI>Next message: <A HREF="005005.html">[Linux-uvc-devel] Report new webcam not in the list
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5004">[ date ]</a>
+              <a href="thread.html#5004">[ thread ]</a>
+              <a href="subject.html#5004">[ subject ]</a>
+              <a href="author.html#5004">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

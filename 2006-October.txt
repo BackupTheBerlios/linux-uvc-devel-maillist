@@ -1,0 +1,4086 @@
+From rphbrady at gmail.com  Sun Oct  1 03:50:55 2006
+From: rphbrady at gmail.com (Richard Brady)
+Date: Sun, 1 Oct 2006 11:50:55 +1000
+Subject: [Linux-uvc-devel] uvcview, QC fusion and FC5
+In-Reply-To: <eba5a5ad0609301841n88af274g7b2cef0bb5e052f5@mail.gmail.com>
+References: <eba5a5ad0609301841n88af274g7b2cef0bb5e052f5@mail.gmail.com>
+Message-ID: <eba5a5ad0609301850j38d26bb4sf367ac25247d629f@mail.gmail.com>
+
+Hi,
+  I'm trying to get a QC fusion running on FC5 and am not having much luck.
+  I appogise now for being a total noob at setting up webcams on linux
+so I may well be missing something simple ,like not starting the
+device before trying to access it, but I was searching all day
+yesterday and came up with nothing.. mailing you guys is the desperate
+act of a desperate man! :)
+
+  I'm running 2.6.17-1.257_FC5 and have compiled uvcvideo from source.
+It seems to have installed OK as uvccapture can happily grab still
+images. I can't get anything else working though.
+
+   'xawtv -hwscan' - sees the device OK
+This is xawtv-3.95, running on Linux/i686 (2.6.17-1.2157_FC5)
+looking for available devices
+/dev/video0: OK                         [ -device /dev/video0 ]
+    type : v4l2
+    name : DViCO FusionHDTV DVB-T Plus
+    flags: overlay capture tuner
+
+/dev/video1: OK                         [ -device /dev/video1 ]
+    type : v4l2
+    name : DViCO FusionHDTV DVB-T Plus
+    flags: overlay capture tuner
+
+/dev/video2: OK                         [ -device /dev/video2 ]
+    type : v4l2
+    name : USB Video Class device
+    flags:  capture
+
+  'luvcview -d/dev/video2'
+uvcview version 0.1.7
+Video driver: x11
+A window manager is available
+video /dev/video0
+Unable to set format: 22.
+ Init v4L2 failed !! exit fatal
+
+  'camstream' detects the usb cam fine but when I select it I get
+CVideoDeviceInput: Warning: no channel info available.
+CCamWindow::CCamWindow()
+CWebCamViewer::CWebCamViewer(0x9ce1b28, 0x0)
+CVideoDevice::Init()
+Allocating own buffer.
+Trying to find video options for USB Video Class device:/dev/video2
+searching USB Video Class device
+CSnapshotSettingsDlg::CSnapshotSettingsDlg(...)
+QFont::setRawName(): Invalid XLFD: "system"
+CVideoSettingsDlg::SizeChanged(320x240)
+CVideoSettingsDlg::FramerateChanged(10)
+CCamPanel::SetSize(320x240)
+CCamPanel::SetImageSize(320x240)
+CCamPanel::SetVisibleSize(320x240)
+CCamPanel::SetSize(320x240)
+CCamPanel::SetImageSize(320x240)
+CCamPanel::SetVisibleSize(320x240)
+RecalcTotalViewSize: resize viewport(320x240)
+EnableRGB: +
+CVideoDevice::SetPalette picked palette 0 []
+CVideoDevice::CreateImagesRGB()
+ allocating space for RGB
+CVideoDevice::StartCapture() go!
+CVideoDevice::LoadImage() Error loading image; errorcode=-19
+
+   'xawtv -c/dev/video2'
+This is xawtv-3.95, running on Linux/i686 (2.6.17-1.2157_FC5)
+WARNING: v4l-conf is compiled without DGA support.
+/dev/video0 [v4l2]: ioctl VIDIOC_G_FBUF: Invalid argument
+v4l-conf had some trouble, trying to continue anyway
+ioctl: VIDIOC_G_FBUF(capability=0x0 [];flags=0x0
+[];base=(nil);fmt.width=0;fmt.height=0;fmt.pixelformat=0x00000000
+[....];fmt.field=ANY;fmt.bytesperline=0;fmt.sizeimage=0;fmt.colorspace=unknown;fmt.priv=0):
+Invalid argument
+station "-c/dev/video2" not found
+ioctl: VIDIOC_TRY_FMT(type=VIDEO_OVERLAY;fmt.win.w.left=972;fmt.win.w.top=24;fmt.win.w.width=384;fmt.win.w.height=288;fmt.win.field=ANY;fmt.win.chromakey=0;fmt.win.clips=(nil);fmt.win.clipcount=0;fmt.win.bitmap=(nil)):
+Invalid argument
+ioctl: VIDIOC_S_FMT(type=VIDEO_OVERLAY;fmt.win.w.left=972;fmt.win.w.top=24;fmt.win.w.width=384;fmt.win.w.height=288;fmt.win.field=ANY;fmt.win.chromakey=0;fmt.win.clips=(nil);fmt.win.clipcount=0;fmt.win.bitmap=(nil)):
+Invalid argument
+ioctl: VIDIOC_OVERLAY(int=0): Invalid argument
+ioctl: VIDIOC_TRY_FMT(type=VIDEO_OVERLAY;fmt.win.w.left=972;fmt.win.w.top=24;fmt.win.w.width=384;fmt.win.w.height=288;fmt.win.field=ANY;fmt.win.chromakey=0;fmt.win.clips=(nil);fmt.win.clipcount=0;fmt.win.bitmap=(nil)):
+Invalid argument
+ioctl: VIDIOC_S_FMT(type=VIDEO_OVERLAY;fmt.win.w.left=972;fmt.win.w.top=24;fmt.win.w.width=384;fmt.win.w.height=288;fmt.win.field=ANY;fmt.win.chromakey=0;fmt.win.clips=(nil);fmt.win.clipcount=0;fmt.win.bitmap=(nil)):
+Invalid argument
+ioctl: VIDIOC_OVERLAY(int=0): Invalid argument
+
+ I have also tried ekiga which also detects the webcam but give me
+'Failed to open device' messages.
+  I am running as root and have granted rwx permissions to all for
+/dev/video2 just to be sure that wasn't the problem.
+ Does anyone have any advice on what I should try now?
+
+Thanks in advance
+
+Rich.
+
+-----------------------
+Some other info that might help:
+
+'cat /proc/filesystems | grep usb'
+nodev   usbfs
+
+'lsmod | grep usb'
+snd_usb_audio          75073  1
+snd_usb_lib            16833  1 snd_usb_audio
+snd_rawmidi            25665  1 snd_usb_lib
+snd_hwdep              10053  1 snd_usb_audio
+snd_pcm                83781  4
+snd_usb_audio,snd_hda_intel,snd_hda_codec,snd_pcm_oss
+snd                    55237  12
+snd_usb_audio,snd_rawmidi,snd_hwdep,snd_hda_intel,snd_hda_codec,snd_seq_oss,snd_seq,snd_seq_device,snd_pcm_oss,snd_mixer_oss,snd_pcm,snd_timer
+
+'cat /var/log/messages'
+Oct  1 11:02:19 mythbox syslogd 1.4.1: restart.
+Oct  1 11:19:14 mythbox kernel: usb 1-3: new high speed USB device
+using ehci_hcd and address 4
+Oct  1 11:19:14 mythbox kernel: usb 1-3: configuration #1 chosen from 1 choice
+Oct  1 11:19:14 mythbox kernel: uvcvideo: Found UVC 1.00 device
+<unnamed> (046d:08c1)
+Oct  1 11:19:15 mythbox kernel: 4:3:1: cannot set freq 0 to ep 0x86
+Oct  1 11:19:16 mythbox kernel: 4:3:2: cannot set freq 0 to ep 0x86
+Oct  1 11:19:17 mythbox kernel: 4:3:3: cannot get freq at ep 0x86
+Oct  1 11:19:33 mythbox kernel: uvcvideo: Failed to query (132) UVC
+control 4 (unit 2) : -32.
+Oct  1 11:21:42 mythbox gconfd (mythtv-5036): starting (version
+2.14.0), pid 5036 user 'mythtv'
+Oct  1 11:21:42 mythbox gconfd (mythtv-5036): Resolved address
+"xml:readonly:/etc/gconf/gconf.xml.mandatory" to a read-only
+configuration source at position 0
+Oct  1 11:21:42 mythbox gconfd (mythtv-5036): Resolved address
+"xml:readwrite:/home/mythtv/.gconf" to a writable configuration source
+at position 1
+Oct  1 11:21:42 mythbox gconfd (mythtv-5036): Resolved address
+"xml:readonly:/etc/gconf/gconf.xml.defaults" to a read-only
+configuration source at position 2
+Oct  1 11:32:01 mythbox kernel: uvcvideo: Failed to query (135) UVC
+control 2 (unit 2) : -110.
+Oct  1 11:32:01 mythbox kernel: uvcvideo: Failed to query (130) UVC
+control 2 (unit 2) : -75.
+Oct  1 11:32:02 mythbox kernel: uvcvideo: Failed to query (135) UVC
+control 2 (unit 2) : -110.
+Oct  1 11:32:02 mythbox kernel: uvcvideo: Failed to query (130) UVC
+control 2 (unit 2) : -75.
+Oct  1 11:32:02 mythbox kernel: uvcvideo: Failed to query (131) UVC
+control 2 (unit 2) : -32.
+Oct  1 11:32:03 mythbox kernel: uvcvideo: Failed to query (135) UVC
+control 2 (unit 2) : -110.
+...
+
+
+From mclaughlin.denis at gmail.com  Sun Oct  1 07:15:25 2006
+From: mclaughlin.denis at gmail.com (Denis McLaughlin)
+Date: Sun, 1 Oct 2006 01:15:25 -0400
+Subject: [Linux-uvc-devel] uvcview, QC fusion and FC5
+In-Reply-To: <eba5a5ad0609301850j38d26bb4sf367ac25247d629f@mail.gmail.com>
+References: <eba5a5ad0609301841n88af274g7b2cef0bb5e052f5@mail.gmail.com>
+	<eba5a5ad0609301850j38d26bb4sf367ac25247d629f@mail.gmail.com>
+Message-ID: <74e91400609302215h5c162585i8d56f8688e2efb1c@mail.gmail.com>
+
+Hi,
+
+  I don't know too much, but after some futzing, I did manage to get a bunch
+of QC fusions working, though on Debian rather than FC.
+
+  The lsmod | grep usb output you provide doesn't show usbcore installed,
+which seems a bit odd.  Did you load the uvcvideo module?  Giving the full
+output of lsmod would help.  :)
+
+Denis
+
+On 9/30/06, Richard Brady <rphbrady at gmail.com> wrote:
+>
+> Hi,
+>   I'm trying to get a QC fusion running on FC5 and am not having much
+> luck.
+>   I appogise now for being a total noob at setting up webcams on linux
+> so I may well be missing something simple ,like not starting the
+> device before trying to access it, but I was searching all day
+> yesterday and came up with nothing.. mailing you guys is the desperate
+> act of a desperate man! :)
+>
+>   I'm running 2.6.17-1.257_FC5 and have compiled uvcvideo from source.
+> It seems to have installed OK as uvccapture can happily grab still
+> images. I can't get anything else working though.
+>
+>    'xawtv -hwscan' - sees the device OK
+> This is xawtv-3.95, running on Linux/i686 (2.6.17-1.2157_FC5)
+> looking for available devices
+> /dev/video0: OK                         [ -device /dev/video0 ]
+>     type : v4l2
+>     name : DViCO FusionHDTV DVB-T Plus
+>     flags: overlay capture tuner
+>
+> /dev/video1: OK                         [ -device /dev/video1 ]
+>     type : v4l2
+>     name : DViCO FusionHDTV DVB-T Plus
+>     flags: overlay capture tuner
+>
+> /dev/video2: OK                         [ -device /dev/video2 ]
+>     type : v4l2
+>     name : USB Video Class device
+>     flags:  capture
+>
+>   'luvcview -d/dev/video2'
+> uvcview version 0.1.7
+> Video driver: x11
+> A window manager is available
+> video /dev/video0
+> Unable to set format: 22.
+> Init v4L2 failed !! exit fatal
+>
+>   'camstream' detects the usb cam fine but when I select it I get
+> CVideoDeviceInput: Warning: no channel info available.
+> CCamWindow::CCamWindow()
+> CWebCamViewer::CWebCamViewer(0x9ce1b28, 0x0)
+> CVideoDevice::Init()
+> Allocating own buffer.
+> Trying to find video options for USB Video Class device:/dev/video2
+> searching USB Video Class device
+> CSnapshotSettingsDlg::CSnapshotSettingsDlg(...)
+> QFont::setRawName(): Invalid XLFD: "system"
+> CVideoSettingsDlg::SizeChanged(320x240)
+> CVideoSettingsDlg::FramerateChanged(10)
+> CCamPanel::SetSize(320x240)
+> CCamPanel::SetImageSize(320x240)
+> CCamPanel::SetVisibleSize(320x240)
+> CCamPanel::SetSize(320x240)
+> CCamPanel::SetImageSize(320x240)
+> CCamPanel::SetVisibleSize(320x240)
+> RecalcTotalViewSize: resize viewport(320x240)
+> EnableRGB: +
+> CVideoDevice::SetPalette picked palette 0 []
+> CVideoDevice::CreateImagesRGB()
+> allocating space for RGB
+> CVideoDevice::StartCapture() go!
+> CVideoDevice::LoadImage() Error loading image; errorcode=-19
+>
+>    'xawtv -c/dev/video2'
+> This is xawtv-3.95, running on Linux/i686 (2.6.17-1.2157_FC5)
+> WARNING: v4l-conf is compiled without DGA support.
+> /dev/video0 [v4l2]: ioctl VIDIOC_G_FBUF: Invalid argument
+> v4l-conf had some trouble, trying to continue anyway
+> ioctl: VIDIOC_G_FBUF(capability=0x0 [];flags=0x0
+> [];base=(nil);fmt.width=0;fmt.height=0;fmt.pixelformat=0x00000000
+>
+> [....];fmt.field=ANY;fmt.bytesperline=0;fmt.sizeimage=0;fmt.colorspace=unknown;fmt.priv=0):
+> Invalid argument
+> station "-c/dev/video2" not found
+> ioctl:
+> VIDIOC_TRY_FMT(type=VIDEO_OVERLAY;fmt.win.w.left=972;fmt.win.w.top=24;fmt.win.w.width=384;fmt.win.w.height=288;fmt.win.field=ANY;fmt.win.chromakey=0;fmt.win.clips=(nil);fmt.win.clipcount=0;fmt.win.bitmap=(nil)):
+> Invalid argument
+> ioctl:
+> VIDIOC_S_FMT(type=VIDEO_OVERLAY;fmt.win.w.left=972;fmt.win.w.top=24;fmt.win.w.width=384;fmt.win.w.height=288;fmt.win.field=ANY;fmt.win.chromakey=0;fmt.win.clips=(nil);fmt.win.clipcount=0;fmt.win.bitmap=(nil)):
+> Invalid argument
+> ioctl: VIDIOC_OVERLAY(int=0): Invalid argument
+> ioctl:
+> VIDIOC_TRY_FMT(type=VIDEO_OVERLAY;fmt.win.w.left=972;fmt.win.w.top=24;fmt.win.w.width=384;fmt.win.w.height=288;fmt.win.field=ANY;fmt.win.chromakey=0;fmt.win.clips=(nil);fmt.win.clipcount=0;fmt.win.bitmap=(nil)):
+> Invalid argument
+> ioctl:
+> VIDIOC_S_FMT(type=VIDEO_OVERLAY;fmt.win.w.left=972;fmt.win.w.top=24;fmt.win.w.width=384;fmt.win.w.height=288;fmt.win.field=ANY;fmt.win.chromakey=0;fmt.win.clips=(nil);fmt.win.clipcount=0;fmt.win.bitmap=(nil)):
+> Invalid argument
+> ioctl: VIDIOC_OVERLAY(int=0): Invalid argument
+>
+> I have also tried ekiga which also detects the webcam but give me
+> 'Failed to open device' messages.
+>   I am running as root and have granted rwx permissions to all for
+> /dev/video2 just to be sure that wasn't the problem.
+> Does anyone have any advice on what I should try now?
+>
+> Thanks in advance
+>
+> Rich.
+>
+> -----------------------
+> Some other info that might help:
+>
+> 'cat /proc/filesystems | grep usb'
+> nodev   usbfs
+>
+> 'lsmod | grep usb'
+> snd_usb_audio          75073  1
+> snd_usb_lib            16833  1 snd_usb_audio
+> snd_rawmidi            25665  1 snd_usb_lib
+> snd_hwdep              10053  1 snd_usb_audio
+> snd_pcm                83781  4
+> snd_usb_audio,snd_hda_intel,snd_hda_codec,snd_pcm_oss
+> snd                    55237  12
+>
+> snd_usb_audio,snd_rawmidi,snd_hwdep,snd_hda_intel,snd_hda_codec,snd_seq_oss,snd_seq,snd_seq_device,snd_pcm_oss,snd_mixer_oss,snd_pcm,snd_timer
+>
+> 'cat /var/log/messages'
+> Oct  1 11:02:19 mythbox syslogd 1.4.1: restart.
+> Oct  1 11:19:14 mythbox kernel: usb 1-3: new high speed USB device
+> using ehci_hcd and address 4
+> Oct  1 11:19:14 mythbox kernel: usb 1-3: configuration #1 chosen from 1
+> choice
+> Oct  1 11:19:14 mythbox kernel: uvcvideo: Found UVC 1.00 device
+> <unnamed> (046d:08c1)
+> Oct  1 11:19:15 mythbox kernel: 4:3:1: cannot set freq 0 to ep 0x86
+> Oct  1 11:19:16 mythbox kernel: 4:3:2: cannot set freq 0 to ep 0x86
+> Oct  1 11:19:17 mythbox kernel: 4:3:3: cannot get freq at ep 0x86
+> Oct  1 11:19:33 mythbox kernel: uvcvideo: Failed to query (132) UVC
+> control 4 (unit 2) : -32.
+> Oct  1 11:21:42 mythbox gconfd (mythtv-5036): starting (version
+> 2.14.0), pid 5036 user 'mythtv'
+> Oct  1 11:21:42 mythbox gconfd (mythtv-5036): Resolved address
+> "xml:readonly:/etc/gconf/gconf.xml.mandatory" to a read-only
+> configuration source at position 0
+> Oct  1 11:21:42 mythbox gconfd (mythtv-5036): Resolved address
+> "xml:readwrite:/home/mythtv/.gconf" to a writable configuration source
+> at position 1
+> Oct  1 11:21:42 mythbox gconfd (mythtv-5036): Resolved address
+> "xml:readonly:/etc/gconf/gconf.xml.defaults" to a read-only
+> configuration source at position 2
+> Oct  1 11:32:01 mythbox kernel: uvcvideo: Failed to query (135) UVC
+> control 2 (unit 2) : -110.
+> Oct  1 11:32:01 mythbox kernel: uvcvideo: Failed to query (130) UVC
+> control 2 (unit 2) : -75.
+> Oct  1 11:32:02 mythbox kernel: uvcvideo: Failed to query (135) UVC
+> control 2 (unit 2) : -110.
+> Oct  1 11:32:02 mythbox kernel: uvcvideo: Failed to query (130) UVC
+> control 2 (unit 2) : -75.
+> Oct  1 11:32:02 mythbox kernel: uvcvideo: Failed to query (131) UVC
+> control 2 (unit 2) : -32.
+> Oct  1 11:32:03 mythbox kernel: uvcvideo: Failed to query (135) UVC
+> control 2 (unit 2) : -110.
+> ...
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061001/91516175/attachment.html>
+
+From martin_rubli at logitech.com  Sun Oct  1 08:44:16 2006
+From: martin_rubli at logitech.com (Martin Rubli)
+Date: Sat, 30 Sep 2006 23:44:16 -0700
+Subject: [Linux-uvc-devel] uvcview, QC fusion and FC5
+In-Reply-To: <eba5a5ad0609301850j38d26bb4sf367ac25247d629f@mail.gmail.com>
+References: <eba5a5ad0609301841n88af274g7b2cef0bb5e052f5@mail.gmail.com>
+	<eba5a5ad0609301850j38d26bb4sf367ac25247d629f@mail.gmail.com>
+Message-ID: <op.tgqcz2qzsttmjo@maya>
+
+Hey Richard,
+
+>   I'm running 2.6.17-1.257_FC5 and have compiled uvcvideo from source.
+> It seems to have installed OK as uvccapture can happily grab still
+> images. I can't get anything else working though.
+
+If you can capture images at all, that's already a good sign. It means the  
+driver works and the problem is (probably) elsewhere. :-)
+
+>    'xawtv -hwscan' - sees the device OK
+> This is xawtv-3.95, running on Linux/i686 (2.6.17-1.2157_FC5)
+> looking for available devices
+> /dev/video0: OK                         [ -device /dev/video0 ]
+>     type : v4l2
+>     name : DViCO FusionHDTV DVB-T Plus
+>     flags: overlay capture tuner
+>
+> /dev/video1: OK                         [ -device /dev/video1 ]
+>     type : v4l2
+>     name : DViCO FusionHDTV DVB-T Plus
+>     flags: overlay capture tuner
+>
+> /dev/video2: OK                         [ -device /dev/video2 ]
+>     type : v4l2
+>     name : USB Video Class device
+>     flags:  capture
+
+Another good sign, although xawtv is known not to work correctly with UVC  
+webcams.
+
+>   'luvcview -d/dev/video2'
+> uvcview version 0.1.7
+> Video driver: x11
+> A window manager is available
+> video /dev/video0
+> Unable to set format: 22.
+>  Init v4L2 failed !! exit fatal
+
+Look closely:
+> video /dev/video0
+
+Yes, luvcview is really picky about parsing the command line arguments.  
+You must have a space after "-d", then it should work.
+
+>  I have also tried ekiga which also detects the webcam but give me
+> 'Failed to open device' messages.
+>   I am running as root and have granted rwx permissions to all for
+> /dev/video2 just to be sure that wasn't the problem.
+
+Ekiga 2.0.2 is the first version to work correctly with UVC webcams AFAIK.  
+Which version are you using?
+
+>  Does anyone have any advice on what I should try now?
+
+A few things come to mind: Don't give up, report bugs where appropriate,  
+and help us improve webcam support on Linux. :-)
+
+> 'cat /var/log/messages'
+> Oct  1 11:02:19 mythbox syslogd 1.4.1: restart.
+> Oct  1 11:19:14 mythbox kernel: usb 1-3: new high speed USB device
+> using ehci_hcd and address 4
+> Oct  1 11:19:14 mythbox kernel: usb 1-3: configuration #1 chosen from 1  
+> choice
+> Oct  1 11:19:14 mythbox kernel: uvcvideo: Found UVC 1.00 device
+> <unnamed> (046d:08c1)
+> Oct  1 11:19:15 mythbox kernel: 4:3:1: cannot set freq 0 to ep 0x86
+> Oct  1 11:19:16 mythbox kernel: 4:3:2: cannot set freq 0 to ep 0x86
+> Oct  1 11:19:17 mythbox kernel: 4:3:3: cannot get freq at ep 0x86
+> Oct  1 11:19:33 mythbox kernel: uvcvideo: Failed to query (132) UVC
+> control 4 (unit 2) : -32.
+> Oct  1 11:21:42 mythbox gconfd (mythtv-5036): starting (version
+> 2.14.0), pid 5036 user 'mythtv'
+> Oct  1 11:21:42 mythbox gconfd (mythtv-5036): Resolved address
+> "xml:readonly:/etc/gconf/gconf.xml.mandatory" to a read-only
+> configuration source at position 0
+> Oct  1 11:21:42 mythbox gconfd (mythtv-5036): Resolved address
+> "xml:readwrite:/home/mythtv/.gconf" to a writable configuration source
+> at position 1
+> Oct  1 11:21:42 mythbox gconfd (mythtv-5036): Resolved address
+> "xml:readonly:/etc/gconf/gconf.xml.defaults" to a read-only
+> configuration source at position 2
+> Oct  1 11:32:01 mythbox kernel: uvcvideo: Failed to query (135) UVC
+> control 2 (unit 2) : -110.
+> Oct  1 11:32:01 mythbox kernel: uvcvideo: Failed to query (130) UVC
+> control 2 (unit 2) : -75.
+> Oct  1 11:32:02 mythbox kernel: uvcvideo: Failed to query (135) UVC
+> control 2 (unit 2) : -110.
+> Oct  1 11:32:02 mythbox kernel: uvcvideo: Failed to query (130) UVC
+> control 2 (unit 2) : -75.
+> Oct  1 11:32:02 mythbox kernel: uvcvideo: Failed to query (131) UVC
+> control 2 (unit 2) : -32.
+> Oct  1 11:32:03 mythbox kernel: uvcvideo: Failed to query (135) UVC
+> control 2 (unit 2) : -110.
+
+Yes, these are bad. If you see those you might need to retry whatever  
+caused the error or replug the camera. It's caused by a bug in the Fusion  
+firmware that occurs one some USB controllers. We're currently testing a  
+quick workaround and are still analyzing the problem so that future  
+cameras won't have the same problems.
+
+Cheers,
+Martin
+
+
+From rphbrady at gmail.com  Mon Oct  2 11:34:26 2006
+From: rphbrady at gmail.com (Richard Brady)
+Date: Mon, 2 Oct 2006 19:34:26 +1000
+Subject: [Linux-uvc-devel] uvcview, QC fusion and FC5
+In-Reply-To: <op.tgqcz2qzsttmjo@maya>
+References: <eba5a5ad0609301841n88af274g7b2cef0bb5e052f5@mail.gmail.com>
+	<eba5a5ad0609301850j38d26bb4sf367ac25247d629f@mail.gmail.com>
+	<op.tgqcz2qzsttmjo@maya>
+Message-ID: <eba5a5ad0610020234o5753ee68ne92e7637927693d2@mail.gmail.com>
+
+Thanks Martin,
+   I'm an idiot.. added the space to my lucview command as you
+suggested and it's working fine now, excellent!
+   For the record, I have ekiga 2.0.1 so I must just need an upgrade.
+
+Cheers,
+
+Rich.
+
+On 10/1/06, Martin Rubli <martin_rubli at logitech.com> wrote:
+> Hey Richard,
+>
+> >   I'm running 2.6.17-1.257_FC5 and have compiled uvcvideo from source.
+> > It seems to have installed OK as uvccapture can happily grab still
+> > images. I can't get anything else working though.
+>
+> If you can capture images at all, that's already a good sign. It means the
+> driver works and the problem is (probably) elsewhere. :-)
+>
+> >    'xawtv -hwscan' - sees the device OK
+> > This is xawtv-3.95, running on Linux/i686 (2.6.17-1.2157_FC5)
+> > looking for available devices
+> > /dev/video0: OK                         [ -device /dev/video0 ]
+> >     type : v4l2
+> >     name : DViCO FusionHDTV DVB-T Plus
+> >     flags: overlay capture tuner
+> >
+> > /dev/video1: OK                         [ -device /dev/video1 ]
+> >     type : v4l2
+> >     name : DViCO FusionHDTV DVB-T Plus
+> >     flags: overlay capture tuner
+> >
+> > /dev/video2: OK                         [ -device /dev/video2 ]
+> >     type : v4l2
+> >     name : USB Video Class device
+> >     flags:  capture
+>
+> Another good sign, although xawtv is known not to work correctly with UVC
+> webcams.
+>
+> >   'luvcview -d/dev/video2'
+> > uvcview version 0.1.7
+> > Video driver: x11
+> > A window manager is available
+> > video /dev/video0
+> > Unable to set format: 22.
+> >  Init v4L2 failed !! exit fatal
+>
+> Look closely:
+> > video /dev/video0
+>
+> Yes, luvcview is really picky about parsing the command line arguments.
+> You must have a space after "-d", then it should work.
+>
+> >  I have also tried ekiga which also detects the webcam but give me
+> > 'Failed to open device' messages.
+> >   I am running as root and have granted rwx permissions to all for
+> > /dev/video2 just to be sure that wasn't the problem.
+>
+> Ekiga 2.0.2 is the first version to work correctly with UVC webcams AFAIK.
+> Which version are you using?
+>
+> >  Does anyone have any advice on what I should try now?
+>
+> A few things come to mind: Don't give up, report bugs where appropriate,
+> and help us improve webcam support on Linux. :-)
+>
+> > 'cat /var/log/messages'
+> > Oct  1 11:02:19 mythbox syslogd 1.4.1: restart.
+> > Oct  1 11:19:14 mythbox kernel: usb 1-3: new high speed USB device
+> > using ehci_hcd and address 4
+> > Oct  1 11:19:14 mythbox kernel: usb 1-3: configuration #1 chosen from 1
+> > choice
+> > Oct  1 11:19:14 mythbox kernel: uvcvideo: Found UVC 1.00 device
+> > <unnamed> (046d:08c1)
+> > Oct  1 11:19:15 mythbox kernel: 4:3:1: cannot set freq 0 to ep 0x86
+> > Oct  1 11:19:16 mythbox kernel: 4:3:2: cannot set freq 0 to ep 0x86
+> > Oct  1 11:19:17 mythbox kernel: 4:3:3: cannot get freq at ep 0x86
+> > Oct  1 11:19:33 mythbox kernel: uvcvideo: Failed to query (132) UVC
+> > control 4 (unit 2) : -32.
+> > Oct  1 11:21:42 mythbox gconfd (mythtv-5036): starting (version
+> > 2.14.0), pid 5036 user 'mythtv'
+> > Oct  1 11:21:42 mythbox gconfd (mythtv-5036): Resolved address
+> > "xml:readonly:/etc/gconf/gconf.xml.mandatory" to a read-only
+> > configuration source at position 0
+> > Oct  1 11:21:42 mythbox gconfd (mythtv-5036): Resolved address
+> > "xml:readwrite:/home/mythtv/.gconf" to a writable configuration source
+> > at position 1
+> > Oct  1 11:21:42 mythbox gconfd (mythtv-5036): Resolved address
+> > "xml:readonly:/etc/gconf/gconf.xml.defaults" to a read-only
+> > configuration source at position 2
+> > Oct  1 11:32:01 mythbox kernel: uvcvideo: Failed to query (135) UVC
+> > control 2 (unit 2) : -110.
+> > Oct  1 11:32:01 mythbox kernel: uvcvideo: Failed to query (130) UVC
+> > control 2 (unit 2) : -75.
+> > Oct  1 11:32:02 mythbox kernel: uvcvideo: Failed to query (135) UVC
+> > control 2 (unit 2) : -110.
+> > Oct  1 11:32:02 mythbox kernel: uvcvideo: Failed to query (130) UVC
+> > control 2 (unit 2) : -75.
+> > Oct  1 11:32:02 mythbox kernel: uvcvideo: Failed to query (131) UVC
+> > control 2 (unit 2) : -32.
+> > Oct  1 11:32:03 mythbox kernel: uvcvideo: Failed to query (135) UVC
+> > control 2 (unit 2) : -110.
+>
+> Yes, these are bad. If you see those you might need to retry whatever
+> caused the error or replug the camera. It's caused by a bug in the Fusion
+> firmware that occurs one some USB controllers. We're currently testing a
+> quick workaround and are still analyzing the problem so that future
+> cameras won't have the same problems.
+>
+> Cheers,
+> Martin
+>
+
+
+From thomas.s.martin at motorola.com  Mon Oct  2 17:26:04 2006
+From: thomas.s.martin at motorola.com (Martin Thomas-A001032)
+Date: Mon, 2 Oct 2006 11:26:04 -0400
+Subject: [Linux-uvc-devel] ARM, still image capture task
+In-Reply-To: <eba5a5ad0610020234o5753ee68ne92e7637927693d2@mail.gmail.com>
+Message-ID: <A748106979C12243A7C92AD4457B0992B3397D@de01exm66.ds.mot.com>
+
+Hey all,
+
+I am new to this, so please excuse any noob related wrong doings :)
+
+This message is to let you all know what I am going to be doing and my
+current progress.  Any feedback from you will be most appreciated!
+
+I am porting the UVC driver to run on an ARM based Intrinsyc Cerf Board
+running the 2.6.7 kernel and need to add still image capture
+capabilities.  I already have it compiling and running enough to be able
+to query the webcam (Quickcam for Notebooks Pro) and change some cam
+settings like brightness, etc.  I am using the user-space application
+videodog for this.
+
+If anyone wants to know the details of what I had to do to get it to run
+on that kernel and ARM, I will gladly let you know, simply ask!
+
+Lastly, if anyone knows some reason why this is an impossible task,
+please let me know.
+
+Thank you and keep up the good work,
+
+Thomas Martin
+
+
+From laurent.pinchart at skynet.be  Mon Oct  2 23:21:00 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Mon, 2 Oct 2006 23:21:00 +0200
+Subject: [Linux-uvc-devel] ARM, still image capture task
+In-Reply-To: <A748106979C12243A7C92AD4457B0992B3397D@de01exm66.ds.mot.com>
+References: <A748106979C12243A7C92AD4457B0992B3397D@de01exm66.ds.mot.com>
+Message-ID: <200610022321.00788.laurent.pinchart@skynet.be>
+
+Hi Thomas,
+
+> I am new to this, so please excuse any noob related wrong doings :)
+>
+> This message is to let you all know what I am going to be doing and my
+> current progress.  Any feedback from you will be most appreciated!
+
+Thanks for the information. This will help us improve the driver.
+
+> I am porting the UVC driver to run on an ARM based Intrinsyc Cerf Board
+> running the 2.6.7 kernel and need to add still image capture
+> capabilities.  I already have it compiling and running enough to be able
+> to query the webcam (Quickcam for Notebooks Pro) and change some cam
+> settings like brightness, etc.  I am using the user-space application
+> videodog for this.
+>
+> If anyone wants to know the details of what I had to do to get it to run
+> on that kernel and ARM, I will gladly let you know, simply ask!
+>
+> Lastly, if anyone knows some reason why this is an impossible task,
+> please let me know.
+
+Not impossible, but there are a few known problems.
+
+First, you should upgrade to a 2.6.15 (or newer) kernel. I had USB issues with 
+2.6.12, and upgrading to 2.6.15 solved them. Anything older is not supported, 
+and will likely fail.
+
+Second, the V4L2 API has no still image capture support. Do you really need 
+still image capture in response to button events, or do you only need to 
+capture single images at a given interval ? In the second case, there should 
+be no problem using the video streaming API. In the first case, V4L2 will 
+have to be extended.
+
+> Thank you and keep up the good work,
+
+Thanks, you're welcome :-)
+
+Laurent Pinchart
+
+
+From thomas.s.martin at motorola.com  Tue Oct  3 01:06:36 2006
+From: thomas.s.martin at motorola.com (Martin Thomas-A001032)
+Date: Mon, 2 Oct 2006 19:06:36 -0400
+Subject: [Linux-uvc-devel] ARM, still image capture task
+In-Reply-To: <200610022321.00788.laurent.pinchart@skynet.be>
+Message-ID: <A748106979C12243A7C92AD4457B0992B3397E@de01exm66.ds.mot.com>
+
+I need to capture single images at a given interval, however I need them
+to be at the full 1.3MP, jpeg and I need to have the camera "go to
+sleep" between images.  I may be able to "sleep", start streaming video,
+extract still frame and go back to sleep, yes?  
+
+Upgrading to >= 2.6.15 is going to be difficult on the Cerf board.  That
+is why I was back-porting (not easy!).  I'll try my best to upgrade.
+
+Thanks for the help,
+Thomas
+
+-----Original Message-----
+From: Laurent Pinchart [mailto:laurent.pinchart at skynet.be] 
+Sent: Monday, October 02, 2006 4:21 PM
+To: linux-uvc-devel at lists.berlios.de
+Cc: Martin Thomas-A001032
+Subject: Re: [Linux-uvc-devel] ARM, still image capture task
+
+Hi Thomas,
+
+> I am new to this, so please excuse any noob related wrong doings :)
+>
+> This message is to let you all know what I am going to be doing and my
+> current progress.  Any feedback from you will be most appreciated!
+
+Thanks for the information. This will help us improve the driver.
+
+> I am porting the UVC driver to run on an ARM based Intrinsyc Cerf
+Board
+> running the 2.6.7 kernel and need to add still image capture
+> capabilities.  I already have it compiling and running enough to be
+able
+> to query the webcam (Quickcam for Notebooks Pro) and change some cam
+> settings like brightness, etc.  I am using the user-space application
+> videodog for this.
+>
+> If anyone wants to know the details of what I had to do to get it to
+run
+> on that kernel and ARM, I will gladly let you know, simply ask!
+>
+> Lastly, if anyone knows some reason why this is an impossible task,
+> please let me know.
+
+Not impossible, but there are a few known problems.
+
+First, you should upgrade to a 2.6.15 (or newer) kernel. I had USB
+issues with 
+2.6.12, and upgrading to 2.6.15 solved them. Anything older is not
+supported, 
+and will likely fail.
+
+Second, the V4L2 API has no still image capture support. Do you really
+need 
+still image capture in response to button events, or do you only need to
+
+capture single images at a given interval ? In the second case, there
+should 
+be no problem using the video streaming API. In the first case, V4L2
+will 
+have to be extended.
+
+> Thank you and keep up the good work,
+
+Thanks, you're welcome :-)
+
+Laurent Pinchart
+
+
+From rasher at rasher.dk  Wed Oct  4 12:16:03 2006
+From: rasher at rasher.dk (Jonas H)
+Date: Wed, 04 Oct 2006 12:16:03 +0200
+Subject: [Linux-uvc-devel] Logitech QuickCam Pro 5000 (046d:08ce)
+Message-ID: <452389E3.1020505@rasher.dk>
+
+I just bought a Logitech QuickCam Pro 5000, and it has the device id
+046d:08ce rather than 046d:08c5 as listed on the website and referenced
+in the source. I couldn't find any reference to this device id anywhere,
+so I thought it might be worth mentioning. If this is old news, I
+apologize.
+
+I have not yet attempted to use your work and I'm not sure I will in the
+near future (I use the web cam exclusively on Windows), unless you'd
+like me to test something, which I'd be happy to help out with.
+
+-- 
+Jonas H?ggqvist
+rasher(at)rasher(dot)dk
+
+
+
+From martin_rubli at logitech.com  Wed Oct  4 18:25:18 2006
+From: martin_rubli at logitech.com (Martin Rubli)
+Date: Wed, 04 Oct 2006 09:25:18 -0700
+Subject: [Linux-uvc-devel] Logitech QuickCam Pro 5000 (046d:08ce)
+In-Reply-To: <452389E3.1020505@rasher.dk>
+References: <452389E3.1020505@rasher.dk>
+Message-ID: <op.tgwnwgytsttmjo@maya>
+
+The model with PID 0x08CE is actually this year's model. The reason why  
+it's not mentioned in the source is that it is a native UVC device and  
+therefore automatically recognized by the driver.
+
+Cheers,
+Martin
+
+
+On Wed, 04 Oct 2006 03:16:03 -0700, Jonas H <rasher at rasher.dk> wrote:
+
+> I just bought a Logitech QuickCam Pro 5000, and it has the device id
+> 046d:08ce rather than 046d:08c5 as listed on the website and referenced
+> in the source. I couldn't find any reference to this device id anywhere,
+> so I thought it might be worth mentioning. If this is old news, I
+> apologize.
+>
+> I have not yet attempted to use your work and I'm not sure I will in the
+> near future (I use the web cam exclusively on Windows), unless you'd
+> like me to test something, which I'd be happy to help out with.
+>
+
+
+
+
+From panemade at gmail.com  Thu Oct  5 07:41:46 2006
+From: panemade at gmail.com (=?UTF-8?Q?Parag_N(=E0=A4=AA=E0=A4=B0=E0=A4=BE=E0=A5=9A)?=)
+Date: Thu, 5 Oct 2006 11:11:46 +0530
+Subject: [Linux-uvc-devel] Logitech QuickCam Pro 5000 (046d:08ce)
+In-Reply-To: <op.tgwnwgytsttmjo@maya>
+References: <452389E3.1020505@rasher.dk> <op.tgwnwgytsttmjo@maya>
+Message-ID: <f4586a2e0610042241t10981ab5y467f3c2d3b47b4c7@mail.gmail.com>
+
+Hi Martin,
+
+On 10/4/06, Martin Rubli <martin_rubli at logitech.com> wrote:
+> The model with PID 0x08CE is actually this year's model. The reason why
+> it's not mentioned in the source is that it is a native UVC device and
+> therefore automatically recognized by the driver.
+  If you don't mind it looks to me that you are in Logitech company,
+So can i know what will be reason behind changing the USB PIDs of
+webcams yearly which some of them in fact looks same(if i am
+correct)??
+  Does Change in PID also leads to change in any sensor/hw inside
+webcam? If not then newer PIDs must work with their previous
+respective workable kernel modules right?
+Regards,
+Parag.
+
+
+From martin_rubli at logitech.com  Thu Oct  5 09:23:58 2006
+From: martin_rubli at logitech.com (Martin Rubli)
+Date: Thu, 05 Oct 2006 00:23:58 -0700
+Subject: [Linux-uvc-devel] Logitech QuickCam Pro 5000 (046d:08ce)
+In-Reply-To: <f4586a2e0610042241t10981ab5y467f3c2d3b47b4c7@mail.gmail.com>
+References: <452389E3.1020505@rasher.dk> <op.tgwnwgytsttmjo@maya>
+	<f4586a2e0610042241t10981ab5y467f3c2d3b47b4c7@mail.gmail.com>
+Message-ID: <op.tgxth8aisttmjo@maya>
+
+Hi Parag,
+
+>> The model with PID 0x08CE is actually this year's model. The reason why
+>> it's not mentioned in the source is that it is a native UVC device and
+>> therefore automatically recognized by the driver.
+>   If you don't mind it looks to me that you are in Logitech company,
+> So can i know what will be reason behind changing the USB PIDs of
+> webcams yearly which some of them in fact looks same(if i am
+> correct)??
+
+Just because the look the same doesn't mean they haven't improved a lot.  
+:-)
+
+>   Does Change in PID also leads to change in any sensor/hw inside
+> webcam? If not then newer PIDs must work with their previous
+> respective workable kernel modules right?
+
+There are technical reasons for assigning new PIDs to the new models. They  
+have new features (with RightLight 2 being the most outstanding) that  
+require the driver to be able to tell them apart from previous models and  
+treat them differently.
+
+Since we're talking about UVC cameras here it doesn't matter what kind of  
+ASIC/sensor is inside because UVC was designed to abstract the hardware.  
+So even if a new model were to have completely different hardware, it  
+would still work with any UVC driver.
+
+Cheers,
+Martin
+
+
+From ripnetuk at gmail.com  Fri Oct  6 12:42:33 2006
+From: ripnetuk at gmail.com (George Styles)
+Date: Fri, 6 Oct 2006 11:42:33 +0100
+Subject: [Linux-uvc-devel] V4L2 Tools?
+Message-ID: <9398f0eb0610060342k4ef3a4b3ma3956b5d2522fa4b@mail.gmail.com>
+
+Hi,
+
+The driver is working pretty well with my webcam now (apart from
+sometimes breakup in the bottom 1/5 of the screen or so).
+
+What userland tools are reccomended for querying the uvc device? i
+want to find out what resolutions it supports, but cannot seem to find
+a tool to do so. Any ideas?
+
+thanks
+
+George
+
+
+From panemade at gmail.com  Fri Oct  6 12:51:06 2006
+From: panemade at gmail.com (=?UTF-8?Q?Parag_N(=E0=A4=AA=E0=A4=B0=E0=A4=BE=E0=A5=9A)?=)
+Date: Fri, 6 Oct 2006 16:21:06 +0530
+Subject: [Linux-uvc-devel] V4L2 Tools?
+In-Reply-To: <9398f0eb0610060342k4ef3a4b3ma3956b5d2522fa4b@mail.gmail.com>
+References: <9398f0eb0610060342k4ef3a4b3ma3956b5d2522fa4b@mail.gmail.com>
+Message-ID: <f4586a2e0610060351w63192ba0lfd840e22769a437c@mail.gmail.com>
+
+hi,
+On 10/6/06, George Styles <ripnetuk at gmail.com> wrote:
+> Hi,
+>
+> The driver is working pretty well with my webcam now (apart from
+> sometimes breakup in the bottom 1/5 of the screen or so).
+>
+> What userland tools are reccomended for querying the uvc device? i
+> want to find out what resolutions it supports, but cannot seem to find
+> a tool to do so. Any ideas?
+   Check http://www.newvibes.ch/mrubli/v4l/frmfmtenum.c on
+http://www.linuxtv.org/v4lwiki/index.php/Discussion_of_API_enhancements
+
+moreover i have written one GTK App for V4l2 drivers which supports
+uvc video kernel driver.
+Check that also at
+http://prdownloads.sourceforge.net/v4lx-devinfo/v4l2-tool-1.0.2.tar.gz?download
+
+Regards,
+Parag.
+
+
+From mxhaard at magic.fr  Fri Oct  6 12:45:54 2006
+From: mxhaard at magic.fr (Michel Xhaard)
+Date: Fri, 6 Oct 2006 12:45:54 +0200
+Subject: [Linux-uvc-devel] V4L2 Tools?
+In-Reply-To: <9398f0eb0610060342k4ef3a4b3ma3956b5d2522fa4b@mail.gmail.com>
+References: <9398f0eb0610060342k4ef3a4b3ma3956b5d2522fa4b@mail.gmail.com>
+Message-ID: <200610061245.55085.mxhaard@magic.fr>
+
+Le Vendredi 6 Octobre 2006 12:42, George Styles a ?crit?:
+> Hi,
+>
+> The driver is working pretty well with my webcam now (apart from
+> sometimes breakup in the bottom 1/5 of the screen or so).
+>
+> What userland tools are reccomended for querying the uvc device? i
+> want to find out what resolutions it supports, but cannot seem to find
+> a tool to do so. Any ideas?
+>
+> thanks
+>
+> George
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+George,
+try
+luvcview -d /dev/video0 -L 
+regards
+-- 
+Michel Xhaard
+http://mxhaard.free.fr
+Ps: luvcview can be find here:
+http://mxhaard.free.fr/spca50x/Investigation/uvc/
+
+
+From tamagawa at osa.att.ne.jp  Fri Oct  6 20:54:04 2006
+From: tamagawa at osa.att.ne.jp (tamagawa)
+Date: Sat, 07 Oct 2006 03:54:04 +0900
+Subject: [Linux-uvc-devel] Quickcam IM
+Message-ID: <4526A64C.60104@osa.att.ne.jp>
+
+Hi,
+
+I'm trying to use Logitech Quickcam IM with V4L2.
+uvc doesn't recognize the camera - spca5xx works fine,
+but with V4L :(
+
+Somebody please help?
+--
+tamagawa at osaka, japan
+
+
+
+
+From mxhaard at magic.fr  Sat Oct  7 10:28:46 2006
+From: mxhaard at magic.fr (Michel Xhaard)
+Date: Sat, 7 Oct 2006 10:28:46 +0200
+Subject: [Linux-uvc-devel] Quickcam IM
+In-Reply-To: <4526A64C.60104@osa.att.ne.jp>
+References: <4526A64C.60104@osa.att.ne.jp>
+Message-ID: <200610071028.46927.mxhaard@magic.fr>
+
+Le Vendredi 6 Octobre 2006 20:54, tamagawa a ?crit?:
+> Hi,
+>
+> I'm trying to use Logitech Quickcam IM with V4L2.
+> uvc doesn't recognize the camera - spca5xx works fine,
+> but with V4L :(
+>
+> Somebody please help?
+> --
+> tamagawa at osaka, japan
+Tamagawa,
+Spca5xx become gspca for the v4l2 support, gspca is under construction and at 
+the moment with two branchs :
+gspcav1 v4l1 support
+gspcav2 v4l2 support
+Seem your webcam is supported by gspcav2, download the whole package here:
+http://mxhaard.free.fr/spca50x/Investigation/Gspca/
+You can then test it with luvcview :)
+regards
+-- 
+Michel Xhaard
+http://mxhaard.free.fr
+
+
+From evgeny at indent.ru  Sat Oct  7 20:56:54 2006
+From: evgeny at indent.ru (Evgeny)
+Date: Sat, 7 Oct 2006 22:56:54 +0400
+Subject: [Linux-uvc-devel] Reset patch & controls
+Message-ID: <20061007225654.11365a9e@localhost>
+
+Hi everybody
+
+First of all, great thanks to uvc driver developers for great work.
+
+I try to use driver with Logitech QuickCam 5000 and have the following situation:
+
+Camera is found and initialized by driver. Everything works wonderfull, except occasional lockups
+with message "uvcvideo: Failed to query (1) UVC control 4 (unit 1) : -110.".
+
+I use "reset patch" and it works (I can get picture from camera after reset), but I cannot use
+camera's controls after reset. When I try to change any control (for example brightness or contrast) 
+nothing happens. More interesting, when I unplug and replug the camera, I cannot change controls too! 
+And the most interesting thing - controls stay unchangeable after reboot!
+
+I found two ways to fix this situation:
+1. Poweroff the machine, unplug power cord, replug it and turn the power on. Everything works
+2. Build ehci_hcd as module, rmmod it and modprobe again. Everything works too.
+
+So, my question is - is there any way to reset ehci without reinserting module? I know, that usb_reset_device()
+resets device and power state at given port. Is there any way to do something similar with hole host controller? 
+
+
+Sorry for my bad English.
+
+Evgeny Marchenko
+
+
+From louisg00 at bellsouth.net  Mon Oct  9 07:47:14 2006
+From: louisg00 at bellsouth.net (Louis Garcia)
+Date: Mon, 09 Oct 2006 01:47:14 -0400
+Subject: [Linux-uvc-devel] HP dv2000 laptop
+Message-ID: <1160372834.5529.5.camel@soncomputer>
+
+My new laptop has a built in webcam with a usbid 0c45:62c0 Rev_0100.
+Would anyone know if this driver is suitable? if not what chip is this
+and is there a driver?
+
+Thanks, -Louis
+
+
+
+From rrs at researchut.com  Mon Oct  9 09:34:56 2006
+From: rrs at researchut.com (Ritesh Raj Sarraf)
+Date: Mon, 9 Oct 2006 13:04:56 +0530
+Subject: [Linux-uvc-devel] Fwd: Delivery Status Notification (Failure)
+Message-ID: <200610091304.56408.rrs@researchut.com>
+
+Is there any place where I can upload the core dump ?
+Its size is 1.4mb.
+
+Ritesh
+
+----------  Forwarded Message  ----------
+
+Subject: Delivery Status Notification (Failure)
+Date: Monday 09 October 2006 12:15
+From: Mail Delivery Subsystem <mailer-daemon at googlemail.com>
+To: rrs at researchut.com
+
+This is an automatically generated Delivery Status Notification
+
+Delivery to the following recipient failed permanently:
+
+     linux-uvc-devel at lists.berlios.de
+
+Technical details of permanent failure:
+PERM_FAILURE: SMTP Error (state 12): 552 Error: message too large
+
+   ----- Original message -----
+
+Received: by 10.78.97.7 with SMTP id u7mr4957683hub;
+        Sun, 08 Oct 2006 23:44:37 -0700 (PDT)
+Return-Path: <rrs at researchut.com>
+Received: from ?10.73.18.20? ( [202.3.112.9])
+        by mx.google.com with ESMTP id 3sm48678huc.2006.10.08.23.42.47;
+        Sun, 08 Oct 2006 23:44:19 -0700 (PDT)
+From: Ritesh Raj Sarraf <rrs at researchut.com>
+Reply-To: rrs at researchut.com
+Organization: RESEARCHUT
+To: linux-uvc-devel at lists.berlios.de
+Subject: core dump for bug #009047
+Date: Mon, 9 Oct 2006 00:27:07 +0530
+User-Agent: KMail/1.9.4
+X-Face:
+ g1!0zU6[;gdPuG4tjCC4hVLZ"&S.?7[CUIj2<0>lwgW!%`/$rE\PJ=nBRjI8~,!.)_^)=?utf-8?
+q?sP=0A=09zr=23X=24-U7Jxhc=7Ect-9/u=7C=3AH5M?=@o^t1^0<^Vq,eTqj#P<)Rg]oe4V4XTO
+i%#%IA)=?utf-8?q?=3F-t+C8=25O=0A=09d23=7CG=26?=)1,y6v{z5+g4Z5lm'"k=h3.\][aucN
+asRwzcn\@=?utf-8?q?0WO8R=2E=25Oz8zAKcLb=3D=23j/iRCQI=0A=09ZKQKZWPZ0F=5B=24=3B
+=5EMdZ4Y?= =?utf-8?q?UF=5D*0Q4M0p=25W=24?=,
+ =?utf-8?q?C=3FH2V/XB7CP=3Fpwe=3B=3B5LYJ97OWKt1e=5E=2E=3A=7DbE-b=0A=09zhi=5El
+5?= =?utf-8?q?m9j=26-wLavE1B?="&kI;qV.N.lOH_ruNV!bA5_;,
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1608027.H18SoceR52";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200610090027.14535.rrs at researchut.com>
+
+--nextPart1608027.H18SoceR52
+Content-Type: multipart/mixed;
+  boundary="Boundary-01=_EoUKFUnwr6/OkNp"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+--Boundary-01=_EoUKFUnwr6/OkNp
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+   ----- Message truncated -----
+
+-------------------------------------------------------
+
+-- 
+Ritesh Raj Sarraf
+RESEARCHUT - http://www.researchut.com
+"Necessity is the mother of invention."
+"Stealing logic from one person is plagiarism, stealing from many is 
+research."
+"The great are those who achieve the impossible, the petty are those who 
+cannot - rrs"
+-------------- next part --------------
+This is an automatically generated Delivery Status Notification
+
+Delivery to the following recipient failed permanently:
+
+     linux-uvc-devel at lists.berlios.de
+
+Technical details of permanent failure: 
+PERM_FAILURE: SMTP Error (state 12): 552 Error: message too large
+
+   ----- Original message -----
+
+Received: by 10.78.97.7 with SMTP id u7mr4957683hub;
+        Sun, 08 Oct 2006 23:44:37 -0700 (PDT)
+Return-Path: <rrs at researchut.com>
+Received: from ?10.73.18.20? ( [202.3.112.9])
+        by mx.google.com with ESMTP id 3sm48678huc.2006.10.08.23.42.47;
+        Sun, 08 Oct 2006 23:44:19 -0700 (PDT)
+From: Ritesh Raj Sarraf <rrs at researchut.com>
+Reply-To: rrs at researchut.com
+Organization: RESEARCHUT
+To: linux-uvc-devel at lists.berlios.de
+Subject: core dump for bug #009047
+Date: Mon, 9 Oct 2006 00:27:07 +0530
+User-Agent: KMail/1.9.4
+X-Face: g1!0zU6[;gdPuG4tjCC4hVLZ"&S.?7[CUIj2<0>lwgW!%`/$rE\PJ=nBRjI8~,!.)_^)=?utf-8?q?sP=0A=09zr=23X=24-U7Jxhc=7Ect-9/u=7C=3AH5M?=@o^t1^0<^Vq,eTqj#P<)Rg]oe4V4XTOi%#%IA)=?utf-8?q?=3F-t+C8=25O=0A=09d23=7CG=26?=)1,y6v{z5+g4Z5lm'"k=h3.\][aucNasRwzcn\@=?utf-8?q?0WO8R=2E=25Oz8zAKcLb=3D=23j/iRCQI=0A=09ZKQKZWPZ0F=5B=24=3B=5EMdZ4Y?=
+ =?utf-8?q?UF=5D*0Q4M0p=25W=24?=,
+ =?utf-8?q?C=3FH2V/XB7CP=3Fpwe=3B=3B5LYJ97OWKt1e=5E=2E=3A=7DbE-b=0A=09zhi=5El5?=
+ =?utf-8?q?m9j=26-wLavE1B?="&kI;qV.N.lOH_ruNV!bA5_;,
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1608027.H18SoceR52";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200610090027.14535.rrs at researchut.com>
+
+--nextPart1608027.H18SoceR52
+Content-Type: multipart/mixed;
+  boundary="Boundary-01=_EoUKFUnwr6/OkNp"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+--Boundary-01=_EoUKFUnwr6/OkNp
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+   ----- Message truncated -----
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: not available
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061009/46c04cd8/attachment.pgp>
+
+From laurent.pinchart at skynet.be  Mon Oct  9 10:55:07 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Mon, 9 Oct 2006 10:55:07 +0200
+Subject: [Linux-uvc-devel] Reset patch & controls
+In-Reply-To: <20061007225654.11365a9e@localhost>
+References: <20061007225654.11365a9e@localhost>
+Message-ID: <200610091055.07896.laurent.pinchart@skynet.be>
+
+Hi Evgeny,
+
+> First of all, great thanks to uvc driver developers for great work.
+
+You're welcome.
+
+> I try to use driver with Logitech QuickCam 5000 and have the following
+> situation:
+>
+> Camera is found and initialized by driver. Everything works wonderfull,
+> except occasional lockups with message "uvcvideo: Failed to query (1) UVC
+> control 4 (unit 1) : -110.".
+
+Join the club. You are experiencing the infamous hardware bug for which 
+Logitech is trying to find a solution.
+
+- The new webcams will have an updated firmware with a workaround. Those 
+future webcams will not suffer from the bug. This obviously won't help with 
+current webcams.
+
+- The problem doesn't seem to occur when using Windows. We are trying to find 
+a difference between how Windows and Linux handle USB control transfers, but 
+nothing relevant has been found so far.
+
+- In the meantime, the "reset patch" might work for some people, but is 
+definitely not a long term solution.
+
+> I use "reset patch" and it works (I can get picture from camera after
+> reset), but I cannot use camera's controls after reset. When I try to
+> change any control (for example brightness or contrast) nothing happens.
+> More interesting, when I unplug and replug the camera, I cannot change
+> controls too! And the most interesting thing - controls stay unchangeable
+> after reboot!
+>
+> I found two ways to fix this situation:
+> 1. Poweroff the machine, unplug power cord, replug it and turn the power
+> on. Everything works 2. Build ehci_hcd as module, rmmod it and modprobe
+> again. Everything works too.
+>
+> So, my question is - is there any way to reset ehci without reinserting
+> module? I know, that usb_reset_device() resets device and power state at
+> given port. Is there any way to do something similar with hole host
+> controller?
+
+There is no need to reset the USB controller. If you try to reproduce your 
+results, you will found that Unplugging the device is usually enough. Really, 
+the issue lies in the webcam hardware, and the difference between how Linux 
+and Windows handle control transfers is very small. Until the problem has 
+been properly identified, I'm afraid the current webcams will keep on 
+suffering from the bug, no matter what we try to do in the driver.
+
+Cheers,
+
+Laurent Pinchart
+
+
+From mxhaard at magic.fr  Mon Oct  9 10:47:20 2006
+From: mxhaard at magic.fr (Michel Xhaard)
+Date: Mon, 9 Oct 2006 10:47:20 +0200
+Subject: [Linux-uvc-devel] HP dv2000 laptop
+In-Reply-To: <1160372834.5529.5.camel@soncomputer>
+References: <1160372834.5529.5.camel@soncomputer>
+Message-ID: <200610091047.20143.mxhaard@magic.fr>
+
+Le Lundi 9 Octobre 2006 07:47, Louis Garcia a ?crit?:
+> My new laptop has a built in webcam with a usbid 0c45:62c0 Rev_0100.
+> Would anyone know if this driver is suitable? if not what chip is this
+> and is there a driver?
+>
+> Thanks, -Louis
+>
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+Louis,
+Can you post here the result of lsusb -v
+The chipset is from Sonix, try to find the *.inf file from your windoze driver 
+and mail me the file.
+regards
+-- 
+Michel Xhaard
+http://mxhaard.free.fr
+
+
+From laurent.pinchart at skynet.be  Mon Oct  9 11:08:18 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Mon, 9 Oct 2006 11:08:18 +0200
+Subject: [Linux-uvc-devel] HP dv2000 laptop
+In-Reply-To: <1160372834.5529.5.camel@soncomputer>
+References: <1160372834.5529.5.camel@soncomputer>
+Message-ID: <200610091108.18634.laurent.pinchart@skynet.be>
+
+Hi Louis,
+
+> My new laptop has a built in webcam with a usbid 0c45:62c0 Rev_0100.
+> Would anyone know if this driver is suitable? if not what chip is this
+> and is there a driver?
+
+The answer is easy: try it. If the webcam is UVC compatible, it will be 
+detected by the driver.
+
+Cheers,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Mon Oct  9 11:09:30 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Mon, 9 Oct 2006 11:09:30 +0200
+Subject: [Linux-uvc-devel] Fwd: Delivery Status Notification (Failure)
+In-Reply-To: <200610091304.56408.rrs@researchut.com>
+References: <200610091304.56408.rrs@researchut.com>
+Message-ID: <200610091109.30707.laurent.pinchart@skynet.be>
+
+Hi Ritesh,
+
+> Is there any place where I can upload the core dump ?
+> Its size is 1.4mb.
+
+Not on the linux-uvc website, sorry. Please explain your problem first, the 
+core dump might not be needed.
+
+Cheers,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Mon Oct  9 11:17:31 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Mon, 9 Oct 2006 11:17:31 +0200
+Subject: [Linux-uvc-devel] ARM, still image capture task
+In-Reply-To: <A748106979C12243A7C92AD4457B0992B3397E@de01exm66.ds.mot.com>
+References: <A748106979C12243A7C92AD4457B0992B3397E@de01exm66.ds.mot.com>
+Message-ID: <200610091117.32153.laurent.pinchart@skynet.be>
+
+Hi Thomas,
+
+> I need to capture single images at a given interval, however I need them
+> to be at the full 1.3MP, jpeg and I need to have the camera "go to
+> sleep" between images.  I may be able to "sleep", start streaming video,
+> extract still frame and go back to sleep, yes?
+
+That's right. Be aware that the Logitech webcams don't support the 1.3MP 
+resolution in MJPEG. You will have to use the uncompressed YUV format.
+
+> Upgrading to >= 2.6.15 is going to be difficult on the Cerf board.  That
+> is why I was back-porting (not easy!).  I'll try my best to upgrade.
+
+You should really upgrade, otherwise I won't be able to help you with any 
+USB-related issue.
+
+Cheers,
+
+Laurent Pinchart
+
+
+From rrs at researchut.com  Mon Oct  9 11:51:52 2006
+From: rrs at researchut.com (Ritesh Raj Sarraf)
+Date: Mon, 9 Oct 2006 15:21:52 +0530
+Subject: [Linux-uvc-devel] Fwd: Delivery Status Notification (Failure)
+In-Reply-To: <200610091109.30707.laurent.pinchart@skynet.be>
+References: <200610091304.56408.rrs@researchut.com>
+	<200610091109.30707.laurent.pinchart@skynet.be>
+Message-ID: <200610091522.06286.rrs@researchut.com>
+
+On Monday 09 October 2006 14:39, Laurent Pinchart wrote:
+> Hi Ritesh,
+>
+> > Is there any place where I can upload the core dump ?
+> > Its size is 1.4mb.
+>
+> Not on the linux-uvc website, sorry. Please explain your problem first, the
+> core dump might not be needed.
+>
+
+Hi Laurent,
+
+I've already opened a bug for it.
+[Bug #9047] luvcview segfaults on exit
+
+When luvcview is run, it shows the image from the camera.
+Upon exit of luvcview, it segfaults.
+
+I've put the details and the steps in the bug report.
+
+Thanks,
+Ritesh
+-- 
+Ritesh Raj Sarraf
+RESEARCHUT - http://www.researchut.com
+"Necessity is the mother of invention."
+"Stealing logic from one person is plagiarism, stealing from many is 
+research."
+"The great are those who achieve the impossible, the petty are those who 
+cannot - rrs"
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: not available
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061009/71d2dc6a/attachment.pgp>
+
+From evgeny at indent.ru  Mon Oct  9 12:26:37 2006
+From: evgeny at indent.ru (Evgeny)
+Date: Mon, 9 Oct 2006 14:26:37 +0400
+Subject: [Linux-uvc-devel] Reset patch & controls
+In-Reply-To: <200610091055.07896.laurent.pinchart@skynet.be>
+References: <20061007225654.11365a9e@localhost>
+	<200610091055.07896.laurent.pinchart@skynet.be>
+Message-ID: <20061009142637.21d7df69@localhost>
+
+Hi Laurent,
+
+> There is no need to reset the USB controller. If you try to reproduce your 
+> results, you will found that Unplugging the device is usually enough. Really, 
+> the issue lies in the webcam hardware, and the difference between how Linux 
+> and Windows handle control transfers is very small. Until the problem has 
+> been properly identified, I'm afraid the current webcams will keep on 
+> suffering from the bug, no matter what we try to do in the driver.
+> 
+
+Thanks for reply. 
+
+I try to develop unserviceable system, and the most important component of it is 
+Logitech 5000. So, unplugging the camera's cord is not a solution for me. Reset patch
+definitely works, except of unchangeable controls. I understand that it is not a long 
+term solution, but it really helps. Is there no way to fully reset the camera 
+hardware? I think, that usb_reset_device doesn't reset the power state of device.
+I'll greatly appreciate any help in this problem. 
+
+Regards, Evgeny
+
+
+From louisg00 at bellsouth.net  Mon Oct  9 19:54:15 2006
+From: louisg00 at bellsouth.net (Louis Garcia)
+Date: Mon, 09 Oct 2006 13:54:15 -0400
+Subject: [Linux-uvc-devel] HP dv2000 laptop
+In-Reply-To: <200610091047.20143.mxhaard@magic.fr>
+References: <1160372834.5529.5.camel@soncomputer>
+	<200610091047.20143.mxhaard@magic.fr>
+Message-ID: <1160416455.6171.18.camel@soncomputer>
+
+On Mon, 2006-10-09 at 10:47 +0200, Michel Xhaard wrote:
+> Le Lundi 9 Octobre 2006 07:47, Louis Garcia a ?crit :
+> > My new laptop has a built in webcam with a usbid 0c45:62c0 Rev_0100.
+> > Would anyone know if this driver is suitable? if not what chip is this
+> > and is there a driver?
+> >
+> > Thanks, -Louis
+> >
+> > _______________________________________________
+> > Linux-uvc-devel mailing list
+> > Linux-uvc-devel at lists.berlios.de
+> > https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+> Louis,
+> Can you post here the result of lsusb -v
+> The chipset is from Sonix, try to find the *.inf file from your windoze driver 
+> and mail me the file.
+> regards
+
+My system came with a pue-installed winxp. I don't have the drivers. Is
+the *.inf file somewhere in the windows system directories?
+
+#lsusb -v
+
+Bus 005 Device 003: ID 0c45:62c0 Microdia
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               2.00
+  bDeviceClass          239 Miscellaneous Device
+  bDeviceSubClass         2 Common Class
+  bDeviceProtocol         1 Interface Association
+  bMaxPacketSize0        64
+  idVendor           0x0c45 Microdia
+  idProduct          0x62c0
+  bcdDevice            1.00
+  iManufacturer           2 Sonix Technology Co., Ltd.
+  iProduct                1 USB 2.0 Camera
+  iSerial                 3 SN0001
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength          588
+    bNumInterfaces          2
+    bConfigurationValue     1
+    iConfiguration          0
+    bmAttributes         0x80
+    MaxPower              500mA
+    UNRECOGNIZED:  08 0b 00 02 0e 03 00 01
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      1 Video Control
+      bInterfaceProtocol      0
+      iInterface              1 USB 2.0 Camera
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x83  EP 3 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0010  1x 16 bytes
+        bInterval               6
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       0
+      bNumEndpoints           0
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0
+      iInterface              0
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       1
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0080  1x 128 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       2
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0100  1x 256 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       3
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0320  1x 800 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       4
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0b20  2x 800 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       5
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x1320  3x 800 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       6
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x13e8  3x 1000 bytes
+        bInterval               1
+Device Qualifier (for other device speed):
+  bLength                10
+  bDescriptorType         6
+  bcdUSB               2.00
+  bDeviceClass          239 Miscellaneous Device
+  bDeviceSubClass         2 Common Class
+  bDeviceProtocol         1 Interface Association
+  bMaxPacketSize0        64
+  bNumConfigurations      1
+
+
+
+
+From tamagawa at osa.att.ne.jp  Mon Oct  9 19:57:18 2006
+From: tamagawa at osa.att.ne.jp (tamagawa)
+Date: Tue, 10 Oct 2006 02:57:18 +0900
+Subject: [Linux-uvc-devel] Quickcam IM
+In-Reply-To: <200610071028.46927.mxhaard@magic.fr>
+References: <4526A64C.60104@osa.att.ne.jp>
+	<200610071028.46927.mxhaard@magic.fr>
+Message-ID: <452A8D7E.4060209@osa.att.ne.jp>
+
+Thank you very much Michel, it worked!!
+
+I want to make MPEG4 camera using Fedora Core 5 + Qcam IM.
+Now Qcam IM is working fine, luvcview displayes the picture.
+
+Half a day ago, I was standing in front of a shop,
+without being able to make the decision if I should buy
+Qcam Fusion or things like that, which is expensive but
+clearly supported by uvc.
+
+You saved poor person's money, Michel :)
+
+Still I have a problem with MPEG4IP's mp4live - it says
+'Failed to open /dev/video0: Device or resource busy'.
+
+I don't understand why. fuser says mp4live is using /dev/video0.
+But this is another story.
+-- 
+tamagawa at osaka, japan
+
+Michel Xhaard wrote:
+ > Le Vendredi 6 Octobre 2006 20:54, tamagawa a ?crit :
+ >> Hi,
+ >>
+ >> I'm trying to use Logitech Quickcam IM with V4L2.
+ >> uvc doesn't recognize the camera - spca5xx works fine,
+ >> but with V4L :(
+ >>
+ >> Somebody please help?
+ >> --
+ >> tamagawa at osaka, japan
+ > Tamagawa,
+ > Spca5xx become gspca for the v4l2 support, gspca is under 
+construction and at the moment with two branchs :
+ > gspcav1 v4l1 support
+ > gspcav2 v4l2 support
+ > Seem your webcam is supported by gspcav2, download the whole package 
+here:
+ > http://mxhaard.free.fr/spca50x/Investigation/Gspca/
+ > You can then test it with luvcview :)
+ > regards
+
+
+
+
+
+From peper at aster.pl  Mon Oct  9 21:28:03 2006
+From: peper at aster.pl (Peper)
+Date: Mon, 9 Oct 2006 21:28:03 +0200
+Subject: [Linux-uvc-devel] HP dv2000 laptop
+In-Reply-To: <1160416455.6171.18.camel@soncomputer>
+References: <1160372834.5529.5.camel@soncomputer>
+	<200610091047.20143.mxhaard@magic.fr>
+	<1160416455.6171.18.camel@soncomputer>
+Message-ID: <200610092128.03195.peper@aster.pl>
+
+It seems that I have the same webcam in my dv9000, so just to let you know 
+that I have sent some additional info to Michel(.inf from windoze also).
+
+-- 
+Best Regards,
+Peper
+
+
+From louisg00 at bellsouth.net  Mon Oct  9 21:35:51 2006
+From: louisg00 at bellsouth.net (Louis Garcia)
+Date: Mon, 09 Oct 2006 15:35:51 -0400
+Subject: [Linux-uvc-devel] HP dv2000 laptop
+In-Reply-To: <200610092128.03195.peper@aster.pl>
+References: <1160372834.5529.5.camel@soncomputer>
+	<200610091047.20143.mxhaard@magic.fr>
+	<1160416455.6171.18.camel@soncomputer>
+	<200610092128.03195.peper@aster.pl>
+Message-ID: <1160422551.10038.2.camel@soncomputer>
+
+On Mon, 2006-10-09 at 21:28 +0200, Peper wrote:
+> It seems that I have the same webcam in my dv9000, so just to let you know 
+> that I have sent some additional info to Michel(.inf from windoze also).
+
+So does this driver support it or will it?
+
+--Louis
+
+
+
+From mxhaard at magic.fr  Tue Oct 10 10:02:39 2006
+From: mxhaard at magic.fr (Michel Xhaard)
+Date: Tue, 10 Oct 2006 10:02:39 +0200
+Subject: [Linux-uvc-devel] HP dv2000 laptop
+In-Reply-To: <1160416455.6171.18.camel@soncomputer>
+References: <1160372834.5529.5.camel@soncomputer>
+	<200610091047.20143.mxhaard@magic.fr>
+	<1160416455.6171.18.camel@soncomputer>
+Message-ID: <200610101002.39644.mxhaard@magic.fr>
+
+Le Lundi 9 Octobre 2006 19:54, Louis Garcia a ?crit?:
+> On Mon, 2006-10-09 at 10:47 +0200, Michel Xhaard wrote:
+> > Le Lundi 9 Octobre 2006 07:47, Louis Garcia a ?crit :
+> > > My new laptop has a built in webcam with a usbid 0c45:62c0 Rev_0100.
+> > > Would anyone know if this driver is suitable? if not what chip is this
+> > > and is there a driver?
+> > >
+> > > Thanks, -Louis
+> > >
+> > > _______________________________________________
+> > > Linux-uvc-devel mailing list
+> > > Linux-uvc-devel at lists.berlios.de
+> > > https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+> >
+> > Louis,
+> > Can you post here the result of lsusb -v
+> > The chipset is from Sonix, try to find the *.inf file from your windoze
+> > driver and mail me the file.
+> > regards
+>
+> My system came with a pue-installed winxp. I don't have the drivers. Is
+> the *.inf file somewhere in the windows system directories?
+>
+> #lsusb -v
+>
+> Bus 005 Device 003: ID 0c45:62c0 Microdia
+> Device Descriptor:
+>   bLength                18
+>   bDescriptorType         1
+>   bcdUSB               2.00
+>   bDeviceClass          239 Miscellaneous Device
+>   bDeviceSubClass         2 Common Class
+>   bDeviceProtocol         1 Interface Association
+>   bMaxPacketSize0        64
+>   idVendor           0x0c45 Microdia
+>   idProduct          0x62c0
+>   bcdDevice            1.00
+>   iManufacturer           2 Sonix Technology Co., Ltd.
+>   iProduct                1 USB 2.0 Camera
+>   iSerial                 3 SN0001
+>   bNumConfigurations      1
+>   Configuration Descriptor:
+>     bLength                 9
+>     bDescriptorType         2
+>     wTotalLength          588
+>     bNumInterfaces          2
+>     bConfigurationValue     1
+>     iConfiguration          0
+>     bmAttributes         0x80
+>     MaxPower              500mA
+>     UNRECOGNIZED:  08 0b 00 02 0e 03 00 01
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       0
+>       bNumEndpoints           1
+>       bInterfaceClass        14 Video
+>       bInterfaceSubClass      1 Video Control
+>       bInterfaceProtocol      0
+>       iInterface              1 USB 2.0 Camera
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x83  EP 3 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0010  1x 16 bytes
+>         bInterval               6
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        1
+>       bAlternateSetting       0
+>       bNumEndpoints           0
+>       bInterfaceClass        14 Video
+>       bInterfaceSubClass      2 Video Streaming
+>       bInterfaceProtocol      0
+>       iInterface              0
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        1
+>       bAlternateSetting       1
+>       bNumEndpoints           1
+>       bInterfaceClass        14 Video
+>       bInterfaceSubClass      2 Video Streaming
+>       bInterfaceProtocol      0
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            5
+>           Transfer Type            Isochronous
+>           Synch Type               Asynchronous
+>           Usage Type               Data
+>         wMaxPacketSize     0x0080  1x 128 bytes
+>         bInterval               1
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        1
+>       bAlternateSetting       2
+>       bNumEndpoints           1
+>       bInterfaceClass        14 Video
+>       bInterfaceSubClass      2 Video Streaming
+>       bInterfaceProtocol      0
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            5
+>           Transfer Type            Isochronous
+>           Synch Type               Asynchronous
+>           Usage Type               Data
+>         wMaxPacketSize     0x0100  1x 256 bytes
+>         bInterval               1
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        1
+>       bAlternateSetting       3
+>       bNumEndpoints           1
+>       bInterfaceClass        14 Video
+>       bInterfaceSubClass      2 Video Streaming
+>       bInterfaceProtocol      0
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            5
+>           Transfer Type            Isochronous
+>           Synch Type               Asynchronous
+>           Usage Type               Data
+>         wMaxPacketSize     0x0320  1x 800 bytes
+>         bInterval               1
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        1
+>       bAlternateSetting       4
+>       bNumEndpoints           1
+>       bInterfaceClass        14 Video
+>       bInterfaceSubClass      2 Video Streaming
+>       bInterfaceProtocol      0
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            5
+>           Transfer Type            Isochronous
+>           Synch Type               Asynchronous
+>           Usage Type               Data
+>         wMaxPacketSize     0x0b20  2x 800 bytes
+>         bInterval               1
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        1
+>       bAlternateSetting       5
+>       bNumEndpoints           1
+>       bInterfaceClass        14 Video
+>       bInterfaceSubClass      2 Video Streaming
+>       bInterfaceProtocol      0
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            5
+>           Transfer Type            Isochronous
+>           Synch Type               Asynchronous
+>           Usage Type               Data
+>         wMaxPacketSize     0x1320  3x 800 bytes
+>         bInterval               1
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        1
+>       bAlternateSetting       6
+>       bNumEndpoints           1
+>       bInterfaceClass        14 Video
+>       bInterfaceSubClass      2 Video Streaming
+>       bInterfaceProtocol      0
+>       iInterface              0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            5
+>           Transfer Type            Isochronous
+>           Synch Type               Asynchronous
+>           Usage Type               Data
+>         wMaxPacketSize     0x13e8  3x 1000 bytes
+>         bInterval               1
+> Device Qualifier (for other device speed):
+>   bLength                10
+>   bDescriptorType         6
+>   bcdUSB               2.00
+>   bDeviceClass          239 Miscellaneous Device
+>   bDeviceSubClass         2 Common Class
+>   bDeviceProtocol         1 Interface Association
+>   bMaxPacketSize0        64
+>   bNumConfigurations      1
+>
+Seem this webcam is a Usb Video Class one, download and install the uvcvideo 
+driver, download and install luvcview from my website and try:
+luvcview -d /dev/video0 -f yuv -s 640x480
+regards
+-- 
+Michel Xhaard
+http://mxhaard.free.fr
+
+
+From laurent.pinchart at skynet.be  Tue Oct 10 17:11:00 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 10 Oct 2006 17:11:00 +0200
+Subject: [Linux-uvc-devel] Fwd: Delivery Status Notification (Failure)
+In-Reply-To: <200610091522.06286.rrs@researchut.com>
+References: <200610091304.56408.rrs@researchut.com> 
+	<200610091109.30707.laurent.pinchart@skynet.be> 
+	<200610091522.06286.rrs@researchut.com>
+Message-ID: <200610101711.00969.laurent.pinchart@skynet.be>
+
+> > > Is there any place where I can upload the core dump ?
+> > > Its size is 1.4mb.
+> >
+> > Not on the linux-uvc website, sorry. Please explain your problem first,
+> > the core dump might not be needed.
+>
+> Hi Laurent,
+>
+> I've already opened a bug for it.
+> [Bug #9047] luvcview segfaults on exit
+>
+> When luvcview is run, it shows the image from the camera.
+> Upon exit of luvcview, it segfaults.
+>
+> I've put the details and the steps in the bug report.
+
+Please contact Michel Xhaard directly. luvcview is not part of the linux-uvc 
+project.
+
+Cheers,
+
+Laurent Pinchart
+
+
+From bburch at cfl.rr.com  Wed Oct 11 23:41:22 2006
+From: bburch at cfl.rr.com (Bob Burch)
+Date: Wed, 11 Oct 2006 17:41:22 -0400
+Subject: [Linux-uvc-devel] Logitech QuickCam Orbit MP Pan/Tilt
+In-Reply-To: <005f01c6ed7d$5ff82270$6701a8c0@osiris>
+Message-ID: <006b01c6ed7d$fefbd650$6701a8c0@osiris>
+
+Thanks for the work you have done with the driver!
+
+ 
+
+I was wondering if  anybody been successful controlling the Pan, Tilt, and
+Zoom for a Orbit MP?  I have tried v4lctl and luvcview to control the
+Pan/Tilt but the MP does unpredictable things.  
+
+ 
+
+In addition I have found if I set the UVC_CONTROL_TIMEOUT to 1000+, I don't
+get the 110 query error and can access the camera with uvccapture.
+
+ 
+
+Bob Burch
+
+[Ubuntu 4.0.3-lubuntu5, Linux 2.6.15-27-386, gcc 4.0.3]
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061011/16cfa5cb/attachment.html>
+
+From ranjan.grover at gmail.com  Thu Oct 12 21:31:46 2006
+From: ranjan.grover at gmail.com (Ranjan Grover)
+Date: Thu, 12 Oct 2006 12:31:46 -0700
+Subject: [Linux-uvc-devel] webcam suggestion
+Message-ID: <ed5bd5060610121231r3a23a95dqe2263ab8e50435d9@mail.gmail.com>
+
+Running debian/sid 2.6.18 vanilla kernel
+
+Hello
+
+I was in the market for a new webcam for my laptop. I was looking at
+the Logitech Notebook Pro webcam. I notice that quite a few emails
+have been exchanged in the past about this particular model on this
+listserv. What is the success rate like? Have you guys got it work
+adequately? Does it work properly in Ekiga, aMSN or Kopete? Also, can
+I install the source using module-assistant or do I have to patch the
+kernel and then install it? If the current need is to get more testers
+and debug the currently existing driver, I'll get it in that case to
+help out.
+
+I would also welcome suggestions on a good compact webcam for use with
+a laptop running LInux. I have got the Logitech Quickcam 4000 to work
+properly but this is a bit inconvenient to use with a laptop. Also,
+kudos to the develoopers for working on supporting webcams under
+linux.
+
+Ranjan
+-- 
+Ranjan Grover
+College of Optical Sciences
+University of Arizona
+
+
+From ranjan.grover at gmail.com  Fri Oct 13 06:37:39 2006
+From: ranjan.grover at gmail.com (Ranjan Grover)
+Date: Thu, 12 Oct 2006 21:37:39 -0700
+Subject: [Linux-uvc-devel] webcam suggestion
+In-Reply-To: <452EB2F0.3000605@rasher.dk>
+References: <ed5bd5060610121231r3a23a95dqe2263ab8e50435d9@mail.gmail.com>
+	<452EB2F0.3000605@rasher.dk>
+Message-ID: <ed5bd5060610122137g44ec4bbs23cb268a2aa5d9e@mail.gmail.com>
+
+> I do not know about the Logitech Notebook Pro, but I can tell you that
+> the Debian package for linux-uvc works just fine with module-assistant.
+> Just apt-get install linux-uvc-source and see
+> /usr/share/doc/linux-uvc-source/README.Debian for details.
+>
+> In Ekiga I'm told that "Your driver doesn't seem to support any of the
+> color formats supported by Ekiga". I have not investigated this as I
+> don't intend to use Ekiga.
+>
+> That's with a Logitech Quickcam Pro 5000 (native UVC - this year's model).
+>
+> YMM(of course)V.
+
+I bought the camera (Logitech Quickcam for Notebooks pro) and the
+total setup time was less than 5 minutes in debian sid. The module
+compiled correctly with the linux-uvc package in debian. I tested it
+in Ekiga and it worked very well. Thanks to the developers of the
+linux-uvc driver set. If you would like to me give further details,
+please let me know. Thanks.
+
+Ranjan
+
+
+From rrs at researchut.com  Fri Oct 13 09:34:14 2006
+From: rrs at researchut.com (Ritesh Raj Sarraf)
+Date: Fri, 13 Oct 2006 13:04:14 +0530
+Subject: [Linux-uvc-devel] webcam suggestion
+References: <ed5bd5060610121231r3a23a95dqe2263ab8e50435d9@mail.gmail.com>
+	<452EB2F0.3000605@rasher.dk>
+	<ed5bd5060610122137g44ec4bbs23cb268a2aa5d9e@mail.gmail.com>
+Message-ID: <m4s304-s99.ln1@www.researchut.com>
+
+Ranjan Grover wrote:
+
+> I bought the camera (Logitech Quickcam for Notebooks pro) and the
+> total setup time was less than 5 minutes in debian sid. The module
+> compiled correctly with the linux-uvc package in debian. I tested it
+> in Ekiga and it worked very well. Thanks to the developers of the
+> linux-uvc driver set. If you would like to me give further details,
+> please let me know. Thanks.
+> 
+
+Does kopete work ? For me, no. :-(
+
+Ritesh
+-- 
+Ritesh Raj Sarraf
+RESEARCHUT - http://www.researchut.com
+"Necessity is the mother of invention."
+"Stealing logic from one person is plagiarism, stealing from many is research."
+"The great are those who achieve the impossible, the petty are those who
+cannot - rrs"
+
+
+
+From ranjan.grover at gmail.com  Fri Oct 13 09:54:19 2006
+From: ranjan.grover at gmail.com (Ranjan Grover)
+Date: Fri, 13 Oct 2006 00:54:19 -0700
+Subject: [Linux-uvc-devel] webcam suggestion
+In-Reply-To: <ed5bd5060610130053w69934e48y8195e92fa6f77e4c@mail.gmail.com>
+References: <ed5bd5060610121231r3a23a95dqe2263ab8e50435d9@mail.gmail.com>
+	<452EB2F0.3000605@rasher.dk>
+	<ed5bd5060610122137g44ec4bbs23cb268a2aa5d9e@mail.gmail.com>
+	<m4s304-s99.ln1@www.researchut.com>
+	<ed5bd5060610130053w69934e48y8195e92fa6f77e4c@mail.gmail.com>
+Message-ID: <ed5bd5060610130054n1647ccc9s48b931341e2af1e5@mail.gmail.com>
+
+> Does kopete work ? For me, no. :-(
+
+No, but I think the problem is the same one discussed in the link
+below. I see a green screen... its not a big priority for me since I'd
+rather use Ekiga anyway.
+
+http://www.mail-archive.com/kopete-devel at kde.org/msg05015.html
+
+--
+Ranjan Grover
+College of Optical Sciences
+University of Arizona
+
+
+-- 
+Ranjan Grover
+College of Optical Sciences
+University of Arizona
+
+
+From richiefrich at penguinslair.org  Sat Oct 14 18:14:25 2006
+From: richiefrich at penguinslair.org (Steve Christman)
+Date: Sat, 14 Oct 2006 12:14:25 -0400 (EDT)
+Subject: [Linux-uvc-devel] color?
+Message-ID: <43128.192.168.1.2.1160842465.squirrel@penguinslair.org>
+
+
+I have a quick question i am using kopete and the webcam works fine but I
+get no color. I want to know if it is my cam or if the module is not
+developed that far yet?  Here are my spec :
+
+Webcam : QuickCam Pro 5000
+Distro : Gentoo
+App    : Kopete
+
+--=The Box said XP or better so I installed Linux=--
+
+http://penguinslair.org
+
+IRC channel
+server --> irc.oftc.net
+channel --> #penguinslair
+
+
+
+
+
+From noblepepper at bellsouth.net  Sun Oct 15 19:37:22 2006
+From: noblepepper at bellsouth.net (Noble Pepper)
+Date: Sun, 15 Oct 2006 17:37:22 +0000 (UTC)
+Subject: [Linux-uvc-devel] luvcview/motion on Nokia 770 (ARM OMAP)
+Message-ID: <loom.20061015T190046-3@post.gmane.org>
+
+I hope someone can help me here, any suggestions on how to fix this is greatly
+appreciated.
+
+I am trying to use a Logitech QuickCam Orbit MP on a Nokia 770. First I set this
+up on my desktop and all works fine. I can use either luvcview or motion to
+access the camera.
+
+When I try to use this on the Nokia I get:
+
+from luvcview:
+# /usr/local/bin/luvcview
+uvcview version 0.1.7
+Video driver: x11
+A window manager is available
+video /dev/video0
+Unable to allocate buffers: 22.
+ Init v4L2 failed !! exit fatal
+
+from motion:
+# motion
+[0] Processing thread 0 - config file /usr/local/etc/motion.conf
+[0] Thread is from /usr/local/etc/motion.conf
+[1] Thread started
+[0] motion-httpd/3.2.6 running, accepting connections
+[0] motion-httpd: waiting for data on port TCP 8080
+Opening /dev/video0 as a V4L2 device...Unable to allocate buffers: 22.
+V4L2 init failed.
+[1] Failed to open video device /dev/video0: Device or resource busy
+[1] Capture error calling vid_start
+[1] Thread finishing...
+
+I assume the similarity of the error means I have a problem with the uvcvideo
+or v4L2 module on the Nokia. I have played with the UVC_MAX_VIDEO_BUFFERS in
+uvcvideo.c (tried 16 instead of 32) and NB_BUFFER /v4l2uvc.h (tried 2 & 1
+instead of 4) with no difference.
+
+Some (ir)relevant data, sorry for the length but I'm not sure which will be
+helpful:
+
+I have a Creative Notebook Webcam working with the gspca module and motion
+serving pictures over the wifi from the Nokia. I think this means the problem
+isn't the cpu power or memory available.
+
+kernel info:
+~# uname -a
+Linux Nokia770-26 2.6.16-omap1 #1 PREEMPT Tue Jun 20 18:38:54 EEST 2006
+armv5tejl unknown
+
+
+Hardware spec for the Nokia:
+  Display: 800x480 pixel colour touchscreen 
+           16-bit colour depth (65,536 colours)
+
+      CPU: 250Mhz OMAP1710 powered by ARM926EJ-S and TMS320C55x cores.
+
+   Memory: 64Mb DDR RAM
+
+    Comms: Wireless 802.11b/g
+           Bluetooth (1.2 spec)
+           USB (Device mode) 
+               (Host mode also available with some caveats, 
+                see FrequentlyAskedQuestions #3.4 "Does the device work in USB
+host mode?"
+                Link below) 
+
+  Storage: 128Mb Internal Flash RAM (~64Mb User Space)
+
+lsmod from the Nokia:
+# lsmod
+Module                  Size  Used by
+uvcvideo               30052   0
+v4l2_common             6880   1 uvcvideo
+v4l1_compat            11812   1 uvcvideo
+videodev                7456   1 uvcvideo
+cx3110x                50876   0
+umac                  235364   1 cx3110x
+ext3                  107944   0
+mbcache                 7716   1 ext3
+jbd                    56948   1 ext3
+...etc...
+
+kernel messages:
+[14897.049926] USB cable connected
+[14897.481445] usb 1-1: new full speed USB device using ohci and address 6
+[14897.926727] usb 1-1: device v046d p08c2 is not supported
+[14897.928771] usb 1-1: configuration #1 chosen from 1 choice
+[14897.931610] uvcvideo: Found UVC 1.00 device <unnamed> (046d:08c2)
+[15197.169647] hwa742: setting update mode to disabled
+
+
+memory info from the Nokia:
+# free
+              total         used         free       shared      buffers
+  Mem:        62232        59692         2540            0           68
+ Swap:        65528            0        65528
+Total:       127760        59692        68068
+
+
+
+
+From noblepepper at bellsouth.net  Mon Oct 16 13:36:27 2006
+From: noblepepper at bellsouth.net (Noble Pepper)
+Date: Mon, 16 Oct 2006 11:36:27 +0000 (UTC)
+Subject: [Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22. Init
+	v4L2 failed
+References: <loom.20061015T190046-3@post.gmane.org>
+Message-ID: <loom.20061016T133345-758@post.gmane.org>
+
+This is probably a more decriptiive subject. 
+
+On further thought this may be related to uvcvideo using mmap only, I had to use
+the read/write option on other modules on the ARM to get them to work properly.
+
+
+
+From laurent.pinchart at skynet.be  Mon Oct 16 21:59:49 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Mon, 16 Oct 2006 21:59:49 +0200
+Subject: [Linux-uvc-devel] [PATCH] Fix endianness issues with uvcvideo
+In-Reply-To: <3ab6e8960610151412w2743cb34m43739e85bec743be@mail.gmail.com>
+References: <3ab6e8960610151412w2743cb34m43739e85bec743be@mail.gmail.com>
+Message-ID: <200610162159.49294.laurent.pinchart@skynet.be>
+
+Hi Roland,
+
+> Thanks for applying the sem->mutex patch.
+
+You're welcome :-)
+
+> Here's a patch that fixes endianness issues revealed by compiling with
+> sparse checking (ie "make C=2 CF=-D__CHECK_ENDIAN__").  I believe the first
+> chunk is a real bug fix: on a big-endian machine, the Logitech-specific
+> stuff would not run.
+> The second chunk just fixes a message, but without it the wrong ids will be
+> printed on big-endian machines.
+>
+> Signed-off-by: Roland Dreier <roland.dreier at gmail.com>
+
+Applied. Thanks again. I thought Linux handled endianess itself for those 
+fields, but it seems it wasn't the case.
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Mon Oct 16 22:00:01 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Mon, 16 Oct 2006 22:00:01 +0200
+Subject: [Linux-uvc-devel] [PATCH] Convert uvcvideo from semaphore to
+	mutex
+In-Reply-To: <3ab6e8960610101447p4ee5bfeahd5816dc0efa9837a@mail.gmail.com>
+References: <3ab6e8960610101447p4ee5bfeahd5816dc0efa9837a@mail.gmail.com>
+Message-ID: <200610162200.01687.laurent.pinchart@skynet.be>
+
+Hi Roland,
+
+> Using struct semaphore to implement a mutex is deprecated in modern kernels
+> now that we have a real struct mutex.  Here is a patch that coverts
+> uvcvideo to use struct mutex (and also renames various things from "lock"
+> to "mutex", since I think "lock" makes most kernel hackers think of a
+> spinlock that can't be held while sleeping).  This should help get uvcvideo
+> closer to being
+> mergable upstream.
+>
+> Signed-off-by: Roland Dreier <roland.dreier at gmail.com>
+
+Thanks for the patch. It has been applied with a small modification (calls to 
+mutex_lock and mutex_unlock were mixed in a single place).
+
+Laurent Pinchart
+
+
+From n at mo.pp.ru  Tue Oct 17 18:40:26 2006
+From: n at mo.pp.ru (Eugeny Nemo)
+Date: Tue, 17 Oct 2006 22:40:26 +0600
+Subject: [Linux-uvc-devel] Logitech QuickCam Sphere (PTZ)
+Message-ID: <4535077A.4060603@mo.pp.ru>
+
+Hello.
+
+I'm trying to get a QC Sphere running on Debian Etch and have no result.
+
+Microsoft Windows XP says that this is an "Logitech QuickCam PTZ".
+Box labeled as "Logitech QuickCam Sphere".
+
+Today I have compiled uvcvideo from SVN, and load it:
+Oct 17 22:18:48 nemos kernel: uvcvideo: Found UVC 1.00 device <unnamed>
+(046d:08c2)
+Oct 17 22:18:48 nemos kernel: usbcore: registered new driver uvcvideo
+
+Seems good, and xawtv found it:
+/dev/video0: OK                         [ -device /dev/video0 ]
+    type : v4l2
+    name : USB Video Class device
+    flags:  capture
+
+But no one capture it.
+
+Mplayer:
+
+$ mplayer tv:// -tv driver=v4l2
+[some output skipped]
+Playing tv://.
+Selected driver: v4l2
+ name: Video 4 Linux 2 input
+ author: Martin Olschewski <olschewski at zpr.uni-koeln.de>
+ comment: first try, more to come ;-)
+v4l2: ioctl get standard failed: Invalid argument
+v4l2: ioctl set mute failed: Invalid argument
+v4l2: 0 frames successfully processed, 0 frames dropped.
+Exiting... (End of file)
+
+mplayer's strace say:
+open("/dev/video0", O_RDWR|O_LARGEFILE) = 4
+ioctl(4, VIDIOC_QUERYCAP or VT_OPENQRY, 0x84efad4) = 0
+ioctl(4, VIDIOC_G_FMT or VT_SENDSIG, 0x84efb88) = 0
+ioctl(4, VIDIOC_G_STD, 0xafb0d248)      = -1 EINVAL (Invalid argument)
+write(2, "v4l2: ioctl get standard failed:"..., 50v4l2: ioctl get standard
+failed: Invalid argument) = 46
+
+v4lctl:
+
+$ v4lctl list
+ioctl:
+VIDIOC_QUERYCTRL(id=134217730;type=unknown;name="";minimum=0;maximum=0;step=0;default_value=0;flags=0):
+Input/output error
+ioctl:
+VIDIOC_QUERYCTRL(id=134217735;type=unknown;name="";minimum=0;maximum=0;step=0;default_value=0;flags=0):
+Input/output error
+ioctl: VIDIOC_G_STD(std=0xa7d02880a7c333f6
+[PAL_B1,PAL_G,PAL_I,PAL_D,PAL_D1,PAL_K,PAL_M,PAL_N,NTSC_M,NTSC_M_JP,SECAM_B,SECAM_D,SECAM_L,?ATSC_8_VSB,ATSC_16_VSB,(null),(null),(null),(null),(null),(null),(null),(null),(null),(null),(null),(null),(null),(null),(null)]):
+Invalid argument
+ioctl: VIDIOC_G_CTRL(id=9963792;value=39): Input/output error
+ioctl: VIDIOC_G_CTRL(id=134217736;value=2): Input/output error
+config: invalid value for input: Television
+valid choices for "input": "Camera"
+config: invalid value for norm: norm
+valid choices for "norm":
+attribute  | type   | current | default | comment
+-----------+--------+---------+---------+-------------------------------------
+norm       | choice | (null)  | (null)  |
+input      | choice | Camera  | Camera  | Camera
+bright     | int    |     127 |     127 | range is 0 => 255
+contrast   | int    |      32 |      32 | range is 0 => 255
+color      | int    |      39 |      39 | range is 0 => 255
+Gamma      | int    |      39 |     220 | range is 100 => 220
+Gain       | int    |      16 |       0 | range is 0 => 255
+Backlight  | int    |       1 |       1 | range is 0 => 2
+Power Line | choice | 60 Hz   | 60 Hz   | Disabled 50 Hz 60 Hz
+Pan/Tilt ( | int    |       2 |       0 | range is 0 => 3
+Exposure,  | int    |       8 |       8 | range is 0 => 0
+Exposure ( | int    |    2527 |     166 | range is 1 => 10000
+White Bala | bool   | on      | on      |
+White Bala | int    |    4000 |    4000 | range is 2800 => 6500
+
+
+Ekiga just give me "Your video driver doesn't support the requested video
+format" message.
+
+
+...and while I tried kernel says:
+
+Oct 17 22:24:14 nemos kernel: uvcvideo: Failed to query (132) UVC control 8
+(unit 2) : -32.
+Oct 17 22:24:14 nemos kernel: uvcvideo: Failed to query (135) UVC control 1
+(unit 9) : 1.
+Oct 17 22:24:14 nemos kernel: uvcvideo: Failed to query (129) UVC control 9
+(unit 2) : -32.
+Oct 17 22:24:14 nemos kernel: uvcvideo: Failed to query (129) UVC control 2
+(unit 9) : -32.
+
+
+Some tech info:
+nemos:~# uname -a
+Linux nemos 2.6.17-2-686 #1 SMP Wed Sep 13 16:34:10 UTC 2006 i686 GNU/Linux
+nemos:~# lsmod | grep usb
+usb_storage            70560  0
+scsi_mod              123080  2 sd_mod,usb_storage
+usbkbd                  6784  0
+usbcore               111616  6 uvcvideo,usb_storage,usbkbd,uhci_hcd,ehci_hcd
+ide_core              111016  5 usb_storage,ide_cd,ide_disk,piix,generic
+
+Any ideas how to capture video from this?
+
+Thanks in advance.
+
+-- 
+WBR,
+Eugeny Nemo
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: OpenPGP digital signature
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061017/dcaaffeb/attachment.pgp>
+
+From arekjan at yahoo.com  Fri Oct 20 16:32:43 2006
+From: arekjan at yahoo.com (Arek Jankowski)
+Date: Fri, 20 Oct 2006 07:32:43 -0700 (PDT)
+Subject: [Linux-uvc-devel] pantilt union in luvcview
+Message-ID: <20061020143243.35437.qmail@web84102.mail.mud.yahoo.com>
+
+Hi Michel,
+
+I know that the pantilt union is going away in the future, but just wanted to let you know that it's not working correctly on a big endian architecture (powerpc) with the uvcvideo driver. This is what I'm getting in luvcview:
+
+tilt+ button moves Right
+tilt- button moves Left
+pan buttons do nothing
+
+Not sure if it's a driver problem or luvcview problem, but any insight will be appreciated.
+Thanks!
+
+
+
+
+
+
+
+From Pablo.dAngelo at web.de  Fri Oct 20 16:47:01 2006
+From: Pablo.dAngelo at web.de (Pablo dAngelo)
+Date: Fri, 20 Oct 2006 16:47:01 +0200
+Subject: [Linux-uvc-devel] Maximum framerate with multiple USB 2 cameras?
+Message-ID: <649942202@web.de>
+
+Hi all,
+
+I would like to build an omnidirectional video camera system, that can capture a 360? degree view of a scene, similar to the ladybug camera by pointgrey (http://www.ptgrey.com/products/ladybug2/index.asp). Such a system would probably consist of 4 or 5 cameras rotated by 90 or 72 degrees each, and maybe another one pointing upwards. They should all capture images in parallel.
+
+Since it should be quite cheap (but high quality), my only option is to use webcams, either based on USB or Firewire (although the only affordable firewire camera I found, the Fire-I seems to be out of production).
+
+I have a single Philips 740K camera, which has a nice picture quality and provides a standard M12x0.5 lens screw mount, so I can mount some third party wide angle lens. However, it is limited to USB 1.1, that will lead to a very limited framerate, I fear.
+
+Therefore I'm thinking about using USB2 webcams, such as the Logitech Fusion or Pro 5000, to increase the overall framerate I can archive with this driver. The question now is, which framerate could I expect from 5 UVC USB2 cameras connected to a single laptop? Or is there a principal problem of using that amount of cameras at the same time?
+
+On
+https://lists.berlios.de/pipermail/linux-uvc-devel/2006-March/000365.html,
+David Moore noticed:
+> Hi, I'm interested in connecting more than one camera at once,
+> specifically, a pair of Logitech Quickcam Pro 5000s. 
+> I only have one at the moment, but when I run it at full uncompressed
+> resolution (640x480x30fps YUV), it chooses an ISO endpoint with a packet
+> size of 3060 bytes.  This is more than half of the available ISO
+> bandwidth. (cat /proc/bus/usb/devices claims it's 60%)
+
+Is there a compression method supported by the cameras (for example MJPEG), that would lead to higher compression, thus allowing a higher total framerate?
+
+Btw. Thanks a lot for developing this driver!
+
+ciao
+  Pablo
+__________________________________________________________________________
+Erweitern Sie FreeMail zu einem noch leistungsst?rkeren E-Mail-Postfach!		
+Mehr Infos unter http://freemail.web.de/home/landingpad/?mc=021131
+
+
+
+From dcm at MIT.EDU  Fri Oct 20 16:57:21 2006
+From: dcm at MIT.EDU (David Moore)
+Date: Fri, 20 Oct 2006 10:57:21 -0400
+Subject: [Linux-uvc-devel] Maximum framerate with multiple USB 2 cameras?
+In-Reply-To: <649942202@web.de>
+References: <649942202@web.de>
+Message-ID: <2C584434-C5C2-42DE-8988-E93A2B75B98F@mit.edu>
+
+You might want to consider the Point Grey Firefly MV.  It's about  
+$200, uses firewire, has a standard lens mount, is more reliable, and  
+delivers better picture quality than most webcams.
+
+-David
+
+On Oct 20, 2006, at 10:47 AM, Pablo dAngelo wrote:
+
+> Hi all,
+>
+> I would like to build an omnidirectional video camera system, that  
+> can capture a 360? degree view of a scene, similar to the ladybug  
+> camera by pointgrey (http://www.ptgrey.com/products/ladybug2/ 
+> index.asp). Such a system would probably consist of 4 or 5 cameras  
+> rotated by 90 or 72 degrees each, and maybe another one pointing  
+> upwards. They should all capture images in parallel.
+>
+> Since it should be quite cheap (but high quality), my only option  
+> is to use webcams, either based on USB or Firewire (although the  
+> only affordable firewire camera I found, the Fire-I seems to be out  
+> of production).
+>
+> I have a single Philips 740K camera, which has a nice picture  
+> quality and provides a standard M12x0.5 lens screw mount, so I can  
+> mount some third party wide angle lens. However, it is limited to  
+> USB 1.1, that will lead to a very limited framerate, I fear.
+>
+> Therefore I'm thinking about using USB2 webcams, such as the  
+> Logitech Fusion or Pro 5000, to increase the overall framerate I  
+> can archive with this driver. The question now is, which framerate  
+> could I expect from 5 UVC USB2 cameras connected to a single  
+> laptop? Or is there a principal problem of using that amount of  
+> cameras at the same time?
+>
+> On
+> https://lists.berlios.de/pipermail/linux-uvc-devel/2006-March/ 
+> 000365.html,
+> David Moore noticed:
+>> Hi, I'm interested in connecting more than one camera at once,
+>> specifically, a pair of Logitech Quickcam Pro 5000s.
+>> I only have one at the moment, but when I run it at full uncompressed
+>> resolution (640x480x30fps YUV), it chooses an ISO endpoint with a  
+>> packet
+>> size of 3060 bytes.  This is more than half of the available ISO
+>> bandwidth. (cat /proc/bus/usb/devices claims it's 60%)
+>
+> Is there a compression method supported by the cameras (for example  
+> MJPEG), that would lead to higher compression, thus allowing a  
+> higher total framerate?
+>
+> Btw. Thanks a lot for developing this driver!
+>
+> ciao
+>   Pablo
+> ______________________________________________________________________ 
+> ____
+> Erweitern Sie FreeMail zu einem noch leistungsst?rkeren E-Mail- 
+> Postfach!		
+> Mehr Infos unter http://freemail.web.de/home/landingpad/?mc=021131
+>
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+
+
+
+From terje.marthinussen at fastsearch.com  Mon Oct 23 03:25:22 2006
+From: terje.marthinussen at fastsearch.com (Terje Marthinussen)
+Date: Mon, 23 Oct 2006 10:25:22 +0900
+Subject: [Linux-uvc-devel] green/gray dots in grid pattern
+Message-ID: <453C1A02.7030405@fastsearch.com>
+
+http://www.marthinussen.no/logitech-noise.jpg
+
+I get this pattern on the picture every now and then when I capture 
+images. Happens both with uvccapture and fswebcam.
+
+The camera is a Logitech pro 5000
+
+Anyone knows what causes this and more importantly, how to avoid it?
+
+Terje
+
+
+From terje.marthinussen at fastsearch.com  Mon Oct 23 08:41:22 2006
+From: terje.marthinussen at fastsearch.com (Terje Marthinussen)
+Date: Mon, 23 Oct 2006 15:41:22 +0900
+Subject: [Linux-uvc-devel] Unable to set format: 22., Init v4L2 failed
+In-Reply-To: <453C1A02.7030405@fastsearch.com>
+References: <453C1A02.7030405@fastsearch.com>
+Message-ID: <453C6412.4070108@fastsearch.com>
+
+Trying to test higher jpeg quality with uvccapture on a Logitech Pro 5000.
+
+I haven't got time to look much at the code yet, but maybe someone knows 
+the answer anyway (from other posts on the lists, I do believe the 
+camera should support YUV capture?).
+
+Things work fine when not using YUV capture
+
+./bin/uvccapture  -v -q100
+Using videodevice: /dev/video0
+Saving images to: snap.jpg
+Image size: 320x240
+Taking snapshot every 0 seconds
+Taking images using mmap
+Unable to set format: 22.
+ Init v4L2 failed !! exit fatal
+
+ ./bin/uvccapture  -m -v
+Using videodevice: /dev/video0
+Saving images to: snap.jpg
+Image size: 320x240
+Taking snapshot every 0 seconds
+Taking images using mmap
+Unable to set format: 22.
+ Init v4L2 failed !! exit fatal
+
+
+./bin/uvccapture  -v
+Using videodevice: /dev/video0
+Saving images to: snap.jpg
+Image size: 320x240
+Taking snapshot every 0 seconds
+Taking images using mmap
+Resetting camera settings
+Camera brightness level is 127
+Camera contrast level is 32
+Camera saturation level is 32
+Camera gain level is 0
+Saving image to: snap.jpg
+
+Regards,
+Terje
+
+
+From louisg00 at bellsouth.net  Wed Oct 25 04:39:32 2006
+From: louisg00 at bellsouth.net (Louis E Garcia II)
+Date: Tue, 24 Oct 2006 22:39:32 -0400
+Subject: [Linux-uvc-devel] HP dv2000 laptop
+In-Reply-To: <200610100931.26710.laurent.pinchart@tbox.biz>
+References: <1160372834.5529.5.camel@soncomputer>
+	<200610092128.03195.peper@aster.pl>
+	<1160422551.10038.2.camel@soncomputer>
+	<200610100931.26710.laurent.pinchart@tbox.biz>
+Message-ID: <1161743974.12182.1.camel@sonlaptop>
+
+On Tue, 2006-10-10 at 09:31 +0200, Laurent Pinchart wrote:
+> > > It seems that I have the same webcam in my dv9000, so just to let you
+> > > know that I have sent some additional info to Michel(.inf from windoze
+> > > also).
+> >
+> > So does this driver support it or will it?
+> 
+> It seems it should. Try it.
+> 
+> Cheers,
+> 
+> Laurent Pinchart
+
+Yes it does work, thanks. Now if only gaim can get video chat working
+I'll be set.
+
+-Louis
+
+
+
+From louisg00 at bellsouth.net  Wed Oct 25 05:59:24 2006
+From: louisg00 at bellsouth.net (Louis E Garcia II)
+Date: Tue, 24 Oct 2006 23:59:24 -0400
+Subject: [Linux-uvc-devel] HP dv2000 laptop
+In-Reply-To: <1161743974.12182.1.camel@sonlaptop>
+References: <1160372834.5529.5.camel@soncomputer>
+	<200610092128.03195.peper@aster.pl>
+	<1160422551.10038.2.camel@soncomputer>
+	<200610100931.26710.laurent.pinchart@tbox.biz>
+	<1161743974.12182.1.camel@sonlaptop>
+Message-ID: <1161748765.4063.10.camel@sonlaptop>
+
+On Tue, 2006-10-24 at 22:39 -0400, Louis E Garcia II wrote:
+> On Tue, 2006-10-10 at 09:31 +0200, Laurent Pinchart wrote:
+> > > > It seems that I have the same webcam in my dv9000, so just to let you
+> > > > know that I have sent some additional info to Michel(.inf from windoze
+> > > > also).
+> > >
+> > > So does this driver support it or will it?
+> > 
+> > It seems it should. Try it.
+> > 
+> > Cheers,
+> > 
+> > Laurent Pinchart
+> 
+> Yes it does work, thanks. Now if only gaim can get video chat working
+> I'll be set.
+> 
+> -Louis
+
+It seems snd-usb-audio doesn't work for this webcam. First I have to
+load the module from the command line. I have a logitech pro 5000 on my
+other box  and snd-usb-audio loads an boot.
+
+Loading snd-usb-audio doesn't help. I am trying to configure Ekiga and
+can't find a usb audio input device. With the logitech it's there, usb
+device 0x46d:0x8c1
+
+the module loads fine:
+kernel: usbcore: registered new driver snd-usb-audio
+kernel: EOF in empty packet.
+last message repeated 8 times
+last message repeated 11 times
+last message repeated 9 times
+last message repeated 9 times
+
+-Louis
+
+
+
+From laurent.pinchart at skynet.be  Wed Oct 25 20:42:40 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Wed, 25 Oct 2006 20:42:40 +0200
+Subject: [Linux-uvc-devel] color?
+In-Reply-To: <43128.192.168.1.2.1160842465.squirrel@penguinslair.org>
+References: <43128.192.168.1.2.1160842465.squirrel@penguinslair.org>
+Message-ID: <200610252042.40507.laurent.pinchart@skynet.be>
+
+Hi Steve,
+
+> I have a quick question i am using kopete and the webcam works fine but I
+> get no color. I want to know if it is my cam or if the module is not
+> developed that far yet?  Here are my spec :
+>
+> Webcam : QuickCam Pro 5000
+> Distro : Gentoo
+> App    : Kopete
+
+The webcam and the driver should support color without any problem. Which 
+version of kopete are you using ?
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Wed Oct 25 20:44:41 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Wed, 25 Oct 2006 20:44:41 +0200
+Subject: [Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.
+	Init v4L2 failed
+In-Reply-To: <loom.20061016T133345-758@post.gmane.org>
+References: <loom.20061015T190046-3@post.gmane.org>
+	<loom.20061016T133345-758@post.gmane.org>
+Message-ID: <200610252044.41265.laurent.pinchart@skynet.be>
+
+> This is probably a more decriptiive subject.
+>
+> On further thought this may be related to uvcvideo using mmap only, I had
+> to use the read/write option on other modules on the ARM to get them to
+> work properly.
+
+That's interesting. I'd like to know why the request fails. Are you familiar 
+with Linux programming enough to add a few print statements in the driver and 
+see where it fails ?
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Wed Oct 25 21:03:24 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Wed, 25 Oct 2006 21:03:24 +0200
+Subject: [Linux-uvc-devel] green/gray dots in grid pattern
+In-Reply-To: <453C1A02.7030405@fastsearch.com>
+References: <453C1A02.7030405@fastsearch.com>
+Message-ID: <200610252103.24491.laurent.pinchart@skynet.be>
+
+Hi Terje,
+
+> http://www.marthinussen.no/logitech-noise.jpg
+>
+> I get this pattern on the picture every now and then when I capture
+> images. Happens both with uvccapture and fswebcam.
+>
+> The camera is a Logitech pro 5000
+>
+> Anyone knows what causes this and more importantly, how to avoid it?
+
+A friend of mine told me he experienced the same problem, but only for the 
+first video frame. Could you try and see if the noise also occurs on 
+subsequent frames ?
+
+Laurent Pinchart
+
+
+
+From laurent.pinchart at skynet.be  Wed Oct 25 21:07:17 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Wed, 25 Oct 2006 21:07:17 +0200
+Subject: [Linux-uvc-devel] HP dv2000 laptop
+In-Reply-To: <1161748765.4063.10.camel@sonlaptop>
+References: <1160372834.5529.5.camel@soncomputer>
+	<1161743974.12182.1.camel@sonlaptop>
+	<1161748765.4063.10.camel@sonlaptop>
+Message-ID: <200610252107.17347.laurent.pinchart@skynet.be>
+
+> > > > > It seems that I have the same webcam in my dv9000, so just to let
+> > > > > you know that I have sent some additional info to Michel(.inf from
+> > > > > windoze also).
+> > > >
+> > > > So does this driver support it or will it?
+> > >
+> > > It seems it should. Try it.
+> > >
+> > > Cheers,
+> > >
+> > > Laurent Pinchart
+> >
+> > Yes it does work, thanks. Now if only gaim can get video chat working
+> > I'll be set.
+> >
+> > -Louis
+>
+> It seems snd-usb-audio doesn't work for this webcam. First I have to
+> load the module from the command line. I have a logitech pro 5000 on my
+> other box  and snd-usb-audio loads an boot.
+>
+> Loading snd-usb-audio doesn't help. I am trying to configure Ekiga and
+> can't find a usb audio input device. With the logitech it's there, usb
+> device 0x46d:0x8c1
+>
+> the module loads fine:
+> kernel: usbcore: registered new driver snd-usb-audio
+> kernel: EOF in empty packet.
+> last message repeated 8 times
+> last message repeated 11 times
+> last message repeated 9 times
+> last message repeated 9 times
+
+Your webcam might not have sound support.
+
+uvcvideo is a video-only driver anyway, I don't know much about USB audio 
+support. You could try asking the snd-usb-audio developers, but if the driver 
+doesn't recognize the webcam, it probably doesn't have sound support.
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Wed Oct 25 21:12:36 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Wed, 25 Oct 2006 21:12:36 +0200
+Subject: [Linux-uvc-devel] pantilt union in luvcview
+In-Reply-To: <20061020143243.35437.qmail@web84102.mail.mud.yahoo.com>
+References: <20061020143243.35437.qmail@web84102.mail.mud.yahoo.com>
+Message-ID: <200610252112.36541.laurent.pinchart@skynet.be>
+
+Hi Arek,
+
+> I know that the pantilt union is going away in the future, but just wanted
+> to let you know that it's not working correctly on a big endian
+> architecture (powerpc) with the uvcvideo driver. This is what I'm getting
+> in luvcview:
+>
+> tilt+ button moves Right
+> tilt- button moves Left
+> pan buttons do nothing
+>
+> Not sure if it's a driver problem or luvcview problem, but any insight will
+> be appreciated. Thanks!
+
+The next driver version (currently available in the SVN 'split' branch) 
+implements the new extended controls API. The pantilt union/structure is 
+gone, and Michel might update luvcview if you ask him nicely ;-)
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Wed Oct 25 21:19:39 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Wed, 25 Oct 2006 21:19:39 +0200
+Subject: [Linux-uvc-devel] Logitech QuickCam Orbit MP Pan/Tilt
+In-Reply-To: <006b01c6ed7d$fefbd650$6701a8c0@osiris>
+References: <006b01c6ed7d$fefbd650$6701a8c0@osiris>
+Message-ID: <200610252119.39223.laurent.pinchart@skynet.be>
+
+Hi Bob,
+
+> Thanks for the work you have done with the driver!
+
+You're welcome.
+
+> I was wondering if  anybody been successful controlling the Pan, Tilt, and
+> Zoom for a Orbit MP?  I have tried v4lctl and luvcview to control the
+> Pan/Tilt but the MP does unpredictable things.
+
+luvcview used to work last time I tried it. The next driver version implements 
+a new API that will be used to control pan/tilt. I'll try to release it soon, 
+after trying to get the pan/tilt controls integrated in the V4L2 
+specification. You can find it in the SVN 'split' branch. The API should be 
+stable, but the controls IDs might change.
+
+> In addition I have found if I set the UVC_CONTROL_TIMEOUT to 1000+, I don't
+> get the 110 query error and can access the camera with uvccapture.
+
+That's interesting. I'll keep this in mind when trying to find a software fix 
+for the hardware problem we are experiencing. Thanks for reporting this.
+
+Cheers,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Wed Oct 25 21:23:52 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Wed, 25 Oct 2006 21:23:52 +0200
+Subject: [Linux-uvc-devel] Logitech QuickCam Sphere (PTZ)
+In-Reply-To: <4535077A.4060603@mo.pp.ru>
+References: <4535077A.4060603@mo.pp.ru>
+Message-ID: <200610252123.52527.laurent.pinchart@skynet.be>
+
+Hi Eugeny,
+
+> I'm trying to get a QC Sphere running on Debian Etch and have no result.
+>
+> Microsoft Windows XP says that this is an "Logitech QuickCam PTZ".
+> Box labeled as "Logitech QuickCam Sphere".
+>
+> Today I have compiled uvcvideo from SVN, and load it:
+> Oct 17 22:18:48 nemos kernel: uvcvideo: Found UVC 1.00 device <unnamed>
+> (046d:08c2)
+> Oct 17 22:18:48 nemos kernel: usbcore: registered new driver uvcvideo
+
+So the webcam should be supported. That's good news :-)
+
+> Seems good, and xawtv found it:
+> /dev/video0: OK                         [ -device /dev/video0 ]
+>     type : v4l2
+>     name : USB Video Class device
+>     flags:  capture
+>
+> But no one capture it.
+>
+> Mplayer:
+>
+> $ mplayer tv:// -tv driver=v4l2
+> [some output skipped]
+> Playing tv://.
+> Selected driver: v4l2
+>  name: Video 4 Linux 2 input
+>  author: Martin Olschewski <olschewski at zpr.uni-koeln.de>
+>  comment: first try, more to come ;-)
+> v4l2: ioctl get standard failed: Invalid argument
+> v4l2: ioctl set mute failed: Invalid argument
+> v4l2: 0 frames successfully processed, 0 frames dropped.
+> Exiting... (End of file)
+
+mplayer is known to have problems with webcams. It assumes that all video 
+devices implement some optional functions which make no sense for webcams.
+
+> mplayer's strace say:
+> open("/dev/video0", O_RDWR|O_LARGEFILE) = 4
+> ioctl(4, VIDIOC_QUERYCAP or VT_OPENQRY, 0x84efad4) = 0
+> ioctl(4, VIDIOC_G_FMT or VT_SENDSIG, 0x84efb88) = 0
+> ioctl(4, VIDIOC_G_STD, 0xafb0d248)      = -1 EINVAL (Invalid argument)
+> write(2, "v4l2: ioctl get standard failed:"..., 50v4l2: ioctl get standard
+> failed: Invalid argument) = 46
+>
+> v4lctl:
+>
+> $ v4lctl list
+> ioctl:
+> VIDIOC_QUERYCTRL(id=134217730;type=unknown;name="";minimum=0;maximum=0;step
+>=0;default_value=0;flags=0): Input/output error
+> ioctl:
+> VIDIOC_QUERYCTRL(id=134217735;type=unknown;name="";minimum=0;maximum=0;step
+>=0;default_value=0;flags=0): Input/output error
+> ioctl: VIDIOC_G_STD(std=0xa7d02880a7c333f6
+> [PAL_B1,PAL_G,PAL_I,PAL_D,PAL_D1,PAL_K,PAL_M,PAL_N,NTSC_M,NTSC_M_JP,SECAM_B
+>,SECAM_D,SECAM_L,?ATSC_8_VSB,ATSC_16_VSB,(null),(null),(null),(null),(null),
+>(null),(null),(null),(null),(null),(null),(null),(null),(null),(null)]):
+> Invalid argument
+> ioctl: VIDIOC_G_CTRL(id=9963792;value=39): Input/output error
+> ioctl: VIDIOC_G_CTRL(id=134217736;value=2): Input/output error
+> config: invalid value for input: Television
+> valid choices for "input": "Camera"
+> config: invalid value for norm: norm
+> valid choices for "norm":
+> attribute  | type   | current | default | comment
+> -----------+--------+---------+---------+----------------------------------
+>--- norm       | choice | (null)  | (null)  |
+> input      | choice | Camera  | Camera  | Camera
+> bright     | int    |     127 |     127 | range is 0 => 255
+> contrast   | int    |      32 |      32 | range is 0 => 255
+> color      | int    |      39 |      39 | range is 0 => 255
+> Gamma      | int    |      39 |     220 | range is 100 => 220
+> Gain       | int    |      16 |       0 | range is 0 => 255
+> Backlight  | int    |       1 |       1 | range is 0 => 2
+> Power Line | choice | 60 Hz   | 60 Hz   | Disabled 50 Hz 60 Hz
+> Pan/Tilt ( | int    |       2 |       0 | range is 0 => 3
+> Exposure,  | int    |       8 |       8 | range is 0 => 0
+> Exposure ( | int    |    2527 |     166 | range is 1 => 10000
+> White Bala | bool   | on      | on      |
+> White Bala | int    |    4000 |    4000 | range is 2800 => 6500
+>
+>
+> Ekiga just give me "Your video driver doesn't support the requested video
+> format" message.
+>
+>
+> ...and while I tried kernel says:
+>
+> Oct 17 22:24:14 nemos kernel: uvcvideo: Failed to query (132) UVC control 8
+> (unit 2) : -32.
+> Oct 17 22:24:14 nemos kernel: uvcvideo: Failed to query (135) UVC control 1
+> (unit 9) : 1.
+> Oct 17 22:24:14 nemos kernel: uvcvideo: Failed to query (129) UVC control 9
+> (unit 2) : -32.
+> Oct 17 22:24:14 nemos kernel: uvcvideo: Failed to query (129) UVC control 2
+> (unit 9) : -32.
+
+That's a known issue. To make it short, the Logitech webcams have a hardware 
+bug which is only triggered by Linux. We're trying to find a workaround.
+
+> Some tech info:
+> nemos:~# uname -a
+> Linux nemos 2.6.17-2-686 #1 SMP Wed Sep 13 16:34:10 UTC 2006 i686 GNU/Linux
+> nemos:~# lsmod | grep usb
+> usb_storage            70560  0
+> scsi_mod              123080  2 sd_mod,usb_storage
+> usbkbd                  6784  0
+> usbcore               111616  6
+> uvcvideo,usb_storage,usbkbd,uhci_hcd,ehci_hcd ide_core              111016 
+> 5 usb_storage,ide_cd,ide_disk,piix,generic
+>
+> Any ideas how to capture video from this?
+
+Try luvcview and/or uvccapture and see if the webcam works with them. Ekiga is 
+also known to work if you want a videoconferencing application. As for 
+mplayer, try to bother the developers until they fix it :-)
+
+Cheers,
+
+Laurent Pinchart
+
+
+From larry at foxgulch.com  Wed Oct 25 22:11:53 2006
+From: larry at foxgulch.com (LJ)
+Date: Wed, 25 Oct 2006 14:11:53 -0600
+Subject: [Linux-uvc-devel] Changing and Jumbled picture from uvcvideo driver
+ using Logitech 046d:08c2 USB Webcam
+Message-ID: <453FC509.8090904@foxgulch.com>
+
+Hello,
+
+I'm a Fedora Linux enthusiast but also a Linux newbie (about one year
+experience) running Linux  2.6.18-1.2200.fc5smp
+
+1.  I successfully compiled and installed the latest uvcvideo driver
+from the trunk (uvcvideo-52.tar.gz)
+
+2.  After I plug in my Logitech Quick Cam Orbit/Sphere (046d:08c2)
+camera, the driver loads upon boot and shows up as character device
+/dev/video0.
+
+3.  But all the video producing applications I've tried so far,  produce
+a jumbled picture such as this 7 kB sample viewable at
+
+http://foxgulch.com/Miscellaneous/snap.jpg
+
+If you look closely, you can see parts of my face,  but not in the
+sequence my Mother intended. {;-)
+
+4.  That  above jpg was produced with uvccapture.   Under
+luvcview20060920,  I can control the pan/tilt etc of the 046d:08C2
+logitech orbit/sphere usb web camera.  However the fps number shown at
+the top constantly varies and the picture is repeatedly  similarly jumbled.
+
+5.  I conclude my problem is somehow  cockpit error on my part but after
+grinding away for several days,  I'd appreciate any help offered.
+
+Thank you in advance,
+
+Larry Jones
+
+
+From noblepepper at bellsouth.net  Thu Oct 26 12:20:52 2006
+From: noblepepper at bellsouth.net (Noble Pepper)
+Date: Thu, 26 Oct 2006 10:20:52 +0000 (UTC)
+Subject: [Linux-uvc-devel]
+	=?utf-8?q?uvcvideo_-_Unable_to_allocate_buffers?=
+	=?utf-8?q?=3A_22=2E=09Init_v4L2_failed?=
+References: <loom.20061015T190046-3@post.gmane.org>
+	<loom.20061016T133345-758@post.gmane.org>
+	<200610252044.41265.laurent.pinchart@skynet.be>
+Message-ID: <loom.20061026T122013-98@post.gmane.org>
+
+Laurent Pinchart <laurent.pinchart <at> skynet.be> writes:
+
+> 
+> > This is probably a more decriptiive subject.
+> >
+> > On further thought this may be related to uvcvideo using mmap only, I had
+> > to use the read/write option on other modules on the ARM to get them to
+> > work properly.
+> 
+> That's interesting. I'd like to know why the request fails. Are you familiar 
+> with Linux programming enough to add a few print statements in the driver and 
+> see where it fails ?
+> 
+> Laurent Pinchart
+> 
+
+Thanks for your help.
+
+If you could give me some guidance on where to start looking in uvcvideo
+it would be a great help.
+
+I am not an expert by any description but I can probably bumble through
+adding a few print statements. I had taken the direction of running
+luvcview under gdb to see exactly what was being returned from the
+driver. I am currently making my way through the luvcview code to learn
+exactly how it works. 
+
+I had originally been working with cameras that use the spca or gspca
+driver when I found this comment from Michel on the spca50x-devs mailing
+list which was the key to making them work on the device:
+
+Le Vendredi 30 D?cembre 2005 05:24, ??? a ?crit :
+ sqd,
+ You should run spcaserv with read method parameters (-g)  instead mmap .  I 
+ have see some memory corruption with mmap only with the Arm CPU, maybe a 
+ wrong memory alignement 
+ 
+
+
+
+
+
+
+From laurent.pinchart at skynet.be  Thu Oct 26 12:43:38 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Thu, 26 Oct 2006 12:43:38 +0200
+Subject: [Linux-uvc-devel]
+	=?utf-8?q?uvcvideo_-_Unable_to_allocate_buffers?=
+	=?utf-8?q?=3A_22=2E=09Init_v4L2_failed?=
+In-Reply-To: <loom.20061026T122013-98@post.gmane.org>
+References: <loom.20061015T190046-3@post.gmane.org>
+	<200610252044.41265.laurent.pinchart@skynet.be>
+	<loom.20061026T122013-98@post.gmane.org>
+Message-ID: <200610261243.39079.laurent.pinchart@skynet.be>
+
+Hi,
+
+> > > This is probably a more decriptiive subject.
+> > >
+> > > On further thought this may be related to uvcvideo using mmap only, I
+> > > had to use the read/write option on other modules on the ARM to get
+> > > them to work properly.
+> >
+> > That's interesting. I'd like to know why the request fails. Are you
+> > familiar with Linux programming enough to add a few print statements in
+> > the driver and see where it fails ?
+> >
+> > Laurent Pinchart
+>
+> Thanks for your help.
+>
+> If you could give me some guidance on where to start looking in uvcvideo
+> it would be a great help.
+
+Sure.
+
+The code starts in uvc_v4l2_do_ioctl. To allocate the buffers, an application 
+calls VIDIOC_REQBUFS. You will find a first check in that function, which 
+returns the error code you noticed.
+
+	if (rb->type != V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+	    rb->memory != V4L2_MEMORY_MMAP)
+		return -EINVAL;
+
+Try to add a print statement before and after the check. If the check fails, 
+print rb->type and rb->memory.
+
+I can't see any other place where the driver might return -EINVAL in response 
+to VIDIOC_REQBUFS.
+
+> I am not an expert by any description but I can probably bumble through
+> adding a few print statements.
+
+Use printk(KERN_DEBUG "message", arg1, arg2, ...) to print messages to the 
+kernel log. You can then retrieve them using the dmesg command.
+
+> I had taken the direction of running 
+> luvcview under gdb to see exactly what was being returned from the
+> driver. I am currently making my way through the luvcview code to learn
+> exactly how it works.
+
+The driver seems to return -22 (-EINVAL) when luvcview tries to allocate the 
+buffers with the VIDIOC_REQBUFS ioctl. Check the ioctl() return value (should 
+be -1) and the errno value (should be 22).
+
+> I had originally been working with cameras that use the spca or gspca
+> driver when I found this comment from Michel on the spca50x-devs mailing
+> list which was the key to making them work on the device:
+>
+> Le Vendredi 30 D?cembre 2005 05:24, ??? a ?crit :
+>  sqd,
+>  You should run spcaserv with read method parameters (-g)  instead mmap . 
+> I have see some memory corruption with mmap only with the Arm CPU, maybe a
+> wrong memory alignement
+
+Laurent Pinchart
+
+
+From POD69 at gmx.net  Thu Oct 26 14:45:23 2006
+From: POD69 at gmx.net (POD69 at gmx.net)
+Date: Thu, 26 Oct 2006 14:45:23 +0200
+Subject: [Linux-uvc-devel] Please someone help installing UVC
+Message-ID: <20061026124523.257230@gmx.net>
+
+ i try to install the UVC driver on uname -a
+    Linux notebook 2.6.16.21-0.25-default #1 Tue Sep 19 07:26:15 UTC 2006 i686 i686 i386 GNU/Linux therefore i checked out svn checkout svn://svn.berlios.de/linux-uvc/linux-uvc/trunk and used the command make and i got the following output ->
+    make
+    Building USB Video Class driver...
+    make[1]: Entering directory `/usr/src/linux-2.6.16.21-0.25-obj/i386/default'
+    make[1]: *** No rule to make target `modules'.  Stop.
+    make[1]: Leaving directory `/usr/src/linux-2.6.16.21-0.25-obj/i386/default'
+    make: *** [uvcvideo] Error 2
+    does anyone know why this fault appears and how to solve it? is it because of the kernel a wrong version? i am relatively a newbie in linux and try to install a logitech webcam! so hopefully someone can help!
+    thx peter
+-- 
+GMX DSL-Flatrate 0,- Euro* - ?berall, wo DSL verf?gbar ist!
+NEU: Jetzt bis zu 16.000 kBit/s! http://www.gmx.net/de/go/dsl
+
+
+From mxhaard at magic.fr  Thu Oct 26 14:41:49 2006
+From: mxhaard at magic.fr (Michel Xhaard)
+Date: Thu, 26 Oct 2006 14:41:49 +0200
+Subject: [Linux-uvc-devel] Please someone help installing UVC
+In-Reply-To: <20061026124523.257230@gmx.net>
+References: <20061026124523.257230@gmx.net>
+Message-ID: <200610261441.49690.mxhaard@magic.fr>
+
+Le Jeudi 26 Octobre 2006 14:45, POD69 at gmx.net a ?crit?:
+>  i try to install the UVC driver on uname -a
+>     Linux notebook 2.6.16.21-0.25-default #1 Tue Sep 19 07:26:15 UTC 2006
+> i686 i686 i386 GNU/Linux therefore i checked out svn checkout
+> svn://svn.berlios.de/linux-uvc/linux-uvc/trunk and used the command make
+> and i got the following output -> make
+>     Building USB Video Class driver...
+>     make[1]: Entering directory
+> `/usr/src/linux-2.6.16.21-0.25-obj/i386/default' make[1]: *** No rule to
+> make target `modules'.  Stop.
+>     make[1]: Leaving directory
+> `/usr/src/linux-2.6.16.21-0.25-obj/i386/default' make: *** [uvcvideo] Error
+> 2
+>     does anyone know why this fault appears and how to solve it? is it
+> because of the kernel a wrong version? i am relatively a newbie in linux
+> and try to install a logitech webcam! so hopefully someone can help! thx
+> peter
+Peter,
+Seem your kernel source is not installed. Your Distro is from Suse ?
+regards
+-- 
+Michel Xhaard
+http://mxhaard.free.fr
+
+
+From mxhaard at magic.fr  Fri Oct 27 18:00:47 2006
+From: mxhaard at magic.fr (Michel Xhaard)
+Date: Fri, 27 Oct 2006 18:00:47 +0200
+Subject: [Linux-uvc-devel] Please someone help installing UVC
+In-Reply-To: <20061027151632.300870@gmx.net>
+References: <20061026124523.257230@gmx.net>
+	<200610261441.49690.mxhaard@magic.fr>
+	<20061027151632.300870@gmx.net>
+Message-ID: <200610271800.47548.mxhaard@magic.fr>
+
+Le Vendredi 27 Octobre 2006 17:16, POD69 at gmx.net a ?crit?:
+> hello
+>
+> thank u for your answer yes i use suse 10.1 version 2.6.16.21-0.25-default
+> i am relatively a newbie and i dont know if my kernel sources are installed
+> now or not - i searched in the net for how to install the kernel-sources
+> and it said through yast but as u can see from my attached pdf i think the
+> source is already installed or ist that not the kernel source
+> (kernel-default)?
+>
+> best regards peter
+>
+> -------- Original-Nachricht --------
+> Datum: Thu, 26 Oct 2006 14:41:49 +0200
+> Von: Michel Xhaard <mxhaard at magic.fr>
+> An: linux-uvc-devel at lists.berlios.de
+> Betreff: Re: [Linux-uvc-devel] Please someone help installing UVC
+>
+> > Le Jeudi 26 Octobre 2006 14:45, POD69 at gmx.net a ?crit :
+> > >  i try to install the UVC driver on uname -a
+> > >     Linux notebook 2.6.16.21-0.25-default #1 Tue Sep 19 07:26:15 UTC
+> >
+> > 2006
+> >
+> > > i686 i686 i386 GNU/Linux therefore i checked out svn checkout
+> > > svn://svn.berlios.de/linux-uvc/linux-uvc/trunk and used the command
+> > > make and i got the following output -> make
+> > >     Building USB Video Class driver...
+> > >     make[1]: Entering directory
+> > > `/usr/src/linux-2.6.16.21-0.25-obj/i386/default' make[1]: *** No rule
+> > > to make target `modules'.  Stop.
+> > >     make[1]: Leaving directory
+> > > `/usr/src/linux-2.6.16.21-0.25-obj/i386/default' make: *** [uvcvideo]
+> >
+> > Error
+> >
+> > > 2
+> > >     does anyone know why this fault appears and how to solve it? is it
+> > > because of the kernel a wrong version? i am relatively a newbie in
+> > > linux and try to install a logitech webcam! so hopefully someone can
+> > > help! thx peter
+> >
+> > Peter,
+> > Seem your kernel source is not installed. Your Distro is from Suse ?
+> > regards
+
+Peter,
+With yast, search kernel-source and install
+regards
+-- 
+Michel Xhaard
+http://mxhaard.free.fr
+
+
+From POD69 at gmx.net  Fri Oct 27 21:04:53 2006
+From: POD69 at gmx.net (POD69 at gmx.net)
+Date: Fri, 27 Oct 2006 21:04:53 +0200
+Subject: [Linux-uvc-devel] Please someone help installing UVC
+In-Reply-To: <200610271800.47548.mxhaard@magic.fr>
+References: <20061026124523.257230@gmx.net>
+	<200610261441.49690.mxhaard@magic.fr>	<20061027151632.300870@gmx.net>
+	<200610271800.47548.mxhaard@magic.fr>
+Message-ID: <20061027190453.41440@gmx.net>
+
+hello
+
+mmmm thats exactly what i did but it wasnt found on the dvd? only kernel-default as you could see from my previous mail??
+
+thx peter
+-------- Original-Nachricht --------
+Datum: Fri, 27 Oct 2006 18:00:47 +0200
+Von: Michel Xhaard <mxhaard at magic.fr>
+An: POD69 at gmx.net
+Betreff: Re: [Linux-uvc-devel] Please someone help installing UVC
+
+> Le Vendredi 27 Octobre 2006 17:16, POD69 at gmx.net a ?crit?:
+> > hello
+> >
+> > thank u for your answer yes i use suse 10.1 version
+> 2.6.16.21-0.25-default
+> > i am relatively a newbie and i dont know if my kernel sources are
+> installed
+> > now or not - i searched in the net for how to install the kernel-sources
+> > and it said through yast but as u can see from my attached pdf i think
+> the
+> > source is already installed or ist that not the kernel source
+> > (kernel-default)?
+> >
+> > best regards peter
+> >
+> > -------- Original-Nachricht --------
+> > Datum: Thu, 26 Oct 2006 14:41:49 +0200
+> > Von: Michel Xhaard <mxhaard at magic.fr>
+> > An: linux-uvc-devel at lists.berlios.de
+> > Betreff: Re: [Linux-uvc-devel] Please someone help installing UVC
+> >
+> > > Le Jeudi 26 Octobre 2006 14:45, POD69 at gmx.net a ?crit :
+> > > >  i try to install the UVC driver on uname -a
+> > > >     Linux notebook 2.6.16.21-0.25-default #1 Tue Sep 19 07:26:15 UTC
+> > >
+> > > 2006
+> > >
+> > > > i686 i686 i386 GNU/Linux therefore i checked out svn checkout
+> > > > svn://svn.berlios.de/linux-uvc/linux-uvc/trunk and used the command
+> > > > make and i got the following output -> make
+> > > >     Building USB Video Class driver...
+> > > >     make[1]: Entering directory
+> > > > `/usr/src/linux-2.6.16.21-0.25-obj/i386/default' make[1]: *** No
+> rule
+> > > > to make target `modules'.  Stop.
+> > > >     make[1]: Leaving directory
+> > > > `/usr/src/linux-2.6.16.21-0.25-obj/i386/default' make: ***
+> [uvcvideo]
+> > >
+> > > Error
+> > >
+> > > > 2
+> > > >     does anyone know why this fault appears and how to solve it? is
+> it
+> > > > because of the kernel a wrong version? i am relatively a newbie in
+> > > > linux and try to install a logitech webcam! so hopefully someone can
+> > > > help! thx peter
+> > >
+> > > Peter,
+> > > Seem your kernel source is not installed. Your Distro is from Suse ?
+> > > regards
+> 
+> Peter,
+> With yast, search kernel-source and install
+> regards
+> -- 
+> Michel Xhaard
+> http://mxhaard.free.fr
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+
+-- 
+Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
+Ideal f?r Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
+
+
+From mxhaard at magic.fr  Fri Oct 27 23:31:13 2006
+From: mxhaard at magic.fr (Michel Xhaard)
+Date: Fri, 27 Oct 2006 23:31:13 +0200
+Subject: [Linux-uvc-devel] Please someone help installing UVC
+In-Reply-To: <20061027190453.41440@gmx.net>
+References: <20061026124523.257230@gmx.net>
+	<200610271800.47548.mxhaard@magic.fr>
+	<20061027190453.41440@gmx.net>
+Message-ID: <200610272331.14442.mxhaard@magic.fr>
+
+Le Vendredi 27 Octobre 2006 21:04, POD69 at gmx.net a ?crit?:
+> hello
+>
+> mmmm thats exactly what i did but it wasnt found on the dvd? only
+> kernel-default as you could see from my previous mail??
+kernel-default is the binary image, you need the kernel source. 
+>
+> thx peter
+> -------- Original-Nachricht --------
+> Datum: Fri, 27 Oct 2006 18:00:47 +0200
+> Von: Michel Xhaard <mxhaard at magic.fr>
+> An: POD69 at gmx.net
+> Betreff: Re: [Linux-uvc-devel] Please someone help installing UVC
+>
+> > Le Vendredi 27 Octobre 2006 17:16, POD69 at gmx.net a ?crit?:
+> > > hello
+> > >
+> > > thank u for your answer yes i use suse 10.1 version
+> >
+> > 2.6.16.21-0.25-default
+> >
+> > > i am relatively a newbie and i dont know if my kernel sources are
+> >
+> > installed
+> >
+> > > now or not - i searched in the net for how to install the
+> > > kernel-sources and it said through yast but as u can see from my
+> > > attached pdf i think
+> >
+> > the
+> >
+> > > source is already installed or ist that not the kernel source
+> > > (kernel-default)?
+> > >
+> > > best regards peter
+> > >
+> > > -------- Original-Nachricht --------
+> > > Datum: Thu, 26 Oct 2006 14:41:49 +0200
+> > > Von: Michel Xhaard <mxhaard at magic.fr>
+> > > An: linux-uvc-devel at lists.berlios.de
+> > > Betreff: Re: [Linux-uvc-devel] Please someone help installing UVC
+> > >
+> > > > Le Jeudi 26 Octobre 2006 14:45, POD69 at gmx.net a ?crit :
+> > > > >  i try to install the UVC driver on uname -a
+> > > > >     Linux notebook 2.6.16.21-0.25-default #1 Tue Sep 19 07:26:15
+> > > > > UTC
+> > > >
+> > > > 2006
+> > > >
+> > > > > i686 i686 i386 GNU/Linux therefore i checked out svn checkout
+> > > > > svn://svn.berlios.de/linux-uvc/linux-uvc/trunk and used the command
+> > > > > make and i got the following output -> make
+> > > > >     Building USB Video Class driver...
+> > > > >     make[1]: Entering directory
+> > > > > `/usr/src/linux-2.6.16.21-0.25-obj/i386/default' make[1]: *** No
+> >
+> > rule
+> >
+> > > > > to make target `modules'.  Stop.
+> > > > >     make[1]: Leaving directory
+> > > > > `/usr/src/linux-2.6.16.21-0.25-obj/i386/default' make: ***
+> >
+> > [uvcvideo]
+> >
+> > > > Error
+> > > >
+> > > > > 2
+> > > > >     does anyone know why this fault appears and how to solve it? is
+> >
+> > it
+> >
+> > > > > because of the kernel a wrong version? i am relatively a newbie in
+> > > > > linux and try to install a logitech webcam! so hopefully someone
+> > > > > can help! thx peter
+> > > >
+> > > > Peter,
+> > > > Seem your kernel source is not installed. Your Distro is from Suse ?
+> > > > regards
+> >
+> > Peter,
+> > With yast, search kernel-source and install
+> > regards
+> > --
+> > Michel Xhaard
+> > http://mxhaard.free.fr
+> > _______________________________________________
+> > Linux-uvc-devel mailing list
+> > Linux-uvc-devel at lists.berlios.de
+> > https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+
+-- 
+Michel Xhaard
+http://mxhaard.free.fr
+
+
+From Olivier.Bornet at idiap.ch  Sat Oct 28 16:24:25 2006
+From: Olivier.Bornet at idiap.ch (Olivier Bornet)
+Date: Sat, 28 Oct 2006 16:24:25 +0200
+Subject: [Linux-uvc-devel] iSight / logitech co-existing patch
+In-Reply-To: <200609262345.46628.laurent.pinchart@skynet.be>
+References: <4511FED3.4090004@rsbs.anu.edu.au>
+	<87fyeidrcw.dancerj%dancer@netfort.gr.jp>
+	<8764fedksf.dancerj%dancer@netfort.gr.jp>
+	<200609262345.46628.laurent.pinchart@skynet.be>
+Message-ID: <20061028142424.GA16756@idiap.ch>
+
+Hi all,
+
+On Tue, Sep 26, 2006 at 11:45:43PM +0200, Laurent Pinchart wrote:
+> Hi Junichi,
+> 
+> > The following is the patch applied to the Debian version to make logitech
+> > and iSight to co-exist.
+> ...
+> Thanks for the patch. I can't apply it now, as the driver is going under 
+> fundamental changes, but I'll look at it in a week or two.
+> 
+> What bothers me is that the Mac firmware is very buggy. I'd like to address 
+> the issue with Apple first, to see if they can't fix it.
+
+Any news on this stuff ? I will be happy to check running both
+Logitech-uvc powered cams and iSight with the same driver. :)
+
+Thanks for all the work on linux-uvc, and have a nice week-end.
+
+        Olivier
+-- 
+Olivier Bornet, IDIAP, CP 592, CH-1920 Martigny
+http://www.idiap.ch/~bornet/
+http://www.idiap.ch/~bornet/pgp/
+PGP-key: 0xC53D9218
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: Digital signature
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061028/a83a442c/attachment.pgp>
+
+From noblepepper at bellsouth.net  Sun Oct 29 15:11:16 2006
+From: noblepepper at bellsouth.net (Noble Pepper)
+Date: Sun, 29 Oct 2006 14:11:16 +0000 (UTC)
+Subject: [Linux-uvc-devel]
+	=?utf-8?q?uvcvideo_-_Unable_to_allocate_buffers?=
+	=?utf-8?q?=3A_22=2E=09Init_v4L2_failed?=
+References: <loom.20061015T190046-3@post.gmane.org>
+	<200610252044.41265.laurent.pinchart@skynet.be>
+	<loom.20061026T122013-98@post.gmane.org>
+	<200610261243.39079.laurent.pinchart@skynet.be>
+Message-ID: <loom.20061029T140523-901@post.gmane.org>
+
+Laurent Pinchart <laurent.pinchart <at> skynet.be> writes:
+
+> 
+> Try to add a print statement before and after the check. If the check fails, 
+> print rb->type and rb->memory.
+> 
+
+Ok, here's what I did, results were not as expected. I am totally confused at
+this point. Any more suggestions will be greatly expected.
+
+Put in these printk's
+ struct v4l2_requestbuffers *rb = arg;
+                unsigned int bufsize = 
+video->streaming->ctrl.dwMaxVideoFrameSize;
+                printk(KERN_DEBUG "type %x\n", rb->type);
+                printk(KERN_DEBUG "memory %x\n", rb->memory);
+                if (rb->type != V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+                    rb->memory != V4L2_MEMORY_MMAP)
+                        return -EINVAL;
+                printk(KERN_DEBUG "type %x\n", rb->type);
+                printk(KERN_DEBUG "memory %x\n", rb->memory);
+
+I compiled for my desktop and recieved the expected from dmesg:
+[17264202.756000] type 1
+[17264202.756000] memory 1
+[17264202.756000] type 1
+[17264202.756000] memory 1
+
+Now I compiled for the device and there was no output from the printk's in
+dmesg. 
+
+> I can't see any other place where the driver might return -EINVAL in response 
+> to VIDIOC_REQBUFS.
+> 
+
+Since it doesn't appear to ever get to VIDIOC_REQBUFS I put some printk's 
+before the switch like this:
+
+        printk(KERN_DEBUG "Going into switch\n");
+        printk(KERN_DEBUG "cmd = %d\n", cmd);
+
+        switch (cmd) {
+        /* Query capabilities */
+        case VIDIOC_QUERYCAP:
+
+Now on the desktop I get
+[17264202.592000] Going into switch
+[17264202.596000] cmd = -2140645888
+[17264202.596000] Going into switch
+[17264202.596000] cmd = -1060350459
+[17264202.756000] Going into switch
+[17264202.756000] cmd = -1072409080
+[17264202.756000] type 1
+[17264202.756000] memory 1
+[17264202.756000] type 1
+[17264202.756000] memory 1
+[17264202.756000] Going into switch
+[17264202.756000] cmd = -1069263351
+
+followed by pages of more as luvcview uses more ioctrl's
+
+Now on the device I get 
+
+ Going into switch
+[35988.599060] cmd = -2140645888
+[35988.599151] Going into switch
+[35988.599182] cmd = -1060350459
+[35988.649597] Going into switch
+[35988.649627] cmd = -1072409080
+
+and then nothing. Of course the error message is still there.
+
+Nokia770-26:/media/mmc1/modules# luvcview
+uvcview version 0.1.7
+Video driver: x11
+A window manager is available
+video /dev/video0
+Unable to allocate buffers: 22.
+Init v4L2 failed !! exit fatal
+
+It seems that the switch statement is not interpreting VIDIOC_REQBUFS
+correctly.
+
+> 
+> The driver seems to return -22 (-EINVAL) when luvcview tries to allocate the 
+> buffers with the VIDIOC_REQBUFS ioctl. Check the ioctl() return value (should 
+> be -1) and the errno value (should be 22).
+> 
+
+Yes it appears that luvcview is doing this, here is the bit where it calls
+for a buffer
+    ret = ioctl(vd->fd, VIDIOC_REQBUFS, &vd->rb);
+    if (ret < 0) {
+        printf("Unable to allocate buffers: %d.\n", errno);
+        goto fatal;
+    }
+
+Before it does that, it asks for capabilities
+ 
+ret = ioctl(vd->fd, VIDIOC_QUERYCAP, &vd->cap);
+    if (ret < 0) {
+        printf("Error opening device %s: unable to query device.\n",
+               vd->videodevice);
+        goto fatal;
+    }
+This one seems to work fine. Running in gdb here's what happens
+(gdb) c
+Continuing.
+
+Breakpoint 3, init_videoIn (vd=0x335f8,
+    device=0x1 <Address 0x1 out of bounds>, width=320, height=240,
+    format=210544, grabmethod=1, avifilename=0x33670 "") at v4l2uvc.c:121
+121         ret = ioctl(vd->fd, VIDIOC_QUERYCAP, &vd->cap);
+(gdb) p vd->cap
+$1 = {driver = '\0' <repeats 15 times>, card = '\0' <repeats 31 times>,
+  bus_info = '\0' <repeats 31 times>, version = 0, capabilities = 0,
+  reserved = {0, 0, 0, 0}}
+(gdb) n
+122         if (ret < 0) {
+(gdb) p vd->cap
+$2 = {driver = "uvcvideo\000\000\000\000\000\000\000",
+  card = "USB Video Class device\000\000\000\000\000\000\000\000\000",
+  bus_info = "ohci", '\0' <repeats 27 times>, version = 256,
+  capabilities = 67108865, reserved = {0, 0, 0, 0}}
+
+It seems to fill in the capacities fine. So it can understand VIDIOC_QUERYCAP
+but not VIDIOC_REQBUFS !!!!????
+
+I hope this means something to you, I am lost. Thanks again for your help.
+
+
+
+From noblepepper at bellsouth.net  Sun Oct 29 19:32:45 2006
+From: noblepepper at bellsouth.net (Noble Pepper)
+Date: Sun, 29 Oct 2006 18:32:45 +0000 (UTC)
+Subject: [Linux-uvc-devel]
+	=?utf-8?q?uvcvideo_-_Unable_to_allocate_buffers?=
+	=?utf-8?q?=3A_22=2E=09Init_v4L2_failed?=
+References: <loom.20061015T190046-3@post.gmane.org>
+	<200610252044.41265.laurent.pinchart@skynet.be>
+	<loom.20061026T122013-98@post.gmane.org>
+	<200610261243.39079.laurent.pinchart@skynet.be>
+	<loom.20061029T140523-901@post.gmane.org>
+Message-ID: <loom.20061029T190650-120@post.gmane.org>
+
+Noble Pepper <noblepepper <at> bellsouth.net> writes:
+
+> 
+> Laurent Pinchart <laurent.pinchart <at> skynet.be> writes:
+> 
+> > 
+> > Try to add a print statement before and after the check. If the check fails, 
+> > print rb->type and rb->memory.
+> > 
+> 
+> Ok, here's what I did, results were not as expected. I am totally confused at
+> this point. 
+<snip>
+> 
+> I hope this means something to you, I am lost. Thanks again for your help.
+> 
+Well I have made some more progress, apparently I have a problem with where the
+constants are getting their values.
+
+I put in these printk's
+
+static int uvc_v4l2_do_ioctl(struct inode *inode, struct file *file,
+                     unsigned int cmd, void *arg)
+{
+        struct video_device *vdev = video_devdata(file);
+        struct uvc_video_device *video = video_get_drvdata(vdev);
+        int ret;
+        unsigned int testvidio;
+        testvidio = VIDIOC_REQBUFS;
+        printk(KERN_DEBUG "Vidioc_reqbufs = %x\ncmd = %x\n", testvidio,cmd);
+
+now dmesg gives me on the device:
+[52265.965393] Vidioc_reqbufs = c0105608
+[52265.965423] cmd = 80685600
+[52265.965484] Going into switch
+[52265.965515] cmd = 80685600
+[52265.965576] Vidioc_reqbufs = c0105608
+[52265.965606] cmd = c0cc5605
+[52265.965667] Going into switch
+[52265.965698] cmd = c0cc5605
+[52266.016326] Vidioc_reqbufs = c0105608
+[52266.016357] cmd = c0145608
+[52266.016418] Going into switch
+[52266.016448] cmd = c0145608
+[52266.016479] In reqbuf
+[52266.016510] type 1
+[52266.016540] memory 0
+[52266.016540] type 1
+[52266.016571] memory 0
+
+If I hardcode the "wrong" value into the case like this
+        case VIDIOC_S_CROP:
+                return -EINVAL;
+        /* Buffers & streaming */
+        /* case VIDIOC_REQBUFS:*/
+        case 0xc0145608:
+        {
+                printk(KERN_DEBUG "In reqbuf\n");
+                struct v4l2_requestbuffers *rb = arg;
+            unsigned int bufsize = video->streaming->ctrl.dwMaxVideoFrameSize;
+                printk(KERN_DEBUG "type %x\n", rb->type);
+                printk(KERN_DEBUG "memory %x\n", rb->memory);
+                if (rb->type != V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+                    rb->memory != V4L2_MEMORY_MMAP)
+                {       printk(KERN_DEBUG "type %x\n", rb->type);
+                        printk(KERN_DEBUG "memory %x\n", rb->memory);
+                        return -EINVAL;
+                }
+
+                
+it will execute the buffer request as the dmesg shows, but now rb->memory is 0
+not 1 as on the desktop.
+
+So, I think there is a problem with the includes, somehow I am getting one set
+of constants when compiling the video4linux2 modules and another when compiling
+uvcvideo. Arrggghhh!!!!!
+
+If you have any suggestions on how to trace these down I would appreciate it but
+at this point I think the problem is probably specific to my cross compiling
+setup.
+
+
+
+
+
+
+From laurent.pinchart at skynet.be  Sun Oct 29 21:29:16 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Sun, 29 Oct 2006 21:29:16 +0100
+Subject: [Linux-uvc-devel]
+	=?iso-8859-1?q?uvcvideo_-_Unable_to_allocate_bu?=
+	=?iso-8859-1?q?ffers=3A_22=2E=09Init_v4L2_failed?=
+In-Reply-To: <loom.20061029T190650-120@post.gmane.org>
+References: <loom.20061015T190046-3@post.gmane.org>
+	<loom.20061029T140523-901@post.gmane.org>
+	<loom.20061029T190650-120@post.gmane.org>
+Message-ID: <200610292129.17169.laurent.pinchart@skynet.be>
+
+Hi,
+
+> > > Try to add a print statement before and after the check. If the check
+> > > fails, print rb->type and rb->memory.
+> >
+> > Ok, here's what I did, results were not as expected. I am totally
+> > confused at this point.
+>
+> <snip>
+>
+> > I hope this means something to you, I am lost. Thanks again for your
+> > help.
+>
+> Well I have made some more progress, apparently I have a problem with where
+> the constants are getting their values.
+>
+> I put in these printk's
+>
+> static int uvc_v4l2_do_ioctl(struct inode *inode, struct file *file,
+>                      unsigned int cmd, void *arg)
+> {
+>         struct video_device *vdev = video_devdata(file);
+>         struct uvc_video_device *video = video_get_drvdata(vdev);
+>         int ret;
+>         unsigned int testvidio;
+>         testvidio = VIDIOC_REQBUFS;
+>         printk(KERN_DEBUG "Vidioc_reqbufs = %x\ncmd = %x\n",
+> testvidio,cmd);
+>
+> now dmesg gives me on the device:
+[snip]
+> [52266.016326] Vidioc_reqbufs = c0105608
+> [52266.016357] cmd = c0145608
+[snip]
+>
+> So, I think there is a problem with the includes, somehow I am getting one
+> set of constants when compiling the video4linux2 modules and another when
+> compiling uvcvideo. Arrggghhh!!!!!
+>
+> If you have any suggestions on how to trace these down I would appreciate
+> it but at this point I think the problem is probably specific to my cross
+> compiling setup.
+
+The 32 bits ioctl number are made of 4 fields, one of them being the size of 
+the parameter in bytes. It seems your kernel and userspace tools don't agree 
+on the number of bytes an enumeration should take.
+
+This is a known problem. Search the v4l mailing list archives for a thread 
+started on 13/04/2006 which subject was
+
+[PATCH] [RFC] videodev2.h: ARM's old ABI support on EABI kernels
+
+If this helps, please report the problem on the v4l mailing list and bug them 
+until a valid solution is found and applied to the kernel.
+
+Cheers,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Mon Oct 30 11:20:35 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Mon, 30 Oct 2006 11:20:35 +0100
+Subject: [Linux-uvc-devel] iSight / logitech co-existing patch
+In-Reply-To: <20061028142424.GA16756@idiap.ch>
+References: <4511FED3.4090004@rsbs.anu.edu.au>
+	<200609262345.46628.laurent.pinchart@skynet.be>
+	<20061028142424.GA16756@idiap.ch>
+Message-ID: <200610301120.35398.laurent.pinchart@skynet.be>
+
+Hi Olivier,
+
+> > > The following is the patch applied to the Debian version to make
+> > > logitech and iSight to co-exist.
+> >
+> > ...
+> > Thanks for the patch. I can't apply it now, as the driver is going under
+> > fundamental changes, but I'll look at it in a week or two.
+> >
+> > What bothers me is that the Mac firmware is very buggy. I'd like to
+> > address the issue with Apple first, to see if they can't fix it.
+>
+> Any news on this stuff ? I will be happy to check running both
+> Logitech-uvc powered cams and iSight with the same driver. :)
+
+I'm working on it :-) You can expect a test version soon. The firmware will 
+have to be loaded by a standalong application though, as I'm focussing on the 
+video support first (firmware loading will come a bit later).
+
+> Thanks for all the work on linux-uvc, and have a nice week-end.
+
+Thanks.
+
+Cheers,
+
+Laurent Pinchart
+
+
+From Olivier.Bornet at idiap.ch  Mon Oct 30 11:22:38 2006
+From: Olivier.Bornet at idiap.ch (Olivier Bornet)
+Date: Mon, 30 Oct 2006 11:22:38 +0100
+Subject: [Linux-uvc-devel] iSight / logitech co-existing patch
+In-Reply-To: <200610301120.35398.laurent.pinchart@skynet.be>
+References: <4511FED3.4090004@rsbs.anu.edu.au>
+	<200609262345.46628.laurent.pinchart@skynet.be>
+	<20061028142424.GA16756@idiap.ch>
+	<200610301120.35398.laurent.pinchart@skynet.be>
+Message-ID: <20061030102238.GD12024@idiap.ch>
+
+Hi Laurent,
+
+> > Any news on this stuff ? I will be happy to check running both
+> > Logitech-uvc powered cams and iSight with the same driver. :)
+> 
+> I'm working on it :-) You can expect a test version soon. The firmware will 
+> have to be loaded by a standalong application though, as I'm focussing on the 
+> video support first (firmware loading will come a bit later).
+
+Great. :)
+I will be happy to test it and give you feedback.
+
+Thanks in advance, and have a nice day.
+
+        Olivier
+-- 
+Olivier Bornet, IDIAP, CP 592, CH-1920 Martigny
+http://www.idiap.ch/~bornet/
+http://www.idiap.ch/~bornet/pgp/
+PGP-key: 0xC53D9218
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: Digital signature
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061030/6655af11/attachment.pgp>
+
+From noblepepper at bellsouth.net  Tue Oct 31 12:53:54 2006
+From: noblepepper at bellsouth.net (Noble Pepper)
+Date: Tue, 31 Oct 2006 11:53:54 +0000 (UTC)
+Subject: [Linux-uvc-devel]
+	=?utf-8?q?uvcvideo_-_Unable_to_allocate_buffers?=
+	=?utf-8?q?=3A_22=2E=09Init_v4L2_failed?=
+References: <loom.20061015T190046-3@post.gmane.org>
+	<loom.20061029T140523-901@post.gmane.org>
+	<loom.20061029T190650-120@post.gmane.org>
+	<200610292129.17169.laurent.pinchart@skynet.be>
+Message-ID: <loom.20061031T124510-89@post.gmane.org>
+
+Laurent Pinchart <laurent.pinchart <at> skynet.be> writes:
+
+> The 32 bits ioctl number are made of 4 fields, one of them being the size of 
+> the parameter in bytes. It seems your kernel and userspace tools don't agree 
+> on the number of bytes an enumeration should take.
+> 
+> This is a known problem. Search the v4l mailing list archives for a thread 
+> started on 13/04/2006 which subject was
+> 
+> [PATCH] [RFC] videodev2.h: ARM's old ABI support on EABI kernels
+> 
+> If this helps, please report the problem on the v4l mailing list and bug them 
+> until a valid solution is found and applied to the kernel.
+> 
+> Cheers,
+> 
+> Laurent Pinchart
+> 
+
+I read through most of the thread and it seems they got to a patch for the
+makefile after the one you mention. I tried the makefile patch and got segfault
+when I ran the userspace program. I still need to try the one for videodev2.h.
+
+I was thinking about this and it seems that the problem is between uvcvideo and
+the userspace app so I tried setting the values manually like this:
+
+ /* Buffers & streaming */
+        /* case VIDIOC_REQBUFS:*/
+        case 0xc0145608:
+        {
+                printk(KERN_DEBUG "In reqbuf\n");
+                struct v4l2_requestbuffers *rb = arg;
+                unsigned int bufsize = 
+video->streaming->ctrl.dwMaxVideoFrameSize;
+                rb->memory = V4L2_MEMORY_MMAP;
+                if (rb->type != V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+                    rb->memory != V4L2_MEMORY_MMAP)
+                        return -EINVAL;
+                if ((ret = uvc_alloc_buffers(&video->queue, rb->count,
+ bufsize)) < 0)
+                        return ret;
+
+                rb->count = ret;
+        }
+Since uvcvideo only does MMAP what the heck. Luvcview now works on the device.
+Picture, pan, tilt, all looks good. 
+
+I'll report back if the videodev2.h patch works, of course the hack above is
+very crude and not the way to go overall, it just works for me.
+
+
+Thanks for all your help!!
+
+
+
+

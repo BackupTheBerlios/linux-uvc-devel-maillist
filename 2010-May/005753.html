@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Stream from multimple cameras
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Stream%20from%20multimple%20cameras&In-Reply-To=%3C201005200108.36286.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005746.html">
+   <LINK REL="Next"  HREF="005745.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Stream from multimple cameras</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Stream%20from%20multimple%20cameras&In-Reply-To=%3C201005200108.36286.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Stream from multimple cameras">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu May 20 01:08:35 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005746.html">[Linux-uvc-devel] Stream from multimple cameras
+</A></li>
+        <LI>Next message: <A HREF="005745.html">[Linux-uvc-devel] Aldi USB Microscope
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5753">[ date ]</a>
+              <a href="thread.html#5753">[ thread ]</a>
+              <a href="subject.html#5753">[ subject ]</a>
+              <a href="author.html#5753">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Adrian,
+
+On Monday 17 May 2010 09:24:04 Adrian Sergiu DARABANT wrote:
+&gt;<i> Hello all,
+</I>&gt;<i> 
+</I>&gt;<i> In my case I tested with the cameras plugged into 2 differens hubs (I have
+</I>&gt;<i> 2 pairs on two sides of my netbook) and the result is the same. I have to
+</I>&gt;<i> open the laptop however to see if the hubs are really different as the
+</I>&gt;<i> port pairs are on adjacent sides of the notebook and not on opposite sides
+</I>&gt;<i> (far enough to ensure the hubs are really different). On windows I see
+</I>&gt;<i> listed one USB2(Enhanced) controller and 4 USB Universal controllers- so I
+</I>&gt;<i> guess is just one USB2
+</I>&gt;<i> 
+</I>&gt;<i> Using 2 hubs is not a solution for me as it doesn't work right now although
+</I>&gt;<i> I have 4 external USB ports on one of the machines and 6 on another (plus
+</I>&gt;<i> some internal ports on both of them)
+</I>&gt;<i> 
+</I>&gt;<i> As I am a developer, so in practice I could modify things inside the driver
+</I>&gt;<i> or somewhere in order to try to make things work.
+</I>&gt;<i> 
+</I>&gt;<i> My question is - who does/requests the USB bandwidth allocation ? The uvc
+</I>&gt;<i> driver or the camera itself ?  Is this happening directly in hardware or is
+</I>&gt;<i> mediated by the uvc/ehci driver?
+</I>
+The uvcvideo driver requests bandwidth based on values reported by the camera.
+
+There are two settings involved there. The first one is the alternate settings 
+for the video streaming interface. The video streaming interface has an 
+isochronous endpoint for video streaming, and each alternate setting has a 
+different maximum packet size for the endpoint, resulting in different 
+bandwidth requirements.
+
+The second one is the dwMaxPayloadTransferSize value reported by the camera 
+when querying its video streaming control. The driver selects the alternate 
+setting with the lowest bandwidth that fulfills the dwMaxPayloadTransferSize 
+requirements.
+
+If your camera has a single alternate setting (this can be checked using 
+lsusb) you're probably screwed, as the bandwidth is fixed. If it has multiple 
+alternate settings, it might be requesting a bandwidth higher than what it 
+really needs. In that case you could try to hardcode a lower bandwidth (see 
+the uvc_init_video function in uvc_video.c), or let the driver compute a 
+bandwidth estimation on its own by setting the UVC_QUIRK_FIX_BANDWIDTH quirk.
+
+It's also possible to play with URB submission order to use higher bandwidths 
+and alternate capture between the different webcams. Dennis Muhlestein 
+investigated that and got interesting results. Search the list archives for a 
+thread called &quot;Multiple camera framerate&quot;.
+
+&gt;<i> In the second case can we force the driver on the allocation problem if it
+</I>&gt;<i> is in the driver ?
+</I>&gt;<i> I don't know yet the answer to this - and having a few
+</I>&gt;<i> pointers/explanations from the UVC implementors might help here !
+</I>&gt;<i> 
+</I>&gt;<i> I saw the other forums and their approach - and somebody proposed there
+</I>
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005746.html">[Linux-uvc-devel] Stream from multimple cameras
+</A></li>
+	<LI>Next message: <A HREF="005745.html">[Linux-uvc-devel] Aldi USB Microscope
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5753">[ date ]</a>
+              <a href="thread.html#5753">[ thread ]</a>
+              <a href="subject.html#5753">[ subject ]</a>
+              <a href="author.html#5753">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

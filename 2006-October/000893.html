@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech QuickCam Sphere (PTZ)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20Sphere%20%28PTZ%29&In-Reply-To=%3C200610252123.52527.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000879.html">
+   <LINK REL="Next"  HREF="000880.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech QuickCam Sphere (PTZ)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20Sphere%20%28PTZ%29&In-Reply-To=%3C200610252123.52527.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Logitech QuickCam Sphere (PTZ)">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Oct 25 21:23:52 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000879.html">[Linux-uvc-devel] Logitech QuickCam Sphere (PTZ)
+</A></li>
+        <LI>Next message: <A HREF="000880.html">[Linux-uvc-devel] pantilt union in luvcview
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#893">[ date ]</a>
+              <a href="thread.html#893">[ thread ]</a>
+              <a href="subject.html#893">[ subject ]</a>
+              <a href="author.html#893">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Eugeny,
+
+&gt;<i> I'm trying to get a QC Sphere running on Debian Etch and have no result.
+</I>&gt;<i>
+</I>&gt;<i> Microsoft Windows XP says that this is an &quot;Logitech QuickCam PTZ&quot;.
+</I>&gt;<i> Box labeled as &quot;Logitech QuickCam Sphere&quot;.
+</I>&gt;<i>
+</I>&gt;<i> Today I have compiled uvcvideo from SVN, and load it:
+</I>&gt;<i> Oct 17 22:18:48 nemos kernel: uvcvideo: Found UVC 1.00 device &lt;unnamed&gt;
+</I>&gt;<i> (046d:08c2)
+</I>&gt;<i> Oct 17 22:18:48 nemos kernel: usbcore: registered new driver uvcvideo
+</I>
+So the webcam should be supported. That's good news :-)
+
+&gt;<i> Seems good, and xawtv found it:
+</I>&gt;<i> /dev/video0: OK                         [ -device /dev/video0 ]
+</I>&gt;<i>     type : v4l2
+</I>&gt;<i>     name : USB Video Class device
+</I>&gt;<i>     flags:  capture
+</I>&gt;<i>
+</I>&gt;<i> But no one capture it.
+</I>&gt;<i>
+</I>&gt;<i> Mplayer:
+</I>&gt;<i>
+</I>&gt;<i> $ mplayer <A HREF="tv://">tv://</A> -tv driver=v4l2
+</I>&gt;<i> [some output skipped]
+</I>&gt;<i> Playing <A HREF="tv://.">tv://.</A>
+</I>&gt;<i> Selected driver: v4l2
+</I>&gt;<i>  name: Video 4 Linux 2 input
+</I>&gt;<i>  author: Martin Olschewski &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">olschewski at zpr.uni-koeln.de</A>&gt;
+</I>&gt;<i>  comment: first try, more to come ;-)
+</I>&gt;<i> v4l2: ioctl get standard failed: Invalid argument
+</I>&gt;<i> v4l2: ioctl set mute failed: Invalid argument
+</I>&gt;<i> v4l2: 0 frames successfully processed, 0 frames dropped.
+</I>&gt;<i> Exiting... (End of file)
+</I>
+mplayer is known to have problems with webcams. It assumes that all video 
+devices implement some optional functions which make no sense for webcams.
+
+&gt;<i> mplayer's strace say:
+</I>&gt;<i> open(&quot;/dev/video0&quot;, O_RDWR|O_LARGEFILE) = 4
+</I>&gt;<i> ioctl(4, VIDIOC_QUERYCAP or VT_OPENQRY, 0x84efad4) = 0
+</I>&gt;<i> ioctl(4, VIDIOC_G_FMT or VT_SENDSIG, 0x84efb88) = 0
+</I>&gt;<i> ioctl(4, VIDIOC_G_STD, 0xafb0d248)      = -1 EINVAL (Invalid argument)
+</I>&gt;<i> write(2, &quot;v4l2: ioctl get standard failed:&quot;..., 50v4l2: ioctl get standard
+</I>&gt;<i> failed: Invalid argument) = 46
+</I>&gt;<i>
+</I>&gt;<i> v4lctl:
+</I>&gt;<i>
+</I>&gt;<i> $ v4lctl list
+</I>&gt;<i> ioctl:
+</I>&gt;<i> VIDIOC_QUERYCTRL(id=134217730;type=unknown;name=&quot;&quot;;minimum=0;maximum=0;step
+</I>&gt;<i>=0;default_value=0;flags=0): Input/output error
+</I>&gt;<i> ioctl:
+</I>&gt;<i> VIDIOC_QUERYCTRL(id=134217735;type=unknown;name=&quot;&quot;;minimum=0;maximum=0;step
+</I>&gt;<i>=0;default_value=0;flags=0): Input/output error
+</I>&gt;<i> ioctl: VIDIOC_G_STD(std=0xa7d02880a7c333f6
+</I>&gt;<i> [PAL_B1,PAL_G,PAL_I,PAL_D,PAL_D1,PAL_K,PAL_M,PAL_N,NTSC_M,NTSC_M_JP,SECAM_B
+</I>&gt;<i>,SECAM_D,SECAM_L,?ATSC_8_VSB,ATSC_16_VSB,(null),(null),(null),(null),(null),
+</I>&gt;<i>(null),(null),(null),(null),(null),(null),(null),(null),(null),(null)]):
+</I>&gt;<i> Invalid argument
+</I>&gt;<i> ioctl: VIDIOC_G_CTRL(id=9963792;value=39): Input/output error
+</I>&gt;<i> ioctl: VIDIOC_G_CTRL(id=134217736;value=2): Input/output error
+</I>&gt;<i> config: invalid value for input: Television
+</I>&gt;<i> valid choices for &quot;input&quot;: &quot;Camera&quot;
+</I>&gt;<i> config: invalid value for norm: norm
+</I>&gt;<i> valid choices for &quot;norm&quot;:
+</I>&gt;<i> attribute  | type   | current | default | comment
+</I>&gt;<i> -----------+--------+---------+---------+----------------------------------
+</I>&gt;<i>--- norm       | choice | (null)  | (null)  |
+</I>&gt;<i> input      | choice | Camera  | Camera  | Camera
+</I>&gt;<i> bright     | int    |     127 |     127 | range is 0 =&gt; 255
+</I>&gt;<i> contrast   | int    |      32 |      32 | range is 0 =&gt; 255
+</I>&gt;<i> color      | int    |      39 |      39 | range is 0 =&gt; 255
+</I>&gt;<i> Gamma      | int    |      39 |     220 | range is 100 =&gt; 220
+</I>&gt;<i> Gain       | int    |      16 |       0 | range is 0 =&gt; 255
+</I>&gt;<i> Backlight  | int    |       1 |       1 | range is 0 =&gt; 2
+</I>&gt;<i> Power Line | choice | 60 Hz   | 60 Hz   | Disabled 50 Hz 60 Hz
+</I>&gt;<i> Pan/Tilt ( | int    |       2 |       0 | range is 0 =&gt; 3
+</I>&gt;<i> Exposure,  | int    |       8 |       8 | range is 0 =&gt; 0
+</I>&gt;<i> Exposure ( | int    |    2527 |     166 | range is 1 =&gt; 10000
+</I>&gt;<i> White Bala | bool   | on      | on      |
+</I>&gt;<i> White Bala | int    |    4000 |    4000 | range is 2800 =&gt; 6500
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Ekiga just give me &quot;Your video driver doesn't support the requested video
+</I>&gt;<i> format&quot; message.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> ...and while I tried kernel says:
+</I>&gt;<i>
+</I>&gt;<i> Oct 17 22:24:14 nemos kernel: uvcvideo: Failed to query (132) UVC control 8
+</I>&gt;<i> (unit 2) : -32.
+</I>&gt;<i> Oct 17 22:24:14 nemos kernel: uvcvideo: Failed to query (135) UVC control 1
+</I>&gt;<i> (unit 9) : 1.
+</I>&gt;<i> Oct 17 22:24:14 nemos kernel: uvcvideo: Failed to query (129) UVC control 9
+</I>&gt;<i> (unit 2) : -32.
+</I>&gt;<i> Oct 17 22:24:14 nemos kernel: uvcvideo: Failed to query (129) UVC control 2
+</I>&gt;<i> (unit 9) : -32.
+</I>
+That's a known issue. To make it short, the Logitech webcams have a hardware 
+bug which is only triggered by Linux. We're trying to find a workaround.
+
+&gt;<i> Some tech info:
+</I>&gt;<i> nemos:~# uname -a
+</I>&gt;<i> Linux nemos 2.6.17-2-686 #1 SMP Wed Sep 13 16:34:10 UTC 2006 i686 GNU/Linux
+</I>&gt;<i> nemos:~# lsmod | grep usb
+</I>&gt;<i> usb_storage            70560  0
+</I>&gt;<i> scsi_mod              123080  2 sd_mod,usb_storage
+</I>&gt;<i> usbkbd                  6784  0
+</I>&gt;<i> usbcore               111616  6
+</I>&gt;<i> uvcvideo,usb_storage,usbkbd,uhci_hcd,ehci_hcd ide_core              111016 
+</I>&gt;<i> 5 usb_storage,ide_cd,ide_disk,piix,generic
+</I>&gt;<i>
+</I>&gt;<i> Any ideas how to capture video from this?
+</I>
+Try luvcview and/or uvccapture and see if the webcam works with them. Ekiga is 
+also known to work if you want a videoconferencing application. As for 
+mplayer, try to bother the developers until they fix it :-)
+
+Cheers,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000879.html">[Linux-uvc-devel] Logitech QuickCam Sphere (PTZ)
+</A></li>
+	<LI>Next message: <A HREF="000880.html">[Linux-uvc-devel] pantilt union in luvcview
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#893">[ date ]</a>
+              <a href="thread.html#893">[ thread ]</a>
+              <a href="subject.html#893">[ subject ]</a>
+              <a href="author.html#893">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Patch: Read support
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Patch%3A%20Read%20support&In-Reply-To=%3C469F164E.9050909%40sanslogic.co.uk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001894.html">
+   <LINK REL="Next"  HREF="001897.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Patch: Read support</H1>
+    <B>Philip Heron</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Patch%3A%20Read%20support&In-Reply-To=%3C469F164E.9050909%40sanslogic.co.uk%3E"
+       TITLE="[Linux-uvc-devel] Patch: Read support">phil at sanslogic.co.uk
+       </A><BR>
+    <I>Thu Jul 19 09:44:14 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001894.html">[Linux-uvc-devel] Patch: Read support
+</A></li>
+        <LI>Next message: <A HREF="001897.html">[Linux-uvc-devel] Patch: Read support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1896">[ date ]</a>
+              <a href="thread.html#1896">[ thread ]</a>
+              <a href="subject.html#1896">[ subject ]</a>
+              <a href="author.html#1896">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Luca,
+
+Luca Risolia wrote:
+&gt;&gt;<i> You should not assume that a read() call will read a whole 
+</I>&gt;&gt;<i> buffer at once.
+</I>&gt;<i> 
+</I>&gt;<i> This is not correct. One read() should provide one frame exactly, In facts, 
+</I>&gt;<i> the V4L2 API states:
+</I>&gt;<i> 
+</I>&gt;<i> &quot;read() attempts to read up to count bytes from file descriptor fd into the 
+</I>&gt;<i> buffer starting at buf. [...] Regardless of the count value each read() call 
+</I>&gt;<i> will provide at most one frame (two fields) worth of data.
+</I>
+What I think this means is that the driver should return either count 
+bytes or a full frames worth - whichever is smaller. Any value smaller 
+again should also be valid.
+
+&gt;<i> [...]
+</I>&gt;<i> read() never returns a &quot;snapshot&quot; of a buffer being filled. Using a single 
+</I>&gt;<i> buffer the driver will stop capturing when the application starts reading the 
+</I>&gt;<i> buffer until the read is finished. [...]&quot;
+</I>
+This means that a frame is guaranteed not to be overwritten by another 
+frame as it's being read, so an application can take as long as it needs 
+reading it.
+
+-Phil
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001894.html">[Linux-uvc-devel] Patch: Read support
+</A></li>
+	<LI>Next message: <A HREF="001897.html">[Linux-uvc-devel] Patch: Read support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1896">[ date ]</a>
+              <a href="thread.html#1896">[ thread ]</a>
+              <a href="subject.html#1896">[ subject ]</a>
+              <a href="author.html#1896">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

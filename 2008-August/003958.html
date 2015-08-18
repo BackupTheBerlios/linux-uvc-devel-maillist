@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] A little patch to make the driver work in the	kernel 2.6.27-rc1 continued
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20A%20little%20patch%20to%20make%20the%20driver%20work%20in%20the%0A%09kernel%202.6.27-rc1%20continued&In-Reply-To=%3C200808042108.18839.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003956.html">
+   <LINK REL="Next"  HREF="003962.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] A little patch to make the driver work in the	kernel 2.6.27-rc1 continued</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20A%20little%20patch%20to%20make%20the%20driver%20work%20in%20the%0A%09kernel%202.6.27-rc1%20continued&In-Reply-To=%3C200808042108.18839.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] A little patch to make the driver work in the	kernel 2.6.27-rc1 continued">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Aug  4 21:08:18 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003956.html">[Linux-uvc-devel] A little patch to make the driver work in the kernel 2.6.27-rc1 continued
+</A></li>
+        <LI>Next message: <A HREF="003962.html">[Linux-uvc-devel] 2.6.27-rc2: uvcvideo breaks after suspend to ram
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3958">[ date ]</a>
+              <a href="thread.html#3958">[ thread ]</a>
+              <a href="subject.html#3958">[ subject ]</a>
+              <a href="author.html#3958">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Monday 04 August 2008, Wei-Tsun Sun wrote:
+&gt;<i> Better to put them in text form:
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> diff -Naur trunk/uvc_driver.c trunk.new/uvc_driver.c
+</I>&gt;<i> --- trunk/uvc_driver.c	2008-08-04 10:50:30.000000000 +0000
+</I>&gt;<i> +++ trunk.new/uvc_driver.c	2008-08-04 11:02:57.000000000 +0000
+</I>&gt;<i> @@ -1466,8 +1466,8 @@
+</I>&gt;<i>  #else
+</I>&gt;<i>  	vdev-&gt;parent = &amp;dev-&gt;intf-&gt;dev;
+</I>&gt;<i>  #endif
+</I>&gt;<i> -	vdev-&gt;type = 0;
+</I>&gt;<i> -	vdev-&gt;type2 = 0;
+</I>&gt;<i> +//	vdev-&gt;type = 0;
+</I>&gt;<i> +//	vdev-&gt;type2 = 0;
+</I>&gt;<i>  	vdev-&gt;minor = -1;
+</I>&gt;<i>  	vdev-&gt;fops = &amp;uvc_fops;
+</I>&gt;<i>  	vdev-&gt;release = video_device_release;
+</I>&gt;<i> diff -Naur trunk/uvc_queue.c trunk.new/uvc_queue.c
+</I>&gt;<i> --- trunk/uvc_queue.c	2008-08-04 10:50:30.000000000 +0000
+</I>&gt;<i> +++ trunk.new/uvc_queue.c	2008-08-04 11:02:57.000000000 +0000
+</I>&gt;<i> @@ -20,7 +20,7 @@
+</I>&gt;<i>  #include &lt;linux/vmalloc.h&gt;
+</I>&gt;<i>  #include &lt;linux/wait.h&gt;
+</I>&gt;<i>  #include &lt;asm/atomic.h&gt;
+</I>&gt;<i> -
+</I>&gt;<i> +#include &lt;linux/mm.h&gt;
+</I>&gt;<i>  #include &quot;uvcvideo.h&quot;
+</I>&gt;<i>
+</I>&gt;<i>  /*
+</I>&gt;<i> ------------------------------------------------------------------------ @@
+</I>&gt;<i> -98,6 +98,7 @@
+</I>&gt;<i>  		unsigned int buflength)
+</I>&gt;<i>  {
+</I>&gt;<i>  	unsigned int bufsize = PAGE_ALIGN(buflength);
+</I>&gt;<i> +//      unsigned int bufsize = buflength;
+</I>&gt;<i>  	unsigned int i;
+</I>&gt;<i>  	void *mem = NULL;
+</I>&gt;<i>  	int ret;
+</I>
+Thanks for the patch. I've applied it to SVN in a slightly modified form to 
+compile on older kernels too. Could you please test it ?
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003956.html">[Linux-uvc-devel] A little patch to make the driver work in the kernel 2.6.27-rc1 continued
+</A></li>
+	<LI>Next message: <A HREF="003962.html">[Linux-uvc-devel] 2.6.27-rc2: uvcvideo breaks after suspend to ram
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3958">[ date ]</a>
+              <a href="thread.html#3958">[ thread ]</a>
+              <a href="subject.html#3958">[ subject ]</a>
+              <a href="author.html#3958">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

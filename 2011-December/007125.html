@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20with%20H264%20encoder%20not%20in%20Devicelist&In-Reply-To=%3Calpine.DEB.2.02.1112131447550.9655%40localhost6.localdomain6%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007124.html">
+   <LINK REL="Next"  HREF="007126.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist</H1>
+    <B>Grady Chen</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20with%20H264%20encoder%20not%20in%20Devicelist&In-Reply-To=%3Calpine.DEB.2.02.1112131447550.9655%40localhost6.localdomain6%3E"
+       TITLE="[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist">grady at viosoft.com.tw
+       </A><BR>
+    <I>Tue Dec 13 08:03:30 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007124.html">[Linux-uvc-devel] 174f:1420 Syntek malfunctions
+</A></li>
+        <LI>Next message: <A HREF="007126.html">[Linux-uvc-devel] problem with audio/video Microsoft Lifecam studio	Hd
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7125">[ date ]</a>
+              <a href="thread.html#7125">[ thread ]</a>
+              <a href="subject.html#7125">[ subject ]</a>
+              <a href="author.html#7125">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I didn't really understand UVC framework so I have a very ugly workaround 
+patch for this FaceVsion camera. It did work on my MIPS platform with linux-2.6.31
+and the TS packets lost is gone. There is no more blocky effects on the 
+captured video stream.
+
+diff --git a/drivers/media/video/uvc/uvc_video.c 
+b/drivers/media/video/uvc/uvc_video.c
+index 809ec45..787fb2f 100644
+--- a/drivers/media/video/uvc/uvc_video.c
++++ b/drivers/media/video/uvc/uvc_video.c
+@@ -1315,6 +1315,14 @@ static void uvc_video_complete(struct urb *urb)
+
+         stream-&gt;decode(urb, stream, buf);
+
++       /* workaround to avoid &quot;Frame complete (overflow)&quot;
++        * go to next buffer if buf-&gt;bytesused about 4/5 of buf-&gt;length
++        */
++       if (buf-&gt;bytesused &gt; ((buf-&gt;length * 4) / 5)) {
++               buf-&gt;state = UVC_BUF_STATE_READY;
++               buf = uvc_queue_next_buffer(&amp;stream-&gt;queue, buf);
++       }
++
+         if ((ret = usb_submit_urb(urb, GFP_ATOMIC)) &lt; 0) {
+                 uvc_printk(KERN_ERR, &quot;Failed to resubmit video URB 
+(%d).\n&quot;,
+                         ret);
+
+
+--
+Best Regards,
+Grady Chen
+
+On Mon, 12 Dec 2011, Grady Chen wrote:
+
+&gt;<i> Hi Laurent,
+</I>&gt;<i>
+</I>&gt;<i> I have done the backward porting from this branch to linux-2.6.31 and I
+</I>&gt;<i> could get MPEG2-TS stream from V4L2 APIs. The TS stream can be also
+</I>&gt;<i> played by Ubuntu 11.10 Movie Player but there are some macro blocks
+</I>&gt;<i> broken to cause blocky effects.
+</I>&gt;<i>
+</I>&gt;<i> The attachment is the program that I used to capture MPEG2-TS stream.
+</I>&gt;<i> I tried to do six times of xioctl(fd, VIDIOC_DQBUF, &amp;buf) to analyze the
+</I>&gt;<i> TS packets as the following:
+</I>&gt;<i>
+</I>&gt;<i> /cap -d /dev/video1 -o -c 6
+</I>&gt;<i>
+</I>&gt;<i> For each VIDIOC_DQBUF, it captured 500 TS packets:
+</I>&gt;<i> 1th VIDIOC_DQBUF:
+</I>&gt;<i> PACKET COUNT: 0
+</I>&gt;<i> 47 40 00 10 00 00 b0 0d 00 00 c1 00 00 00 01 e0
+</I>&gt;<i> 10 2d 50 98 1b ff ff ff ff ff ff ff ff ff ff ff
+</I>&gt;<i> ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+</I>&gt;<i> ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+</I>&gt;<i> ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+</I>&gt;<i> ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+</I>&gt;<i> ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+</I>&gt;<i> ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+</I>&gt;<i> ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+</I>&gt;<i> ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+</I>&gt;<i> ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+</I>&gt;<i> ff ff ff ff ff ff ff ff ff ff ff ff
+</I>&gt;<i>
+</I>&gt;<i> PACKET COUNT: 1
+</I>&gt;<i> 47 40 10 10 00 02 b0 12 00 01 c1 00 00 e0 11 f0
+</I>&gt;<i> 00 1b e0 11 f0 00 d1 fb 62 71 ff ff ff ff ff ff
+</I>&gt;<i> ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+</I>&gt;<i> ......
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> 2nd VIDIOC_DQBUF:
+</I>&gt;<i> PACKET COUNT: 0
+</I>&gt;<i> e7 04 23 72 b2 86 ee d5 03 e9 88 28 e8 7a 13 95
+</I>&gt;<i> 4a 75 4a f5 ff 19 59 73 97 72 f7 4e f9 f1 db ac
+</I>&gt;<i> ef c7 81 34 10 79 fa fd ba 1c b5 af f8 27 aa aa
+</I>&gt;<i> af 9b e3 7c 28 a4 b2 c9 91 fd c9 df 88 a4 44 56
+</I>&gt;<i> 2f 4f 76 b7 0b 66 c4 45 f1 9c b6 2b 47 00 11 3c
+</I>&gt;<i> 07 00 ff ff ff ff ff ff e9 f5 fe 08 f5 ab 7c 10
+</I>&gt;<i> d5 7e f4 08 3b 24 a5 37 06 3a 05 19 50 dd 8c 5c
+</I>&gt;<i> 65 8c 4d 3e db ae a1 89 fa d6 ab 5d 4f 0b ff 53
+</I>&gt;<i> d7 bf e9 02 8e be 27 f8 df c1 7d 7d b0 f4 81 f3
+</I>&gt;<i> 2d d1 ff 50 4f eb 97 e4 6f e1 68 a6 2e bc 5e 7d
+</I>&gt;<i> 67 97 ff 82 fa aa f1 79 90 f3 db fb e7 1b ef aa
+</I>&gt;<i> 92 53 a9 39 b9 7b 76 2f d4 a3 90 5e
+</I>&gt;<i>
+</I>&gt;<i> PACKET COUNT: 1
+</I>&gt;<i> b5 5a e8 fa ff d4 29 af 53 64 eb 55 13 e7 79 f7
+</I>&gt;<i> c6 d2 77 76 31 3e 66 7d b5 07 fd b2 ec 6d 48 72
+</I>&gt;<i> d9 98 fe d7 1b 42 6e 16 0d 66 5b bf 12 d6 ab 28
+</I>&gt;<i> 39 8f 8e 27 85 98 b9 28 2b 90 03 b2 79 a7 6d 8f
+</I>&gt;<i> 18 fd ea 37 2b 51 3e 9a 52 cf f8 ef 47 00 11 3d
+</I>&gt;<i>
+</I>&gt;<i> You can see the 2nd VIDIOC_DQBUF didn't start with '47' which is the
+</I>&gt;<i> MPEG2-TS sync byte and there are 2-4 TS packets lost between 1th
+</I>&gt;<i> VIDIOC_DQBUF and 2nd VIDIOC_DQBUF. I think that's why there are some
+</I>&gt;<i> blocky effects on the TS stream.
+</I>&gt;<i>
+</I>&gt;<i> Do you have any comment on this issue?
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> -- 
+</I>&gt;<i> Best regards,
+</I>&gt;<i> Grady Chen
+</I>&gt;<i>
+</I>&gt;<i> On Fri, 2011-11-25 at 14:44 +0100, Laurent Pinchart wrote:
+</I>&gt;&gt;<i> Hi Grady,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> On Friday 25 November 2011 07:29:27 Grady Chen wrote:
+</I>&gt;&gt;&gt;<i> Hi Laurent,
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> I am a newer in linux-uvc-devel. I bought a FaceVsion webcam, FV
+</I>&gt;&gt;&gt;<i> TouchCam V1 recently. I am trying to get H.264 stream from this webcam
+</I>&gt;&gt;&gt;<i> by using V4L2 APIs.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> From mailing list, I saw that you started working on FaceVsion camera
+</I>&gt;&gt;&gt;<i> and you've been able to get the video stream out of the device.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> If you can provide the patch that you had up to now, that will be great
+</I>&gt;&gt;&gt;<i> helpful for me.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I've just pushed the patches to the uvcvideo-wip-mpeg branch on
+</I>&gt;&gt;<i> <A HREF="git://linuxtv.org/pinchartl/uvcvideo.git">git://linuxtv.org/pinchartl/uvcvideo.git</A>
+</I>&gt;&gt;<i> (<A HREF="http://git.linuxtv.org/pinchartl/uvcvideo.git/shortlog/refs/heads/uvcvideo-">http://git.linuxtv.org/pinchartl/uvcvideo.git/shortlog/refs/heads/uvcvideo-</A>
+</I>&gt;&gt;<i> wip-mpeg).
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007124.html">[Linux-uvc-devel] 174f:1420 Syntek malfunctions
+</A></li>
+	<LI>Next message: <A HREF="007126.html">[Linux-uvc-devel] problem with audio/video Microsoft Lifecam studio	Hd
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7125">[ date ]</a>
+              <a href="thread.html#7125">[ thread ]</a>
+              <a href="subject.html#7125">[ subject ]</a>
+              <a href="author.html#7125">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

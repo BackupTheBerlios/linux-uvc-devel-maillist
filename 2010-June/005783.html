@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] XVideo support?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20XVideo%20support%3F&In-Reply-To=%3CAANLkTikBy4dAWtH2IC5-uM9hCTG1OalXDLCH5Q-apeT2%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005779.html">
+   <LINK REL="Next"  HREF="005782.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] XVideo support?</H1>
+    <B>Asho Yeh - &#38463;&#20449;</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20XVideo%20support%3F&In-Reply-To=%3CAANLkTikBy4dAWtH2IC5-uM9hCTG1OalXDLCH5Q-apeT2%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] XVideo support?">ashoyeh at gmail.com
+       </A><BR>
+    <I>Fri Jun 11 04:51:30 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005779.html">[Linux-uvc-devel] XVideo support?
+</A></li>
+        <LI>Next message: <A HREF="005782.html">[Linux-uvc-devel] 0402:5606 ALi Corp. USB 2.0 Camera - NO FULL	SIZED OUTPUT
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5783">[ date ]</a>
+              <a href="thread.html#5783">[ thread ]</a>
+              <a href="subject.html#5783">[ subject ]</a>
+              <a href="author.html#5783">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Adrian
+
+Thanks for you great help for me to understand the relations between Xvideo
+and UVC devices.
+I did some tests and comments below.
+
+2010/6/9 Adrian Sergiu DARABANT &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">asergiu at yahoo.co.uk</A>&gt;
+
+&gt;<i>  Hello
+</I>&gt;<i>
+</I>&gt;<i>    Luvcview uses SDL if I remember well since a few months when I looked
+</I>&gt;<i> into the sources. As I know there is no direct support or control in SDL
+</I>&gt;<i> over which rendering engine is used behind the scenes. With XVideo you
+</I>&gt;<i> normally get yuv formats and sometimes and for some video drivers/cards you
+</I>&gt;<i> also get RGB.
+</I>&gt;<i>
+</I> Besides luvcview, I also tested the mplayer/vlc to capture/playback the
+video frames from webcam. Video output were set to Xvideo mode and frame
+size were 640x480/YUV format.
+The CPU usages were low to 20~30%, so I think the bottleneck is not uvc
+devices.
+
+&gt;<i> Mpeg2 is a compressed format that is decompressed most of the times into an
+</I>&gt;<i> accelerated YUV format. YUV formats can be directly sent to the video card
+</I>&gt;<i> using XVideo &#8211; if that's available.
+</I>&gt;<i>
+</I>Thanks for the explanation of video extraction flow. I searched the wiki
+page of Xvideo(<A HREF="http://en.wikipedia.org/wiki/X_video_extension">http://en.wikipedia.org/wiki/X_video_extension</A>) ,
+it mentions &quot;The feature is known as *hardware scaling andYUV &lt;/wiki/YUV&gt;
+ acceleration* or sometimes as *2D hardware acceleration*.&quot;
+
+As the explanation tells, I think the XVideo is work because the video frame
+I got is pure YUV format.
+
+&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> You should look in your case what part: mpeg2 decompression or display
+</I>&gt;<i> takes up the CPU time.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Now on the other side if your card uses the vesa drivers to display to the
+</I>&gt;<i> screen XVideo extension is never available for that driver.
+</I>&gt;<i>
+</I>&gt;<i> UVC does provide 2D accelerated formats (it mostly provides only those and
+</I>&gt;<i> MJPEG)
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> 1)       Take a look into Xorg.0.log and check the video used driver.
+</I>&gt;<i>
+</I>The video driver is openchrome and xvinfo shows
+ X-Video Extension version 2.2
+screen #0
+  Adaptor #0: &quot;XV_SWOV&quot;
+    number of ports: 1
+    port base: 68
+    operations supported: PutImage
+    supported visuals:
+      depth 24, visualID 0x22
+      depth 24, visualID 0x23
+      depth 24, visualID 0x24
+      depth 24, visualID 0x25
+      depth 24, visualID 0x26
+      depth 24, visualID 0x27
+      depth 24, visualID 0x28
+      depth 24, visualID 0x29
+      depth 24, visualID 0x2a
+      depth 24, visualID 0x2b
+      depth 24, visualID 0x2c
+      depth 24, visualID 0x2d
+    number of attributes: 6
+      &quot;XV_COLORKEY&quot; (range 0 to 16777215)
+              client settable attribute
+              client gettable attribute (current value is 2081)
+      &quot;XV_BRIGHTNESS&quot; (range 0 to 10000)
+              client settable attribute
+              client gettable attribute (current value is 5000)
+      &quot;XV_CONTRAST&quot; (range 0 to 20000)
+              client settable attribute
+              client gettable attribute (current value is 10000)
+      &quot;XV_SATURATION&quot; (range 0 to 20000)
+              client settable attribute
+              client gettable attribute (current value is 10000)
+      &quot;XV_HUE&quot; (range -180 to 180)
+              client settable attribute
+              client gettable attribute (current value is 0)
+      &quot;XV_AUTOPAINT_COLORKEY&quot; (range 0 to 1)
+              client settable attribute
+              client gettable attribute (current value is 1)
+    maximum XvImage size: 1920 x 1200
+    Number of image formats: 6
+      id: 0x32595559 (YUY2)
+        guid: 59555932-0000-0010-8000-00aa00389b71
+        bits per pixel: 16
+        number of planes: 1
+        type: YUV (packed)
+      id: 0x32315659 (YV12)
+        guid: 59563132-0000-0010-8000-00aa00389b71
+        bits per pixel: 12
+        number of planes: 3
+        type: YUV (planar)
+      id: 0x434d5658 (XVMC)
+        guid: 56494100-0000-0010-8000-00aa00389b71
+        bits per pixel: 12
+        number of planes: 1
+        type: YUV (planar)
+      id: 0x35315652 (RV15)
+        guid: 52563135-0000-0000-0000-000000000000
+        bits per pixel: 16
+        number of planes: 1
+        type: RGB (packed)
+
+2)       Check the times spent by the mpeg decompression task.
+&gt;<i>
+</I>&gt;<i> 3)       xvinfo &#8211; should help you see if XVideo can be used at all and
+</I>&gt;<i> what formats are available.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> XVideo is just a way to pass let's say a video format encoded on (for
+</I>&gt;<i> example) 2 bytes/pixels YUV instead of 4 (RGBA) &#8211; to the video card. The
+</I>&gt;<i> video card then knows to display those video formats and knows how to scale
+</I>&gt;<i> them as well (eating only GPU processing time and not CPU). Usually this
+</I>&gt;<i> means passing just pointers to the video frame (as got from the video
+</I>&gt;<i> capture device) to the video card for display.
+</I>&gt;<i>
+</I>&gt;<i> As a conclusion, I think the bottleneck is  skype, thought I don't know how
+</I>to improve it.
+
+Asho
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100611/a9ba1c7b/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100611/a9ba1c7b/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005779.html">[Linux-uvc-devel] XVideo support?
+</A></li>
+	<LI>Next message: <A HREF="005782.html">[Linux-uvc-devel] 0402:5606 ALi Corp. USB 2.0 Camera - NO FULL	SIZED OUTPUT
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5783">[ date ]</a>
+              <a href="thread.html#5783">[ thread ]</a>
+              <a href="subject.html#5783">[ subject ]</a>
+              <a href="author.html#5783">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

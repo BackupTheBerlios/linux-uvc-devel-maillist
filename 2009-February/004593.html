@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Strange issue with V4L, Gumstix,	and VIDIOC_REQBUFS/VIDIOC_QUERYBUF
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Strange%20issue%20with%20V4L%2C%20Gumstix%2C%0A%09and%20VIDIOC_REQBUFS/VIDIOC_QUERYBUF&In-Reply-To=%3C49A54204.6030602%40atl.lmco.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004590.html">
+   <LINK REL="Next"  HREF="004596.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Strange issue with V4L, Gumstix,	and VIDIOC_REQBUFS/VIDIOC_QUERYBUF</H1>
+    <B>Tom Moore</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Strange%20issue%20with%20V4L%2C%20Gumstix%2C%0A%09and%20VIDIOC_REQBUFS/VIDIOC_QUERYBUF&In-Reply-To=%3C49A54204.6030602%40atl.lmco.com%3E"
+       TITLE="[Linux-uvc-devel] Strange issue with V4L, Gumstix,	and VIDIOC_REQBUFS/VIDIOC_QUERYBUF">thomas.a.moore at lmco.com
+       </A><BR>
+    <I>Wed Feb 25 14:05:08 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004590.html">[Linux-uvc-devel] Strange issue with V4L, Gumstix,	and VIDIOC_REQBUFS/VIDIOC_QUERYBUF
+</A></li>
+        <LI>Next message: <A HREF="004596.html">[Linux-uvc-devel] Strange issue with V4L, Gumstix,	and VIDIOC_REQBUFS/VIDIOC_QUERYBUF
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4593">[ date ]</a>
+              <a href="thread.html#4593">[ thread ]</a>
+              <a href="subject.html#4593">[ subject ]</a>
+              <a href="author.html#4593">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Is it possible that some fields are not being set for the buffer size 
+per frame on the Gumstix? All I am setting currently is the frame width 
+and height, and assuming that V4L will figure out the pixel depth and 
+such. Is it possible that the driver on the Gumstix needs more 
+information to be specified before requesting buffers?
+
+I'll look into the printk's.
+
+Thanks,
+Tom
+
+Laurent Pinchart wrote:
+&gt;<i> Hi Tom,
+</I>&gt;<i> 
+</I>&gt;<i> On Tuesday 24 February 2009 12:51:47 Tom Moore wrote:
+</I>&gt;&gt;<i> Hi all,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I wrote some capture code and tested it out on Ubuntu 8.10 (kernel
+</I>&gt;&gt;<i> 2.6.27.11). My Dynex 1.3 MP camera supports memory mapping and works
+</I>&gt;&gt;<i> just fine on my Ubuntu box. However, I have cross-compiled the UVC
+</I>&gt;&gt;<i> driver for my Gumstix (the target platform for capture - kernel is
+</I>&gt;&gt;<i> 2.6.21) and though I was able to successfully install the driver, my
+</I>&gt;&gt;<i> capture code doesn't seem to work. I've traced the problem to to ioctl
+</I>&gt;&gt;<i> call with VIDIOC_QUERYBUF. On my box, that function call returns a
+</I>&gt;&gt;<i> buffer length of width * height * 2 (format is YUYV, so this is right).
+</I>&gt;&gt;<i> On my Gumstix, it returns width * height + 589 (the 589 is the same
+</I>&gt;&gt;<i> regardless of the frame size).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Is there any reason why this would be happening? I appear to be
+</I>&gt;&gt;<i> unfamilar with the behavior of VIDIOC_QUERYBUF, but it looks like it
+</I>&gt;&gt;<i> ought to be pretty straightforward.
+</I>&gt;<i> 
+</I>&gt;<i> None that I can think of (at least at this time of the night). Would you mind 
+</I>&gt;<i> adding a few printk's to the driver code to hunt the bug down ?
+</I>&gt;<i> 
+</I>&gt;&gt;<i> Oh, I should point out that calls to VIDIOCSPICT and VIDIOCGPICT on my
+</I>&gt;&gt;<i> Ubuntu box works just fine, but returns -1 for the Gumstix.
+</I>&gt;<i> 
+</I>&gt;<i> The uvcvideo driver relies on the videodev compatibility layer to handle V4L1 
+</I>&gt;<i> ioctls. The Gumstix kernel might come with those disabled.
+</I>&gt;<i> 
+</I>&gt;&gt;<i> This camera requires that I use some bizarre combinations of V4L1 and V4L2
+</I>&gt;&gt;<i> code to access all of its functionality. I'm not sure what versions of the
+</I>&gt;&gt;<i> various V4L modules and camera drivers are.
+</I>&gt;<i> 
+</I>&gt;<i> That's definitely not normal. The uvcvideo driver implement V4L2 only. The 
+</I>&gt;<i> V4L1 ioctls are translated to V4L2 ioctls by the videodev compatibility layer, 
+</I>&gt;<i> there's no added functionality for the V4L1 API.
+</I>&gt;<i> 
+</I>&gt;<i> Best regards,
+</I>&gt;<i> 
+</I>&gt;<i> Laurent Pinchart
+</I>
+-- 
+
+Tom Moore
+Member, Engineering Staff
+Lockheed Martin Advanced Technology Laboratories
+3 Executive Campus, Suite 600
+Cherry Hill, NJ 08002
+Phone: 856-792-9750
+E-mail: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">tmoore at atl.lmco.com</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004590.html">[Linux-uvc-devel] Strange issue with V4L, Gumstix,	and VIDIOC_REQBUFS/VIDIOC_QUERYBUF
+</A></li>
+	<LI>Next message: <A HREF="004596.html">[Linux-uvc-devel] Strange issue with V4L, Gumstix,	and VIDIOC_REQBUFS/VIDIOC_QUERYBUF
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4593">[ date ]</a>
+              <a href="thread.html#4593">[ thread ]</a>
+              <a href="subject.html#4593">[ subject ]</a>
+              <a href="author.html#4593">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

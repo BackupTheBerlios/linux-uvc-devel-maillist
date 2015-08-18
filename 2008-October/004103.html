@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Lenovo Thinkpad SL500 Integrated	Camera	support?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Lenovo%20Thinkpad%20SL500%20Integrated%0A%09Camera%09support%3F&In-Reply-To=%3C48F5B779.7070807%40astronomicalresearchaustralia.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004102.html">
+   <LINK REL="Next"  HREF="004105.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Lenovo Thinkpad SL500 Integrated	Camera	support?</H1>
+    <B>Brian</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Lenovo%20Thinkpad%20SL500%20Integrated%0A%09Camera%09support%3F&In-Reply-To=%3C48F5B779.7070807%40astronomicalresearchaustralia.org%3E"
+       TITLE="[Linux-uvc-devel] Lenovo Thinkpad SL500 Integrated	Camera	support?">bnc at astronomicalresearchaustralia.org
+       </A><BR>
+    <I>Wed Oct 15 11:27:21 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004102.html">[Linux-uvc-devel] Lenovo Thinkpad SL500 Integrated Camera	support?
+</A></li>
+        <LI>Next message: <A HREF="004105.html">[Linux-uvc-devel] Lenovo Thinkpad SL500	Integrated	Camera	support?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4103">[ date ]</a>
+              <a href="thread.html#4103">[ thread ]</a>
+              <a href="subject.html#4103">[ subject ]</a>
+              <a href="author.html#4103">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Ivan,
+The new version of VLC(0.9.3) now supports V4L2, WITH sound.
+So you could test with that.
+I am currently running SUSE 10.3 and have noticed two other problems,
+which may/not apply to Ubuntu.
+
+1) My /dev/video0 simply disappears. I have not reported it yet because
+I cannot find the circumstances to recreate it. I have bypassed it by
+adding it to the boot.local script.
+
+2) After I have rebooted and run xawtv -hwscan to see if this
+
+/dev/video0: OK                         [ -device /dev/video0 ]
+    type : v4l2
+    name : UVC Camera (046d:08c1)
+    flags:  capture
+
+is there, it is not.
+If I do a lsmod I get the normal things like
+v4l2_common            20608  2 uvcvideo,videodev
+However, the camera will not connect.
+I then do a rmmod uvcview and a modprobe uvcview and all is well until
+the next reboot.
+
+Also guvcview works very well and will capture picture and sound.
+
+HTH
+FYI,
+Brian
+
+
+Ivan Noris wrote:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;&gt;<i> This is a non-fatal warning and can be safely ignored.
+</I>&gt;<i> 
+</I>&gt;<i> OK.
+</I>&gt;<i> 
+</I>&gt;&gt;<i> Could you try with luvcview as well ? Camorama is known not to work as it 
+</I>&gt;&gt;<i> supports V4L1 only while the Linux UVC driver is pure V4L2. Skype is 
+</I>&gt;&gt;<i> proprietary software and has its share of bugs so it's not a really good 
+</I>&gt;&gt;<i> test. You could also try Ekiga.
+</I>&gt;<i> 
+</I>&gt;<i> I have tried luvcview meanwhile; I was able to see picture, but I have
+</I>&gt;<i> tried it now and have seen only black window. On the terminal output,
+</I>&gt;<i> the following can be seen:
+</I>&gt;<i> 
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">vix at bruce</A>:~$ luvcview
+</I>&gt;<i> luvcview 0.2.4
+</I>&gt;<i> 
+</I>&gt;<i> SDL information:
+</I>&gt;<i>   Video driver: x11
+</I>&gt;<i>   A window manager is available
+</I>&gt;<i> Device information:
+</I>&gt;<i>   Device path:  /dev/video0
+</I>&gt;<i> Stream settings:
+</I>&gt;<i>   Frame format: YUYV (MJPG is not supported by device)
+</I>&gt;<i>   Frame size:   640x480
+</I>&gt;<i>   Frame rate:   30 fps
+</I>&gt;<i> 
+</I>&gt;<i> (I'm using Ubuntu Testing / Intrepid Ibex, updating packages daily, so
+</I>&gt;<i> something may have changed in past days.)
+</I>&gt;<i> 
+</I>&gt;&gt;&gt;<i> I can get some partial picture using cat /dev/video0 &gt; /tmp/aaa.jpg though.
+</I>&gt;&gt;<i> No you can't :-) That's currently not supported by the driver. If you get 
+</I>&gt;&gt;<i> anything from that command make sur /dev/video0 is really your integrated 
+</I>&gt;&gt;<i> webcam.
+</I>&gt;&gt;<i>
+</I>&gt;<i> 
+</I>&gt;<i> Well, there is only one device in /dev/video* :) and that's /dev/video0.
+</I>&gt;<i> No other webcam is connected.
+</I>&gt;<i> 
+</I>&gt;&gt;<i> Could you please post the whole lsusb report ?
+</I>&gt;&gt;<i>
+</I>&gt;<i> 
+</I>&gt;<i> Attached (ZIP), hope it comes through. If you don't receive it, I will
+</I>&gt;<i> send it to you privately.
+</I>&gt;<i> 
+</I>&gt;<i> Best regards,
+</I>&gt;<i> Ivan
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> ------------------------------------------------------------------------
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004102.html">[Linux-uvc-devel] Lenovo Thinkpad SL500 Integrated Camera	support?
+</A></li>
+	<LI>Next message: <A HREF="004105.html">[Linux-uvc-devel] Lenovo Thinkpad SL500	Integrated	Camera	support?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4103">[ date ]</a>
+              <a href="thread.html#4103">[ thread ]</a>
+              <a href="subject.html#4103">[ subject ]</a>
+              <a href="author.html#4103">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

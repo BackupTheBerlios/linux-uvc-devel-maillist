@@ -1,0 +1,417 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Discard%20overrun%20%28corrupted%29%20RX%20images&In-Reply-To=%3C93992.3425.qm%40web120013.mail.ne1.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005793.html">
+   <LINK REL="Next"  HREF="005800.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images</H1>
+    <B>P F</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Discard%20overrun%20%28corrupted%29%20RX%20images&In-Reply-To=%3C93992.3425.qm%40web120013.mail.ne1.yahoo.com%3E"
+       TITLE="[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images">public_filter at yahoo.com
+       </A><BR>
+    <I>Fri Jun 18 21:26:01 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005793.html">[Linux-uvc-devel] YUYV/YUY2 between USB payload and v4l2.
+</A></li>
+        <LI>Next message: <A HREF="005800.html">[Linux-uvc-devel] uvcvideo detects wrong resolution on vanilla	kernel
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5799">[ date ]</a>
+              <a href="thread.html#5799">[ thread ]</a>
+              <a href="subject.html#5799">[ subject ]</a>
+              <a href="author.html#5799">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>--- On Thu, 6/17/10, Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt; wrote:
+
+&gt;<i> From: Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt;
+</I>&gt;<i> Subject: Re: [Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+</I>&gt;<i> To: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> Cc: &quot;P F&quot; &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">public_filter at yahoo.com</A>&gt;
+</I>&gt;<i> Date: Thursday, June 17, 2010, 10:07 AM
+</I>&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> On Wednesday 09 June 2010 02:59:30 P F wrote:
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; First of all, thank you for providing such great Linux
+</I>&gt;<i> support for webcams.
+</I>&gt;<i> 
+</I>&gt;<i> You're welcome.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; I have encountered an issue in this area that I hope
+</I>&gt;<i> you experts can help
+</I>&gt;<i> &gt; with.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I am using UVC/V4L on an embedded system, and I am
+</I>&gt;<i> experiencing a problem
+</I>&gt;<i> &gt; with corrupted camera images.&#160; The system
+</I>&gt;<i> consists of a custom ASIC with
+</I>&gt;<i> &gt; an ARM926EJ-S and OHCI USB host controller connected
+</I>&gt;<i> to a UVC camera which
+</I>&gt;<i> &gt; supports only MJPEG.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; The problem I have is that buffers dequeued in user
+</I>&gt;<i> space occasionally
+</I>&gt;<i> &gt; contain corrupted JPEGs.&#160; This corruption ranges
+</I>&gt;<i> from slight, with a row
+</I>&gt;<i> &gt; of macroblocks shifted, to severe, with the JPEG being
+</I>&gt;<i> totally
+</I>&gt;<i> &gt; undecompressible.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; If I enable UVC_TRACE_FRAME, I see several instances
+</I>&gt;<i> of:
+</I>&gt;<i> &gt; &quot;uvcvideo: USB isochronous frame lost (-70).&quot;
+</I>&gt;<i> &gt; in dmesg.&#160; I have noticed a correlation between
+</I>&gt;<i> the presence of this
+</I>&gt;<i> &gt; message and visual corruption in captured JPEGs.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I see that this error code corresponds to -ECOMM,
+</I>&gt;<i> which in turn corresponds
+</I>&gt;<i> &gt; to TD_BUFFEROVERRUN in the isochronous packet
+</I>&gt;<i> status.&#160; I assume that this
+</I>&gt;<i> &gt; is caused by CPU starvation, which should just
+</I>&gt;<i> manifest as dropped frames.
+</I>&gt;<i> 
+</I>&gt;<i> That's correct. One or more packets will then be missing
+</I>&gt;<i> from the frame,
+</I>&gt;<i> resulting in a corrupt image.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; However, I think these overrun frames are not being
+</I>&gt;<i> dropped, and instead
+</I>&gt;<i> &gt; are being passed to user space in an indeterminate
+</I>&gt;<i> state, leading to the
+</I>&gt;<i> &gt; visual corruption that I've witnessed.
+</I>&gt;<i> 
+</I>&gt;<i> Right. The UVC driver drops frames that are missing data
+</I>&gt;<i> due to a packet
+</I>&gt;<i> loss for uncompressed formats only, based on the frame size
+</I>&gt;<i> (although this
+</I>&gt;<i> behaviour is overrideable by a module parameter for users
+</I>&gt;<i> interested in
+</I>&gt;<i> getting bad frames).
+</I>&gt;<i> 
+</I>&gt;<i> The driver should also drop corrupted corrupt frames if a
+</I>&gt;<i> packet loss has been detected.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; The attached patch (against 2.6.31) is my na&#239;ve
+</I>&gt;<i> attempt at fixing the
+</I>&gt;<i> &gt; problem.&#160; It does appear to resolve the
+</I>&gt;<i> corruption, but I am not entirely
+</I>&gt;<i> &gt; sure it's the correct thing to do.&#160; Does it look
+</I>&gt;<i> reasonable?&#160; I would
+</I>&gt;<i> &gt; appreciate any feedback.
+</I>&gt;<i> 
+</I>&gt;<i> Could you please try the following patch ?
+</I>&gt;<i> 
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvc_queue.c
+</I>&gt;<i> b/drivers/media/video/uvc/uvc_queue.c
+</I>&gt;<i> index 133c78d..580b76e 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_queue.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_queue.c
+</I>&gt;<i> @@ -78,12 +78,14 @@
+</I>&gt;<i> &#160; *
+</I>&gt;<i> &#160; */
+</I>&gt;<i>&#160; 
+</I>&gt;<i> -void uvc_queue_init(struct uvc_video_queue *queue, enum
+</I>&gt;<i> v4l2_buf_type type)
+</I>&gt;<i> +void uvc_queue_init(struct uvc_video_queue *queue, enum
+</I>&gt;<i> v4l2_buf_type type,
+</I>&gt;<i> +&#160;&#160;&#160; &#160;&#160;&#160; &#160; &#160; int
+</I>&gt;<i> drop_corrupted)
+</I>&gt;<i>&#160; {
+</I>&gt;<i>&#160; &#160;&#160;&#160; mutex_init(&amp;queue-&gt;mutex);
+</I>&gt;<i>&#160; &#160;&#160;&#160;
+</I>&gt;<i> spin_lock_init(&amp;queue-&gt;irqlock);
+</I>&gt;<i>&#160; &#160;&#160;&#160;
+</I>&gt;<i> INIT_LIST_HEAD(&amp;queue-&gt;mainqueue);
+</I>&gt;<i>&#160; &#160;&#160;&#160;
+</I>&gt;<i> INIT_LIST_HEAD(&amp;queue-&gt;irqqueue);
+</I>&gt;<i> +&#160;&#160;&#160; queue-&gt;flags = drop_corrupted ?
+</I>&gt;<i> UVC_QUEUE_DROP_CORRUPTED : 0;
+</I>&gt;<i>&#160; &#160;&#160;&#160; queue-&gt;type = type;
+</I>&gt;<i>&#160; }
+</I>&gt;<i>&#160; 
+</I>&gt;<i> @@ -435,8 +437,10 @@ int uvc_queue_enable(struct
+</I>&gt;<i> uvc_video_queue *queue, int enable)
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> uvc_queue_cancel(queue, 0);
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> INIT_LIST_HEAD(&amp;queue-&gt;mainqueue);
+</I>&gt;<i>&#160; 
+</I>&gt;<i> -&#160;&#160;&#160; &#160;&#160;&#160; for (i = 0; i &lt;
+</I>&gt;<i> queue-&gt;count; ++i)
+</I>&gt;<i> +&#160;&#160;&#160; &#160;&#160;&#160; for (i = 0; i &lt;
+</I>&gt;<i> queue-&gt;count; ++i) {
+</I>&gt;<i> +&#160;&#160;&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> queue-&gt;buffer[i].error = 0;
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> queue-&gt;buffer[i].state = UVC_BUF_STATE_IDLE;
+</I>&gt;<i> +&#160;&#160;&#160; &#160;&#160;&#160; }
+</I>&gt;<i>&#160; 
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160; queue-&gt;flags
+</I>&gt;<i> &amp;= ~UVC_QUEUE_STREAMING;
+</I>&gt;<i>&#160; &#160;&#160;&#160; }
+</I>&gt;<i> @@ -488,8 +492,7 @@ struct uvc_buffer
+</I>&gt;<i> *uvc_queue_next_buffer(struct uvc_video_queue *queue,
+</I>&gt;<i>&#160; &#160;&#160;&#160; struct uvc_buffer *nextbuf;
+</I>&gt;<i>&#160; &#160;&#160;&#160; unsigned long flags;
+</I>&gt;<i>&#160; 
+</I>&gt;<i> -&#160;&#160;&#160; if ((queue-&gt;flags &amp;
+</I>&gt;<i> UVC_QUEUE_DROP_INCOMPLETE) &amp;&amp;
+</I>&gt;<i> -&#160;&#160;&#160; &#160; &#160; buf-&gt;buf.length !=
+</I>&gt;<i> buf-&gt;buf.bytesused) {
+</I>&gt;<i> +&#160;&#160;&#160; if ((queue-&gt;flags &amp;
+</I>&gt;<i> UVC_QUEUE_DROP_CORRUPTED) &amp;&amp; buf-&gt;error) {
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160; buf-&gt;state =
+</I>&gt;<i> UVC_BUF_STATE_QUEUED;
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> buf-&gt;buf.bytesused = 0;
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160; return buf;
+</I>&gt;<i> @@ -497,6 +500,7 @@ struct uvc_buffer
+</I>&gt;<i> *uvc_queue_next_buffer(struct uvc_video_queue *queue,
+</I>&gt;<i>&#160; 
+</I>&gt;<i>&#160; &#160;&#160;&#160;
+</I>&gt;<i> spin_lock_irqsave(&amp;queue-&gt;irqlock, flags);
+</I>&gt;<i>&#160; &#160;&#160;&#160; list_del(&amp;buf-&gt;queue);
+</I>&gt;<i> +&#160;&#160;&#160; buf-&gt;error = 0;
+</I>&gt;<i>&#160; &#160;&#160;&#160; buf-&gt;state = UVC_BUF_STATE_DONE;
+</I>&gt;<i>&#160; &#160;&#160;&#160; if
+</I>&gt;<i> (!list_empty(&amp;queue-&gt;irqqueue))
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160; nextbuf =
+</I>&gt;<i> list_first_entry(&amp;queue-&gt;irqqueue, struct
+</I>&gt;<i> uvc_buffer,
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> b/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> index 53f3ef4..e27cf0d 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> @@ -555,6 +555,9 @@ static void
+</I>&gt;<i> uvc_video_decode_isoc(struct urb *urb, struct uvc_streaming
+</I>&gt;<i> *stream,
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160; if
+</I>&gt;<i> (urb-&gt;iso_frame_desc[i].status &lt; 0) {
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> uvc_trace(UVC_TRACE_FRAME, &quot;USB isochronous frame &quot;
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> &#160;&#160;&#160; &quot;lost (%d).\n&quot;,
+</I>&gt;<i> urb-&gt;iso_frame_desc[i].status);
+</I>&gt;<i> +&#160;&#160;&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> /* Mark the buffer as faulty. */
+</I>&gt;<i> +&#160;&#160;&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> if (buf != NULL)
+</I>&gt;<i> +&#160;&#160;&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> &#160;&#160;&#160; buf-&gt;error = 1;
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> continue;
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160; }
+</I>&gt;<i>&#160; 
+</I>&gt;<i> @@ -579,8 +582,14 @@ static void
+</I>&gt;<i> uvc_video_decode_isoc(struct urb *urb, struct uvc_streaming
+</I>&gt;<i> *stream,
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> uvc_video_decode_end(stream, buf, mem,
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> urb-&gt;iso_frame_desc[i].actual_length);
+</I>&gt;<i>&#160; 
+</I>&gt;<i> -&#160;&#160;&#160; &#160;&#160;&#160; if (buf-&gt;state ==
+</I>&gt;<i> UVC_BUF_STATE_READY)
+</I>&gt;<i> +&#160;&#160;&#160; &#160;&#160;&#160; if (buf-&gt;state ==
+</I>&gt;<i> UVC_BUF_STATE_READY) {
+</I>&gt;<i> +&#160;&#160;&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> if (buf-&gt;buf.length != buf-&gt;buf.bytesused &amp;&amp;
+</I>&gt;<i> +&#160;&#160;&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> &#160; &#160; !(stream-&gt;cur_format-&gt;flags &amp;
+</I>&gt;<i> +&#160;&#160;&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> &#160; &#160; &#160; UVC_FMT_FLAG_COMPRESSED))
+</I>&gt;<i> +&#160;&#160;&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> &#160;&#160;&#160; buf-&gt;error = 1;
+</I>&gt;<i> +
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> buf = uvc_queue_next_buffer(&amp;stream-&gt;queue, buf);
+</I>&gt;<i> +&#160;&#160;&#160; &#160;&#160;&#160; }
+</I>&gt;<i>&#160; &#160;&#160;&#160; }
+</I>&gt;<i>&#160; }
+</I>&gt;<i>&#160; 
+</I>&gt;<i> @@ -1104,7 +1113,7 @@ int uvc_video_init(struct
+</I>&gt;<i> uvc_streaming *stream)
+</I>&gt;<i>&#160; &#160;&#160;&#160; atomic_set(&amp;stream-&gt;active, 0);
+</I>&gt;<i>&#160; 
+</I>&gt;<i>&#160; &#160;&#160;&#160; /* Initialize the video buffers queue.
+</I>&gt;<i> */
+</I>&gt;<i> -&#160;&#160;&#160; uvc_queue_init(&amp;stream-&gt;queue,
+</I>&gt;<i> stream-&gt;type);
+</I>&gt;<i> +&#160;&#160;&#160; uvc_queue_init(&amp;stream-&gt;queue,
+</I>&gt;<i> stream-&gt;type, !uvc_no_drop_param);
+</I>&gt;<i>&#160; 
+</I>&gt;<i>&#160; &#160;&#160;&#160; /* Alternate setting 0 should be the
+</I>&gt;<i> default, yet the XBox Live Vision
+</I>&gt;<i>&#160; &#160;&#160;&#160;&#160;&#160;* Cam (and possibly other
+</I>&gt;<i> devices) crash or otherwise misbehave if
+</I>&gt;<i> @@ -1197,12 +1206,6 @@ int uvc_video_enable(struct
+</I>&gt;<i> uvc_streaming *stream, int enable)
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160; return 0;
+</I>&gt;<i>&#160; &#160;&#160;&#160; }
+</I>&gt;<i>&#160; 
+</I>&gt;<i> -&#160;&#160;&#160; if ((stream-&gt;cur_format-&gt;flags
+</I>&gt;<i> &amp; UVC_FMT_FLAG_COMPRESSED) ||
+</I>&gt;<i> -&#160;&#160;&#160; &#160; &#160; uvc_no_drop_param)
+</I>&gt;<i> -&#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> stream-&gt;queue.flags &amp;= ~UVC_QUEUE_DROP_INCOMPLETE;
+</I>&gt;<i> -&#160;&#160;&#160; else
+</I>&gt;<i> -&#160;&#160;&#160; &#160;&#160;&#160;
+</I>&gt;<i> stream-&gt;queue.flags |= UVC_QUEUE_DROP_INCOMPLETE;
+</I>&gt;<i> -
+</I>&gt;<i>&#160; &#160;&#160;&#160; ret =
+</I>&gt;<i> uvc_queue_enable(&amp;stream-&gt;queue, 1);
+</I>&gt;<i>&#160; &#160;&#160;&#160; if (ret &lt; 0)
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160; return ret;
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvcvideo.h
+</I>&gt;<i> b/drivers/media/video/uvc/uvcvideo.h
+</I>&gt;<i> index d1f8840..398e65a 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvcvideo.h
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvcvideo.h
+</I>&gt;<i> @@ -385,11 +385,12 @@ struct uvc_buffer {
+</I>&gt;<i>&#160; &#160;&#160;&#160; struct list_head queue;
+</I>&gt;<i>&#160; &#160;&#160;&#160; wait_queue_head_t wait;
+</I>&gt;<i>&#160; &#160;&#160;&#160; enum uvc_buffer_state state;
+</I>&gt;<i> +&#160;&#160;&#160; unsigned int error;
+</I>&gt;<i>&#160; };
+</I>&gt;<i>&#160; 
+</I>&gt;<i>&#160; #define UVC_QUEUE_STREAMING&#160;&#160;&#160;
+</I>&gt;<i> &#160;&#160;&#160; (1 &lt;&lt; 0)
+</I>&gt;<i>&#160; #define UVC_QUEUE_DISCONNECTED&#160;&#160;&#160;
+</I>&gt;<i> &#160;&#160;&#160; (1 &lt;&lt; 1)
+</I>&gt;<i> -#define UVC_QUEUE_DROP_INCOMPLETE&#160;&#160;&#160; (1
+</I>&gt;<i> &lt;&lt; 2)
+</I>&gt;<i> +#define UVC_QUEUE_DROP_CORRUPTED&#160;&#160;&#160; (1
+</I>&gt;<i> &lt;&lt; 2)
+</I>&gt;<i>&#160; 
+</I>&gt;<i>&#160; struct uvc_video_queue {
+</I>&gt;<i>&#160; &#160;&#160;&#160; enum v4l2_buf_type type;
+</I>&gt;<i> @@ -568,7 +569,7 @@ extern struct uvc_driver uvc_driver;
+</I>&gt;<i>&#160; 
+</I>&gt;<i>&#160; /* Video buffers queue management. */
+</I>&gt;<i>&#160; extern void uvc_queue_init(struct uvc_video_queue *queue,
+</I>&gt;<i> -&#160;&#160;&#160; &#160;&#160;&#160; enum v4l2_buf_type
+</I>&gt;<i> type);
+</I>&gt;<i> +&#160;&#160;&#160; &#160;&#160;&#160; enum v4l2_buf_type
+</I>&gt;<i> type, int drop_corrupted);
+</I>&gt;<i>&#160; extern int uvc_alloc_buffers(struct uvc_video_queue
+</I>&gt;<i> *queue,
+</I>&gt;<i>&#160; &#160;&#160;&#160; &#160;&#160;&#160; unsigned int
+</I>&gt;<i> nbuffers, unsigned int buflength);
+</I>&gt;<i>&#160; extern int uvc_free_buffers(struct uvc_video_queue
+</I>&gt;<i> *queue);
+</I>&gt;<i> -- 
+</I>&gt;<i> 1.6.4.4
+</I>&gt;<i> 
+</I>&gt;<i> -- 
+</I>&gt;<i> Regards,
+</I>&gt;<i> 
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i> 
+</I>
+Hi Laurent.&#160; Thank you for your attention on this issue.
+
+I upgraded my uvcvideo driver from 2.6.31 to 2.6.34, and the corrupted
+frames were still present.&#160; I then applied your patch to 2.6.34, but the
+corrupted frames are still present.
+
+I originally noticed this problem with a custom application, but in the
+process of debugging, I have been able to reproduce it with a modified
+version of luvcview as well.&#160; My patch for luvcview is attached.&#160; The
+patch disables JPEG decoding and drawing to the display.&#160; It also reduces
+the number of v4l2 buffers to 1.&#160; These changes are not required to trigger
+the frame corruption, but they seem to exacerbate the problem.  I realize
+that 1 v4l2 buffer might be unreasonable, but I can produce this problem
+with 2 or 3 buffers as well.
+
+Counterintuitively, having more CPU available (by disabling rendering)
+seems to worsen the problem.&#160; Also, adding printks for debugging almost
+always masks the problem.&#160; For these reasons, I think maybe there might be
+some cache coherency issue, but my attempts at sprinkling
+flush_dcache_page() in the OHCI driver have not helped.  (For reference:
+<A HREF="http://thread.gmane.org/gmane.linux.usb.general/27072/focus=944990">http://thread.gmane.org/gmane.linux.usb.general/27072/focus=944990</A>)
+
+I extracted some JPEGs from an AVI generated by luvcview to give you an
+idea of what I'm seeing.&#160; I shook the camera while filming some color bars
+(shaking also seems to trigger the problem).  The files are named by
+timestamp, and the middle one shows the characteristic corruption.
+
+I have seen this behavior consistently on two different models of UVC
+camera.&#160; I am going to try a non-UVC v4l2 camera to see if this is
+actually a platform issue as opposed to a uvcvideo one.
+
+I will be on holiday next week, so if you have another patch I won't be
+able to test it until June 28.
+
+Regards,
+
+Filter
+
+
+      
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: luvcview.patch
+Type: text/x-diff
+Size: 1531 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100618/515237e8/attachment.patch">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100618/515237e8/attachment.patch</A>&gt;
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: 000007.5714286.jpg
+Type: image/jpeg
+Size: 2936 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100618/515237e8/attachment.jpg">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100618/515237e8/attachment.jpg</A>&gt;
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: 000007.6428572.jpg
+Type: image/jpeg
+Size: 3260 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100618/515237e8/attachment-0001.jpg">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100618/515237e8/attachment-0001.jpg</A>&gt;
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: 000007.7142858.jpg
+Type: image/jpeg
+Size: 3412 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100618/515237e8/attachment-0002.jpg">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100618/515237e8/attachment-0002.jpg</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005793.html">[Linux-uvc-devel] YUYV/YUY2 between USB payload and v4l2.
+</A></li>
+	<LI>Next message: <A HREF="005800.html">[Linux-uvc-devel] uvcvideo detects wrong resolution on vanilla	kernel
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5799">[ date ]</a>
+              <a href="thread.html#5799">[ thread ]</a>
+              <a href="subject.html#5799">[ subject ]</a>
+              <a href="author.html#5799">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

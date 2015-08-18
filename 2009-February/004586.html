@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Pan and Tilt controls
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Pan%20and%20Tilt%20controls&In-Reply-To=%3C200902250051.01750.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004572.html">
+   <LINK REL="Next"  HREF="004537.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Pan and Tilt controls</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Pan%20and%20Tilt%20controls&In-Reply-To=%3C200902250051.01750.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Pan and Tilt controls">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Feb 25 00:51:01 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004572.html">[Linux-uvc-devel] Pan and Tilt controls
+</A></li>
+        <LI>Next message: <A HREF="004537.html">[Linux-uvc-devel] Pan and Tilt controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4586">[ date ]</a>
+              <a href="thread.html#4586">[ thread ]</a>
+              <a href="subject.html#4586">[ subject ]</a>
+              <a href="author.html#4586">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Gilles,
+
+On Thursday 19 February 2009 23:38:32 Gilles GIGAN wrote:
+&gt;<i> Laurent,
+</I>&gt;<i>
+</I>&gt;<i> &gt; &gt; Is there a way to make these changes when mapping the controls, or do
+</I>&gt;<i> &gt; &gt; they have to be coded in the driver itself ?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Switching the Pan Reset and Tilt Reset from integers to button should
+</I>&gt;<i> &gt; require a modification of the logitech.xml file only (although it might
+</I>&gt;<i> &gt; also trigger bugs in yet unused code paths of libwebcam/uvcdynctrl).
+</I>&gt;<i>
+</I>&gt;<i> I gave that a go:
+</I>&gt;<i> I changed  the v4l2_type element from V4L2_CTRL_TYPE_INTEGER to
+</I>&gt;<i> V4L2_CTRL_TYPE_BUTTON for both the Pan Reset and Tilt Reset mappings.
+</I>&gt;<i> Not sure how to get uvcvideo to unmap existing controls, so I
+</I>&gt;<i> rmmod/modprobe (trace=1023) it,
+</I>
+Unmapping controls isn't supported at the moment, rmmod/modprobe is the only 
+option.
+
+&gt;<i> and confirmed it lacks these mappings. Then
+</I>&gt;<i> I had to modify libwebcam to support the V4L2_CTRL_TYPE_BUTTON. To be
+</I>&gt;<i> precise, libwebcam already had the code for that but it was commented out
+</I>&gt;<i> (lines 446 to 456 in dynctrl.c). I then imported the dynamic controls with
+</I>&gt;<i> uvcdynctrl -i, and it went fine. Pan &amp; Tilt Reset are reported as buttons,
+</I>
+Could you please report that to Martin Rubli on www.quickcamteam.net ?
+
+&gt;<i> but setting a value on them does nothing and these lines are added to
+</I>&gt;<i> syslog:
+</I>&gt;<i>
+</I>&gt;<i>  kernel: [57399.195259] v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+</I>&gt;<i>  kernel: [57399.202594] uvcvideo: Control 9/2 failure change len 6.
+</I>
+This means the webcam sent an unsolicited message to report a control change 
+failure. You can check the failure reason by printing data[5] in 
+uvc_event_control. Possible values are
+
+0x00: No error
+0x01: Not ready
+0x02: Wrong state
+0x03: Power
+0x04: Out of range
+0x05: Invalid unit
+0x06: Invalid control
+0x07: Invalid Request
+0x08-0xFE: Reserved for future use
+0xFF: Unknown
+
+&gt;<i> I m not sure what the implications of the change to V4L2_CTRL_TYPE_BUTTON
+</I>&gt;<i> are (besides modifying the reported v4l2_queryctrl struct) within the
+</I>&gt;<i> driver and the way it send control values to the device. Is it anything
+</I>&gt;<i> that can be fixed ? If so how can I help ?
+</I>
+Best regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004572.html">[Linux-uvc-devel] Pan and Tilt controls
+</A></li>
+	<LI>Next message: <A HREF="004537.html">[Linux-uvc-devel] Pan and Tilt controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4586">[ date ]</a>
+              <a href="thread.html#4586">[ thread ]</a>
+              <a href="subject.html#4586">[ subject ]</a>
+              <a href="author.html#4586">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

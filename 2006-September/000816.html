@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] UVC-gadget driver
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20UVC-gadget%20driver&In-Reply-To=%3C200609181503.39269.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000793.html">
+   <LINK REL="Next"  HREF="000808.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] UVC-gadget driver</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20UVC-gadget%20driver&In-Reply-To=%3C200609181503.39269.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] UVC-gadget driver">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Sep 18 15:03:38 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000793.html">[Linux-uvc-devel] UVC-gadget driver
+</A></li>
+        <LI>Next message: <A HREF="000808.html">[Linux-uvc-devel] Logitech Fusion still no go.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#816">[ date ]</a>
+              <a href="thread.html#816">[ thread ]</a>
+              <a href="subject.html#816">[ subject ]</a>
+              <a href="author.html#816">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Andy,
+
+&gt;<i> I need an USB Video Class gadget driver. Upon making inquiries about if
+</I>&gt;<i> there is something existing I think I've to write it by myself. Is this
+</I>&gt;<i> information correct?
+</I>
+I think so. I haven't heard of any open-source gadget UVC driver before.
+
+&gt;<i> At the moment I'm using a NET2280 PCI Card later I'll port the drivers to a
+</I>&gt;<i> TI Davinci-Chip. I studied several usb gadget drivers. Even so I studied
+</I>&gt;<i> the USB Video Class Specification and I had a look at your UVC driver.
+</I>&gt;<i>
+</I>&gt;<i> Now I've got some questions,
+</I>&gt;<i> a) What are the minimum settings in my driver that the uvc-driver (host)
+</I>&gt;<i> recognize my card as a UVC-Device?
+</I>
+You need the following features:
+
+- UVC descriptors (obviously). A minimal device should have a camera input 
+terminal and an streaming output terminal. You must have either an 
+isochronous or bulk endpoint for data transfer.
+
+- Streaming parameters probe/commit. You must implement the probe/commit 
+negotiation as described in the UVC standard.
+
+- Video data transfer. Your device must be able to stream video data, either 
+in an uncompressed form (YUYV and NV12 are specified by the standard) or a 
+compressed form (MJPEG, MPEG2, ...).
+
+That's about it. The Linux UVC driver doesn't require anything else. You don't 
+need an interrupt endpoint, you don't need a processing unit.
+
+&gt;<i> b) Is it possible or does it make sense 
+</I>&gt;<i> to use your uvc driver as a base-driver? Or do you think the gadegt driver
+</I>&gt;<i> is totally different?
+</I>
+The gadget driver is totally different. You can use the Linux UVC driver to 
+test the gadget device, but you won't be able to reuse much code, if any. The 
+Linux UVC driver reads the UVC descriptors and sends requests to the device, 
+while your driver must provide the descriptors (which can be hardcoded, at 
+least partially), and respond to requests.
+
+&gt;<i> c) Which points out of the specification does my driver has to cover at
+</I>&gt;<i> least to realize an elementary video stream?
+</I>
+See answer to point a) above.
+
+&gt;<i> Thank you for your help,
+</I>
+You're welcome.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000793.html">[Linux-uvc-devel] UVC-gadget driver
+</A></li>
+	<LI>Next message: <A HREF="000808.html">[Linux-uvc-devel] Logitech Fusion still no go.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#816">[ date ]</a>
+              <a href="thread.html#816">[ thread ]</a>
+              <a href="subject.html#816">[ subject ]</a>
+              <a href="author.html#816">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] QC 5K owners: how to fix alsa for the mic?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20QC%205K%20owners%3A%20how%20to%20fix%20alsa%20for%20the%20mic%3F&In-Reply-To=%3C1143652413.18263.1.camel%40virgo.csail.mit.edu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000390.html">
+   <LINK REL="Next"  HREF="000396.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] QC 5K owners: how to fix alsa for the mic?</H1>
+    <B>David Moore</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20QC%205K%20owners%3A%20how%20to%20fix%20alsa%20for%20the%20mic%3F&In-Reply-To=%3C1143652413.18263.1.camel%40virgo.csail.mit.edu%3E"
+       TITLE="[Linux-uvc-devel] QC 5K owners: how to fix alsa for the mic?">dcm at MIT.EDU
+       </A><BR>
+    <I>Wed Mar 29 19:13:33 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000390.html">[Linux-uvc-devel] QC 5K owners: how to fix alsa for the mic?
+</A></li>
+        <LI>Next message: <A HREF="000396.html">[Linux-uvc-devel] Fusion brightness
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#391">[ date ]</a>
+              <a href="thread.html#391">[ thread ]</a>
+              <a href="subject.html#391">[ subject ]</a>
+              <a href="author.html#391">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Sounds like an application bug.  Your application should be referring to
+the ALSA devices by name, not by index.
+
+-David
+
+On Wed, 2006-03-29 at 18:24 +0200, Niv wrote:
+&gt;<i> -----BEGIN PGP SIGNED MESSAGE-----
+</I>&gt;<i> Hash: SHA1
+</I>&gt;<i> 
+</I>&gt;<i> Hello all,
+</I>&gt;<i> I am aware that this is a uvc ML, but I dont know the alsa ML and got
+</I>&gt;<i> good advice here in the past.
+</I>&gt;<i> I also have trouble finding keywords to google for this problem.
+</I>&gt;<i> here goes:
+</I>&gt;<i> 
+</I>&gt;<i> I have several sound devices that change.
+</I>&gt;<i> * a usb sound card with output only
+</I>&gt;<i> * a usb webcam with a microphone
+</I>&gt;<i> * a bluetooth adapter that provides a sound device with my BT headset
+</I>&gt;<i> 
+</I>&gt;<i> my problem is that if I boot with the webcam disconnected like this:
+</I>&gt;<i> $ cat /proc/asound/cards
+</I>&gt;<i> 0 [V8237          ]: VIA8237 - VIA 8237
+</I>&gt;<i>                      VIA 8237 with CMI9761 at 0xe800, irq 11
+</I>&gt;<i> 1 [Bt878          ]: Bt87x - Brooktree Bt878
+</I>&gt;<i>                      Brooktree Bt878 at 0xe8101000, irq 11
+</I>&gt;<i> 2 [Audio          ]: USB-Audio - USB Audio
+</I>&gt;<i>                      C-Media INC. USB Audio at usb-0000:00:10.3-2, full
+</I>&gt;<i> speed
+</I>&gt;<i> 3 [Headset        ]: Bluetooth SCO - BT Headset
+</I>&gt;<i>                      BT Headset 1
+</I>&gt;<i> 
+</I>&gt;<i> then after plugging the webcam:
+</I>&gt;<i> 
+</I>&gt;<i> # cat /proc/asound/cards
+</I>&gt;<i> 0 [V8237          ]: VIA8237 - VIA 8237
+</I>&gt;<i>                      VIA 8237 with CMI9761 at 0xe800, irq 11
+</I>&gt;<i> 1 [Bt878          ]: Bt87x - Brooktree Bt878
+</I>&gt;<i>                      Brooktree Bt878 at 0xe8101000, irq 11
+</I>&gt;<i> 2 [Audio          ]: USB-Audio - USB Audio
+</I>&gt;<i>                      C-Media INC. USB Audio at usb-0000:00:10.3-2, full
+</I>&gt;<i> speed
+</I>&gt;<i> 3 [Headset        ]: Bluetooth SCO - BT Headset
+</I>&gt;<i>                      BT Headset 1
+</I>&gt;<i> 4 [U0x46d0x8c5    ]: USB-Audio - USB Device 0x46d:0x8c5
+</I>&gt;<i>                      USB Device 0x46d:0x8c5 at usb-0000:00:10.4-1, high
+</I>&gt;<i> speed
+</I>&gt;<i> 
+</I>&gt;<i> but if I reboot the headset takes device 4 and the webcam device 3.
+</I>&gt;<i> 
+</I>&gt;<i> I tried mending /etc/modules.d/alsa:
+</I>&gt;<i> 
+</I>&gt;<i> alias snd-card-0 snd-via82xx
+</I>&gt;<i> options snd-via82xx index=0
+</I>&gt;<i> alias snd-card-1 snd-bt87x
+</I>&gt;<i> alias snd-card-2 snd-bt-sco
+</I>&gt;<i> alias snd-card-3 snd-usb-audio
+</I>&gt;<i> alias snd-card-4 snd-usb-audio
+</I>&gt;<i> options snd cards_limit=5
+</I>&gt;<i> 
+</I>&gt;<i> but it doesnt help
+</I>&gt;<i> I did manage to fix the oss using udev rules.
+</I>&gt;<i> 
+</I>&gt;<i> how can I fix it?
+</I>&gt;<i> 
+</I>&gt;<i> Niv
+</I>&gt;<i> -----BEGIN PGP SIGNATURE-----
+</I>&gt;<i> Version: GnuPG v1.4.2.2 (GNU/Linux)
+</I>&gt;<i> Comment: Using GnuPG with Mozilla - <A HREF="http://enigmail.mozdev.org">http://enigmail.mozdev.org</A>
+</I>&gt;<i> 
+</I>&gt;<i> iD8DBQFEKrTbkwazfG0MmCYRAtk/AJ4wmoQKBGDBcxzlmv8kUCFVU7plnACgs9Fs
+</I>&gt;<i> UVae3HpJR4SuYhcT/KpCYBU=
+</I>&gt;<i> =mnT1
+</I>&gt;<i> -----END PGP SIGNATURE-----
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="http://lists.berlios.de/mailman/listinfo/linux-uvc-devel">http://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000390.html">[Linux-uvc-devel] QC 5K owners: how to fix alsa for the mic?
+</A></li>
+	<LI>Next message: <A HREF="000396.html">[Linux-uvc-devel] Fusion brightness
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#391">[ date ]</a>
+              <a href="thread.html#391">[ thread ]</a>
+              <a href="subject.html#391">[ subject ]</a>
+              <a href="author.html#391">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20with%20H264%20encoder%20not%20in%20Devicelist&In-Reply-To=%3C4E59F42A.9010803%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006849.html">
+   <LINK REL="Next"  HREF="006828.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20with%20H264%20encoder%20not%20in%20Devicelist&In-Reply-To=%3C4E59F42A.9010803%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Sun Aug 28 09:54:18 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006849.html">[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+</A></li>
+        <LI>Next message: <A HREF="006828.html">[Linux-uvc-devel] Seraching for HD camera
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6827">[ date ]</a>
+              <a href="thread.html#6827">[ thread ]</a>
+              <a href="subject.html#6827">[ subject ]</a>
+              <a href="author.html#6827">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Robert,
+
+thank you for your response, even if it sound a bit like zombie
+commercial :)
+
+I took a look on the specification and feel like i need to put two bits
+of doubt concerning this webcam, just in case some one wont to by it.
+
+reference to:
+<A HREF="http://www.logitech.com/en-us/for-business/products/webcams-headsets/devices/b990-hd-webcam">http://www.logitech.com/en-us/for-business/products/webcams-headsets/devices/b990-hd-webcam</A>
+- Native 5MP HD sensor
+- High-definition video in 720p widescreen mode with recommended system
+- Color depth: 24-bit true color
+- Frame rate: Up to 30 frames per second streaming video in 720p and VGA
+mode
+
+Doubts:
+- 24-bit true color - i'm confused here, seems like we can access only
+16-bit color over yuv. will it really do 24bit with h264? Even if it
+will cost more power?... i think it is not true
+- Even if it has 5MPixel sensor, seems like we have access only to 1MP.
+According to this <A HREF="http://pastebin.com/9WFgytwY">http://pastebin.com/9WFgytwY</A>
+the biggest resolution what it provide is 1280x720, in other words
+&quot;High-definition video in 720p&quot;. This is also maximal resolution what
+can be uncompressed provided with ~15fps over USB2.0 . But it give us
+actually only 10 fps.
+JPEG compressed stream seems to be more realistic, it can indeed do 30
+fps at HD720p. I guess it will take about 30Mbit/S bandwidth.
+
+Now after it sounds more realistic...
+
+H264 can reduce it even more (no doubt). In case of hardware encoder, we
+should be able to dynamically control encoding process, reduce keyframe
+frequency and be able to force KF if needed to recover the stream, (i
+guess you currently trying to find it out). And if you use gstreamer
+then, thelepythy+gstreamer should be able to control it as well.
+
+It looks like lots of work and fun. Suddenly i do not have this toy to
+play with it. I hope it is really worth it.
+
+Regards,
+	Alexey.
+
+
+
+On 27.08.2011 19:47, Robert Krakora wrote:
+&gt;<i> Hi Alexey,
+</I>&gt;<i> 
+</I>&gt;<i> As webcam sampling size increases (5MP in the case of the Logitech B990),
+</I>&gt;<i> encoding in the camera becomes important to conserve USB bandwidth, and if
+</I>&gt;<i> you want to transmit content over an Ethernet connection it is even more
+</I>&gt;<i> important.  Also, software encoding eats up host processor CPU.  We have
+</I>&gt;<i> Intel Atom based mediaports that employ NVidia hardware assisted decoding.
+</I>&gt;<i> The are all equipped with cameras and software encoding would consume a fair
+</I>&gt;<i> amount of the CPU.  We push the encoded data around the network.
+</I>&gt;<i> 
+</I>&gt;<i> If you have a mid-&gt;high end CPU, no problem, use a software encoder if you
+</I>&gt;<i> wish.  Just remember though, that your USB host controller + hub aggregate
+</I>&gt;<i> bandwidth will be mostly consumed by the raw data of the camera.  At some
+</I>&gt;<i> point we will probably see USB 3.0 webcams to handle raw data from cameras
+</I>&gt;<i> as sampling size increases.
+</I>&gt;<i> 
+</I>&gt;<i> I can send you some samples, but as of today I cannot control the encoders
+</I>&gt;<i> parameters, so it is not the highest quality, but still looks really good.
+</I>&gt;<i> 
+</I>&gt;<i> Best Regards,
+</I>&gt;<i> 
+</I>&gt;<i> Rob Krakora
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> On Sat, Aug 27, 2011 at 2:09 AM, Alexey Fisher
+</I>&gt;<i> &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt;wrote:
+</I>&gt;<i> 
+</I>&gt;&gt;<i> Am 26.08.2011 20:36, schrieb Robert Krakora:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Hello,
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Were you ever able to get H.264 content from the Logitech B990?  I was
+</I>&gt;&gt;&gt;<i> able to
+</I>&gt;&gt;&gt;<i> using Stephan's patches and a patch to the v4l2src GStreamer element.  I
+</I>&gt;&gt;&gt;<i> have
+</I>&gt;&gt;&gt;<i> both audio and video.  However, I have not figured out how to affect the
+</I>&gt;&gt;&gt;<i> encoding parameters that I believe are exposed by the XUs.  If you are
+</I>&gt;&gt;&gt;<i> interested, I can make what I have available for you.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Best Regards,
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Rob Krakora
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I'd really like to know, is it worth to do it. I mean what is the image
+</I>&gt;&gt;<i> quality? What kind of H.264 bitstream is created? What is the key frame
+</I>&gt;&gt;<i> frequency? Can you grub and send me some sample file?
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> What actual use cases? If i understand correctly, it will be transcoded any
+</I>&gt;&gt;<i> way in case of videochat. To record myself i'd prefer software encoder, for
+</I>&gt;&gt;<i> better quality.
+</I>&gt;&gt;<i>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006849.html">[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+</A></li>
+	<LI>Next message: <A HREF="006828.html">[Linux-uvc-devel] Seraching for HD camera
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6827">[ date ]</a>
+              <a href="thread.html#6827">[ thread ]</a>
+              <a href="subject.html#6827">[ subject ]</a>
+              <a href="author.html#6827">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

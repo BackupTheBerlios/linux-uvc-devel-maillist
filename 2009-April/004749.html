@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Strange issue with Hercules Dualpix Infinite
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Strange%20issue%20with%20Hercules%20Dualpix%20Infinite&In-Reply-To=%3C200904301726.13693.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004747.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Strange issue with Hercules Dualpix Infinite</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Strange%20issue%20with%20Hercules%20Dualpix%20Infinite&In-Reply-To=%3C200904301726.13693.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Strange issue with Hercules Dualpix Infinite">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Thu Apr 30 17:26:13 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004747.html">[Linux-uvc-devel] Strange issue with Hercules Dualpix Infinite
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4749">[ date ]</a>
+              <a href="thread.html#4749">[ thread ]</a>
+              <a href="subject.html#4749">[ subject ]</a>
+              <a href="author.html#4749">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Gregory,
+
+On Thursday 30 April 2009 08:00:03 Gregory LEGRAIN wrote:
+&gt;<i> Hi Laurent,
+</I>&gt;<i> it seems that my previous mail was buried under tons of other mails during
+</I>&gt;<i> your holidays :-)
+</I>
+Seems my attempt to escape from your attention didn't went unnoticed :-)
+
+&gt;<i> You asked me to set the trace parameter to 255 when loading the driver. I
+</I>&gt;<i> did it, and attached the output with this mail.
+</I>
+Thanks. I see what's wrong. Your device is not UVC compliant :-S
+
+There's a small error in the UVC descriptors that prevent the driver from 
+detecting the device correctly. The uncompressed frame descriptors should be 
+numbered from 1 to 7, but they are instead numbered from 1 to 8 with number 7 
+missing.
+
+According to the UVC specification, the bFrameIndex field &quot;selects the video 
+frame resolution from the array of resolutions supported by the selected 
+stream. The index value ranges from 1 to the number of Frame descriptors 
+following a particular Format descriptor.&quot; The device is thus not UVC 
+compliant.
+
+Here's a patch that should fix the issue. It hasn't been stress-tested, so it 
+might crash your kernel. Please let me know if it helps.
+
+Best regards,
+
+Laurent Pinchart
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: hercules.patch
+Type: text/x-patch
+Size: 5734 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090430/8526c2fa/attachment.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090430/8526c2fa/attachment.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004747.html">[Linux-uvc-devel] Strange issue with Hercules Dualpix Infinite
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4749">[ date ]</a>
+              <a href="thread.html#4749">[ thread ]</a>
+              <a href="subject.html#4749">[ subject ]</a>
+              <a href="author.html#4749">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

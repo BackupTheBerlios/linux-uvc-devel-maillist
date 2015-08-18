@@ -1,0 +1,615 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] luvcview code enhancements (Was: Re: Intermittent	Webcam)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20luvcview%20code%20enhancements%20%28Was%3A%20Re%3A%20Intermittent%0A%09Webcam%29&In-Reply-To=%3C20080316191031.GB11048%40sunshine.barsnick.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003228.html">
+   <LINK REL="Next"  HREF="003231.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] luvcview code enhancements (Was: Re: Intermittent	Webcam)</H1>
+    <B>Moritz Barsnick</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20luvcview%20code%20enhancements%20%28Was%3A%20Re%3A%20Intermittent%0A%09Webcam%29&In-Reply-To=%3C20080316191031.GB11048%40sunshine.barsnick.net%3E"
+       TITLE="[Linux-uvc-devel] luvcview code enhancements (Was: Re: Intermittent	Webcam)">barsnick at gmx.net
+       </A><BR>
+    <I>Sun Mar 16 20:10:31 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003228.html">[Linux-uvc-devel] Intermittent Webcam
+</A></li>
+        <LI>Next message: <A HREF="003231.html">[Linux-uvc-devel] luvcview code enhancements (Was: Re:	Intermittent Webcam)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3230">[ date ]</a>
+              <a href="thread.html#3230">[ thread ]</a>
+              <a href="subject.html#3230">[ subject ]</a>
+              <a href="author.html#3230">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I've been using luvcview to debug and bring up my cam (successfully
+:<i>-)), but have some improvements to suggest:
+</I>
+On Sun, Mar 16, 2008 at 10:30:38 -0400, Jerry wrote:
+&gt;<i> Unable to start capture: 71.
+</I>
+I can't help with Jerry's problem, but I have some suggestions for code
+improvements, e.g. to be able to tell Jerry that the above (71) is a
+&quot;protocol error&quot;.
+
+The function perror() is being used in a few places, and
+strerror[errno] in a few others, but not consequently throughout. I'm
+attaching a patch which makes more use of perror(), hopefully appending
+useful strings to all error messages. I know it has helped me in using
+luvcview. The patch also removes the trailing &quot;\n&quot;s from perror(),
+which mess up its display.
+
+A second patch removes all whitespace at line ends. Admittedly, this is
+purely cosmetic ;), but was an initial result of my cleanup of perror()
+as mentioned above.
+
+Oh, and since the changelog mentions the version 0.2.2, I thought it
+might be okay to bump the version string in the Makefile as well. :)
+
+If you think these patches are useful, feel free to integrate them into
+its source.
+
+Just to let you know,
+thanks for listening and thanks for the tool!
+Moritz
+-------------- next part --------------
+diff -ur luvcview-20070512/v4l2uvc.c luvcview-20070512-perror/v4l2uvc.c
+--- luvcview-20070512/v4l2uvc.c	2007-05-08 17:39:40.000000000 +0200
++++ luvcview-20070512-perror/v4l2uvc.c	2008-03-16 19:47:44.000000000 +0100
+@@ -41,7 +41,7 @@
+  	snprintf(vd-&gt;videodevice, 12, &quot;%s&quot;, device);
+     printf(&quot;video %s \n&quot;, vd-&gt;videodevice);
+     if ((vd-&gt;fd = open(vd-&gt;videodevice, O_RDWR)) == -1) {
+-	perror(&quot;ERROR opening V4L interface \n&quot;);
++	perror(&quot;ERROR opening V4L interface&quot;);
+ 	exit(1);
+     }
+     memset(&amp;vd-&gt;cap, 0, sizeof(struct v4l2_capability));
+@@ -195,7 +195,7 @@
+     } else {
+       if (errno == EINVAL)
+         continue;
+-      printf (&quot;error getting base controls&quot;);
++      perror (&quot;error getting base controls&quot;);
+       goto fatal_controls;
+     }
+   }
+@@ -235,7 +235,7 @@
+   memset (&amp;control_s, 0, sizeof (control_s));
+   configfile = fopen(&quot;luvcview.cfg&quot;, &quot;w&quot;);
+   if ( configfile == NULL) {
+-    printf( &quot;saving configfile luvcview.cfg failed, errno = %d (%s)\n&quot;, errno, strerror( errno));
++    perror(&quot;saving configfile luvcview.cfg failed&quot;);
+   }
+   else {
+     fprintf(configfile, &quot;id         value      # luvcview control settings configuration file\n&quot;);
+@@ -292,7 +292,7 @@
+   memset (&amp;control, 0, sizeof (control));
+   configfile = fopen(&quot;luvcview.cfg&quot;, &quot;r&quot;);
+   if ( configfile == NULL) {
+-    printf( &quot;configfile luvcview.cfg open failed, errno = %d (%s)\n&quot;, errno, strerror( errno));
++    perror(&quot;configfile luvcview.cfg open failed&quot;);
+   }
+   else {
+     printf(&quot;loading controls from luvcview.cfg \n&quot;);
+@@ -317,7 +317,7 @@
+     int ret = 0;
+ 
+     if ((vd-&gt;fd = open(vd-&gt;videodevice, O_RDWR)) == -1) {
+-	perror(&quot;ERROR opening V4L interface \n&quot;);
++	perror(&quot;ERROR opening V4L interface&quot;);
+ 	exit(1);
+     }
+     memset(&amp;vd-&gt;cap, 0, sizeof(struct v4l2_capability));
+@@ -353,7 +353,7 @@
+     vd-&gt;fmt.fmt.pix.field = V4L2_FIELD_ANY;
+     ret = ioctl(vd-&gt;fd, VIDIOC_S_FMT, &amp;vd-&gt;fmt);
+     if (ret &lt; 0) {
+-	printf(&quot;Unable to set format: %d.\n&quot;, errno);
++	perror(&quot;Unable to set format&quot;);
+ 	goto fatal;
+     }
+     if ((vd-&gt;fmt.fmt.pix.width != vd-&gt;width) ||
+@@ -383,7 +383,7 @@
+ 
+     ret = ioctl(vd-&gt;fd, VIDIOC_REQBUFS, &amp;vd-&gt;rb);
+     if (ret &lt; 0) {
+-	printf(&quot;Unable to allocate buffers: %d.\n&quot;, errno);
++	perror(&quot;Unable to allocate buffers&quot;);
+ 	goto fatal;
+     }
+     /* map the buffers */
+@@ -394,7 +394,7 @@
+ 	vd-&gt;buf.memory = V4L2_MEMORY_MMAP;
+ 	ret = ioctl(vd-&gt;fd, VIDIOC_QUERYBUF, &amp;vd-&gt;buf);
+ 	if (ret &lt; 0) {
+-	    printf(&quot;Unable to query buffer (%d).\n&quot;, errno);
++	    perror(&quot;Unable to query buffer&quot;);
+ 	    goto fatal;
+ 	}
+ 	if (debug)
+@@ -404,7 +404,7 @@
+ 			  vd-&gt;buf.length, PROT_READ, MAP_SHARED, vd-&gt;fd,
+ 			  vd-&gt;buf.m.offset);
+ 	if (vd-&gt;mem[i] == MAP_FAILED) {
+-	    printf(&quot;Unable to map buffer (%d)\n&quot;, errno);
++	    perror(&quot;Unable to map buffer&quot;);
+ 	    goto fatal;
+ 	}
+ 	if (debug)
+@@ -418,7 +418,7 @@
+ 	vd-&gt;buf.memory = V4L2_MEMORY_MMAP;
+ 	ret = ioctl(vd-&gt;fd, VIDIOC_QBUF, &amp;vd-&gt;buf);
+ 	if (ret &lt; 0) {
+-	    printf(&quot;Unable to queue buffer (%d).\n&quot;, errno);
++	    perror(&quot;Unable to queue buffer&quot;);
+ 	    goto fatal;;
+ 	}
+     }
+@@ -435,7 +435,7 @@
+ 
+     ret = ioctl(vd-&gt;fd, VIDIOC_STREAMON, &amp;type);
+     if (ret &lt; 0) {
+-	printf(&quot;Unable to %s capture: %d.\n&quot;, &quot;start&quot;, errno);
++	perror(&quot;Unable to start capture&quot;);
+ 	return ret;
+     }
+     vd-&gt;isstreaming = 1;
+@@ -449,7 +449,7 @@
+ 
+     ret = ioctl(vd-&gt;fd, VIDIOC_STREAMOFF, &amp;type);
+     if (ret &lt; 0) {
+-	printf(&quot;Unable to %s capture: %d.\n&quot;, &quot;stop&quot;, errno);
++	perror(&quot;Unable to stop capture&quot;);
+ 	return ret;
+     }
+     vd-&gt;isstreaming = 0;
+@@ -470,7 +470,7 @@
+     vd-&gt;buf.memory = V4L2_MEMORY_MMAP;
+     ret = ioctl(vd-&gt;fd, VIDIOC_DQBUF, &amp;vd-&gt;buf);
+     if (ret &lt; 0) {
+-	printf(&quot;Unable to dequeue buffer (%d).\n&quot;, errno);
++	perror(&quot;Unable to dequeue buffer&quot;);
+ 	goto err;
+     }
+ 
+@@ -585,7 +585,7 @@
+     }
+     ret = ioctl(vd-&gt;fd, VIDIOC_QBUF, &amp;vd-&gt;buf);
+     if (ret &lt; 0) {
+-	printf(&quot;Unable to requeue buffer (%d).\n&quot;, errno);
++	perror(&quot;Unable to requeue buffer&quot;);
+ 	goto err;
+     }
+ 
+@@ -618,7 +618,7 @@
+ int err =0;
+     queryctrl-&gt;id = control;
+     if ((err= ioctl(vd-&gt;fd, VIDIOC_QUERYCTRL, queryctrl)) &lt; 0) {
+-	printf(&quot;ioctl querycontrol error %d \n&quot;,errno);
++	perror(&quot;ioctl querycontrol error&quot;);
+     } else if (queryctrl-&gt;flags &amp; V4L2_CTRL_FLAG_DISABLED) {
+ 	printf(&quot;control %s disabled \n&quot;, (char *) queryctrl-&gt;name);
+     } else if (queryctrl-&gt;flags &amp; V4L2_CTRL_TYPE_BOOLEAN) {
+@@ -948,7 +948,7 @@
+ 	}
+ 	printf(&quot;\n&quot;);
+ 	if (ret != 0 &amp;&amp; errno != EINVAL) {
+-		printf(&quot;ERROR enumerating frame intervals: %d\n&quot;, errno);
++		perror(&quot;ERROR enumerating frame intervals&quot;);
+ 		return errno;
+ 	}
+ 
+@@ -990,7 +990,7 @@
+ 		fsize.index++;
+ 	}
+ 	if (ret != 0 &amp;&amp; errno != EINVAL) {
+-		printf(&quot;ERROR enumerating frame sizes: %d\n&quot;, errno);
++		perror(&quot;ERROR enumerating frame sizes&quot;);
+ 		return errno;
+ 	}
+ 
+@@ -1016,7 +1016,7 @@
+ 			printf(&quot;  Unable to enumerate frame sizes.\n&quot;);
+ 	}
+ 	if (errno != EINVAL) {
+-		printf(&quot;ERROR enumerating frame formats: %d\n&quot;, errno);
++		perror(&quot;ERROR enumerating frame formats&quot;);
+ 		return errno;
+ 	}
+ 
+-------------- next part --------------
+diff -ur luvcview-20070512/avilib.c luvcview-20070512-whitespace/avilib.c
+--- luvcview-20070512/avilib.c	2006-09-20 17:47:36.000000000 +0200
++++ luvcview-20070512-whitespace/avilib.c	2008-03-16 19:37:43.000000000 +0100
+@@ -616,7 +616,7 @@
+       readable in the most cases */
+ 
+    idxerror = 0;
+-   //   fprintf(stderr, &quot;pos=%lu, index_len=%ld             \n&quot;, AVI-&gt;pos, AVI-&gt;n_idx*16);
++   //   fprintf(stderr, &quot;pos=%lu, index_len=%ld\n&quot;, AVI-&gt;pos, AVI-&gt;n_idx*16);
+    ret = avi_add_chunk(AVI, (unsigned char *)&quot;idx1&quot;, (unsigned char *)AVI-&gt;idx, AVI-&gt;n_idx*16);
+    hasIndex = (ret==0);
+    //fprintf(stderr, &quot;pos=%lu, index_len=%d\n&quot;, AVI-&gt;pos, hasIndex);
+diff -ur luvcview-20070512/luvcview.c luvcview-20070512-whitespace/luvcview.c
+--- luvcview-20070512/luvcview.c	2007-05-12 12:03:14.000000000 +0200
++++ luvcview-20070512-whitespace/luvcview.c	2008-03-16 19:37:43.000000000 +0100
+@@ -238,7 +238,7 @@
+ 
+ 
+ 
+-    printf(&quot;luvcview version %s \n&quot;, version);
++    printf(&quot;luvcview version %s\n&quot;, version);
+     for (i = 1; i &lt; argc; i++) {
+ 	/* skip bad arguments */
+ 	if (argv[i] == NULL || *argv[i] == 0 || *argv[i] != '-') {
+@@ -287,24 +287,24 @@
+ 
+ 	    width = strtoul(sizestring, &amp;separateur, 10);
+ 	    if (*separateur != 'x') {
+-		printf(&quot;Error in size use -s widthxheight \n&quot;);
++		printf(&quot;Error in size use -s widthxheight\n&quot;);
+ 		exit(1);
+ 	    } else {
+ 		++separateur;
+ 		height = strtoul(separateur, &amp;separateur, 10);
+ 		if (*separateur != 0)
+-		    printf(&quot;hmm.. dont like that!! trying this height \n&quot;);
+-		printf(&quot; size width: %d height: %d \n&quot;, width, height);
++		    printf(&quot;hmm.. dont like that!! trying this height\n&quot;);
++		printf(&quot; size width: %d height: %d\n&quot;, width, height);
+ 	    }
+ 	}
+ 	if (strcmp(argv[i], &quot;-i&quot;) == 0){
+ 	  if (i + 1 &gt;= argc) {
+-	    printf(&quot;No parameter specified with -i, aborting. \n&quot;);
++	    printf(&quot;No parameter specified with -i, aborting.\n&quot;);
+ 	    exit(1);
+ 	  }
+ 	  fpsstring = strdup(argv[i + 1]);
+ 	  fps = strtoul(fpsstring, &amp;separateur, 10);
+-	  printf(&quot; interval: %d fps \n&quot;, fps);
++	  printf(&quot; interval: %d fps\n&quot;, fps);
+ 	}
+ 	if (strcmp(argv[i], &quot;-S&quot;) == 0) {
+ 	    /* Enable raw stream capture from the start */
+@@ -340,14 +340,14 @@
+ 	    readconfigfile = 1;
+ 	}
+ 	if (strcmp(argv[i], &quot;-h&quot;) == 0) {
+-	    printf(&quot;usage: uvcview [-h -d -g -f -s -i -c -o -C -S -L -l -r] \n&quot;);
+-	    printf(&quot;-h	print this message \n&quot;);
++	    printf(&quot;usage: uvcview [-h -d -g -f -s -i -c -o -C -S -L -l -r]\n&quot;);
++	    printf(&quot;-h	print this message\n&quot;);
+ 	    printf(&quot;-d	/dev/videoX       use videoX device\n&quot;);
+-	    printf(&quot;-g	use read method for grab instead mmap \n&quot;);
+-	    printf(&quot;-w	disable SDL hardware accel. \n&quot;);
+-	    printf(&quot;-f	video format  default jpg  others options are yuv jpg \n&quot;);
+-	    printf(&quot;-i	fps           use specified frame interval \n&quot;);
+-	    printf(&quot;-s	widthxheight      use specified input size \n&quot;);
++	    printf(&quot;-g	use read method for grab instead mmap\n&quot;);
++	    printf(&quot;-w	disable SDL hardware accel.\n&quot;);
++	    printf(&quot;-f	video format  default jpg  others options are yuv jpg\n&quot;);
++	    printf(&quot;-i	fps           use specified frame interval\n&quot;);
++	    printf(&quot;-s	widthxheight      use specified input size\n&quot;);
+ 	    printf(&quot;-c	enable raw frame capturing for the first frame\n&quot;);
+ 	    printf(&quot;-C	enable raw frame stream capturing from the start\n&quot;);
+ 	    printf(&quot;-S	enable raw stream capturing from the start\n&quot;);
+@@ -487,7 +487,7 @@
+ 	}
+ 	lasttime = currtime;
+ 	if (uvcGrab(videoIn) &lt; 0) {
+-	    printf(&quot;Error grabbing \n&quot;);
++	    printf(&quot;Error grabbing\n&quot;);
+ 	    break;
+ 	}
+ 
+@@ -540,7 +540,7 @@
+     free(videoIn);
+     destroyButt();
+     freeLut();
+-    printf(&quot; Clean Up done Quit \n&quot;);
++    printf(&quot; Clean Up done Quit\n&quot;);
+     SDL_Quit();
+ }
+ 
+@@ -640,7 +640,7 @@
+ 	case A_CONTRAST_UP:
+ 		if ((value =
+ 		     v4l2UpControl(videoIn, V4L2_CID_CONTRAST)) &lt; 0)
+-		    printf(&quot;Set Contrast up error \n&quot;);
++		    printf(&quot;Set Contrast up error\n&quot;);
+ 	    break;
+ 	case A_SATURATION_UP:
+ 		if ((value =
+@@ -822,7 +822,7 @@
+             if ((value = ioctl(videoIn-&gt;fd, VIDIOC_S_CTRL, &amp;control)) &lt; 0)
+               printf(&quot;Set Auto Exposure on error\n&quot;);
+             else
+-              printf(&quot;Auto Exposure set to %d \n&quot;, control.value);
++              printf(&quot;Auto Exposure set to %d\n&quot;, control.value);
+             break;
+           case A_EXPOSURE_OFF:
+             control.id    =V4L2_CID_EXPOSURE_AUTO;
+@@ -830,7 +830,7 @@
+             if ((value = ioctl(videoIn-&gt;fd, VIDIOC_S_CTRL, &amp;control)) &lt; 0)
+               printf(&quot;Set Auto Exposure off error\n&quot;);
+             else
+-              printf(&quot;Auto Exposure set to %d \n&quot;, control.value);
++              printf(&quot;Auto Exposure set to %d\n&quot;, control.value);
+             break;
+           case A_BALANCE_UP:
+             if ((value = v4l2UpControl(videoIn, V4L2_CID_WHITE_BALANCE_TEMPERATURE)) &lt; 0)
+@@ -846,7 +846,7 @@
+             if ((value = ioctl(videoIn-&gt;fd, VIDIOC_S_CTRL, &amp;control)) &lt; 0)
+               printf(&quot;Set Auto Balance on error\n&quot;);
+             else
+-              printf(&quot;Auto Balance set to %d \n&quot;, control.value);
++              printf(&quot;Auto Balance set to %d\n&quot;, control.value);
+             break;
+           case A_BALANCE_OFF:
+             control.id    =V4L2_CID_WHITE_BALANCE_TEMPERATURE_AUTO;
+@@ -854,14 +854,14 @@
+             if ((value = ioctl(videoIn-&gt;fd, VIDIOC_S_CTRL, &amp;control)) &lt; 0)
+               printf(&quot;Set Auto Balance off error\n&quot;);
+             else
+-              printf(&quot;Auto Balance set to %d \n&quot;, control.value);
++              printf(&quot;Auto Balance set to %d\n&quot;, control.value);
+             break;
+           case A_SAVE:
+-	   printf(&quot;Save controls \n&quot;);
++	   printf(&quot;Save controls\n&quot;);
+             save_controls(videoIn-&gt;fd);
+             break;
+           case A_LOAD:
+-	   printf(&quot;load controls \n&quot;);
++	   printf(&quot;load controls\n&quot;);
+             load_controls(videoIn-&gt;fd);
+           break;
+ 	default:
+@@ -881,7 +881,7 @@
+ 	
+ 	}
+ 	SDL_Delay(50);
+-	//printf(&quot;fp/s %d \n&quot;,frmrate);
++	//printf(&quot;fp/s %d\n&quot;,frmrate);
+     }				//end main loop
+ 
+ 	/* Close the stream capture file */
+diff -ur luvcview-20070512/utils.c luvcview-20070512-whitespace/utils.c
+--- luvcview-20070512/utils.c	2007-05-12 12:13:11.000000000 +0200
++++ luvcview-20070512-whitespace/utils.c	2008-03-16 19:37:43.000000000 +0100
+@@ -191,7 +191,7 @@
+ 	    return 0;
+ 
+ 	case M_DQT:
+-	//printf(&quot;find DQT \n&quot;);
++	//printf(&quot;find DQT\n&quot;);
+ 	    lq = getword();
+ 	    while (lq &gt; 2) {
+ 		pq = getbyte();
+@@ -208,7 +208,7 @@
+ 	    break;
+ 
+ 	case M_DHT:
+-	//printf(&quot;find DHT \n&quot;);
++	//printf(&quot;find DHT\n&quot;);
+ 	    l = getword();
+ 	    while (l &gt; 2) {
+ 		int hufflen[16], k;
+@@ -235,7 +235,7 @@
+ 	    break;
+ 
+ 	case M_DRI:
+-	printf(&quot;find DRI \n&quot;);
++	printf(&quot;find DRI\n&quot;);
+ 	    l = getword();
+ 	    info.dri = getword();
+ 	    break;
+@@ -385,7 +385,7 @@
+     if (i != 0 || j != 63 || m != 0) {
+     	printf(&quot;hmm FW error,not seq DCT ??\n&quot;);
+     }
+-   // printf(&quot;ext huffman table %d \n&quot;,isInitHuffman);
++   // printf(&quot;ext huffman table %d\n&quot;,isInitHuffman);
+     if(!isInitHuffman) {
+     	if(huffman_init() &lt; 0)
+ 		return -ERR_BAD_TABLES;
+@@ -1250,7 +1250,7 @@
+ if(picture){
+ 	Pyuv422torgb24(buf, picture, width, height);
+ }else{
+-	printf(&quot; no room to take a picture \n&quot;);
++	printf(&quot; no room to take a picture\n&quot;);
+ 	return 0;
+ }
+ if(name){
+diff -ur luvcview-20070512/v4l2uvc.c luvcview-20070512-whitespace/v4l2uvc.c
+--- luvcview-20070512/v4l2uvc.c	2007-05-08 17:39:40.000000000 +0200
++++ luvcview-20070512-whitespace/v4l2uvc.c	2008-03-16 19:53:00.000000000 +0100
+@@ -39,7 +39,7 @@
+ 	return -1;
+ 	vd-&gt;videodevice = (char *) calloc(1, 16 * sizeof(char));
+  	snprintf(vd-&gt;videodevice, 12, &quot;%s&quot;, device);
+-    printf(&quot;video %s \n&quot;, vd-&gt;videodevice);
++    printf(&quot;video %s\n&quot;, vd-&gt;videodevice);
+     if ((vd-&gt;fd = open(vd-&gt;videodevice, O_RDWR)) == -1) {
+ 	perror(&quot;ERROR opening V4L interface \n&quot;);
+ 	exit(1);
+@@ -86,7 +86,7 @@
+     vd-&gt;status = (char *) calloc(1, 100 * sizeof(char));
+     vd-&gt;pictName = (char *) calloc(1, 80 * sizeof(char));
+     snprintf(vd-&gt;videodevice, 12, &quot;%s&quot;, device);
+-    printf(&quot;video %s \n&quot;, vd-&gt;videodevice);
++    printf(&quot;video %s\n&quot;, vd-&gt;videodevice);
+     vd-&gt;toggleAvi = 0;
+     vd-&gt;avifile = NULL;
+     vd-&gt;avifilename = avifilename;
+@@ -108,7 +108,7 @@
+     vd-&gt;bytesWritten = 0;
+     vd-&gt;framesWritten = 0;
+     if (init_v4l2(vd) &lt; 0) {
+-	printf(&quot; Init v4L2 failed !! exit fatal \n&quot;);
++	printf(&quot; Init v4L2 failed !! exit fatal\n&quot;);
+ 	goto error;;
+     }
+     /* alloc a temp buffer to reconstruct the pict */
+@@ -187,7 +187,7 @@
+       control_s.id=queryctrl.id;
+       ioctl(vd, VIDIOC_G_CTRL, &amp;control_s);
+       SDL_Delay(10);
+-      printf (&quot; index:%-10d name:%-32s type:%d min:%-5d max:%-5d step:%-5d def:%-5d now:%d \n&quot;,
++      printf (&quot; index:%-10d name:%-32s type:%d min:%-5d max:%-5d step:%-5d def:%-5d now:%d\n&quot;,
+               queryctrl.id, queryctrl.name, queryctrl.type, queryctrl.minimum,
+               queryctrl.maximum, queryctrl.step, queryctrl.default_value, control_s.value);
+       if (queryctrl.type == V4L2_CTRL_TYPE_MENU)
+@@ -210,7 +210,7 @@
+       control_s.id=queryctrl.id;
+       ioctl(vd, VIDIOC_G_CTRL, &amp;control_s);
+       SDL_Delay(20);
+-      printf (&quot; index:%-10d name:%-32s type:%d min:%-5d max:%-5d step:%-5d def:%-5d now:%d \n&quot;,
++      printf (&quot; index:%-10d name:%-32s type:%d min:%-5d max:%-5d step:%-5d def:%-5d now:%d\n&quot;,
+               queryctrl.id, queryctrl.name, queryctrl.type, queryctrl.minimum,
+               queryctrl.maximum, queryctrl.step, queryctrl.default_value, control_s.value);
+       if (queryctrl.type == V4L2_CTRL_TYPE_MENU)
+@@ -295,16 +295,16 @@
+     printf( &quot;configfile luvcview.cfg open failed, errno = %d (%s)\n&quot;, errno, strerror( errno));
+   }
+   else {
+-    printf(&quot;loading controls from luvcview.cfg \n&quot;);
++    printf(&quot;loading controls from luvcview.cfg\n&quot;);
+     char buffer[512]; 
+     fgets(buffer, sizeof(buffer), configfile);
+     while (NULL !=fgets(buffer, sizeof(buffer), configfile) )
+       {
+         sscanf(buffer, &quot;%i%i&quot;, &amp;control.id, &amp;control.value);
+         if (ioctl(vd, VIDIOC_S_CTRL, &amp;control))
+-          printf(&quot;ERROR id:%d val:%d \n&quot;, control.id, control.value);
++          printf(&quot;ERROR id:%d val:%d\n&quot;, control.id, control.value);
+         else
+-          printf(&quot;OK    id:%d val:%d \n&quot;, control.id, control.value);
++          printf(&quot;OK    id:%d val:%d\n&quot;, control.id, control.value);
+         SDL_Delay(20);
+       }   
+     fclose(configfile);
+@@ -358,7 +358,7 @@
+     }
+     if ((vd-&gt;fmt.fmt.pix.width != vd-&gt;width) ||
+ 	(vd-&gt;fmt.fmt.pix.height != vd-&gt;height)) {
+-	printf(&quot; format asked unavailable get width %d height %d \n&quot;,
++	printf(&quot; format asked unavailable get width %d height %d\n&quot;,
+ 	       vd-&gt;fmt.fmt.pix.width, vd-&gt;fmt.fmt.pix.height);
+ 	vd-&gt;width = vd-&gt;fmt.fmt.pix.width;
+ 	vd-&gt;height = vd-&gt;fmt.fmt.pix.height;
+@@ -569,7 +569,7 @@
+ 	    goto err;
+ 	}
+ 	if (debug)
+-	    printf(&quot;bytes in used %d \n&quot;, vd-&gt;buf.bytesused);
++	    printf(&quot;bytes in used %d\n&quot;, vd-&gt;buf.bytesused);
+ 	break;
+     case V4L2_PIX_FMT_YUYV:
+ 	if (vd-&gt;buf.bytesused &gt; vd-&gt;framesizeIn)
+@@ -620,13 +620,13 @@
+     if ((err= ioctl(vd-&gt;fd, VIDIOC_QUERYCTRL, queryctrl)) &lt; 0) {
+ 	printf(&quot;ioctl querycontrol error %d \n&quot;,errno);
+     } else if (queryctrl-&gt;flags &amp; V4L2_CTRL_FLAG_DISABLED) {
+-	printf(&quot;control %s disabled \n&quot;, (char *) queryctrl-&gt;name);
++	printf(&quot;control %s disabled\n&quot;, (char *) queryctrl-&gt;name);
+     } else if (queryctrl-&gt;flags &amp; V4L2_CTRL_TYPE_BOOLEAN) {
+ 	return 1;
+     } else if (queryctrl-&gt;type &amp; V4L2_CTRL_TYPE_INTEGER) {
+ 	return 0;
+     } else {
+-	printf(&quot;contol %s unsupported  \n&quot;, (char *) queryctrl-&gt;name);
++	printf(&quot;contol %s unsupported\n&quot;, (char *) queryctrl-&gt;name);
+     }
+     return -1;
+ }
+@@ -683,7 +683,7 @@
+     val_def = queryctrl.default_value;
+     current = v4l2GetControl(vd, control);
+     current += step;
+-    printf(&quot;max %d, min %d, step %d, default %d ,current %d \n&quot;,max,min,step,val_def,current);
++    printf(&quot;max %d, min %d, step %d, default %d ,current %d\n&quot;,max,min,step,val_def,current);
+     if (current &lt;= max) {
+ 	control_s.id = control;
+ 	control_s.value = current;
+@@ -693,7 +693,7 @@
+ 	}            
+         printf (&quot;Control name:%s set to value:%d\n&quot;, queryctrl.name, control_s.value);
+     } else {
+-      printf (&quot;Control name:%s already has max value:%d \n&quot;, queryctrl.name, max); 
++      printf (&quot;Control name:%s already has max value:%d\n&quot;, queryctrl.name, max); 
+     }
+      return control_s.value;
+ }
+@@ -711,7 +711,7 @@
+     val_def = queryctrl.default_value;
+     current = v4l2GetControl(vd, control);
+     current -= step;
+-    printf(&quot;max %d, min %d, step %d, default %d ,current %d \n&quot;,max,min,step,val_def,current);
++    printf(&quot;max %d, min %d, step %d, default %d ,current %d\n&quot;,max,min,step,val_def,current);
+     if (current &gt;= min) {
+ 	control_s.id = control;
+ 	control_s.value = current;
+@@ -722,7 +722,7 @@
+     printf (&quot;Control name:%s set to value:%d\n&quot;, queryctrl.name, control_s.value);
+     }
+     else {
+-      printf (&quot;Control name:%s already has min value:%d \n&quot;, queryctrl.name, min); 
++      printf (&quot;Control name:%s already has min value:%d\n&quot;, queryctrl.name, min); 
+     }
+     return control_s.value;
+ }
+-------------- next part --------------
+diff -ur luvcview-20070512/Makefile luvcview-20070512-version/Makefile
+--- luvcview-20070512/Makefile	2007-05-12 11:57:17.000000000 +0200
++++ luvcview-20070512-version/Makefile	2008-02-24 01:23:02.000000000 +0100
+@@ -12,7 +12,7 @@
+ SDLLIBS = $(shell sdl-config --libs) 
+ SDLFLAGS = $(shell sdl-config --cflags)
+ #LIBX11FLAGS= -I/usr/X11R6/include -L/usr/X11R6/lib
+-VERSION = 0.2.1
++VERSION = 0.2.2
+ 
+ #WARNINGS = -Wall \
+ #           -Wundef -Wpointer-arith -Wbad-function-cast \
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003228.html">[Linux-uvc-devel] Intermittent Webcam
+</A></li>
+	<LI>Next message: <A HREF="003231.html">[Linux-uvc-devel] luvcview code enhancements (Was: Re:	Intermittent Webcam)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3230">[ date ]</a>
+              <a href="thread.html#3230">[ thread ]</a>
+              <a href="subject.html#3230">[ subject ]</a>
+              <a href="author.html#3230">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [RFC PATCH]  uvc debugfs interface, initial patch
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%20PATCH%5D%20%20uvc%20debugfs%20interface%2C%20initial%20patch&In-Reply-To=%3C4E7983BA.7010103%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006893.html">
+   <LINK REL="Next"  HREF="006881.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [RFC PATCH]  uvc debugfs interface, initial patch</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%20PATCH%5D%20%20uvc%20debugfs%20interface%2C%20initial%20patch&In-Reply-To=%3C4E7983BA.7010103%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] [RFC PATCH]  uvc debugfs interface, initial patch">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Wed Sep 21 08:27:06 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006893.html">[Linux-uvc-devel] uvc header question
+</A></li>
+        <LI>Next message: <A HREF="006881.html">[Linux-uvc-devel] Microsoft Lifecam Cinema
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6916">[ date ]</a>
+              <a href="thread.html#6916">[ thread ]</a>
+              <a href="subject.html#6916">[ subject ]</a>
+              <a href="author.html#6916">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+Am 08.09.2011 10:32, schrieb Laurent Pinchart:
+&gt;<i> Hi Alexey,
+</I>&gt;<i> On Wednesday 07 September 2011 10:46:41 Alexey Fisher wrote:
+</I>&gt;&gt;<i> On 07.09.2011 10:05, Laurent Pinchart wrote:
+</I>&gt;&gt;&gt;<i> On Wednesday 07 September 2011 08:14:45 Alexey Fisher wrote:
+</I>&gt;&gt;&gt;&gt;<i> Am 06.09.2011 17:24, schrieb Laurent Pinchart:
+</I>&gt;&gt;&gt;&gt;&gt;<i> On Monday 05 September 2011 17:48:42 Alexey Fisher wrote:
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> Am 31.08.2011 00:32, schrieb Laurent Pinchart:
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> On Thursday 25 August 2011 09:44:10 Alexey Fisher wrote:
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> Hi Laurent,
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> are there any reason why uvc_video_decode_start do not do precise
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> header size checks? Are there many cameras with broken header size
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> too?
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> How precise do you mean ? The driver currently doesn't use much of
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> the header, so it just makes sure that the header size is smaller
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> than or equal to the packet size, and that it's at least 2 bytes
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> long.
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> I send you patch on what i work now to catch streams with fragmented
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> packets.. what do you think about it? Will you apply some thing like
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> this?
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> I'm not sure about that. Webcams that would require something like
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> that are so broken that I'm tempted to consider them as not
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> UVC-compliant. They should be returned to vendors with a loud
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> complaint.
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> Your patch might help, but the sad story is that it can't completely
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> fix the streams. There's always a chance that fragmented packets that
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> contains no header will start with data that looks like a header. You
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i> won't be able to find a buller-proof solution.
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> You are right,
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> the idea is not to show definitely broken frames. If there is some
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> thing what we can't filter, is ok. we did our best.
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i> I understand. I'm not sure if this should be included in the mainline
+</I>&gt;&gt;&gt;&gt;&gt;<i> uvcvideo driver though. It makes the code more complex to support a
+</I>&gt;&gt;&gt;&gt;&gt;<i> couple of completely broken devices, and doesn't guarantee that those
+</I>&gt;&gt;&gt;&gt;&gt;<i> devices will work correctly.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> ok, i give up.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> I'm sorry about that. I definitely appreciate the work you've done on
+</I>&gt;&gt;&gt;<i> this, but as I said I don't think we should cripple the driver with
+</I>&gt;&gt;&gt;<i> complex code just to try to support a bit better a webcam that is
+</I>&gt;&gt;&gt;<i> completely broken anyway.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> I just thinking about build in uvc compliance tester insight of the
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> module. Some thing what users can use right in shop or at home before
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> 14 day return guarantee.
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> You enables compliance test and it print results in in dmesg.  One of
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> test should be header check, error/drop rate, and so on.
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i> That's an interesting idea. It should probably come with a userspace
+</I>&gt;&gt;&gt;&gt;&gt;<i> stress test software as well.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> you mean luvcview or some thing other?
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> I'm thinking about a new command line software that would get/set
+</I>&gt;&gt;&gt;<i> controls at high speed for instance, verify that all controls reported
+</I>&gt;&gt;&gt;<i> by the device are actually supported, start/stop streaming multiple
+</I>&gt;&gt;&gt;<i> times, ... Something that would stress the device and try to crash it
+</I>&gt;&gt;&gt;<i> (which is unfortunately often quite easy :-)).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> That's nice :)
+</I>&gt;&gt;<i> and on kernel should provide file with statistics. Some thing like:
+</I>&gt;&gt;<i> /sys/kernel/debug/uvcvideo/stats
+</I>&gt;&gt;<i> It should have
+</I>&gt;&gt;<i> - packet count
+</I>&gt;&gt;<i> - frame count
+</I>&gt;&gt;<i> - payloads with error bit
+</I>&gt;&gt;<i> - empthy payloads
+</I>&gt;&gt;<i> - overruns, and underruns (for row)
+</I>&gt;&gt;<i> - jpeg completation (SOI - EOI)
+</I>&gt;<i>
+</I>&gt;<i> I don't think the driver should parse MJPEG data to extract markers. This can
+</I>&gt;<i> be done by the userspace application.
+</I>&gt;<i>
+</I>&gt;&gt;<i> Any thing else?
+</I>&gt;<i>
+</I>&gt;<i> The number of failed and total control requests would also be interesting.
+</I>&gt;<i> Statistics about the status endpoint would also be interesting, to verify that
+</I>&gt;<i> the device correctly sends control change events for instance (although those
+</I>&gt;<i> are not properly supported in the driver yet).
+</I>
+
+this is initial patch for debugfs interface. I didn't implemented all 
+requests, i think the size of this patch is any way too big now.
+
+Here is how it's working. After driver is loaded it create 
+debugfs/usb/uvcvideo directory. If some device is attached it create 
+device dir like this: 001.007_046d.0991 (first part is usb bus, second 
+is usb id). In this directory it create file called stats. Here is the 
+content of this file:
+
+usb id: 046d:0991, usb bus: 001:007
+packet size: 944(6)
+state: idle  &lt;-- show the state of device. capture or idle
+start time: 1316585466 &lt;- unix epoch time in seconds.
+capture time: 106   &lt;- capture time in seconds.
+format: YUV 4:2:2 (YUYV)
+resolution: 320x240 @ 30
+decode_start: 846880  &lt;- this show how many payloads we started to decoding.
+bad_header: 0 &lt;-- haw many payloads was dropped, because of bad header
+uvc_empty: 604160  &lt;-- correct uvc payloads without video data
+uvc_stream_err: 0  &lt;-- count of payloads with err bit set
+sequence: 955  &lt;-- count of fid switches
+out_of_sync: 0  &lt;-- out of sync calls
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: uvc_debugfs.diff
+Type: text/x-patch
+Size: 13350 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110921/e9b5b327/attachment.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110921/e9b5b327/attachment.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006893.html">[Linux-uvc-devel] uvc header question
+</A></li>
+	<LI>Next message: <A HREF="006881.html">[Linux-uvc-devel] Microsoft Lifecam Cinema
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6916">[ date ]</a>
+              <a href="thread.html#6916">[ thread ]</a>
+              <a href="subject.html#6916">[ subject ]</a>
+              <a href="author.html#6916">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

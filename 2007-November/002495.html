@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Sanyo au W33SA cellphone web-cam support?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Sanyo%20au%20W33SA%20cellphone%20web-cam%20support%3F&In-Reply-To=%3C474B6912.7090102%40myrealbox.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002493.html">
+   <LINK REL="Next"  HREF="002498.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Sanyo au W33SA cellphone web-cam support?</H1>
+    <B>Samir Ibradzic</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Sanyo%20au%20W33SA%20cellphone%20web-cam%20support%3F&In-Reply-To=%3C474B6912.7090102%40myrealbox.com%3E"
+       TITLE="[Linux-uvc-devel] Sanyo au W33SA cellphone web-cam support?">samir.i at myrealbox.com
+       </A><BR>
+    <I>Tue Nov 27 01:47:14 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002493.html">[Linux-uvc-devel] Sanyo au W33SA cellphone web-cam support?
+</A></li>
+        <LI>Next message: <A HREF="002498.html">[Linux-uvc-devel] Sanyo au W33SA cellphone web-cam support?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2495">[ date ]</a>
+              <a href="thread.html#2495">[ thread ]</a>
+              <a href="subject.html#2495">[ subject ]</a>
+              <a href="author.html#2495">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Hello Laurent,
+
+Laurent Pinchart wrote:
+&gt;<i> Hi Samir,
+</I>&gt;<i> 
+</I>&gt;<i> please CC the list when answering.
+</I>&gt;<i> 
+</I>
+sorry about that...
+
+
+&gt;<i> On Monday 26 November 2007, Samir Ibradzic wrote:
+</I>&gt;&gt;<i> Laurent, thanks for very fast reply!
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I applied the patch, it still fails at second request (129). Any further
+</I>&gt;&gt;<i> patches and/or tests i could try?
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> dmsg output (when tried with 'modprobe uvcvideo trace=15'):
+</I>&gt;&gt;<i>
+</I>&gt;<i> [snip]
+</I>&gt;&gt;<i> [  223.544000] uvcvideo: Probing generic UVC device 1
+</I>&gt;&gt;<i> [  223.544000] uvcvideo: Found format MJPEG.
+</I>&gt;&gt;<i> [  223.544000] uvcvideo: - 320x240 (15.0 fps)
+</I>&gt;&gt;<i> [  223.544000] uvcvideo: Found UVC 1.10 device au W33SA (0474:0722)
+</I>&gt;&gt;<i> [  223.544000] uvcvideo: Scanning UVC chain: OT 3 &lt;- PU 2 &lt;- IT 1
+</I>&gt;&gt;<i> [  223.544000] uvcvideo: Found a valid video chain (1 -&gt; 3).
+</I>&gt;&gt;<i> [  223.556000] uvcvideo: Failed to query (129) UVC control 1 (unit 0) :
+</I>&gt;&gt;<i> -32 (exp. 34).
+</I>&gt;&gt;<i> [  223.556000] uvcvideo: Failed to initialize the device (-5).
+</I>&gt;&gt;<i> [  223.556000] usbcore: registered new interface driver uvcvideo
+</I>&gt;&gt;<i> [  223.556000] USB Video Class driver (v0.1.0)
+</I>&gt;<i> 
+</I>&gt;<i> Let's try something else then. The attached patch writes the video streaming 
+</I>&gt;<i> probe with a dummy value (all 0's) before attempting to retrieve it. Let me 
+</I>&gt;<i> know if it helps.
+</I>&gt;<i> 
+</I>
+I've tried second patch, got compile error;
+
+~/Desktop/uvcvideo/trunk/uvc_video.c: In function &#8216;uvc_video_init&#8217;:
+~/Desktop/uvcvideo/trunk/uvc_video.c:901: error: too many arguments to 
+function &#8216;uvc_set_video_ctrl&#8217;
+
+Then I tried using only 3 parameters in that uvc_set_video_ctrl call;
+
+LN901:	if ((ret = uvc_set_video_ctrl(video, probe, 1)) &lt; 0) {
+
+but it didn't work (tried putting 0, 1 and SET_CUR as third parameter as 
+well);
+
+[ 2688.648000] usb 2-1: new full speed USB device using uhci_hcd and 
+address 5
+[ 2688.824000] usb 2-1: configuration #1 chosen from 1 choice
+[ 2688.828000] uvcvideo: Probing generic UVC device 1
+[ 2688.828000] uvcvideo: Found format MJPEG.
+[ 2688.828000] uvcvideo: - 320x240 (15.0 fps)
+[ 2688.828000] uvcvideo: Found UVC 1.10 device au W33SA (0474:0722)
+[ 2688.828000] uvcvideo: Scanning UVC chain: OT 3 &lt;- PU 2 &lt;- IT 1
+[ 2688.828000] uvcvideo: Found a valid video chain (1 -&gt; 3).
+[ 2688.832000] uvcvideo: Failed to query (1) UVC control 1 (unit 0) : 
+-32 (exp. 34).
+[ 2688.832000] uvcvideo: Failed to initialize probe control.
+[ 2688.832000] uvcvideo: Failed to initialize the device (-5).
+
+
+&gt;<i> Best regards,
+</I>&gt;<i> 
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> --- AV &amp; Spam Filtering by M+Guardian - Risk Free Email (TM) ---
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002493.html">[Linux-uvc-devel] Sanyo au W33SA cellphone web-cam support?
+</A></li>
+	<LI>Next message: <A HREF="002498.html">[Linux-uvc-devel] Sanyo au W33SA cellphone web-cam support?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2495">[ date ]</a>
+              <a href="thread.html#2495">[ thread ]</a>
+              <a href="subject.html#2495">[ subject ]</a>
+              <a href="author.html#2495">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

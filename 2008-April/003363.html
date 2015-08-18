@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] // Quickcam Pro 9000 and uvcdynctrl woes //
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20//%20Quickcam%20Pro%209000%20and%20uvcdynctrl%20woes%20//&In-Reply-To=%3C200804142248.55610.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003358.html">
+   <LINK REL="Next"  HREF="003353.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] // Quickcam Pro 9000 and uvcdynctrl woes //</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20//%20Quickcam%20Pro%209000%20and%20uvcdynctrl%20woes%20//&In-Reply-To=%3C200804142248.55610.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] // Quickcam Pro 9000 and uvcdynctrl woes //">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Apr 14 22:48:55 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003358.html">[Linux-uvc-devel] // Quickcam Pro 9000 and uvcdynctrl woes //
+</A></li>
+        <LI>Next message: <A HREF="003353.html">[Linux-uvc-devel] // Quickcam Pro 9000 and uvcdynctrl woes //
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3363">[ date ]</a>
+              <a href="thread.html#3363">[ thread ]</a>
+              <a href="subject.html#3363">[ subject ]</a>
+              <a href="author.html#3363">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Richard,
+
+On Monday 14 April 2008, Richard Atterer wrote:
+&gt;<i> Hello,
+</I>&gt;<i>
+</I>&gt;<i> On Sun, Apr 13, 2008 at 11:25:38PM +0200, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; On Saturday 12 April 2008, Richard Atterer wrote:
+</I>&gt;<i> &gt; &gt; IMHO, the kernel driver could even provide the mapping 0x0000200e =&gt;
+</I>&gt;<i> &gt; &gt; &quot;Exposure, Auto Priority&quot; without any maintenance problems.
+</I>&gt;<i>
+</I>&gt;<i> [...]
+</I>&gt;<i>
+</I>&gt;<i> &gt; I'm not sure what you mean by a &quot;mapping 0x0000200e =&gt; Exposure, Auto
+</I>&gt;<i> &gt; Priority&quot;. The driver can be queried to enumerate controls. For each of
+</I>&gt;<i> &gt; them it will return the control ID and name. This is part of the V4L2
+</I>&gt;<i> &gt; API.
+</I>&gt;<i>
+</I>&gt;<i> I was thinking of additional, vendor-specific controls that are not part of
+</I>&gt;<i> V4L2 (pan/tilt etc.) and how the driver makes them available.
+</I>&gt;<i>
+</I>&gt;<i> Basically, I'm not a fan of the concept of having a userspace tool set up
+</I>&gt;<i> the mapping. From the experiences of the last months, I think it might be
+</I>&gt;<i> less hassle to maintain extra controls in the driver.
+</I>&gt;<i>
+</I>&gt;<i> The userspace solution requires Linux distributions to ensure their
+</I>&gt;<i> uvcdynctrl setups work with multiple kernel driver versions, and it also
+</I>&gt;<i> means that if two different vendors implement e.g. pan/tilt differently,
+</I>&gt;<i> the application will have to know about which IDs correspond to which
+</I>&gt;<i> control - but the driver should abstract away from this and provide a
+</I>&gt;<i> generic pan/tilt API.
+</I>
+The Linux UVC driver will map UVC controls to standard V4L2 controls when 
+possible. As the UVC standard allows vendor-defined controls, the driver will 
+sooner or later run into controls that have no corresponding V4L2 control ID. 
+For those UVC controls the driver will have to use private V4L2 controls. 
+Several vendor-defined UVC controls will be mapped to the same private V4L2 
+control when possible.
+
+Those mappings can either be hardcoded in the driver or provided by userspace 
+tools. The first solution would be hard to maintain and would require 
+frequent changes to the driver. This is why we went for the second solution.
+
+I'm sorry that recent versions of the driver had to break binary 
+compatibility. This was unfortunately unavoidable, as V4L2 IDs for many 
+controls were temporary and changed when we got them standardised in V4L2. 
+This shouldn't happen anymore as those controls are now part of the V4L2 API.
+
+&gt;<i> Hmm, if it really *has* to be a userspace solution, the still-non-existent
+</I>&gt;<i> generic v4l2 userspace library would be the place to set up the controls.
+</I>&gt;<i>
+</I>&gt;<i> :-/
+</I>&gt;<i>
+</I>&gt;<i> In 
+</I>&lt;<A HREF="../2007-October/002257.html">http://lists.berlios.de/pipermail/linux-uvc-devel/2007-October/002257.html</A>&gt;, 
+you wrote:
+&gt;<i> &gt; Hardcoding all vendor-specific controls in the driver would soon become a
+</I>&gt;<i> &gt; maintenance nightmare. As most controls are quite simple, I decided to go
+</I>&gt;<i> &gt; for a userspace API that allows vendors to register new controls are
+</I>&gt;<i> &gt; runtime.
+</I>&gt;<i>
+</I>&gt;<i> This is what my &quot;pleeease&quot; was referring to - please change your mind, I
+</I>&gt;<i> don't want to live with focus etc. controls on my Quickcam 9000 which break
+</I>&gt;<i> at regular intervals! ;)
+</I>
+They are not supposed to break at regular intervals :-)
+
+Binary incompatibilities are caused by the driver changing V4L2 control IDs 
+combined with an application that hardcodes control IDs. The control mapping 
+implementation (kernelspace vs. userspace) is irrelevant.
+
+To avoid breakages applications should avoid hardcoding private controls IDs 
+when possible, and the control mapper should avoid changing control IDs for 
+no reason. Now that the infrastructure is getting more stable there should be 
+less binary compatibility issues.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003358.html">[Linux-uvc-devel] // Quickcam Pro 9000 and uvcdynctrl woes //
+</A></li>
+	<LI>Next message: <A HREF="003353.html">[Linux-uvc-devel] // Quickcam Pro 9000 and uvcdynctrl woes //
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3363">[ date ]</a>
+              <a href="thread.html#3363">[ thread ]</a>
+              <a href="subject.html#3363">[ subject ]</a>
+              <a href="author.html#3363">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

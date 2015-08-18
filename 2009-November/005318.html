@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] BisonCam 5986:0203 kills USB
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20BisonCam%205986%3A0203%20kills%20USB&In-Reply-To=%3C200911211537.07544.oliver%40neukum.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005317.html">
+   <LINK REL="Next"  HREF="005320.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] BisonCam 5986:0203 kills USB</H1>
+    <B>Oliver Neukum</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20BisonCam%205986%3A0203%20kills%20USB&In-Reply-To=%3C200911211537.07544.oliver%40neukum.org%3E"
+       TITLE="[Linux-uvc-devel] BisonCam 5986:0203 kills USB">oliver at neukum.org
+       </A><BR>
+    <I>Sat Nov 21 15:37:07 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005317.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+        <LI>Next message: <A HREF="005320.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5318">[ date ]</a>
+              <a href="thread.html#5318">[ thread ]</a>
+              <a href="subject.html#5318">[ subject ]</a>
+              <a href="author.html#5318">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Am Dienstag, 17. November 2009 17:10:10 schrieb Alan Stern:
+
+&gt;<i> I'd like it if there was also some way to move the delay into
+</I>&gt;<i> disable_periodic(), before the handshake_on_error_set_halt(), and have
+</I>&gt;<i> it take effect only if the most recent enable_periodic() call occurred
+</I>&gt;<i> less than 400 us previously.  Can you do it that way?
+</I>
+Sure.
+Does anybody have a list of affected PCI ids? 
+
+	Regards
+		Oliver
+
+--
+
+diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
+index 9835e07..ebdfc93 100644
+--- a/drivers/usb/host/ehci-hcd.c
++++ b/drivers/usb/host/ehci-hcd.c
+@@ -676,6 +676,7 @@ static int ehci_run (struct usb_hcd *hcd)
+ 	ehci_readl(ehci, &amp;ehci-&gt;regs-&gt;command);	/* unblock posted writes */
+ 	msleep(5);
+ 	up_write(&amp;ehci_cf_port_reset_rwsem);
++	ehci-&gt;last_periodic_disable = jiffies;
+ 
+ 	temp = HC_VERSION(ehci_readl(ehci, &amp;ehci-&gt;caps-&gt;hc_capbase));
+ 	ehci_info (ehci,
+diff --git a/drivers/usb/host/ehci-sched.c b/drivers/usb/host/ehci-sched.c
+index b25cdea..586e901 100644
+--- a/drivers/usb/host/ehci-sched.c
++++ b/drivers/usb/host/ehci-sched.c
+@@ -459,6 +459,10 @@ static int enable_periodic (struct ehci_hcd *ehci)
+ 	if (ehci-&gt;periodic_sched++)
+ 		return 0;
+ 
++	if (ehci-&gt;broken_periodic)
++		if (time_before(jiffies, ehci-&gt;last_periodic_disable + msecs_to_jiffies(2))
++			mdelay(500);
++
+ 	/* did clearing PSE did take effect yet?
+ 	 * takes effect only at frame boundaries...
+ 	 */
+@@ -499,6 +503,7 @@ static int disable_periodic (struct ehci_hcd *ehci)
+ 	/* posted write ... */
+ 
+ 	ehci-&gt;next_uframe = -1;
++	ehci-&gt;last_periodic_disable = jiffies;
+ 	return 0;
+ }
+ 
+diff --git a/drivers/usb/host/ehci.h b/drivers/usb/host/ehci.h
+index 064e768..ce77f8f 100644
+--- a/drivers/usb/host/ehci.h
++++ b/drivers/usb/host/ehci.h
+@@ -118,6 +118,7 @@ struct ehci_hcd {			/* one per controller */
+ 	unsigned		stamp;
+ 	unsigned		random_frame;
+ 	unsigned long		next_statechange;
++	unsigned long		last_periodic_disable;
+ 	u32			command;
+ 
+ 	/* SILICON QUIRKS */
+@@ -127,6 +128,7 @@ struct ehci_hcd {			/* one per controller */
+ 	unsigned		big_endian_desc:1;
+ 	unsigned		has_amcc_usb23:1;
+ 	unsigned		need_io_watchdog:1;
++	unsigned		broken_periodic:1;
+ 
+ 	/* required for usb32 quirk */
+ 	#define OHCI_CTRL_HCFS          (3 &lt;&lt; 6)
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005317.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+	<LI>Next message: <A HREF="005320.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5318">[ date ]</a>
+              <a href="thread.html#5318">[ thread ]</a>
+              <a href="subject.html#5318">[ subject ]</a>
+              <a href="author.html#5318">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

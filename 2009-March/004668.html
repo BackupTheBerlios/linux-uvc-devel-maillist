@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] how to get mencoder en mplayer working with uvc v4l2
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20how%20to%20get%20mencoder%20en%20mplayer%20working%20with%0A%20uvc%20v4l2&In-Reply-To=%3C49C22A30.4050001%40powercraft.nl%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004661.html">
+   <LINK REL="Next"  HREF="004675.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] how to get mencoder en mplayer working with uvc v4l2</H1>
+    <B>Jelle de Jong</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20how%20to%20get%20mencoder%20en%20mplayer%20working%20with%0A%20uvc%20v4l2&In-Reply-To=%3C49C22A30.4050001%40powercraft.nl%3E"
+       TITLE="[Linux-uvc-devel] how to get mencoder en mplayer working with uvc v4l2">jelledejong at powercraft.nl
+       </A><BR>
+    <I>Thu Mar 19 12:19:12 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004661.html">[Linux-uvc-devel] how to get mencoder en mplayer working with	uvc v4l2
+</A></li>
+        <LI>Next message: <A HREF="004675.html">[Linux-uvc-devel] Logitech Quickcam Notebook Pro for Business
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4668">[ date ]</a>
+              <a href="thread.html#4668">[ thread ]</a>
+              <a href="subject.html#4668">[ subject ]</a>
+              <a href="author.html#4668">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Emanoil Kotsev wrote:
+&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> --- On Tue, 3/17/09, <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel-request at lists.berlios.de</A> &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel-request at lists.berlios.de</A>&gt; wrote:
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;&gt;<i> Did you experiment with width=320:height=240 because
+</I>&gt;&gt;<i> everything works
+</I>&gt;&gt;<i> below the 640x480 resolution also the fps=30 or fps=5
+</I>&gt;&gt;<i> options, everything
+</I>&gt;&gt;<i> stops working at correctly after the 640x480 the software
+</I>&gt;<i> 
+</I>&gt;<i> The usual question is it a bug or is it a feature?! I never read about yv12 and uvc exactly. As I said the topic is very interesting.
+</I>&gt;<i> 
+</I>&gt;&gt;<i> scaling is just
+</I>&gt;&gt;<i> a trick like a zoom its not the real resolution :-)
+</I>&gt;<i> 
+</I>&gt;<i> yes, tricky zoom :-)
+</I>&gt;<i> 
+</I>&gt;<i> The problem is by applying the width/height options at the wrong place
+</I>&gt;<i> 
+</I>&gt;<i> I read the relevant places in the doc and found few notes on using the -vf scale option depending on if the card has a hardware scaling support or sw should be used
+</I>&gt;<i> 
+</I>&gt;<i> now try this
+</I>&gt;<i> 
+</I>&gt;<i>   mplayer -ontop -framedrop -cache 8192 -stop-xscreensaver \
+</I>&gt;<i>                 -tv driver=v4l2:device=/dev/video0:fps=25:outfmt=yv12 \
+</I>&gt;<i>                 -vf scale=800:600  -sws 4 -vo xv <A HREF="tv://">tv://</A>
+</I>&gt;<i> 
+</I>&gt;<i> -sws is just to play with - I didn't notice any significant difference
+</I>&gt;<i> 
+</I>&gt;<i> I'm not using gl but you can try changing the -vo to gl2 and apply the widht/height params to the -tv option and tell me if it works, I just got curious.
+</I>&gt;<i> I think also to have read something about different width/hight combinations supported  1280/1024/5fps or 640/480/30fps but don't remember where or related to what exactly.
+</I>&gt;<i> I really don't expect that much from the cheep hardware built in the board of this notebook here.
+</I>
+Well, it seems to be a real bug:
+
+<A HREF="http://lists.mplayerhq.hu/pipermail/mplayer-cvslog/2009-March/036823.html">http://lists.mplayerhq.hu/pipermail/mplayer-cvslog/2009-March/036823.html</A>
+
+I did some mailing last week om the mencoder and mplayer mailinglist and
+irc channels and the above patch seem to be the result, so over a few
+more days I can do some more testing.
+
+But the scale think does work and show a fake higher resolution but this
+is not the real hardware resolution.
+
+Just to let you all know after more then 10 days i finally compiled a
+command that works to get in sync audio and video with an other v4l2
+devices (usb composite1 grabber).
+
+The winning command is:
+$ mencoder <A HREF="tv://">tv://</A> -tv
+driver=v4l2:device=/dev/video0:input=1:norm=PAL-BG:adevice=/dev/dsp1:immediatemode=0:audiorate=48000:amode=1:width=720:height=576
+-oac pcm -ovc lavc -lavcopts vcodec=dvvideo:threads=4 -mc 0 -noskip -of
+lavf -lavfopts format=dv -o output2.dv
+
+Best regards,
+
+Jelle de Jong
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004661.html">[Linux-uvc-devel] how to get mencoder en mplayer working with	uvc v4l2
+</A></li>
+	<LI>Next message: <A HREF="004675.html">[Linux-uvc-devel] Logitech Quickcam Notebook Pro for Business
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4668">[ date ]</a>
+              <a href="thread.html#4668">[ thread ]</a>
+              <a href="subject.html#4668">[ subject ]</a>
+              <a href="author.html#4668">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

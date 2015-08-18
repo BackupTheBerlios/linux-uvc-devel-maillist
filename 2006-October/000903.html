@@ -1,0 +1,191 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%0A%09%3D%3Futf-8%3Fq%3Fuvcvideo_-_Unable_to_allocate_buffers%3F%3D%0A%09%3D%3Futf-8%3Fq%3F%3D3A_22%3D2E%3D09Init_v4L2_failed%3F%3D&In-Reply-To=%3Cloom.20061029T140523-901%40post.gmane.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000896.html">
+   <LINK REL="Next"  HREF="000904.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed</H1>
+    <B>Noble Pepper</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%0A%09%3D%3Futf-8%3Fq%3Fuvcvideo_-_Unable_to_allocate_buffers%3F%3D%0A%09%3D%3Futf-8%3Fq%3F%3D3A_22%3D2E%3D09Init_v4L2_failed%3F%3D&In-Reply-To=%3Cloom.20061029T140523-901%40post.gmane.org%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed">noblepepper at bellsouth.net
+       </A><BR>
+    <I>Sun Oct 29 15:11:16 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000896.html">[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+</A></li>
+        <LI>Next message: <A HREF="000904.html">[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#903">[ date ]</a>
+              <a href="thread.html#903">[ thread ]</a>
+              <a href="subject.html#903">[ subject ]</a>
+              <a href="author.html#903">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Laurent Pinchart &lt;laurent.pinchart &lt;at&gt; skynet.be&gt; writes:
+
+&gt;<i> 
+</I>&gt;<i> Try to add a print statement before and after the check. If the check fails, 
+</I>&gt;<i> print rb-&gt;type and rb-&gt;memory.
+</I>&gt;<i> 
+</I>
+Ok, here's what I did, results were not as expected. I am totally confused at
+this point. Any more suggestions will be greatly expected.
+
+Put in these printk's
+ struct v4l2_requestbuffers *rb = arg;
+                unsigned int bufsize = 
+video-&gt;streaming-&gt;ctrl.dwMaxVideoFrameSize;
+                printk(KERN_DEBUG &quot;type %x\n&quot;, rb-&gt;type);
+                printk(KERN_DEBUG &quot;memory %x\n&quot;, rb-&gt;memory);
+                if (rb-&gt;type != V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+                    rb-&gt;memory != V4L2_MEMORY_MMAP)
+                        return -EINVAL;
+                printk(KERN_DEBUG &quot;type %x\n&quot;, rb-&gt;type);
+                printk(KERN_DEBUG &quot;memory %x\n&quot;, rb-&gt;memory);
+
+I compiled for my desktop and recieved the expected from dmesg:
+[17264202.756000] type 1
+[17264202.756000] memory 1
+[17264202.756000] type 1
+[17264202.756000] memory 1
+
+Now I compiled for the device and there was no output from the printk's in
+dmesg. 
+
+&gt;<i> I can't see any other place where the driver might return -EINVAL in response 
+</I>&gt;<i> to VIDIOC_REQBUFS.
+</I>&gt;<i> 
+</I>
+Since it doesn't appear to ever get to VIDIOC_REQBUFS I put some printk's 
+before the switch like this:
+
+        printk(KERN_DEBUG &quot;Going into switch\n&quot;);
+        printk(KERN_DEBUG &quot;cmd = %d\n&quot;, cmd);
+
+        switch (cmd) {
+        /* Query capabilities */
+        case VIDIOC_QUERYCAP:
+
+Now on the desktop I get
+[17264202.592000] Going into switch
+[17264202.596000] cmd = -2140645888
+[17264202.596000] Going into switch
+[17264202.596000] cmd = -1060350459
+[17264202.756000] Going into switch
+[17264202.756000] cmd = -1072409080
+[17264202.756000] type 1
+[17264202.756000] memory 1
+[17264202.756000] type 1
+[17264202.756000] memory 1
+[17264202.756000] Going into switch
+[17264202.756000] cmd = -1069263351
+
+followed by pages of more as luvcview uses more ioctrl's
+
+Now on the device I get 
+
+ Going into switch
+[35988.599060] cmd = -2140645888
+[35988.599151] Going into switch
+[35988.599182] cmd = -1060350459
+[35988.649597] Going into switch
+[35988.649627] cmd = -1072409080
+
+and then nothing. Of course the error message is still there.
+
+Nokia770-26:/media/mmc1/modules# luvcview
+uvcview version 0.1.7
+Video driver: x11
+A window manager is available
+video /dev/video0
+Unable to allocate buffers: 22.
+Init v4L2 failed !! exit fatal
+
+It seems that the switch statement is not interpreting VIDIOC_REQBUFS
+correctly.
+
+&gt;<i> 
+</I>&gt;<i> The driver seems to return -22 (-EINVAL) when luvcview tries to allocate the 
+</I>&gt;<i> buffers with the VIDIOC_REQBUFS ioctl. Check the ioctl() return value (should 
+</I>&gt;<i> be -1) and the errno value (should be 22).
+</I>&gt;<i> 
+</I>
+Yes it appears that luvcview is doing this, here is the bit where it calls
+for a buffer
+    ret = ioctl(vd-&gt;fd, VIDIOC_REQBUFS, &amp;vd-&gt;rb);
+    if (ret &lt; 0) {
+        printf(&quot;Unable to allocate buffers: %d.\n&quot;, errno);
+        goto fatal;
+    }
+
+Before it does that, it asks for capabilities
+ 
+ret = ioctl(vd-&gt;fd, VIDIOC_QUERYCAP, &amp;vd-&gt;cap);
+    if (ret &lt; 0) {
+        printf(&quot;Error opening device %s: unable to query device.\n&quot;,
+               vd-&gt;videodevice);
+        goto fatal;
+    }
+This one seems to work fine. Running in gdb here's what happens
+(gdb) c
+Continuing.
+
+Breakpoint 3, init_videoIn (vd=0x335f8,
+    device=0x1 &lt;Address 0x1 out of bounds&gt;, width=320, height=240,
+    format=210544, grabmethod=1, avifilename=0x33670 &quot;&quot;) at v4l2uvc.c:121
+121         ret = ioctl(vd-&gt;fd, VIDIOC_QUERYCAP, &amp;vd-&gt;cap);
+(gdb) p vd-&gt;cap
+$1 = {driver = '\0' &lt;repeats 15 times&gt;, card = '\0' &lt;repeats 31 times&gt;,
+  bus_info = '\0' &lt;repeats 31 times&gt;, version = 0, capabilities = 0,
+  reserved = {0, 0, 0, 0}}
+(gdb) n
+122         if (ret &lt; 0) {
+(gdb) p vd-&gt;cap
+$2 = {driver = &quot;uvcvideo\000\000\000\000\000\000\000&quot;,
+  card = &quot;USB Video Class device\000\000\000\000\000\000\000\000\000&quot;,
+  bus_info = &quot;ohci&quot;, '\0' &lt;repeats 27 times&gt;, version = 256,
+  capabilities = 67108865, reserved = {0, 0, 0, 0}}
+
+It seems to fill in the capacities fine. So it can understand VIDIOC_QUERYCAP
+but not VIDIOC_REQBUFS !!!!????
+
+I hope this means something to you, I am lost. Thanks again for your help.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000896.html">[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+</A></li>
+	<LI>Next message: <A HREF="000904.html">[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#903">[ date ]</a>
+              <a href="thread.html#903">[ thread ]</a>
+              <a href="subject.html#903">[ subject ]</a>
+              <a href="author.html#903">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Problem with using two Logitech Pro9000 in the highest resolution
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problem%20with%20using%20two%20Logitech%20Pro9000%20in%0A%20the%20highest%20resolution&In-Reply-To=%3C4AF9F331.4000406%40cmp.felk.cvut.cz%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005292.html">
+   <LINK REL="Next"  HREF="005296.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Problem with using two Logitech Pro9000 in the highest resolution</H1>
+    <B>Vojtech Franc</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problem%20with%20using%20two%20Logitech%20Pro9000%20in%0A%20the%20highest%20resolution&In-Reply-To=%3C4AF9F331.4000406%40cmp.felk.cvut.cz%3E"
+       TITLE="[Linux-uvc-devel] Problem with using two Logitech Pro9000 in the highest resolution">xfrancv at cmp.felk.cvut.cz
+       </A><BR>
+    <I>Wed Nov 11 00:11:45 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005292.html">[Linux-uvc-devel] Problem with using two Logitech Pro9000 in	the highest resolution
+</A></li>
+        <LI>Next message: <A HREF="005296.html">[Linux-uvc-devel] Problem with using two Logitech Pro9000 in the highest resolution
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5297">[ date ]</a>
+              <a href="thread.html#5297">[ thread ]</a>
+              <a href="subject.html#5297">[ subject ]</a>
+              <a href="author.html#5297">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Dear Laurent,
+
+Laurent Pinchart wrote:
+&gt;<i> On Monday 09 November 2009 00:04:36 Paulo Assis wrote:
+</I>&gt;<i>   
+</I>&gt;&gt;<i> Hi,
+</I>&gt;&gt;<i> I tested this in my system and was able to grab two simultaneous YUYV
+</I>&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">1600x1200 at 5fps</A> video streams.
+</I>&gt;&gt;<i> The cameras are two different uvc logitech models connected to two
+</I>&gt;&gt;<i> separate usb controllers, my board has plenty of them :)
+</I>&gt;&gt;<i> Connecting both cameras to the same controler (e.g. the two front
+</I>&gt;&gt;<i> ports) will cause the second stream to fail.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I don't know about windows since I don't use it, but are you sure you
+</I>&gt;&gt;<i> aren't getting a zoomed (1600x1200) image from a lower resolution?
+</I>&gt;&gt;<i> maybe the windows driver is playing a trick on you.
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> That's one possibility.
+</I>&gt;<i>
+</I>&gt;<i> If I remember correctly Windows might be violating the USB spec by allowing 
+</I>&gt;<i> devices to use more than 80% of the available bandwidth for periodic 
+</I>&gt;<i> (isochronous and interrupt) transfers. Or it might calculate the bandwith 
+</I>&gt;<i> slightly differently than Linux.
+</I>&gt;<i>
+</I>&gt;<i> In any case, the problem under Linux comes from the fact that the USB core 
+</I>&gt;<i> rejects the uvcvideo driver's request to allocate bandwidth for the second 
+</I>&gt;<i> camera because not enough bandwidth is available. The uvcvideo driver can't do 
+</I>&gt;<i> much about it.
+</I>&gt;<i>
+</I>&gt;<i> Now, the camera might lie about the bandwidth it really requires, and it might 
+</I>&gt;<i> be possible to hack the driver to request less bandwidth and still get away 
+</I>&gt;<i> with it. I have some doubts that this would work though, but it might be worth 
+</I>&gt;<i> a try.
+</I>&gt;<i>   
+</I>
+This sounds like very likely explanation of my different Linux/Windows
+experience.
+
+Thanks also for the hint how to hack the driver. Fortunately, I can
+avoid hacking the driver as I solved the problem by using two separate
+USB controllers. But I'll look to the code just for curiosity... Thanks
+anyway for your reply.
+
+Regards,
+Vojtech
+&gt;<i> As you've written your own userspace software I assume you're familiar with C 
+</I>&gt;<i> programming so I'll just give you a few pointers to hack on the driver :-)
+</I>&gt;<i>
+</I>&gt;<i> USB bandwidth allocation is done in the uvc_init_video() function 
+</I>&gt;<i> (uvc_video.c) by a call to usb_set_interface(). You can check which alternate 
+</I>&gt;<i> setting the driver requests by printing the value of variable 'i'.
+</I>&gt;<i>
+</I>&gt;<i> A look at the camera's USB descriptors (lsusb -v) will show you a list of 
+</I>&gt;<i> alternate settings for the video streaming interface. Each alternate setting 
+</I>&gt;<i> has different packet sizes for the isochronous endpoint. Locate the alternate 
+</I>&gt;<i> setting with the biggest packet size below the one requested by the driver, 
+</I>&gt;<i> and modify uvc_init_video() to hardcode that alternate setting. If that's 
+</I>&gt;<i> still too much bandwidth, repeat the procedure until you can start streaming 
+</I>&gt;<i> on both cameras.
+</I>&gt;<i>
+</I>&gt;<i> The driver will then probably get corrupted data (lost packets), but it could 
+</I>&gt;<i> be worth a try.
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>&gt;&gt;<i> BTW with some new camera models that support MJPG in high resolution
+</I>&gt;&gt;<i> you should able to squeeze two MJPG <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">1600x1200 at 10fps</A> video streams from
+</I>&gt;&gt;<i> the same usb controller.
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>
+
+-- 
+--------------------------------------------------------------
+Vojtech Franc, Ph.D.
+Research fellow
+
+Center for Machine Perception
+Department of Cybernetics
+Faculty of Electrical Engineering
+Czech Technical University in Prague
+
+email: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">xfrancv at cmp.felk.cvut.cz</A>
+www: <A HREF="http://cmp.felk.cvut.cz/~xfrancv">http://cmp.felk.cvut.cz/~xfrancv</A>
+phone: +420 22435 7665
+--------------------------------------------------------------
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005292.html">[Linux-uvc-devel] Problem with using two Logitech Pro9000 in	the highest resolution
+</A></li>
+	<LI>Next message: <A HREF="005296.html">[Linux-uvc-devel] Problem with using two Logitech Pro9000 in the highest resolution
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5297">[ date ]</a>
+              <a href="thread.html#5297">[ thread ]</a>
+              <a href="subject.html#5297">[ subject ]</a>
+              <a href="author.html#5297">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

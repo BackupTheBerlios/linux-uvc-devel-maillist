@@ -1,0 +1,222 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Motion Beta release supports V4L2
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Motion%20Beta%20release%20supports%20V4L2&In-Reply-To=%3C462F41C6.7040902%40astronomicalresearchaustralia.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001642.html">
+   <LINK REL="Next"  HREF="001649.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Motion Beta release supports V4L2</H1>
+    <B>Brian</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Motion%20Beta%20release%20supports%20V4L2&In-Reply-To=%3C462F41C6.7040902%40astronomicalresearchaustralia.org%3E"
+       TITLE="[Linux-uvc-devel] Motion Beta release supports V4L2">bnc at astronomicalresearchaustralia.org
+       </A><BR>
+    <I>Wed Apr 25 13:55:50 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001642.html">[Linux-uvc-devel] Motion Beta release supports V4L2
+</A></li>
+        <LI>Next message: <A HREF="001649.html">[Linux-uvc-devel] Motion Beta release supports V4L2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1645">[ date ]</a>
+              <a href="thread.html#1645">[ thread ]</a>
+              <a href="subject.html#1645">[ subject ]</a>
+              <a href="author.html#1645">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Josh,
+Thanks heaps, apart from the . missing in front of the /configure the
+instructions below were PERFECT.
+
+Obviously I have only tested the basics but it all seems to work for my
+Quickcam Fusion.
+
+1) Control via the web browser was no problem after I found that you
+needed localhost or 127.0.0.1
+
+2) Making a movie, taking a snapshot or getting an image via movement no
+problem.
+
+3) did notice an interrupt to my sound when an image was taken, so it
+needs a bit of processing grunt.
+
+4) I clicked on makemovie and got a 15sec one(I guess that is a default
+somewhere) but no sound.
+
+Is there a way to record sound with the image?
+
+I want to use the webcam to monitor a remote controlled Telescope.
+Part of the warning feedback is from the sound the scope makes so
+getting the sound working would be good.
+
+5) I have compiled the uvcvideo with the patch in and so far I have
+stopped and started the camera more than 10 times without it freezing.
+
+
+6) by default it wants to write the pid to /var/run/motion.pid
+on my system this is a root file so I could only run the daemon from
+root. Change the pid directory to a local one and it ran from my userid
+no problem.
+
+7) tested connection to the web browser port with Firefox, Opera,
+Seamonkey and Konqueror. They all displayed images but firefox only
+displayed the first image.
+
+
+
+Thanks again,
+Brian
+
+
+
+
+Joshua Bassett wrote:
+&gt;<i> Hi Brian,
+</I>&gt;<i> 
+</I>&gt;<i> Don't worry about bugging me, that's why I joined the list to bug/be
+</I>&gt;<i> bugged. The only thing is that you should CC your emails back to the
+</I>&gt;<i> list so that other people can follow what we're doing :)
+</I>&gt;<i> 
+</I>&gt;<i> I'm not 100% sure if you need to patch your uvcvideo...I came across the
+</I>&gt;<i> Logitech hardware bug where my QuickCam Pro 5000 would stop working
+</I>&gt;<i> randomly. Patching and recompiling uvcvideo seemed to fix the problem. I
+</I>&gt;<i> applied the patch from Stefan Monnier's email:
+</I>&gt;<i> 
+</I>&gt;<i> <A HREF="../2007-March/001476.html">http://lists.berlios.de/pipermail/linux-uvc-devel/2007-March/001476.html</A>
+</I>&gt;<i> 
+</I>&gt;<i> I've attached the patch as a diff file to make it easier for you.
+</I>&gt;<i> 
+</I>&gt;<i> Firstly, checkout the latest version of uvcvideo from subversion:
+</I>&gt;<i> 
+</I>&gt;<i> svn co <A HREF="svn://svn.berlios.de/linux-uvc/linux-uvc/trunk">svn://svn.berlios.de/linux-uvc/linux-uvc/trunk</A> linux-uvc
+</I>&gt;<i> cd linux-uvc
+</I>&gt;<i> 
+</I>&gt;<i> Then save the diff file (attached) to the linux-uvc directory and patch
+</I>&gt;<i> the source tree:
+</I>&gt;<i> 
+</I>&gt;<i> patch &lt; logitech.patch
+</I>&gt;<i> 
+</I>&gt;<i> Compile and install it (as root):
+</I>&gt;<i> 
+</I>&gt;<i> rmmod uvcvideo # Unload the unpatched driver.
+</I>&gt;<i> make &amp;&amp; make install
+</I>&gt;<i> modprobe uvcvideo # Load the patched driver.
+</I>&gt;<i> 
+</I>&gt;<i> Now is probably a good time to check your camera is still working with
+</I>&gt;<i> whatever software you know it should work with (you mentioned Ekiga).
+</I>&gt;<i> 
+</I>&gt;<i> As for Motion, if you want to be able to output MPEGs then you must
+</I>&gt;<i> first install FFmpeg (if not then skip this step):
+</I>&gt;<i> 
+</I>&gt;<i> svn co <A HREF="svn://svn.mplayerhq.hu/ffmpeg/trunk">svn://svn.mplayerhq.hu/ffmpeg/trunk</A> ffmpeg
+</I>&gt;<i> cd ffmpeg
+</I>&gt;<i> /configure --disable-static --enable-shared
+</I>&gt;<i> make &amp;&amp; make install
+</I>&gt;<i> 
+</I>&gt;<i> Now checkout the latest version of Motion, compile and install it:
+</I>&gt;<i> 
+</I>&gt;<i> svn co <A HREF="http://www.lavrsen.dk/svn/motion/trunk">http://www.lavrsen.dk/svn/motion/trunk</A> motion
+</I>&gt;<i> cd motion
+</I>&gt;<i> /configure
+</I>&gt;<i> make &amp;&amp; make install
+</I>&gt;<i> 
+</I>&gt;<i> The configuration file is installed to /usr/local/etc/motion-dist.conf
+</I>&gt;<i> by default. Rename it as /usr/local/etc/motion.conf and then edit it to
+</I>&gt;<i> your liking...descriptions of all the options are available on the wiki
+</I>&gt;<i> (<A HREF="http://www.lavrsen.dk/twiki/bin/view/Motion/ConfigFileOptions">http://www.lavrsen.dk/twiki/bin/view/Motion/ConfigFileOptions</A>).
+</I>&gt;<i> 
+</I>&gt;<i> Good luck,
+</I>&gt;<i> 
+</I>&gt;<i> Josh.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Brian wrote:
+</I>&gt;&gt;<i> Josh,
+</I>&gt;&gt;<i> Sorry to bug you but I have a quickcam Fusion which I would like to test
+</I>&gt;&gt;<i> with Motion.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I have used subversion a bit, but not very experienced.
+</I>&gt;&gt;<i> Would you have some steps I could follow to get the job done.
+</I>&gt;&gt;<i> eg. I am pretty sure I do not have the patched version of uvcvideo as I
+</I>&gt;&gt;<i> do not know how to apply patches.
+</I>&gt;&gt;<i> What was the svn command you used to get Motion down.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I have compiled the head version of Ekiga and that works no problem.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Appreciate any suggestions,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Thanks,
+</I>&gt;&gt;<i> Brian
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Joshua Bassett wrote:
+</I>&gt;&gt;&gt;<i> Hi Laurent,
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> I just compiled the latest version of Motion from subversion and it
+</I>&gt;&gt;&gt;<i> works perfectly with uvcvideo (patched as I've got a Logitech
+</I>&gt;&gt;&gt;<i> QuickCam Pro 5000). Rock on!
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Josh.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Laurent Pinchart wrote:
+</I>&gt;&gt;&gt;&gt;<i> Hi Marcel,
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i> This was posted on the motion-users list. Now that it has V4L2 it
+</I>&gt;&gt;&gt;&gt;&gt;<i> should
+</I>&gt;&gt;&gt;&gt;&gt;<i> work with UVC-cams.
+</I>&gt;&gt;&gt;&gt;<i> Thanks for the report. Has anyone tried motion with the uvcvideo
+</I>&gt;&gt;&gt;&gt;<i> driver yet ?
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> Laurent Pinchart
+</I>&gt;&gt;&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;&gt;&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;&gt;&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;&gt;&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;&gt;<i>
+</I>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: bnc.vcf
+Type: text/x-vcard
+Size: 110 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070425/ad665a10/attachment.vcf">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070425/ad665a10/attachment.vcf</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001642.html">[Linux-uvc-devel] Motion Beta release supports V4L2
+</A></li>
+	<LI>Next message: <A HREF="001649.html">[Linux-uvc-devel] Motion Beta release supports V4L2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1645">[ date ]</a>
+              <a href="thread.html#1645">[ thread ]</a>
+              <a href="subject.html#1645">[ subject ]</a>
+              <a href="author.html#1645">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

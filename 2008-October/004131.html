@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [BUG] NULL pointer dereference caused by	uvcvideo stress test
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BBUG%5D%20NULL%20pointer%20dereference%20caused%20by%0A%09uvcvideo%20stress%20test&In-Reply-To=%3C200810152017.47347.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004154.html">
+   <LINK REL="Next"  HREF="004132.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [BUG] NULL pointer dereference caused by	uvcvideo stress test</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BBUG%5D%20NULL%20pointer%20dereference%20caused%20by%0A%09uvcvideo%20stress%20test&In-Reply-To=%3C200810152017.47347.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] [BUG] NULL pointer dereference caused by	uvcvideo stress test">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Oct 15 20:17:47 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004154.html">[Linux-uvc-devel] [RFC] Video probe control refactoring
+</A></li>
+        <LI>Next message: <A HREF="004132.html">[Linux-uvc-devel] [BUG] NULL pointer dereference caused by	uvcvideo stress test
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4131">[ date ]</a>
+              <a href="thread.html#4131">[ thread ]</a>
+              <a href="subject.html#4131">[ subject ]</a>
+              <a href="author.html#4131">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Alan,
+
+On Wednesday 15 October 2008, Alan Jenkins wrote:
+&gt;<i> Laurent Pinchart wrote:
+</I>&gt;<i> &gt; Hi Alan,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Friday 26 September 2008, Alan Jenkins wrote:
+</I>&gt;<i> &gt;&gt; This is is on v2.6.27-rc6.  I originally saw it on todays -tip tree.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; # while true; do modprobe uvcvideo; modprobe -r uvcvideo; done
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; After a few tens of cycles, modprobe gets stuck in &quot;D&quot; state, and the
+</I>&gt;<i> &gt;&gt; following backtrace appears:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; [snip]
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I can't reproduce the issue here on 2.6.27. Could you please test that
+</I>&gt;<i> &gt; version ?
+</I>&gt;<i>
+</I>&gt;<i> Sure... still happens.
+</I>
+I had secretly hoped it would have disapearred :-)
+
+&gt;<i> If you look at the trace, it happens as &quot;hald-probe-video&quot; opens the
+</I>&gt;<i> video device.  This is from Ubuntu 8.04.  Possibly it's significant that
+</I>&gt;<i> I use the camera first, to make sure it works (I use Kopete, the
+</I>&gt;<i> settings dialogue includes a video test).
+</I>
+The NULL pointer (or rather 0x00000030 pointer) dereference happens in 
+video_open:
+
+        file-&gt;f_op = fops_get(vfl-&gt;fops);
+        if (file-&gt;f_op-&gt;open)
+                err = file-&gt;f_op-&gt;open(inode, file);
+
+file-&gt;f_op ends up being NULL. Either vfl-&gt;fops is NULL to begin with, or 
+fops_get failed to get a reference to the file_operations structure.
+
+I'd be surprised if vfl-&gt;fops was NULL. To rule out that case, can you add a 
+BUG_ON(vfl-&gt;fops == NULL) before the call to fops_get ?
+
+I'm not too familiar with the module loader, but a quick look at the code 
+shows that the module could be marked as being unloaded (MODULE_STATE_GOING) 
+before its exit function is called. If this is the case video_open would 
+still be called, as the video device would still be registered, but fops_get 
+would fail in try_module_get and return a NULL pointer. It seems the pointer 
+returned by fops_get should be tested in video_open.
+
+I've CC'ed the v4l maintainer to get his opinion on this.
+
+&gt;<i> [  267.056655] input: UVC Camera (eb1a:2761) as /class/input/input59
+</I>&gt;<i> [  267.069990] usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> [  267.069990] USB Video Class driver (v0.1.0)
+</I>&gt;<i> [  267.299989] usbcore: deregistering interface driver uvcvideo
+</I>&gt;<i> [  267.336656] Linux video capture interface: v2.00
+</I>&gt;<i> [  267.349981] uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (eb1a:2761)
+</I>&gt;<i> [  267.353317] input: UVC Camera (eb1a:2761) as /class/input/input60
+</I>&gt;<i> [  267.363324] usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> [  267.363324] USB Video Class driver (v0.1.0)
+</I>&gt;<i> [  267.373325] BUG: unable to handle kernel NULL pointer dereference at
+</I>&gt;<i> 00000030
+</I>&gt;<i> [  267.373325] IP: [&lt;e03e13ec&gt;] :videodev:video_open+0x8b/0xe4
+</I>&gt;<i> [  267.373325] *pdpt = 0000000011ebc001 *pde = 0000000000000000
+</I>&gt;<i> [  267.373325] Oops: 0000 [#1]
+</I>&gt;<i> [  267.373325] Modules linked in: uvcvideo(-) compat_ioctl32 videodev
+</I>&gt;<i> v4l1_compat aes_i586 aes_generic af_packet i915 drm cpufreq_userspace
+</I>&gt;<i> cpufreq_powersave cpufreq_ondemand cpufreq_stats freq_table
+</I>&gt;<i> cpufreq_conservative wmi sbs sbshc ip6t_LOG nf_conntrack_ipv6 ipt_LOG
+</I>&gt;<i> xt_limit ipt_addrtype xt_state xt_tcpudp xt_conntrack ip6table_filter
+</I>&gt;<i> ip6_tables ipv6 nf_nat_irc nf_conntrack_irc nf_nat_ftp nf_nat
+</I>&gt;<i> nf_conntrack_ipv4 nf_conntrack_ftp nf_conntrack iptable_filter ip_tables
+</I>&gt;<i> x_tables dm_crypt dm_mod fuse joydev arc4 ecb crypto_blkcipher ath5k
+</I>&gt;<i> mac80211 led_class sg cfg80211 psmouse serio_raw snd_hda_intel
+</I>&gt;<i> snd_pcm_oss snd_mixer_oss ata_generic snd_pcm snd_timer snd_page_alloc
+</I>&gt;<i> snd_hwdep shpchp pci_hotplug intel_agp agpgart video output battery ac
+</I>&gt;<i> eeepc_laptop backlight button evdev uhci_hcd ehci_hcd usb_storage
+</I>&gt;<i> libusual pcspkr usbcore thermal processor fan [last unloaded: v4l1_compat]
+</I>&gt;<i> [  267.373325]
+</I>&gt;<i> [  267.373325] Pid: 7709, comm: hald-probe-vide Not tainted (2.6.27eeepc
+</I>&gt;<i> #61)
+</I>&gt;<i> [  267.373325] EIP: 0060:[&lt;e03e13ec&gt;] EFLAGS: 00010246 CPU: 0
+</I>&gt;<i> [  267.373325] EIP is at video_open+0x8b/0xe4 [videodev]
+</I>&gt;<i> [  267.373325] EAX: 00000000 EBX: e03e49d0 ECX: e03e1361 EDX: d1e6c000
+</I>&gt;<i> [  267.373325] ESI: d1ea5c80 EDI: 00000000 EBP: debf41ec ESP: d1efde98
+</I>&gt;<i> [  267.373325]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+</I>&gt;<i> [  267.373325] Process hald-probe-vide (pid: 7709, ti=d1efc000
+</I>&gt;<i> task=d1c586e0 task.ti=d1efc000)
+</I>&gt;<i> [  267.373325] Stack: 00000000 df1e17c0 00000000 debf41ec c01604e6
+</I>&gt;<i> d1ea5c80 00000000 d1ea5c80
+</I>&gt;<i> [  267.373325]        debf41ec d1efdf14 c0160406 c015d36d deae0580
+</I>&gt;<i> def61700 d1efdf14 d1ea5c80
+</I>&gt;<i> [  267.373325]        d1efdf14 00008001 c015d471 d1ea5c80 00000000
+</I>&gt;<i> 00000000 d1efdf14 c016692e
+</I>&gt;<i> [  267.373325] Call Trace:
+</I>&gt;<i> [  267.373325]  [&lt;c01604e6&gt;] chrdev_open+0xe0/0xf6
+</I>&gt;<i> [  267.373325]  [&lt;c0160406&gt;] chrdev_open+0x0/0xf6
+</I>&gt;<i> [  267.373325]  [&lt;c015d36d&gt;] __dentry_open+0xf2/0x1da
+</I>&gt;<i> [  267.373325]  [&lt;c015d471&gt;] nameidata_to_filp+0x1c/0x2c
+</I>&gt;<i> [  267.373325]  [&lt;c016692e&gt;] do_filp_open+0x343/0x61e
+</I>&gt;<i> [  267.373325]  [&lt;c014e1ad&gt;] handle_mm_fault+0x27d/0x528
+</I>&gt;<i> [  267.373325]  [&lt;c016df2d&gt;] alloc_fd+0x46/0xad
+</I>&gt;<i> [  267.373325]  [&lt;c015d1a8&gt;] do_sys_open+0x3f/0xb3
+</I>&gt;<i> [  267.373325]  [&lt;c015d260&gt;] sys_open+0x1e/0x23
+</I>&gt;<i> [  267.373325]  [&lt;c01035c1&gt;] sysenter_do_call+0x12/0x21
+</I>&gt;<i> [  267.373325]  [&lt;c0280000&gt;] xfrm_state_find+0x3bb/0x4b1
+</I>&gt;<i> [  267.373325]  =======================
+</I>&gt;<i> [  267.373325] Code: c4 0c 85 d2 74 6d 8b 02 8b 5e 10 85 c0 74 15 8b 00
+</I>&gt;<i> 85 c0 74 0b 83 38 02 74 0a ff 80 40 01 00 00 8b 02 eb 02 31 c0 89 46 10
+</I>&gt;<i> 31 ff &lt;8b&gt; 48 30 85 c9 74 36 89 f2 89 e8 ff d1 85 c0 89 c7 74 2a 8b 46
+</I>&gt;<i> [  267.373325] EIP: [&lt;e03e13ec&gt;] video_open+0x8b/0xe4 [videodev] SS:ESP
+</I>&gt;<i> 0068:d1efde98
+</I>&gt;<i> [  267.373325] ---[ end trace 1a1a7d2a0a55bf75 ]---
+</I>&gt;<i> [  267.379201] usbcore: deregistering interface driver uvcvideo
+</I>
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004154.html">[Linux-uvc-devel] [RFC] Video probe control refactoring
+</A></li>
+	<LI>Next message: <A HREF="004132.html">[Linux-uvc-devel] [BUG] NULL pointer dereference caused by	uvcvideo stress test
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4131">[ date ]</a>
+              <a href="thread.html#4131">[ thread ]</a>
+              <a href="subject.html#4131">[ subject ]</a>
+              <a href="author.html#4131">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

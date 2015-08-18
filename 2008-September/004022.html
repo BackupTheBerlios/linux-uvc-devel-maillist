@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] kernel 2.6.26 - webcam doesn't work,	stack-trace available
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20kernel%202.6.26%20-%20webcam%20doesn%27t%20work%2C%0A%09stack-trace%20available&In-Reply-To=%3C1220788172.19678.6.camel%40localhost.localdomain%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004040.html">
+   <LINK REL="Next"  HREF="004055.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] kernel 2.6.26 - webcam doesn't work,	stack-trace available</H1>
+    <B>Michel Brabants</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20kernel%202.6.26%20-%20webcam%20doesn%27t%20work%2C%0A%09stack-trace%20available&In-Reply-To=%3C1220788172.19678.6.camel%40localhost.localdomain%3E"
+       TITLE="[Linux-uvc-devel] kernel 2.6.26 - webcam doesn't work,	stack-trace available">michel.brabants at euphonynet.be
+       </A><BR>
+    <I>Sun Sep  7 13:49:32 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004040.html">[Linux-uvc-devel] High resulution and high framerate cameras
+</A></li>
+        <LI>Next message: <A HREF="004055.html">[Linux-uvc-devel] kernel 2.6.26 - webcam doesn't work,	stack-trace available
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4022">[ date ]</a>
+              <a href="thread.html#4022">[ thread ]</a>
+              <a href="subject.html#4022">[ subject ]</a>
+              <a href="author.html#4022">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+
+I have a logitech , and am having problems with this driver since it is
+integrated in the kernel (I used to use svn-builds before this). Here is
+the call-trace when trying to use cheese (gnome program):
+
+
+
+cheese: page allocation failure. order:5,
+mode:0x4                                                                                                                                                                                           
+Pid: 11446, comm: cheese Not tainted 2.6.26-ARCH
+#1                                                                                                                                                                                          
+
+Call Trace:
+ [&lt;ffffffff8027d78d&gt;] __alloc_pages_internal+0x3dd/0x4e0
+ [&lt;ffffffff80212995&gt;] dma_alloc_coherent+0xf5/0x2e0     
+ [&lt;ffffffffa039947b&gt;] :uvcvideo:uvc_alloc_urb_buffers+0x4b/0xe0
+ [&lt;ffffffffa039965e&gt;] :uvcvideo:uvc_init_video+0x14e/0x3d0     
+ [&lt;ffffffffa0398667&gt;] :uvcvideo:uvc_v4l2_do_ioctl+0x717/0x1180 
+ [&lt;ffffffff80288e1b&gt;] __pte_alloc+0xab/0xf0                    
+ [&lt;ffffffff8028a856&gt;] get_locked_pte+0x196/0x1e0               
+ [&lt;ffffffffa0386cf6&gt;] :videodev:video_usercopy+0x176/0x360     
+ [&lt;ffffffffa0397f50&gt;] :uvcvideo:uvc_v4l2_do_ioctl+0x0/0x1180   
+ [&lt;ffffffff802b4225&gt;] vfs_ioctl+0x85/0xb0                      
+ [&lt;ffffffff802b44d3&gt;] do_vfs_ioctl+0x283/0x2f0                 
+ [&lt;ffffffff802b45e1&gt;] sys_ioctl+0xa1/0xb0                      
+ [&lt;ffffffff8020c59a&gt;] system_call_after_swapgs+0x8a/0x8f       
+
+Mem-info:
+DMA per-cpu:
+CPU    0: hi:    0, btch:   1 usd:   0
+CPU    1: hi:    0, btch:   1 usd:   0
+DMA32 per-cpu:                        
+CPU    0: hi:  186, btch:  31 usd:  89
+CPU    1: hi:  186, btch:  31 usd:  22
+Active:177207 inactive:44979 dirty:352 writeback:0 unstable:0
+ free:2598 slab:16717 mapped:31519 pagetables:6333 bounce:0  
+DMA free:4116kB min:40kB low:48kB high:60kB active:1336kB inactive:44kB
+present:10576kB pages_scanned:41 all_unreclaimable? no
+lowmem_reserve[]: 0 994 994
+994                                                                                               
+DMA32 free:6276kB min:4012kB low:5012kB high:6016kB active:707492kB
+inactive:179872kB present:1017888kB pages_scanned:194 all_unreclaimable?
+no
+lowmem_reserve[]: 0 0 0
+0                                                                                                                      
+DMA: 195*4kB 189*8kB 32*16kB 1*32kB 0*64kB 0*128kB 1*256kB 0*512kB
+1*1024kB 0*2048kB 0*4096kB =
+4116kB                                         
+DMA32: 1182*4kB 50*8kB 12*16kB 4*32kB 0*64kB 0*128kB 1*256kB 1*512kB
+0*1024kB 0*2048kB 0*4096kB =
+6216kB                                       
+81579 total pagecache
+pages                                                                                                                    
+Swap cache: add 2119, delete 1700, find
+554/667                                                                                                
+Free swap  =
+285724kB                                                                                                                          
+Total swap =
+289160kB                                                                                                                          
+262096 pages of
+RAM                                                                                                                            
+7294 reserved
+pages                                                                                                                            
+194872 pages
+shared                                                                                                                            
+572 pages swap
+cached                                                                                                                          
+ehci_hcd 0000:00:13.5: dma_pool_free buffer-32, ffff810000aa0000/aa0000
+(bad dma)                                                              
+ehci_hcd 0000:00:13.5: dma_pool_free buffer-32, ffff810002720000/2720000
+(bad dma)       
+
+
+
+
+I saw that someone else also had this problem. I have an Logitech
+Ultravision webcam, amd X2 4400, 1 Gig memory and am running in
+64-bit-mode. The motherboard is an msi k9a platinum. I'm running kernel
+2.6.26 (archlinux).
+
+Thank you and kind regards,
+
+Michel
+
+P.S.: Does anyone know a good video-chat-prgram for linux? I have this
+nice webcam (when the driver, ... works), but no program that supports
+decent resolutions for video-chat ...
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080907/57a024d0/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080907/57a024d0/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004040.html">[Linux-uvc-devel] High resulution and high framerate cameras
+</A></li>
+	<LI>Next message: <A HREF="004055.html">[Linux-uvc-devel] kernel 2.6.26 - webcam doesn't work,	stack-trace available
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4022">[ date ]</a>
+              <a href="thread.html#4022">[ thread ]</a>
+              <a href="subject.html#4022">[ subject ]</a>
+              <a href="author.html#4022">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,226 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH 3/3] Make video fixup more robust
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%203/3%5D%20Make%20video%20fixup%20more%20robust&In-Reply-To=%3C1299414749.8708.6.camel%40mini%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006341.html">
+   <LINK REL="Next"  HREF="006335.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH 3/3] Make video fixup more robust</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%203/3%5D%20Make%20video%20fixup%20more%20robust&In-Reply-To=%3C1299414749.8708.6.camel%40mini%3E"
+       TITLE="[Linux-uvc-devel] [PATCH 3/3] Make video fixup more robust">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Sun Mar  6 13:32:29 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006341.html">[Linux-uvc-devel] [PATCH 3/3] Make video fixup more robust
+</A></li>
+        <LI>Next message: <A HREF="006335.html">[Linux-uvc-devel] [PATCH 0/0] description
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6345">[ date ]</a>
+              <a href="thread.html#6345">[ thread ]</a>
+              <a href="subject.html#6345">[ subject ]</a>
+              <a href="author.html#6345">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Am Sonntag, den 06.03.2011, 12:47 +0100 schrieb Laurent Pinchart:
+&gt;<i> Hi Alexey,
+</I>&gt;<i> 
+</I>&gt;<i> On Sunday 06 March 2011 11:57:15 Alexey Fisher wrote:
+</I>&gt;<i> 
+</I>&gt;<i> A description of how you're making it more robust would be nice.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; Signed-off-by: Alexey Fisher &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt;
+</I>&gt;<i> &gt; ---
+</I>&gt;<i> &gt;  drivers/media/video/uvc/uvc_video.c |   59
+</I>&gt;<i> &gt; ++++++++++++++++++++++++++++++----- 1 files changed, 51 insertions(+), 8
+</I>&gt;<i> &gt; deletions(-)
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; diff --git a/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> &gt; b/drivers/media/video/uvc/uvc_video.c index 64bd1d6..5380189 100644
+</I>&gt;<i> &gt; --- a/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> &gt; +++ b/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> &gt; @@ -92,10 +92,9 @@ static void uvc_fixup_video_ctrl(struct uvc_streaming
+</I>&gt;<i> &gt; *stream, {
+</I>&gt;<i> &gt;  	struct uvc_format *format;
+</I>&gt;<i> &gt;  	struct uvc_frame *frame = NULL;
+</I>&gt;<i> &gt; +	struct usb_host_endpoint *ep;
+</I>&gt;<i> &gt;  	unsigned int i;
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; -	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> &gt; -
+</I>&gt;<i> &gt;  	if (ctrl-&gt;bFormatIndex &lt;= 0 ||
+</I>&gt;<i> &gt;  	    ctrl-&gt;bFormatIndex &gt; stream-&gt;nformats)
+</I>&gt;<i> &gt;  		return;
+</I>&gt;<i> &gt; @@ -112,6 +111,9 @@ static void uvc_fixup_video_ctrl(struct uvc_streaming
+</I>&gt;<i> &gt; *stream, if (frame == NULL)
+</I>&gt;<i> &gt;  		return;
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; +	pr_debug(&quot;%s: %s %ux%u&quot;, __func__,
+</I>&gt;<i> &gt; +		 format-&gt;name, frame-&gt;wWidth, frame-&gt;wHeight);
+</I>&gt;<i> &gt; +
+</I>&gt;<i> &gt;  	if (!(format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) ||
+</I>&gt;<i> &gt;  	     (ctrl-&gt;dwMaxVideoFrameSize == 0 &amp;&amp;
+</I>&gt;<i> &gt;  	      stream-&gt;dev-&gt;uvc_version &lt; 0x0110) ||
+</I>&gt;<i> &gt; @@ -123,11 +125,13 @@ static void uvc_fixup_video_ctrl(struct uvc_streaming
+</I>&gt;<i> &gt; *stream, frame-&gt;dwMaxVideoFrameBufferSize;
+</I>&gt;<i> &gt;  	}
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; -	if (!(format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) &amp;&amp;
+</I>&gt;<i> &gt; +	if ((!(format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) ||
+</I>&gt;<i> &gt; +	      format-&gt;fcc == V4L2_PIX_FMT_MJPEG ) &amp;&amp;
+</I>&gt;<i> &gt;  	    stream-&gt;dev-&gt;quirks &amp; UVC_QUIRK_FIX_BANDWIDTH &amp;&amp;
+</I>&gt;<i> &gt;  	    stream-&gt;intf-&gt;num_altsetting &gt; 1) {
+</I>&gt;<i> &gt;  		u32 interval;
+</I>&gt;<i> &gt;  		u32 bandwidth;
+</I>&gt;<i> &gt; +		unsigned int best_psize = 3 * 1024;
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;  		interval = (ctrl-&gt;dwFrameInterval &gt; 100000)
+</I>&gt;<i> &gt;  			 ? ctrl-&gt;dwFrameInterval
+</I>&gt;<i> &gt; @@ -139,13 +143,17 @@ static void uvc_fixup_video_ctrl(struct uvc_streaming
+</I>&gt;<i> &gt; *stream, * high-speed devices) per second and add the UVC header size
+</I>&gt;<i> &gt;  		 * (assumed to be 12 bytes long).
+</I>&gt;<i> &gt;  		 */
+</I>&gt;<i> &gt; -		bandwidth = frame-&gt;wWidth * frame-&gt;wHeight / 8 * format-&gt;bpp;
+</I>&gt;<i> &gt; +		bandwidth = frame-&gt;dwMaxVideoFrameBufferSize;
+</I>&gt;<i> &gt; +		//bandwidth = frame-&gt;wWidth * frame-&gt;wHeight / 8 * format-&gt;bpp;
+</I>&gt;<i> 
+</I>&gt;<i> Why ? The whole point of your patch set is to work around untrusted 
+</I>&gt;<i> dwMaxVideoFrameBufferSize values.
+</I>&gt;<i> 
+</I>&gt;<i> &gt;  		bandwidth *= 10000000 / interval + 1;
+</I>&gt;<i> &gt;  		bandwidth /= 1000;
+</I>&gt;<i> &gt;  		if (stream-&gt;dev-&gt;udev-&gt;speed == USB_SPEED_HIGH)
+</I>&gt;<i> &gt;  			bandwidth /= 8;
+</I>&gt;<i> &gt;  		bandwidth += 12;
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; +		/* add 20% more, in some cases it is still not enough */
+</I>&gt;<i> &gt; +		bandwidth *= 1.2;
+</I>&gt;<i> &gt; +
+</I>&gt;<i> 
+</I>&gt;<i> That's not the kind of things I can accept with very very good arguments. I 
+</I>&gt;<i> don't want to break some cameras just to lower the size of the V4L2 buffers 
+</I>&gt;<i> allocated by the driver.
+</I>&gt;<i> 
+</I>&gt;<i> &gt;  		/* The bandwidth estimate is too low for many cameras. Don't use
+</I>&gt;<i> &gt;  		 * maximum packet sizes lower than 1024 bytes to try and work
+</I>&gt;<i> &gt;  		 * around the problem. According to measurements done on two
+</I>&gt;<i> &gt; @@ -153,12 +161,39 @@ static void uvc_fixup_video_ctrl(struct uvc_streaming
+</I>&gt;<i> &gt; *stream, * resolutions working while not preventing two simultaneous
+</I>&gt;<i> &gt;  		 * VGA streams at 15 fps.
+</I>&gt;<i> &gt;  		 */
+</I>&gt;<i> &gt; +		pr_debug(&quot;%s: calculated bandwidth: %u for %u(fps); (before 1024
+</I>&gt;<i> &gt; workaround).&quot;, +			 __func__, bandwidth, 10000000/interval);
+</I>&gt;<i> &gt;  		bandwidth = max_t(u32, bandwidth, 1024);
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; +		i = 0;
+</I>&gt;<i> &gt; +		for (i = 0; i &lt; stream-&gt;intf-&gt;num_altsetting; ++i) {
+</I>&gt;<i> &gt; +			struct usb_host_interface *alts;
+</I>&gt;<i> &gt; +			struct usb_host_endpoint *ep;
+</I>&gt;<i> &gt; +			unsigned int psize;
+</I>&gt;<i> &gt; +
+</I>&gt;<i> &gt; +			alts = &amp;stream-&gt;intf-&gt;altsetting[i];
+</I>&gt;<i> &gt; +			ep = uvc_find_endpoint(alts,
+</I>&gt;<i> &gt; +				stream-&gt;header.bEndpointAddress);
+</I>&gt;<i> &gt; +			if (ep == NULL)
+</I>&gt;<i> &gt; +				continue;
+</I>&gt;<i> &gt; +
+</I>&gt;<i> &gt; +			psize = le16_to_cpu(ep-&gt;desc.wMaxPacketSize);
+</I>&gt;<i> &gt; +			psize = (psize &amp; 0x07ff) * (1 + ((psize &gt;&gt; 11) &amp; 3));
+</I>&gt;<i> &gt; +			if ((psize &gt;= bandwidth &amp;&amp; psize &lt;= best_psize) ||
+</I>&gt;<i> &gt; +			    (i == stream-&gt;intf-&gt;num_altsetting - 1)) {
+</I>&gt;<i> &gt; +				if (bandwidth &gt; psize)
+</I>&gt;<i> &gt; +					pr_debug(&quot;%s: trying psize=%u even if &quot;
+</I>&gt;<i> &gt; +						 &quot;bandwidth=%u&quot;, __func__,
+</I>&gt;<i> &gt; +						 psize, bandwidth);
+</I>&gt;<i> &gt; +				best_psize = psize;
+</I>&gt;<i> &gt; +				break;
+</I>&gt;<i> &gt; +			}
+</I>&gt;<i> &gt; +		}
+</I>&gt;<i> &gt; +
+</I>&gt;<i> &gt;  		pr_debug(&quot;%s: rewrite dwMaxPayloadTransferSize=%u to %u.&quot;,
+</I>&gt;<i> &gt; -			__func__, ctrl-&gt;dwMaxPayloadTransferSize, bandwidth);
+</I>&gt;<i> &gt; +			__func__, ctrl-&gt;dwMaxPayloadTransferSize, best_psize);
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; -		ctrl-&gt;dwMaxPayloadTransferSize = bandwidth;
+</I>&gt;<i> &gt; +		ctrl-&gt;dwMaxPayloadTransferSize = best_psize;
+</I>&gt;<i> 
+</I>&gt;<i> Is this needed ? uvc_init_video() already selects the best endpoint alternate 
+</I>&gt;<i> setting based on the requested bandwidth. This looks like duplicate code, 
+</I>&gt;<i> what's the point ?
+</I>
+Becouse we do uvc_set_video_ctrl with one bandwidth and uvc_video_init
+with other. I do not know if it is good in case we recalculate the
+value.
+
+&gt;<i> 
+</I>&gt;<i> &gt;  	}
+</I>&gt;<i> &gt;  }
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; @@ -1099,11 +1134,19 @@ static int uvc_init_video(struct uvc_streaming
+</I>&gt;<i> &gt; *stream, gfp_t gfp_flags) /* Check if the bandwidth is high enough. */
+</I>&gt;<i> &gt;  			psize = le16_to_cpu(ep-&gt;desc.wMaxPacketSize);
+</I>&gt;<i> &gt;  			psize = (psize &amp; 0x07ff) * (1 + ((psize &gt;&gt; 11) &amp; 3));
+</I>&gt;<i> &gt; -			if (psize &gt;= bandwidth &amp;&amp; psize &lt;= best_psize) {
+</I>&gt;<i> &gt; +			pr_debug(&quot;%s: bandwidth: %u; psize: %u; best_psize: %u&quot;,
+</I>&gt;<i> &gt; +				 __func__, bandwidth, psize, best_psize);
+</I>&gt;<i> &gt; +			if ((psize &gt;= bandwidth &amp;&amp; psize &lt;= best_psize) ||
+</I>&gt;<i> &gt; +			    (i == intf-&gt;num_altsetting - 1)) {
+</I>&gt;<i> &gt; +				if (bandwidth &gt; psize)
+</I>&gt;<i> &gt; +					pr_debug(&quot;%s: trying psize=%u even if &quot;
+</I>&gt;<i> &gt; +						 &quot;bandwidth=%u&quot;, __func__,
+</I>&gt;<i> &gt; +						 psize, bandwidth);
+</I>
+And here we can just fail, or try the luck (and may be fail). So this
+part independet of all other changes.
+
+&gt;<i> &gt;  				altsetting = i;
+</I>&gt;<i> &gt;  				best_psize = psize;
+</I>&gt;<i> &gt;  				best_ep = ep;
+</I>&gt;<i> &gt; -			}
+</I>&gt;<i> &gt; +				break;
+</I>&gt;<i> &gt; +			}
+</I>&gt;<i> &gt;  		}
+</I>
+here we make too match loops, so it is nice to have here a break
+
+&gt;<i> &gt;  		if (best_ep == NULL) {
+</I>&gt;<i> 
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006341.html">[Linux-uvc-devel] [PATCH 3/3] Make video fixup more robust
+</A></li>
+	<LI>Next message: <A HREF="006335.html">[Linux-uvc-devel] [PATCH 0/0] description
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6345">[ date ]</a>
+              <a href="thread.html#6345">[ thread ]</a>
+              <a href="subject.html#6345">[ subject ]</a>
+              <a href="author.html#6345">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

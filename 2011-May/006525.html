@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH 1/2] V4L/DVB: v4l2-dev: revert commit	c29fcff3daafbf46d64a543c1950bbd206ad8c1c
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%201/2%5D%20V4L/DVB%3A%20v4l2-dev%3A%20revert%20commit%0A%09c29fcff3daafbf46d64a543c1950bbd206ad8c1c&In-Reply-To=%3CBANLkTikfa%3Dg5aGC4bq7HWTuKSe4P7P1qDg%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006524.html">
+   <LINK REL="Next"  HREF="006526.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH 1/2] V4L/DVB: v4l2-dev: revert commit	c29fcff3daafbf46d64a543c1950bbd206ad8c1c</H1>
+    <B>Bob Liu</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%201/2%5D%20V4L/DVB%3A%20v4l2-dev%3A%20revert%20commit%0A%09c29fcff3daafbf46d64a543c1950bbd206ad8c1c&In-Reply-To=%3CBANLkTikfa%3Dg5aGC4bq7HWTuKSe4P7P1qDg%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] [PATCH 1/2] V4L/DVB: v4l2-dev: revert commit	c29fcff3daafbf46d64a543c1950bbd206ad8c1c">lliubbo at gmail.com
+       </A><BR>
+    <I>Fri May  6 10:26:36 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006524.html">[Linux-uvc-devel] [PATCH 1/2] V4L/DVB: v4l2-dev: revert commit	c29fcff3daafbf46d64a543c1950bbd206ad8c1c
+</A></li>
+        <LI>Next message: <A HREF="006526.html">[Linux-uvc-devel] Microsoft Lifecam HD 3000 (exposure + led issues)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6525">[ date ]</a>
+              <a href="thread.html#6525">[ thread ]</a>
+              <a href="subject.html#6525">[ subject ]</a>
+              <a href="author.html#6525">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Fri, May 6, 2011 at 4:22 PM, Laurent Pinchart
+&lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt; wrote:
+&gt;<i> Hi Bob,
+</I>&gt;<i>
+</I>&gt;<i> On Friday 29 April 2011 12:11:34 Bob Liu wrote:
+</I>&gt;&gt;<i> Revert commit:
+</I>&gt;&gt;<i> V4L/DVB: v4l2-dev: remove get_unmapped_area(c29fcff3daafbf46d64a543c1950bb)
+</I>&gt;&gt;<i> to restore NOMMU arch supporting.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Signed-off-by: Bob Liu &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">lliubbo at gmail.com</A>&gt;
+</I>&gt;<i>
+</I>&gt;<i> git provides a 'git revert' command to revert patches. It formats the commit
+</I>
+Sorry, I haven't use 'git revert' before.
+
+&gt;<i> message in a standard way. I'll use it instead of applying this patch to my
+</I>&gt;<i> tree and I'll keep your SoB line (unless you object to that).
+</I>&gt;<i>
+</I>
+Okay, Thanks a lot.
+
+&gt;&gt;<i> ---
+</I>&gt;&gt;<i> &#160;drivers/media/video/v4l2-dev.c | &#160; 18 ++++++++++++++++++
+</I>&gt;&gt;<i> &#160;include/media/v4l2-dev.h &#160; &#160; &#160; | &#160; &#160;2 ++
+</I>&gt;&gt;<i> &#160;2 files changed, 20 insertions(+), 0 deletions(-)
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> diff --git a/drivers/media/video/v4l2-dev.c
+</I>&gt;&gt;<i> b/drivers/media/video/v4l2-dev.c index 6dc7196..19d5ae2 100644
+</I>&gt;&gt;<i> --- a/drivers/media/video/v4l2-dev.c
+</I>&gt;&gt;<i> +++ b/drivers/media/video/v4l2-dev.c
+</I>&gt;&gt;<i> @@ -352,6 +352,23 @@ static long v4l2_ioctl(struct file *filp, unsigned int
+</I>&gt;&gt;<i> cmd, unsigned long arg) return ret;
+</I>&gt;&gt;<i> &#160;}
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> +#ifdef CONFIG_MMU
+</I>&gt;&gt;<i> +#define v4l2_get_unmapped_area NULL
+</I>&gt;&gt;<i> +#else
+</I>&gt;&gt;<i> +static unsigned long v4l2_get_unmapped_area(struct file *filp,
+</I>&gt;&gt;<i> + &#160; &#160; &#160; &#160; &#160; &#160; unsigned long addr, unsigned long len, unsigned long pgoff,
+</I>&gt;&gt;<i> + &#160; &#160; &#160; &#160; &#160; &#160; unsigned long flags)
+</I>&gt;&gt;<i> +{
+</I>&gt;&gt;<i> + &#160; &#160; struct video_device *vdev = video_devdata(filp);
+</I>&gt;&gt;<i> +
+</I>&gt;&gt;<i> + &#160; &#160; if (!vdev-&gt;fops-&gt;get_unmapped_area)
+</I>&gt;&gt;<i> + &#160; &#160; &#160; &#160; &#160; &#160; return -ENOSYS;
+</I>&gt;&gt;<i> + &#160; &#160; if (!video_is_registered(vdev))
+</I>&gt;&gt;<i> + &#160; &#160; &#160; &#160; &#160; &#160; return -ENODEV;
+</I>&gt;&gt;<i> + &#160; &#160; return vdev-&gt;fops-&gt;get_unmapped_area(filp, addr, len, pgoff, flags);
+</I>&gt;&gt;<i> +}
+</I>&gt;&gt;<i> +#endif
+</I>&gt;&gt;<i> +
+</I>&gt;&gt;<i> &#160;static int v4l2_mmap(struct file *filp, struct vm_area_struct *vm)
+</I>&gt;&gt;<i> &#160;{
+</I>&gt;&gt;<i> &#160; &#160; &#160; struct video_device *vdev = video_devdata(filp);
+</I>&gt;&gt;<i> @@ -454,6 +471,7 @@ static const struct file_operations v4l2_fops = {
+</I>&gt;&gt;<i> &#160; &#160; &#160; .read = v4l2_read,
+</I>&gt;&gt;<i> &#160; &#160; &#160; .write = v4l2_write,
+</I>&gt;&gt;<i> &#160; &#160; &#160; .open = v4l2_open,
+</I>&gt;&gt;<i> + &#160; &#160; .get_unmapped_area = v4l2_get_unmapped_area,
+</I>&gt;&gt;<i> &#160; &#160; &#160; .mmap = v4l2_mmap,
+</I>&gt;&gt;<i> &#160; &#160; &#160; .unlocked_ioctl = v4l2_ioctl,
+</I>&gt;&gt;<i> &#160;#ifdef CONFIG_COMPAT
+</I>&gt;&gt;<i> diff --git a/include/media/v4l2-dev.h b/include/media/v4l2-dev.h
+</I>&gt;&gt;<i> index 8266d5a..93e96fb 100644
+</I>&gt;&gt;<i> --- a/include/media/v4l2-dev.h
+</I>&gt;&gt;<i> +++ b/include/media/v4l2-dev.h
+</I>&gt;&gt;<i> @@ -62,6 +62,8 @@ struct v4l2_file_operations {
+</I>&gt;&gt;<i> &#160; &#160; &#160; unsigned int (*poll) (struct file *, struct poll_table_struct *);
+</I>&gt;&gt;<i> &#160; &#160; &#160; long (*ioctl) (struct file *, unsigned int, unsigned long);
+</I>&gt;&gt;<i> &#160; &#160; &#160; long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
+</I>&gt;&gt;<i> + &#160; &#160; unsigned long (*get_unmapped_area) (struct file *, unsigned long,
+</I>&gt;&gt;<i> + &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; unsigned long, unsigned long, unsigned long);
+</I>&gt;&gt;<i> &#160; &#160; &#160; int (*mmap) (struct file *, struct vm_area_struct *);
+</I>&gt;&gt;<i> &#160; &#160; &#160; int (*open) (struct file *);
+</I>&gt;&gt;<i> &#160; &#160; &#160; int (*release) (struct file *);
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Regards,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i>
+</I>
+-- 
+Regards,
+--Bob
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006524.html">[Linux-uvc-devel] [PATCH 1/2] V4L/DVB: v4l2-dev: revert commit	c29fcff3daafbf46d64a543c1950bbd206ad8c1c
+</A></li>
+	<LI>Next message: <A HREF="006526.html">[Linux-uvc-devel] Microsoft Lifecam HD 3000 (exposure + led issues)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6525">[ date ]</a>
+              <a href="thread.html#6525">[ thread ]</a>
+              <a href="subject.html#6525">[ subject ]</a>
+              <a href="author.html#6525">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

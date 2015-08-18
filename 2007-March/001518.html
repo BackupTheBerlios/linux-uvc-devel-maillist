@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech QuickCam Orbit MP: &quot;No such device&quot; when	reading from /dev/video0
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20Orbit%20MP%3A%20%22No%20such%20device%22%20when%0A%09reading%20from%20/dev/video0&In-Reply-To=%3C20070323172627.GH12271%40netisland.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001514.html">
+   <LINK REL="Next"  HREF="001522.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech QuickCam Orbit MP: &quot;No such device&quot; when	reading from /dev/video0</H1>
+    <B>Michael C. Toren</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20Orbit%20MP%3A%20%22No%20such%20device%22%20when%0A%09reading%20from%20/dev/video0&In-Reply-To=%3C20070323172627.GH12271%40netisland.net%3E"
+       TITLE="[Linux-uvc-devel] Logitech QuickCam Orbit MP: &quot;No such device&quot; when	reading from /dev/video0">mct at toren.net
+       </A><BR>
+    <I>Fri Mar 23 18:26:28 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001514.html">[Linux-uvc-devel] LQC Pro 5000 picture quality settings
+</A></li>
+        <LI>Next message: <A HREF="001522.html">[Linux-uvc-devel] Logitech QuickCam Orbit MP: &quot;No such device&quot;	when reading from /dev/video0
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1518">[ date ]</a>
+              <a href="thread.html#1518">[ thread ]</a>
+              <a href="subject.html#1518">[ subject ]</a>
+              <a href="author.html#1518">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I'm having some problems reading from /dev/video0 when using my Logitech
+QuickCam Orbit MP camera.  I'm using an ubuntu 2.6.15-28-386 kernel.
+
+At module insertion time, with trace set to 15, I see the following in
+dmesg:
+
+    [17179739.156000] Linux video capture interface: v1.00
+    [17179739.172000] uvcvideo: Adding mapping Brightness to control 00000000-0000-0000-0000-000000000101/2.
+    [17179739.172000] uvcvideo: Adding mapping Contrast to control 00000000-0000-0000-0000-000000000101/3.
+    [17179739.172000] uvcvideo: Adding mapping Hue to control 00000000-0000-0000-0000-000000000101/6.
+    [17179739.172000] uvcvideo: Adding mapping Saturation to control 00000000-0000-0000-0000-000000000101/7.
+    [17179739.172000] uvcvideo: Adding mapping Sharpness to control 00000000-0000-0000-0000-000000000101/8.
+    [17179739.172000] uvcvideo: Adding mapping Gamma to control 00000000-0000-0000-0000-000000000101/9.
+    [17179739.172000] uvcvideo: Adding mapping Backlight Compensation to control 00000000-0000-0000-0000-000000000101/1.
+    [17179739.172000] uvcvideo: Adding mapping Gain to control 00000000-0000-0000-0000-000000000101/4.
+    [17179739.172000] uvcvideo: Adding mapping Power Line Frequency to control 00000000-0000-0000-0000-000000000101/5.
+    [17179739.172000] uvcvideo: Adding mapping Hue, Auto to control 00000000-0000-0000-0000-000000000101/16.
+    [17179739.172000] uvcvideo: Adding mapping Pan (relative) to control 63610682-5070-49ab-b8cc-b3855e8d2256/1.
+    [17179739.172000] uvcvideo: Adding mapping Tilt (relative) to control 63610682-5070-49ab-b8cc-b3855e8d2256/1.
+    [17179739.172000] uvcvideo: Adding mapping Pan/Tilt (reset) to control 63610682-5070-49ab-b8cc-b3855e8d2256/2.
+    [17179739.172000] uvcvideo: Adding mapping Exposure, Auto to control 00000000-0000-0000-0000-000000000001/2.
+    [17179739.172000] uvcvideo: Adding mapping Exposure (Absolute) to control 00000000-0000-0000-0000-000000000001/4.
+    [17179739.172000] uvcvideo: Adding mapping White Balance Temperature, Auto to control 00000000-0000-0000-0000-000000000101/11.
+    [17179739.172000] uvcvideo: Adding mapping White Balance Temperature to control 00000000-0000-0000-0000-000000000101/10.
+    [17179739.172000] usbcore: registered new driver uvcvideo
+    [17179739.172000] USB Video Class driver (v0.1.0)
+
+And when I plug in the USB cable, I see:
+
+    [17179760.888000] usb 5-7: new high speed USB device using ehci_hcd and address 4
+    [17179761.196000] uvcvideo: Probing known UVC device 7 (046d:08c2)
+    [17179761.200000] uvcvideo: Found format MJPEG.
+    [17179761.200000] uvcvideo: - 160x120 (30.0 fps)
+    [17179761.200000] uvcvideo: - 176x144 (30.0 fps)
+    [17179761.200000] uvcvideo: - 320x240 (15.0 fps)
+    [17179761.200000] uvcvideo: - 352x288 (30.0 fps)
+    [17179761.200000] uvcvideo: - 432x240 (30.0 fps)
+    [17179761.200000] uvcvideo: - 480x360 (30.0 fps)
+    [17179761.200000] uvcvideo: - 512x288 (30.0 fps)
+    [17179761.200000] uvcvideo: - 640x360 (30.0 fps)
+    [17179761.200000] uvcvideo: - 640x480 (15.0 fps)
+    [17179761.200000] uvcvideo: - 704x576 (15.0 fps)
+    [17179761.200000] uvcvideo: - 864x480 (15.0 fps)
+    [17179761.200000] uvcvideo: - 960x720 (15.0 fps)
+    [17179761.200000] uvcvideo: Found format Uncompressed.
+    [17179761.200000] uvcvideo: - 1024x576 (10.0 fps)
+    [17179761.200000] uvcvideo: - 1280x960 (7.5 fps)
+    [17179761.200000] uvcvideo: Found a Status endpoint (addr 87).
+    [17179761.200000] uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:08c2)
+    [17179761.200000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/2 to device 7 entity 2
+    [17179761.200000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/3 to device 7 entity 2
+    [17179761.200000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/7 to device 7 entity 2
+    [17179761.200000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/8 to device 7 entity 2
+    [17179761.200000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/9 to device 7 entity 2
+    [17179761.200000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/1 to device 7 entity 2
+    [17179761.200000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/4 to device 7 entity 2
+    [17179761.200000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/5 to device 7 entity 2
+    [17179761.200000] uvcvideo: Added control 63610682-5070-49ab-b8cc-b3855e8d2256/1 to device 7 entity 9
+    [17179761.200000] uvcvideo: Added control 63610682-5070-49ab-b8cc-b3855e8d2256/2 to device 7 entity 9
+    [17179761.200000] uvcvideo: Added control 00000000-0000-0000-0000-000000000001/2 to device 7 entity 1
+    [17179761.200000] uvcvideo: Added control 00000000-0000-0000-0000-000000000001/4 to device 7 entity 1
+    [17179761.200000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/11 to device 7 entity 2
+    [17179761.200000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/10 to device 7 entity 2
+    [17179761.200000] uvcvideo: Scanning UVC chain: OT 5 (-&gt; 8 10 9) &lt;- Unit 4 &lt;- Unit 3 &lt;- Unit 2 &lt;- IT 1
+    [17179761.200000] uvcvideo: Found a valid video chain (1 -&gt; 5).
+    [17179761.212000] uvcvideo: UVC device initialized.
+    [17179762.384000] 4:3:1: cannot set freq 0 to ep 0x86
+    [17179763.384000] 4:3:2: cannot set freq 0 to ep 0x86
+    [17179764.388000] 4:3:3: cannot get freq at ep 0x86
+    [17179764.468000] usbcore: registered new driver snd-usb-audio
+
+As far as I can tell the above looks correct, and once plugged in the
+/dev/video0 device is created by udev.  However, when I go to read from
+the /dev/video0 device, it fails:
+
+    [<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">mct at dragonfly</A> ~]$ ls -l /dev/video0 
+    crw-rw---- 1 root video 81, 0 Mar 23 13:23 /dev/video0
+
+    [<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">mct at dragonfly</A> ~]$ cat /dev/video0 &gt; /tmp/foo.mpg
+    cat: /dev/video0: No such device
+
+No additional lines appear in dmesg after attempting to read from
+/dev/video0.
+
+Does anyone know what the problem might be?  I have two cameras of
+the same make and model, but ran into the same problem with both.
+
+Thanks,
+-mct
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001514.html">[Linux-uvc-devel] LQC Pro 5000 picture quality settings
+</A></li>
+	<LI>Next message: <A HREF="001522.html">[Linux-uvc-devel] Logitech QuickCam Orbit MP: &quot;No such device&quot;	when reading from /dev/video0
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1518">[ date ]</a>
+              <a href="thread.html#1518">[ thread ]</a>
+              <a href="subject.html#1518">[ subject ]</a>
+              <a href="author.html#1518">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

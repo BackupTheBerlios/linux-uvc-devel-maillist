@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Has anybody implemented UVC bulk transfer on	a device? Some doubts need clarification.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Has%20anybody%20implemented%20UVC%20bulk%20transfer%20on%0A%09a%20device%3F%20Some%20doubts%20need%20clarification.&In-Reply-To=%3C200912020828.00823.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005365.html">
+   <LINK REL="Next"  HREF="005367.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Has anybody implemented UVC bulk transfer on	a device? Some doubts need clarification.</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Has%20anybody%20implemented%20UVC%20bulk%20transfer%20on%0A%09a%20device%3F%20Some%20doubts%20need%20clarification.&In-Reply-To=%3C200912020828.00823.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Has anybody implemented UVC bulk transfer on	a device? Some doubts need clarification.">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Wed Dec  2 08:28:00 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005365.html">[Linux-uvc-devel] Has anybody implemented UVC bulk transfer on	a device? Some doubts need clarification.
+</A></li>
+        <LI>Next message: <A HREF="005367.html">[Linux-uvc-devel] Has anybody implemented UVC bulk transfer ona	device? Some doubts need clarification.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5366">[ date ]</a>
+              <a href="thread.html#5366">[ thread ]</a>
+              <a href="subject.html#5366">[ subject ]</a>
+              <a href="author.html#5366">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Ramesh,
+
+On Wednesday 02 December 2009 05:37:23 Ramesh Rajagopal wrote:
+&gt;<i> Hi Laurent,
+</I>&gt;<i> During enumeration the device is sending the proper dwMaxpayloadTransferSize
+</I>&gt;<i> to the host. In the host side also, it is refelecting. But when we start
+</I>&gt;<i> streaming, the host application is doing SET_CUR call of PROBE which is
+</I>&gt;<i> sending &quot;0&quot; to the device and device is sending back the same value to host.
+</I>&gt;<i> In case of ISOC also this value is being reset to &quot;0&quot; where as ISOC consider
+</I>&gt;<i> dwMaxFrameSize which it got from the host application and sending the same
+</I>&gt;<i> to the device. Due to this, ISOC doesn't fail.
+</I>
+According to the UVC 1.1 specification, table 4-47, the 
+dwMaxPayloadTransferSize field &quot;is set by the device and read only from the 
+host&quot;. Your device must ignore the value sent by the host, and send back the 
+right value when queried with GET_CUR.
+
+&gt;<i> This is what happens, Please explain is there anything I am missing. When
+</I>&gt;<i> we start the streaming on the host side this uvc_v4l2_try_format gets called
+</I>&gt;<i> under VIDIOC_S_FMT cmd. Here variable &quot;probe&quot; is being memset and assigned
+</I>&gt;<i> a few values. This &quot;probe&quot; is value is sent to the device with &quot;SET_CUR&quot;
+</I>&gt;<i> request. Device is copying these variable and the followed by GET_CUR
+</I>&gt;<i> request is getting back the same value of &quot;SET_CUR&quot;. Because of this,
+</I>&gt;<i> dwMaxPayloadSize is being reset to &quot;0&quot;.
+</I>&gt;<i> 
+</I>&gt;<i> If it is a device side bug means, the SET_CUR value should not be copied
+</I>&gt;<i> inside the device thats what you are telling.
+</I>
+That's correct. According to the UVC specification, the device should not copy 
+the dwMaxPayloadTransferSize value sent by the host.
+
+&gt;<i> But in case of ISOC alos I do copy and send back the same value during the
+</I>&gt;<i> call of GET_CUR. Please explain where am I missing.
+</I>
+In the isochronous case it works because the driver uses the 
+dwMaxPayloadTransferSize to select the alternate setting, and has a workaround 
+for devices that return a 0 value.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005365.html">[Linux-uvc-devel] Has anybody implemented UVC bulk transfer on	a device? Some doubts need clarification.
+</A></li>
+	<LI>Next message: <A HREF="005367.html">[Linux-uvc-devel] Has anybody implemented UVC bulk transfer ona	device? Some doubts need clarification.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5366">[ date ]</a>
+              <a href="thread.html#5366">[ thread ]</a>
+              <a href="subject.html#5366">[ subject ]</a>
+              <a href="author.html#5366">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

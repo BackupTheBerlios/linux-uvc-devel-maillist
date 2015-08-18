@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Problems with Hercules  Dualpix
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problems%20with%20Hercules%20%20Dualpix&In-Reply-To=%3C48934D71.1010306%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003957.html">
+   <LINK REL="Next"  HREF="003951.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Problems with Hercules  Dualpix</H1>
+    <B>Carmelo Iannello</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problems%20with%20Hercules%20%20Dualpix&In-Reply-To=%3C48934D71.1010306%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Problems with Hercules  Dualpix">carmelo.iannello at gmail.com
+       </A><BR>
+    <I>Fri Aug  1 19:52:49 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003957.html">[Linux-uvc-devel] support request for 5986:0240 Bison webcam
+</A></li>
+        <LI>Next message: <A HREF="003951.html">[Linux-uvc-devel] Problems with Hercules  Dualpix
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3948">[ date ]</a>
+              <a href="thread.html#3948">[ thread ]</a>
+              <a href="subject.html#3948">[ subject ]</a>
+              <a href="author.html#3948">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all,
+
+I recently bought a &quot;Hercules Dualpix Chat and Show&quot; webcam, after
+seeing it in the HCL of uvcvideo module.
+I hoped for it to work without any tweaking, but no luck.
+So I tried googling and trying to apply the suggested fixes but
+it didn't help.
+On Debian I installed the module with: module-assistant a-i linux-uvc
+revision 238, but I also tried with rv 239 from svn.
+
+At first, it complained giving this output in dmesg:
+
+  Linux video capture interface: v2.00
+  usbcore: registered new interface driver uvcvideo
+  USB Video Class driver (v0.1.0)
+  usb 4-5: new high speed USB device using ehci_hcd and address 5
+  usb 4-5: configuration #1 chosen from 1 choice
+  uvcvideo: Found UVC 1.00 device Hercules Dualpix Chat and Show Webcam
+(06f8:3007)
+  uvcvideo: Failed to query (135) UVC control 1 (unit 0) : -32 (exp. 26).
+  uvcvideo: Failed to query (129) UVC control 1 (unit 0) : -32 (exp. 26).
+  uvcvideo: Failed to initialize the device (-5).
+  5:3:1: cannot get freq at ep 0x84
+  usb 4-5: New USB device found, idVendor=06f8, idProduct=3007
+  usb 4-5: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+  usb 4-5: Product: Hercules Dualpix Chat and Show Webcam
+  usb 4-5: Manufacturer: Guillemot Corporation
+
+Then I put in /etc/modprobe.d/uvcvideo:
+install uvcvideo /sbin/modprobe snd_usb_audio; /sbin/modprobe
+--ignore-install uvcvideo
+
+to postpone uvcvideo's loading to the usb audio's one,
+and also tried do to the same thing by hand, using insmod.
+
+The result is that the error msg about query 129 disappeared,
+the one about query 135 is still there, the module creates the
+/dev/video0 device, but the webcam doesn't work.
+Strangely, the webcam is not listed in lsusb's output.
+
+Any suggestion?
+Thanks,
+Carmelo
+
+PS
+Current dmesg output when I unplug and plug the camera:
+
+  usb 4-5: USB disconnect, address 6
+  usb 4-5: new high speed USB device using ehci_hcd and address 8
+  usb 4-5: configuration #1 chosen from 1 choice
+  uvcvideo: Found UVC 1.00 device Hercules Dualpix Chat and Show Webcam
+(06f8:3007)
+  uvcvideo: Failed to query (135) UVC control 1 (unit 0) : -32 (exp. 26).
+  input: Hercules Dualpix Chat and Show W as /class/input/input12
+  8:3:1: cannot get freq at ep 0x84
+  usb 4-5: New USB device found, idVendor=06f8, idProduct=3007
+  usb 4-5: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+  usb 4-5: Product: Hercules Dualpix Chat and Show Webcam
+  usb 4-5: Manufacturer: Guillemot Corporation
+
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003957.html">[Linux-uvc-devel] support request for 5986:0240 Bison webcam
+</A></li>
+	<LI>Next message: <A HREF="003951.html">[Linux-uvc-devel] Problems with Hercules  Dualpix
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3948">[ date ]</a>
+              <a href="thread.html#3948">[ thread ]</a>
+              <a href="subject.html#3948">[ subject ]</a>
+              <a href="author.html#3948">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

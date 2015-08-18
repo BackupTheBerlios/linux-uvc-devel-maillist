@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] take a picture from command line
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20take%20a%20picture%20from%20command%20line&In-Reply-To=%3C20080507080824.hragmfa3kkk04g00%40webmail.xmission.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003484.html">
+   <LINK REL="Next"  HREF="003487.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] take a picture from command line</H1>
+    <B>George Peter Staplin</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20take%20a%20picture%20from%20command%20line&In-Reply-To=%3C20080507080824.hragmfa3kkk04g00%40webmail.xmission.com%3E"
+       TITLE="[Linux-uvc-devel] take a picture from command line">georgeps at xmission.com
+       </A><BR>
+    <I>Wed May  7 16:08:24 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003484.html">[Linux-uvc-devel] take a picture from command line
+</A></li>
+        <LI>Next message: <A HREF="003487.html">[Linux-uvc-devel] take a picture from command line
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3486">[ date ]</a>
+              <a href="thread.html#3486">[ thread ]</a>
+              <a href="subject.html#3486">[ subject ]</a>
+              <a href="author.html#3486">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Quoted matt baker &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">mattlbaker at gmail.com</A>&gt;:
+
+&gt;<i> Thank you.  It seems like exactly what I want.  Of course I'm having
+</I>&gt;<i> an issue though.  I'm using uvccapture-0.4.  It works the first few
+</I>&gt;<i> times but then it stops working.  Here is a small script I made for
+</I>&gt;<i> testing.
+</I>
+For what it's worth, I couldn't get uvccapture to work with my  
+Creative webcam.  It would only capture black images for me.  I  
+suppose you could debug the segfault with:
+
+gdb uvccapture
+(gdb) set args -x 800 -y 600
+(gdb) run
+#wait for segfault
+(gdb) bt full
+
+You may need to add -ggdb to the gcc command line in the Makefile.
+
+For streaming I tend to use the uvc_stream program that is part of the  
+mjpg-streamer project, but it uses an MJPEG format that isn't quite  
+right for Firefox and other MJPEG viewers.  Ideally I someday want to  
+fix that.  I also wrote a viewer program that I send to some people  
+that understands the somewhat odd uvc_stream format.  I say odd,  
+because it uses: #define BOUNDARY &quot;arflebarfle&quot; as a boundary between  
+images.  It's not ideal, because binary data could have such a string  
+of bytes.  KHTML has a similar design bug, unfortunately...  I think  
+uvcstream should be using a Content-Length header.
+
+For capturing individual images them I also wrote a C extension for  
+Tcl that uses the Video4Linux2 API.  I also wrote a server in Tcl that  
+works with it.  It seems to work pretty well with at least my webcam.
+
+<A HREF="http://code.google.com/p/megapkg/source/browse/trunk/csrc/v4limage/">http://code.google.com/p/megapkg/source/browse/trunk/csrc/v4limage/</A>
+<A HREF="http://code.google.com/p/megapkg/source/browse/trunk/v4limage_webcam_server/main.tcl">http://code.google.com/p/megapkg/source/browse/trunk/v4limage_webcam_server/main.tcl</A>
+<A HREF="http://code.google.com/p/megapkg/source/browse/trunk/v4limage_webcam_viewer.vfs/main.tcl">http://code.google.com/p/megapkg/source/browse/trunk/v4limage_webcam_viewer.vfs/main.tcl</A>
+
+BTW I think it's frustrating that each Video4Linux2 viewer should  
+handle so many formats.  I would prefer that the kernel translate to a  
+common format if possible, because right now a lot of code doesn't get  
+it right (probably mine too (at least for YUYV)) with all webcams.   
+You can do the hard work of converting the hardware image data once,  
+or push it off onto application developers to do repeatedly.
+
+
+George
+-- 
+<A HREF="http://www.xmission.com/~georgeps/">http://www.xmission.com/~georgeps/</A>  <A HREF="http://whim.linuxsys.net">http://whim.linuxsys.net</A>
+<A HREF="http://code.google.com/p/megapkg/">http://code.google.com/p/megapkg/</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003484.html">[Linux-uvc-devel] take a picture from command line
+</A></li>
+	<LI>Next message: <A HREF="003487.html">[Linux-uvc-devel] take a picture from command line
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3486">[ date ]</a>
+              <a href="thread.html#3486">[ thread ]</a>
+              <a href="subject.html#3486">[ subject ]</a>
+              <a href="author.html#3486">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

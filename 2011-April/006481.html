@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH v3] media:uvc_driver: add uvc support	on no-mmu arch
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%20v3%5D%20media%3Auvc_driver%3A%20add%20uvc%20support%0A%09on%20no-mmu%20arch&In-Reply-To=%3CBANLkTimO-4ubi7qUCncB9Z%2BwwNx1LURvfQ%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006480.html">
+   <LINK REL="Next"  HREF="006482.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH v3] media:uvc_driver: add uvc support	on no-mmu arch</H1>
+    <B>Bob Liu</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%20v3%5D%20media%3Auvc_driver%3A%20add%20uvc%20support%0A%09on%20no-mmu%20arch&In-Reply-To=%3CBANLkTimO-4ubi7qUCncB9Z%2BwwNx1LURvfQ%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] [PATCH v3] media:uvc_driver: add uvc support	on no-mmu arch">lliubbo at gmail.com
+       </A><BR>
+    <I>Thu Apr 21 11:57:31 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006480.html">[Linux-uvc-devel] [PATCH v3] media:uvc_driver: add uvc support	on no-mmu arch
+</A></li>
+        <LI>Next message: <A HREF="006482.html">[Linux-uvc-devel] [PATCH v4] media:uvc_driver: add uvc support on	no-mmu arch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6481">[ date ]</a>
+              <a href="thread.html#6481">[ thread ]</a>
+              <a href="subject.html#6481">[ subject ]</a>
+              <a href="author.html#6481">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thu, Apr 21, 2011 at 5:47 PM, Daniel Gl&#246;ckner &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">daniel-gl at gmx.net</A>&gt; wrote:
+&gt;<i> On Thu, Apr 21, 2011 at 04:20:36PM +0800, Bob Liu wrote:
+</I>&gt;&gt;<i> &gt; on mmu systems do_mmap_pgoff contains a len = PAGE_ALIGN(len); line.
+</I>&gt;&gt;<i> &gt; If we depend on this behavior, why not do it here as well and get rid
+</I>&gt;&gt;<i> &gt; of the #ifdef?
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> If do it in do_mmap_pgoff() the whole system will be effected, I am
+</I>&gt;&gt;<i> not sure whether
+</I>&gt;&gt;<i> it's correct and needed for other subsystem.
+</I>&gt;<i>
+</I>&gt;<i> With &quot;here&quot; I was referring to uvc_queue_mmap.
+</I>&gt;<i>
+</I>
+I am sorry, I didn't get your idea. You mean using  PAGE_ALIGN() here for both
+mmu and no-mmu arch ?
+
+&gt;&gt;<i> &gt;&gt; + &#160; &#160; addr = (unsigned long)queue-&gt;mem + buffer-&gt;buf.m.offset;
+</I>&gt;&gt;<i> &gt;&gt; + &#160; &#160; ret = addr;
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt; Why the intermediate step using addr?
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> If don't return addr, do_mmap_pgoff() will return failure and we can't
+</I>&gt;&gt;<i> setup vma correctly.
+</I>&gt;&gt;<i> See mm/nommu.c line 1386(add = file-&gt;f_op-&gt;get_unmmapped_area() ).
+</I>&gt;<i>
+</I>&gt;<i> I know, but why not do
+</I>&gt;<i> &#160; &#160; &#160; &#160;ret = (unsigned long)queue-&gt;mem + buffer-&gt;buf.m.offset;
+</I>&gt;<i> instead?
+</I>&gt;<i>
+</I>
+Okay.
+Thanks
+
+-- 
+Regards,
+--Bob
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006480.html">[Linux-uvc-devel] [PATCH v3] media:uvc_driver: add uvc support	on no-mmu arch
+</A></li>
+	<LI>Next message: <A HREF="006482.html">[Linux-uvc-devel] [PATCH v4] media:uvc_driver: add uvc support on	no-mmu arch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6481">[ date ]</a>
+              <a href="thread.html#6481">[ thread ]</a>
+              <a href="subject.html#6481">[ subject ]</a>
+              <a href="author.html#6481">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,287 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Driver doesn't return from VIDIOC_DQBUF ioctl
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Driver%20doesn%27t%20return%20from%20VIDIOC_DQBUF%20ioctl&In-Reply-To=%3C200805200024.33950.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003522.html">
+   <LINK REL="Next"  HREF="003524.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Driver doesn't return from VIDIOC_DQBUF ioctl</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Driver%20doesn%27t%20return%20from%20VIDIOC_DQBUF%20ioctl&In-Reply-To=%3C200805200024.33950.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Driver doesn't return from VIDIOC_DQBUF ioctl">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue May 20 00:24:33 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003522.html">[Linux-uvc-devel] Driver doesn't return from VIDIOC_DQBUF ioctl
+</A></li>
+        <LI>Next message: <A HREF="003524.html">[Linux-uvc-devel] Driver doesn't return from VIDIOC_DQBUF ioctl
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3523">[ date ]</a>
+              <a href="thread.html#3523">[ thread ]</a>
+              <a href="subject.html#3523">[ subject ]</a>
+              <a href="author.html#3523">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Ricardo,
+
+On Monday 19 May 2008, Ricardo Ferreira wrote:
+&gt;<i> Hello all, this is the second time I send this, the first complained about
+</I>&gt;<i> size being too big on the mailing list. I have striped previous clutter.
+</I>&gt;<i> Sorry for this.
+</I>
+No worries. Thanks for the report.
+
+&gt;<i> As promissed, here are the results for the phillips spc1000nc
+</I>&gt;<i>
+</I>&gt;<i> first, here's the insmod results line:
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">ricardo at LatasG</A>:~/tmp/uvc/trunk$ sudo insmod ./uvcvideo trace=143
+</I>&gt;<i> insmod: can't read './uvcvideo': No such file or directory
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">ricardo at LatasG</A>:~/tmp/uvc/trunk$ sudo insmod ./uvcvideo.ko trace=143
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">ricardo at LatasG</A>:~/tmp/uvc/trunk$ sudo dmesg -c
+</I>&gt;<i> uvcvideo: Adding mapping Brightness to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000101/2.
+</I>&gt;<i> uvcvideo: Adding mapping Contrast to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000101/3.
+</I>&gt;<i> uvcvideo: Adding mapping Hue to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000101/6.
+</I>&gt;<i> uvcvideo: Adding mapping Saturation to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000101/7.
+</I>&gt;<i> uvcvideo: Adding mapping Sharpness to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000101/8.
+</I>&gt;<i> uvcvideo: Adding mapping Gamma to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000101/9.
+</I>&gt;<i> uvcvideo: Adding mapping Backlight Compensation to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000101/1.
+</I>&gt;<i> uvcvideo: Adding mapping Gain to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000101/4.
+</I>&gt;<i> uvcvideo: Adding mapping Power Line Frequency to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000101/5.
+</I>&gt;<i> uvcvideo: Adding mapping Hue, Auto to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000101/16.
+</I>&gt;<i> uvcvideo: Adding mapping Exposure, Auto to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000001/2.
+</I>&gt;<i> uvcvideo: Adding mapping Exposure, Auto Priority to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000001/3.
+</I>&gt;<i> uvcvideo: Adding mapping Exposure (Absolute) to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000001/4.
+</I>&gt;<i> uvcvideo: Adding mapping White Balance Temperature, Auto to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000101/11.
+</I>&gt;<i> uvcvideo: Adding mapping White Balance Temperature to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000101/10.
+</I>&gt;<i> uvcvideo: Adding mapping White Balance Component, Auto to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000101/13.
+</I>&gt;<i> uvcvideo: Adding mapping White Balance Blue Component to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000101/12.
+</I>&gt;<i> uvcvideo: Adding mapping White Balance Red Component to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000101/12.
+</I>&gt;<i> uvcvideo: Adding mapping Focus (absolute) to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000001/6.
+</I>&gt;<i> uvcvideo: Adding mapping Focus, Auto to control
+</I>&gt;<i> 00000000-0000-0000-0000-000000000001/8.
+</I>&gt;<i> uvcvideo: Probing generic UVC device 4
+</I>&gt;<i> uvcvideo: Found format YUV 4:2:2 (YUYV).
+</I>&gt;<i> uvcvideo: - 640x480 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 352x288 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 320x240 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 176x144 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 160x120 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 1280x960 (9.0 fps)
+</I>&gt;<i> uvcvideo: - 1280x1024 (9.0 fps)
+</I>&gt;<i> uvcvideo: Found a Status endpoint (addr 83).
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device FO13FF-65 PC-CAM (05c8:0103)
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/2 to device 4
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/3 to device 4
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/6 to device 4
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/7 to device 4
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/8 to device 4
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/9 to device 4
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/1 to device 4
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/5 to device 4
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Scanning UVC chain: OT 2 &lt;- XU 5 &lt;- XU 4 &lt;- PU 3 &lt;- IT 1
+</I>&gt;<i> uvcvideo: Found a valid video chain (1 -&gt; 2).
+</I>&gt;<i> input: FO13FF-65 PC-CAM as /class/input/input9
+</I>&gt;<i> uvcvideo: Trying format 0x56595559 (YUYV): 10000x10000.
+</I>&gt;<i> uvcvideo: Using default frame interval 111111.1 us (9.0 fps).
+</I>&gt;<i> uvcvideo: UVC device initialized.
+</I>&gt;<i> uvcvideo: Probing generic UVC device 1
+</I>&gt;<i> uvcvideo: Found format YUV 4:2:2 (YUYV).
+</I>&gt;<i> uvcvideo: - 640x480 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 352x288 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 320x240 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 176x144 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 160x120 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 1280x1024 (9.0 fps)
+</I>&gt;<i> uvcvideo: Found format MJPEG.
+</I>&gt;<i> uvcvideo: - 640x480 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 352x288 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 320x240 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 176x144 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 160x120 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 1280x1024 (15.0 fps)
+</I>&gt;<i> uvcvideo: Found a Status endpoint (addr 83).
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device Philips SPC 1000NC Webcam (0471:0332)
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/2 to device 1
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/3 to device 1
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/6 to device 1
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/7 to device 1
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/8 to device 1
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/9 to device 1
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/1 to device 1
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/4 to device 1
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/5 to device 1
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000001/2 to device 1
+</I>&gt;<i> entity 1
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000001/3 to device 1
+</I>&gt;<i> entity 1
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000001/4 to device 1
+</I>&gt;<i> entity 1
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/11 to device 1
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/10 to device 1
+</I>&gt;<i> entity 3
+</I>&gt;<i> uvcvideo: Scanning UVC chain: OT 2 &lt;- XU 5 &lt;- XU 4 &lt;- PU 3 &lt;- IT 1
+</I>&gt;<i> uvcvideo: Found a valid video chain (1 -&gt; 2).
+</I>&gt;<i> input: Philips SPC 1000NC Webcam as /class/input/input10
+</I>&gt;<i> uvcvideo: Trying format 0x56595559 (YUYV): 10000x10000.
+</I>&gt;<i> uvcvideo: Using default frame interval 111111.1 us (9.0 fps).
+</I>&gt;<i> uvcvideo: UVC device initialized.
+</I>&gt;<i> usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> USB Video Class driver (SVN r207)
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Here's luvcview's output:
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">ricardo at LatasG</A>:~/tmp/uvc/trunk$ luvcview -f yuv -L -d /dev/video1
+</I>&gt;<i> luvcview version 0.2.1
+</I>&gt;<i> Video driver: x11
+</I>&gt;<i> A window manager is available
+</I>&gt;<i> video /dev/video1
+</I>&gt;<i> /dev/video1 does not support read i/o
+</I>&gt;<i> { pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i>         Time interval between frame: 1/30, 1/25, 1/20, 1/15, 1/10, 1/5,
+</I>&gt;<i> { discrete: width = 352, height = 288 }
+</I>&gt;<i>         Time interval between frame: 1/30, 1/25, 1/20, 1/15, 1/10, 1/5,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i>         Time interval between frame: 1/30, 1/25, 1/20, 1/15, 1/10, 1/5,
+</I>&gt;<i> { discrete: width = 176, height = 144 }
+</I>&gt;<i>         Time interval between frame: 1/30, 1/25, 1/20, 1/15, 1/10, 1/5,
+</I>&gt;<i> { discrete: width = 160, height = 120 }
+</I>&gt;<i>         Time interval between frame: 1/30, 1/25, 1/20, 1/15, 1/10, 1/5,
+</I>&gt;<i> { discrete: width = 1280, height = 1024 }
+</I>&gt;<i>         Time interval between frame: 1/15, 1/10, 1/5,
+</I>&gt;<i> { pixelformat = 'MJPG', description = 'MJPEG' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i>         Time interval between frame: 1/30, 1/25, 1/20, 1/15, 1/10, 1/5,
+</I>&gt;<i> { discrete: width = 352, height = 288 }
+</I>&gt;<i>         Time interval between frame: 1/30, 1/25, 1/20, 1/15, 1/10, 1/5,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i>         Time interval between frame: 1/30, 1/25, 1/20, 1/15, 1/10, 1/5,
+</I>&gt;<i> { discrete: width = 176, height = 144 }
+</I>&gt;<i>         Time interval between frame: 1/30, 1/25, 1/20, 1/15, 1/10, 1/5,
+</I>&gt;<i> { discrete: width = 160, height = 120 }
+</I>&gt;<i>         Time interval between frame: 1/30, 1/25, 1/20, 1/15, 1/10, 1/5,
+</I>&gt;<i> { discrete: width = 1280, height = 1024 }
+</I>&gt;<i>         Time interval between frame: 1/9, 1/5,
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Now for the each size, the output of the patched driver:
+</I>&gt;<i> YUV:
+</I>&gt;<i> 640x480: incomplete buffer (614400 bytes, expected 675840)
+</I>&gt;<i> 352x288: incomplete buffer (202752 bytes, expected 223027)
+</I>&gt;<i> 320x240: incomplete buffer (153600 bytes, expected 168960)
+</I>&gt;<i> 176x144: incomplete buffer (50688 bytes, expected 55756)
+</I>&gt;<i> 160x120: incomplete buffer (38400 bytes, expected 42240)
+</I>&gt;<i> 1280x1024: many messages like
+</I>&gt;<i> uvcvideo: Frame complete (EOF found).
+</I>&gt;<i> uvcvideo: EOF in empty payload.
+</I>&gt;<i> uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i>
+</I>&gt;<i> but it works (apparently fine).
+</I>&gt;<i>
+</I>&gt;<i> MJPG (-f jpg in luvcview)
+</I>&gt;<i>
+</I>&gt;<i> 640x480: many &quot;out of sync&quot; messages, but it works
+</I>&gt;<i> 352x288: same
+</I>&gt;<i> 320x240: same
+</I>&gt;<i> 176x144: same
+</I>&gt;<i> 160x120: same
+</I>&gt;<i> 1280x1024: same
+</I>&gt;<i>
+</I>&gt;<i> the only problem with all of these is that luvcview is reporting around
+</I>&gt;<i> 5-15 fps when the camera reports 30 fps (the camera box says it should be
+</I>&gt;<i> able to do 60 fps, but I don't see those modes listed in luvcview). I think
+</I>&gt;<i> it has to do with light conditions. low light-&gt; 5fps, sunlight -&gt; 15 fps.
+</I>
+That would be my guess too.
+
+&gt;<i> attached is an lsusb of the camera device.
+</I>&gt;<i>
+</I>&gt;<i> Since both cameras experience the same problem, I think a camera bug is
+</I>&gt;<i> ruled out?
+</I>
+Unfortunately not. Both cameras probably use the same buggy chipset.
+
+I'll try to come up with a patch but I'm quite busy for now. I'll see what I 
+can do. Sorry for the delay.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003522.html">[Linux-uvc-devel] Driver doesn't return from VIDIOC_DQBUF ioctl
+</A></li>
+	<LI>Next message: <A HREF="003524.html">[Linux-uvc-devel] Driver doesn't return from VIDIOC_DQBUF ioctl
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3523">[ date ]</a>
+              <a href="thread.html#3523">[ thread ]</a>
+              <a href="subject.html#3523">[ subject ]</a>
+              <a href="author.html#3523">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

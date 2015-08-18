@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Linux 2.6.26-rc9 circular lock with uvcvideo	on resume from hibernation
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Linux%202.6.26-rc9%20circular%20lock%20with%20uvcvideo%0A%09on%20resume%20from%20hibernation&In-Reply-To=%3C200807092129.03679.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003802.html">
+   <LINK REL="Next"  HREF="003799.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Linux 2.6.26-rc9 circular lock with uvcvideo	on resume from hibernation</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Linux%202.6.26-rc9%20circular%20lock%20with%20uvcvideo%0A%09on%20resume%20from%20hibernation&In-Reply-To=%3C200807092129.03679.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Linux 2.6.26-rc9 circular lock with uvcvideo	on resume from hibernation">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Jul  9 21:29:03 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003802.html">[Linux-uvc-devel] Concurent accesses to multiple devices.
+</A></li>
+        <LI>Next message: <A HREF="003799.html">[Linux-uvc-devel] Linux 2.6.26-rc9 circular lock with uvcvideo	on resume from hibernation
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3798">[ date ]</a>
+              <a href="thread.html#3798">[ thread ]</a>
+              <a href="subject.html#3798">[ subject ]</a>
+              <a href="author.html#3798">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Romano and Roland,
+
+On Monday 07 July 2008, Roland Dreier wrote:
+&gt;<i>  &gt; [ 1132.942569] khubd/2264 is trying to acquire lock:
+</I>&gt;<i>  &gt; [ 1132.942614]  (videodev_lock){--..}, at: [&lt;f89e4595&gt;]
+</I>&gt;<i>  &gt; video_unregister_device+0x15/0x60 [videodev] [ 1132.942810]
+</I>&gt;<i>  &gt; [ 1132.942811] but task is already holding lock:
+</I>&gt;<i>  &gt; [ 1132.942890]  (&amp;uvc_driver.open_mutex){--..}, at: [&lt;f8a35c09&gt;]
+</I>&gt;<i>  &gt; uvc_disconnect+0x29/0x50 [uvcvideo]
+</I>&gt;<i>
+</I>&gt;<i> Thanks very much for the report (and for testing development kernels
+</I>&gt;<i> with lockdep enabled!).
+</I>
+I second this. Thanks a lot.
+
+&gt;<i> I think the patch below should fix this.
+</I>&gt;<i>
+</I>&gt;<i> Laurent -- if this patch looks good to you, please forward on for
+</I>&gt;<i> merging.
+</I>&gt;<i>
+</I>&gt;<i> Thanks,
+</I>&gt;<i>   Roland
+</I>&gt;<i>
+</I>&gt;<i> ---
+</I>&gt;<i>
+</I>&gt;<i> [PATCH] uvc: Fix possible AB-BA deadlock with videodev_lock and open_mutex
+</I>&gt;<i>
+</I>&gt;<i> The uvcvideo driver's uvc_v4l2_open() method is called from videodev's
+</I>&gt;<i> video_open() function, which means it is called with the videodev_lock
+</I>&gt;<i> mutex held.  uvc_v4l2_open() then takes uvc_driver.open_mutex to check
+</I>&gt;<i> dev-&gt;state and avoid racing against a device disconnect, which means
+</I>&gt;<i> that open_mutex must nest inside videodev_lock.
+</I>
+The open_mutex lock's main purpose is to prevent uvc_delete() being called 
+from kref_put() while an open operation is in progress. Protected dev-&gt;state 
+is a side effect which might not be required.
+
+&gt;<i> However uvc_disconnect() takes the open_mutex around setting
+</I>&gt;<i> dev-&gt;state and also around putting its device reference.  However, if
+</I>&gt;<i> uvc_disconnect() ends up dropping the last reference, it will call
+</I>&gt;<i> uvc_delete(), which calls into the videodev code to unregister its
+</I>&gt;<i> device, and this will end up taking videodev_lock.  This opens a
+</I>&gt;<i> (unlikely in practice) window for an AB-BA deadlock and also causes a
+</I>&gt;<i> lockdep warning because of the lock misordering.
+</I>
+I agree with this analysis.
+
+&gt;<i> Fortunately there is no apparent reason to hold open_mutex when doing
+</I>&gt;<i> kref_put() in uvc_disconnect(): if uvc_v4l2_open() runs before the
+</I>&gt;<i> state is set to UVC_DEV_DISCONNECTED, then it will take another
+</I>&gt;<i> reference to the device and kref_put() won't call uvc_delete; if
+</I>&gt;<i> uvc_v4l2_open() runs after the state is set, it will run before
+</I>&gt;<i> uvc_delete(), see the state, and return immediately -- uvc_delete()
+</I>&gt;<i> does uvc_unregister_video() (and hence video_unregister_device(),
+</I>&gt;<i> which is synchronized with videodev_lock) as its first thing, so there
+</I>&gt;<i> is no risk of use-after-free in uvc_v4l2_open().
+</I>
+This introduces a race condition, see below.
+
+&gt;<i> Bug diagnosed based on a lockdep warning reported by Romano Giannetti
+</I>&gt;<i> &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">romano at dea.icai.upcomillas.es</A>&gt;.
+</I>&gt;<i>
+</I>&gt;<i> Signed-off-by: Roland Dreier &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">roland at digitalvampire.org</A>&gt;
+</I>&gt;<i> ---
+</I>&gt;<i>  drivers/media/video/uvc/uvc_driver.c |    5 ++---
+</I>&gt;<i>  1 files changed, 2 insertions(+), 3 deletions(-)
+</I>&gt;<i>
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> b/drivers/media/video/uvc/uvc_driver.c index 60ced58..5d60cb3 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> @@ -1634,11 +1634,10 @@ static void uvc_disconnect(struct usb_interface
+</I>&gt;<i> *intf) * chance to increase the reference count (kref_get).
+</I>&gt;<i>  	 */
+</I>&gt;<i>  	mutex_lock(&amp;uvc_driver.open_mutex);
+</I>&gt;<i> -
+</I>&gt;<i>  	dev-&gt;state |= UVC_DEV_DISCONNECTED;
+</I>&gt;<i> -	kref_put(&amp;dev-&gt;kref, uvc_delete);
+</I>&gt;<i> -
+</I>&gt;<i>  	mutex_unlock(&amp;uvc_driver.open_mutex);
+</I>&gt;<i> +
+</I>&gt;<i> +	kref_put(&amp;dev-&gt;kref, uvc_delete);
+</I>&gt;<i>  }
+</I>&gt;<i>
+</I>&gt;<i>  static int uvc_suspend(struct usb_interface *intf, pm_message_t message)
+</I>
+uvc_disconnect()                      | uvc_v4l2_open()
+...                                   |
+mutex_lock(&amp;uvc_driver.open_mutex);   |
+dev-&gt;state |= UVC_DEV_DISCONNECTED;   |
+mutex_unlock(&amp;uvc_driver.open_mutex); |
+                                      |
+                                      | mutex_lock(&amp;uvc_driver.open_mutex);
+                                      | vdev = video_devdata(file);
+                                      | video = video_get_drvdata(vdev);
+                                      |
+kref_put(&amp;dev-&gt;kref, uvc_delete);     |
+                                      |
+                                      | if (video-&gt;dev-&gt;state...) 
+
+kref_put() in uvc_disconnect() will call uvc_delete(), which will in turn free 
+the video structure. uvc_v4l2_open() will then dereference freed memory when 
+testing the device state.
+
+I proper fix will involve videodev modifications. Fortunately, David 
+Ellingsworth posted a videodev patch to address the same kind of issue a few 
+days ago. Search the video4linux mailing list for a thread called &quot;[PATCH] 
+videodev: fix sysfs kobj ref count&quot;. I'm currently reviewing his patch. As 
+soon as a proper fix is applied to videodev I will probably drop the 
+open_mutex lock acquisition in uvc_disconnect().
+
+In the meantime, and for kernel versions that don't include the videodev 
+patch, I don't know what to choose between a race condition that can lead to 
+freed memory dereference, and a AB-BA deadlock. Any opinion on that ?
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003802.html">[Linux-uvc-devel] Concurent accesses to multiple devices.
+</A></li>
+	<LI>Next message: <A HREF="003799.html">[Linux-uvc-devel] Linux 2.6.26-rc9 circular lock with uvcvideo	on resume from hibernation
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3798">[ date ]</a>
+              <a href="thread.html#3798">[ thread ]</a>
+              <a href="subject.html#3798">[ subject ]</a>
+              <a href="author.html#3798">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

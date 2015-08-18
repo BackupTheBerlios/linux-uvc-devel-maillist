@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] BisonCam, NB Pro (5996:0241) not working
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20BisonCam%2C%20NB%20Pro%20%285996%3A0241%29%20not%20working&In-Reply-To=%3C1255085972.4129.3.camel%40obsolete%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005204.html">
+   <LINK REL="Next"  HREF="005218.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] BisonCam, NB Pro (5996:0241) not working</H1>
+    <B>Pedro Fragoso</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20BisonCam%2C%20NB%20Pro%20%285996%3A0241%29%20not%20working&In-Reply-To=%3C1255085972.4129.3.camel%40obsolete%3E"
+       TITLE="[Linux-uvc-devel] BisonCam, NB Pro (5996:0241) not working">emberez at gmail.com
+       </A><BR>
+    <I>Fri Oct  9 12:59:32 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005204.html">[Linux-uvc-devel] BisonCam, NB Pro (5996:0241) not working
+</A></li>
+        <LI>Next message: <A HREF="005218.html">[Linux-uvc-devel] BisonCam, NB Pro (5996:0241) not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5213">[ date ]</a>
+              <a href="thread.html#5213">[ thread ]</a>
+              <a href="subject.html#5213">[ subject ]</a>
+              <a href="author.html#5213">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+Here's the steps:
+
+1. hg clone <A HREF="http://linuxtv.org/hg/~pinchartl/uvcvideo/">http://linuxtv.org/hg/~pinchartl/uvcvideo/</A>
+
+2. wget --no-check-certificate -O frame_fix.patch
+<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091001/dba61c45/attachment.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091001/dba61c45/attachment.bin</A>
+
+3. patch -p1 &lt; ../frame_fix.patch 
+patching file linux/drivers/media/video/uvc/uvc_driver.c
+
+4. Edited DRIVER_VERSION of uvc_driver to make sure i'm loading the
+right driver
+
+5. make &amp;&amp; make install (logs attached)
+
+6. depmod -ae $(uname -r)
+
+7. modprobe -r uvcvideo &amp;&amp; modprobe uvcvideo trace=2
+
+8. dmesg|grep uvcvideo
+uvcvideo: Found format YUV 4:2:2 (YUYV).
+uvcvideo: - 640x480 (18.0 fps)
+uvcvideo: - 320x240 (30.0 fps)
+uvcvideo: - 160x120 (30.0 fps)
+uvcvideo: - 352x288 (30.0 fps)
+uvcvideo: - 176x144 (30.0 fps)
+uvcvideo: - 1280x1024 (7.5 fps)
+uvcvideo: device 4 videostreaminginterface 1 FRAME error
+uvcvideo: Found a Status endpoint (addr 82).
+uvcvideo: Found UVC 1.00 device BisonCam, NB Pro (5986:0241)
+uvcvideo: No valid video chain found.
+usbcore: registered new interface driver uvcvideo
+
+9. modinfo uvcvideo|grep ^version
+version:        v0.1.0-framefix
+
+10. (Additional step) Edit /etc/modprobe.conf and add &quot;options uvcvideo
+trace=2&quot; and reboot. (same result as 8 and 9)
+
+Am i missing something?
+
+
+On Thu, 2009-10-08 at 18:00 +0200, Laurent Pinchart wrote:
+&gt;<i> Hi Pedro,
+</I>&gt;<i> 
+</I>&gt;<i> On Thursday 01 October 2009 12:22:54 Pedro Fragoso wrote:
+</I>&gt;<i> &gt; Hi Laurent,
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I've applied the patch with the latest hg and it didn't work.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; modprobe -r uvcvideo ; modprobe uvcvideo trace=2 gave me:
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;         uvcvideo: Found format YUV 4:2:2 (YUYV).
+</I>&gt;<i> &gt;         uvcvideo: - 640x480 (18.0 fps)
+</I>&gt;<i> &gt;         uvcvideo: - 320x240 (30.0 fps)
+</I>&gt;<i> &gt;         uvcvideo: - 160x120 (30.0 fps)
+</I>&gt;<i> &gt;         uvcvideo: - 352x288 (30.0 fps)
+</I>&gt;<i> &gt;         uvcvideo: - 176x144 (30.0 fps)
+</I>&gt;<i> &gt;         uvcvideo: - 1280x1024 (7.5 fps)
+</I>&gt;<i> &gt;         uvcvideo: device 3 videostreaminginterface 1 FRAME error
+</I>&gt;<i> &gt;         uvcvideo: Found a Status endpoint (addr 82).
+</I>&gt;<i> &gt;         uvcvideo: Found UVC 1.00 device BisonCam, NB Pro (5986:0241)
+</I>&gt;<i> &gt;         uvcvideo: No valid video chain found.
+</I>&gt;<i> &gt;         usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> 
+</I>&gt;<i> Could you please double-check that you load the correct driver ? I've hacked 
+</I>&gt;<i> the code here to inject the bad descriptor data in an otherwise valid UVC 
+</I>&gt;<i> camera and the patch fixes the problem.
+</I>&gt;<i> 
+</I>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: make.log
+Type: text/x-log
+Size: 72134 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091009/ddb79742/attachment.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091009/ddb79742/attachment.bin</A>&gt;
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: make_install.log
+Type: text/x-log
+Size: 5914 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091009/ddb79742/attachment-0001.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091009/ddb79742/attachment-0001.bin</A>&gt;
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: modinfo.log
+Type: text/x-log
+Size: 2251 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091009/ddb79742/attachment-0002.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091009/ddb79742/attachment-0002.bin</A>&gt;
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 197 bytes
+Desc: This is a digitally signed message part
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091009/ddb79742/attachment.pgp">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091009/ddb79742/attachment.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005204.html">[Linux-uvc-devel] BisonCam, NB Pro (5996:0241) not working
+</A></li>
+	<LI>Next message: <A HREF="005218.html">[Linux-uvc-devel] BisonCam, NB Pro (5996:0241) not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5213">[ date ]</a>
+              <a href="thread.html#5213">[ thread ]</a>
+              <a href="subject.html#5213">[ subject ]</a>
+              <a href="author.html#5213">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

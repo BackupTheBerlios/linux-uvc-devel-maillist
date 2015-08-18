@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo driver for x86_64
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20driver%20for%20x86_64&In-Reply-To=%3C32209efe0703272038k10a6f281v6cf0121e2442aefb%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001535.html">
+   <LINK REL="Next"  HREF="001538.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo driver for x86_64</H1>
+    <B>Natalie Protasevich</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20driver%20for%20x86_64&In-Reply-To=%3C32209efe0703272038k10a6f281v6cf0121e2442aefb%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo driver for x86_64">protasnb at gmail.com
+       </A><BR>
+    <I>Wed Mar 28 05:38:25 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001535.html">[Linux-uvc-devel] (no subject)
+</A></li>
+        <LI>Next message: <A HREF="001538.html">[Linux-uvc-devel] uvcvideo driver for x86_64
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1536">[ date ]</a>
+              <a href="thread.html#1536">[ thread ]</a>
+              <a href="subject.html#1536">[ subject ]</a>
+              <a href="author.html#1536">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+I am trying to use Logitech Pro 5000 web cam under Linux x86_64. I don't
+seem to have any problems with the webcam under Linux i386. But when I am
+trying to run it under x86_64, the application doesn't work. I heard some
+opinions about no support for video4linux L2 in the uvcvideo driver, but
+both the application and the driver seem to use l2 calls and have full L2
+support. However, the driver doesn't work which makes me think that this
+might be  the compat_ioctl32 layer in the linux kernel. The kernel level is
+2.6.18.5, and I am also planning to test with the newest kernel, either -rc
+or even -mm tree.
+I've collected some traces to check if something is missing still in
+the UVCapplication/driver/kernel chain, or this is just some bugs in
+the compat
+layers.
+I was using Marratech application, uvccapture, and luvcview with similar
+results.
+Here some sample traces (with my debug):
+
+Marratech conferencing application:
+
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">natalie at 4300-test</A>:~/Desktop/uvccapture-0.4$ /usr/local/marratech/Marratech6
+.1/bin/Marratech
+Virtual screensize: java.awt.Rectangle[x=0,y=0,width=1600,height=1024]
+ALSA lib control.c:817:(snd_ctl_open_noupdate) Invalid CTL
+ioctl VIDIOCGCHAN: Invalid argument
+V4l: failed to find a supported format.
+ioctl VIDIOCGCHAN: Invalid argument
+ioctl VIDIOCGMBUF: Invalid argument
+mmap: Invalid argument
+V4l: device has no mmap support
+ioctl VIDIOCSWIN: Input/output error
+ioctl VIDIOCGWIN: Invalid argument
+ioctl VIDIOCGCHAN: Invalid argument
+ioctl VIDIOCGWIN: Invalid argument
+yuvgrab, read failed!
+yuvgrab, read failed!
+yuvgrab, read failed!
+
+uvccapture and luvcview:
+
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">nataliep at 4300-test</A>:/tmp$ ./uvccapture
+sending ioctl VIDIOC_QUERYCAP
+sending ioctl VIDIOC_S_FMT
+Unable to set format: 22.
+ Init v4L2 failed !! exit fatal
+
+I also have a kernel trace with my debug, this is a part of it that shows
+that the driver calls into the l1 compat layer, which seems odd to me since
+everything from application to kernel is all l2:
+
+Mar 27 19:07:36 4300-test kernel: [  587.416082] NBP: in compat translate
+ioctl
+Mar 27 19:07:36 4300-test kernel: [  587.416086] Call Trace:
+Mar 27 19:07:36 4300-test kernel: [  587.416113]  [&lt;ffffffff888a21e2&gt;]
+:<i>v4l1_compat:v4l_compat_translate_ioctl+0x40/0x1a6e
+</I>Mar 27 19:07:36 4300-test kernel: [  587.416122]  [&lt;ffffffff888cd4c2&gt;]
+:<i>uvcvideo:uvc_v4l2_do_ioctl+0x0/0xd2d
+</I>
+... (omitting loooong trace here)
+
+Mar 27 19:07:36 4300-test kernel: [  587.416981]  [&lt;ffffffff888b0867&gt;]
+:<i>compat_ioctl32:v4l_compat_ioctl32+0x5c2/0x61f
+</I>Mar 27 19:07:36 4300-test kernel: [  587.416987]  [&lt;ffffffff888b02a5&gt;]
+:<i>compat_ioctl32:v4l_compat_ioctl32+0x0/0x61f
+</I>Mar 27 19:07:36 4300-test kernel: [  587.417002]  [&lt;ffffffff802ca2b2&gt;]
+compat_sys_ioctl+0xd1/0x2c5
+Mar 27 19:07:36 4300-test kernel: [  587.417033]  [&lt;ffffffff8025a0e3&gt;]
+sysenter_do_call+0x1b/0x67
+
+
+Mar 27 19:07:36 4300-test kernel: [  587.417071] uvcvideo: Unknown ioctl
+0xc0cc5605
+Mar 27 19:07:36 4300-test kernel: [  587.417075] NBP: compat_ioctl32:ret
+ffffffea -
+
+and the compat_ioctl32 fails, which makes me think this is a culprit.
+I will sure appreciate some help with all this...
+Thanks,
+--Natalie
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070327/af1a0fe2/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070327/af1a0fe2/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001535.html">[Linux-uvc-devel] (no subject)
+</A></li>
+	<LI>Next message: <A HREF="001538.html">[Linux-uvc-devel] uvcvideo driver for x86_64
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1536">[ date ]</a>
+              <a href="thread.html#1536">[ thread ]</a>
+              <a href="subject.html#1536">[ subject ]</a>
+              <a href="author.html#1536">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

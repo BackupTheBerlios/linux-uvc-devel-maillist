@@ -1,0 +1,3837 @@
+From luc at saillard.org  Wed Mar  1 17:43:35 2006
+From: luc at saillard.org (Luc Saillard)
+Date: Wed, 1 Mar 2006 17:43:35 +0100
+Subject: [Linux-uvc-devel] Fusion Resolution
+In-Reply-To: <200602251054.36786.mxhaard@magic.fr>
+References: <1140814738.18852.33.camel@lazlo.netdot.net> <200602241655.18939.ace@staticwave.ca> <20060225003724.GE16058@sd291.sivit.org> <200602251054.36786.mxhaard@magic.fr>
+Message-ID: <20060301164335.GI2938@sd291.sivit.org>
+
+> Maybe try this one, I have set in luvcview to resize the gui part . In 
+> luvcview i only resize the xaxis as y is a constant, this one may resize the 
+> two axis.
+
+Thanks for the tip, i've used your method, but didn't give good result when
+converting YUYV to YUV420P with resize in one pass. So i keep the idea to
+keep the last known good value, but discarding it sometimes. I'll add this
+algorithm in ekiga to convert palete (firewire UYVY and YUYV) without using a
+temp buffer.
+I've test this algo with a 1280x960 image to 320x240, 512x384, 640x480, 960x720.
+
+#define FIX_FLOAT       12
+
+    unsigned int dx = (in->width<<FIX_FLOAT)/out->width;
+    unsigned int dy = (in->height<<FIX_FLOAT)/out->height;
+    unsigned int fy, fx;
+
+    for (fy=0, h=0; h<out->height; h+=2, fy+=dy*2)
+      {
+        /* Copy the first line with U&V */
+        unsigned int yy = fy>>FIX_FLOAT;
+        unsigned int yy2 = (fy+dy)>>FIX_FLOAT;
+        const unsigned char *line1, *line2;
+        unsigned char lastU, lastV;
+
+        line1 = in->data[0] + (yy*2*in->width);
+        line2 = in->data[0] + (yy2*2*in->width);
+        lastU = line1[1];
+        lastV = line1[3];
+        for (fx=0, x=0; x<out->width; x+=2, fx+=dx*2)
+         {
+              unsigned int xx = (fx>>FIX_FLOAT)*2;
+              *y++ = line1[xx];
+              if ( (xx&2) == 0)
+               {
+                 *u++ = lastU = (line1[xx+1] + line2[xx+1])/2;
+                 *v++ = lastV = (line1[xx+3] + line2[xx+3])/2;
+               }
+              else
+               {
+                 *u++ = lastU;
+                 *v++ = lastV = (line1[xx+1] + line2[xx+1])/2;
+               }
+              xx = ((fx+dx)>>FIX_FLOAT)*2;
+              *y++ = line1[xx];
+              if ( (xx&2) == 0)
+                 lastU = (line1[xx+1] + line2[xx+1])/2;
+              else
+                 lastV = (line1[xx+1] + line2[xx+1])/2;
+         }
+        /* Copy the second line without U&V */
+        for (fx=0, x=0; x<out->width; x++, fx+=dx)
+         {
+           unsigned int xx = (fx>>FIX_FLOAT)*2;
+           *y++ = line2[xx];
+         }
+      }
+
+
+
+From craig at nadler.us  Thu Mar  2 05:39:11 2006
+From: craig at nadler.us (Craig Nadler)
+Date: Thu, 02 Mar 2006 04:39:11 +0000
+Subject: [Linux-uvc-devel] Support for Interface Association Descriptors
+Message-ID: <W7368214858185171141274351@webmail12>
+
+     I'm interested in knowing what people think of adding support for Interface Association Descriptors in the descriptor parsing code(drivers/usb/core/config.c), new device handling code(drivers/usb/core/usb.c), and to class drivers that commonly use IADs.For devices that specify the class type at the interface level and have IADs the class driver would be attached to the IAD instead of the individual interfaces. IMO this would facilitate implementing a general purpose USB Video Class driver.
+
+Best Regards,
+
+Craig Nadler
+
+
+
+
+
+
+
+From craig at nadler.us  Wed Mar  1 20:37:14 2006
+From: craig at nadler.us (Craig Nadler)
+Date: Wed, 01 Mar 2006 19:37:14 +0000
+Subject: [Linux-uvc-devel] Support for Interface Association Descriptors
+Message-ID: <W414497541142081141241834@webmail22>
+
+I'm interested in knowing what people think of adding support for Interface Association Descriptors in the descriptor parsing code (drivers/usb/core/config.c), new device handling code (drivers/usb/core/usb.c), and to class drivers that commonly use IADs. For devices that specify the class at the interface level and have IADs the class driver would be attached to the IAD instead of the individual interfaces. IMO this would facilitate implementing a general purpose USB Video Class driver.
+
+Best Regards,
+
+Craig Nadler
+
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20060301/2d45d2fd/attachment.html>
+
+From craig at nadler.us  Sun Mar  5 09:16:47 2006
+From: craig at nadler.us (Craig Nadler)
+Date: Sun, 05 Mar 2006 03:16:47 -0500
+Subject: [Linux-uvc-devel] Support for Interface Association Descriptors
+In-Reply-To: <W7368214858185171141274351@webmail12>
+References: <W7368214858185171141274351@webmail12>
+Message-ID: <440A9E6F.8050901@nadler.us>
+
+    I've put together a patch demonstrating how Interface Association
+Descriptors could be supported with a minimal amount of changes the
+current USB stack. When a USB device is enumerated the descriptors are
+parsed by the code in drivers/usb/core/config.c. A list of IADs for a
+given configuration would be stored in the usb_host_config struct for
+that configuration. If an interface is referenced by an IAD then a
+pointer to the IAD will be stored in the usb_host_interface struct for
+that interface.
+    The probe entry point of a class driver could check if the interface
+it's probing is referenced by an IAD. If it is then configure the driver
+to handle the other associated interfaces as well. The probe function
+could also check the "extra" and "extralen" fields in the
+usb_host_interface struct for each interface to get the class specific
+descriptors.
+
+The code that displays descriptor information in /proc/bus/usb/devices
+will show IADs in the following format:
+
+A:  1stIf= 0 IfCount= 2 Cls=ff(vend.) Sub=03 Prot=00
+
+
+With the patch the descriptors for the Logitech QuickCam Pro 5000 are
+shown in /proc/bus/usb/devices as:
+
+T:  Bus=03 Lev=01 Prnt=01 Port=04 Cnt=01 Dev#=  3 Spd=480 MxCh= 0
+D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=01 MxPS=64 #Cfgs=  1
+P:  Vendor=046d ProdID=08c5 Rev= 0.05
+C:* #Ifs= 4 Cfg#= 1 Atr=80 MxPwr=500mA
+A:  1stIf= 0 IfCount= 2 Cls=ff(vend.) Sub=03 Prot=00
+A:  1stIf= 2 IfCount= 2 Cls=01(audio) Sub=02 Prot=00
+I:  If#= 0 Alt= 0 #EPs= 1 Cls=ff(vend.) Sub=01 Prot=00 Driver=(none)
+E:  Ad=87(I) Atr=03(Int.) MxPS=  16 Ivl=16ms
+I:  If#= 1 Alt= 0 #EPs= 0 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+I:  If#= 1 Alt= 1 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS= 192 Ivl=125us
+I:  If#= 1 Alt= 2 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS= 384 Ivl=125us
+I:  If#= 1 Alt= 3 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS= 512 Ivl=125us
+I:  If#= 1 Alt= 4 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS= 640 Ivl=125us
+I:  If#= 1 Alt= 5 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS= 800 Ivl=125us
+I:  If#= 1 Alt= 6 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS= 944 Ivl=125us
+I:  If#= 1 Alt= 7 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS=1280 Ivl=125us
+I:  If#= 1 Alt= 8 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS=1600 Ivl=125us
+I:  If#= 1 Alt= 9 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS=1984 Ivl=125us
+I:  If#= 1 Alt=10 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS=2688 Ivl=125us
+I:  If#= 1 Alt=11 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS=3060 Ivl=125us
+I:  If#= 2 Alt= 0 #EPs= 0 Cls=01(audio) Sub=01 Prot=00 Driver=(none)
+I:  If#= 3 Alt= 0 #EPs= 0 Cls=01(audio) Sub=02 Prot=00 Driver=(none)
+I:  If#= 3 Alt= 1 #EPs= 1 Cls=01(audio) Sub=02 Prot=00 Driver=(none)
+E:  Ad=86(I) Atr=05(Isoc) MxPS=  16 Ivl=1ms
+I:  If#= 3 Alt= 2 #EPs= 1 Cls=01(audio) Sub=02 Prot=00 Driver=(none)
+E:  Ad=86(I) Atr=05(Isoc) MxPS=  32 Ivl=1ms
+I:  If#= 3 Alt= 3 #EPs= 1 Cls=01(audio) Sub=02 Prot=00 Driver=(none)
+E:  Ad=86(I) Atr=05(Isoc) MxPS=  48 Ivl=1ms
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: iad.patch
+Type: text/x-patch
+Size: 4714 bytes
+Desc: not available
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20060305/ae62d7a2/attachment.bin>
+
+From pbrobinson at gmail.com  Wed Mar  8 15:13:18 2006
+From: pbrobinson at gmail.com (Peter Robinson)
+Date: Wed, 8 Mar 2006 14:13:18 +0000
+Subject: [Linux-uvc-devel] Problems compiling trunk on rawhide
+Message-ID: <5256d0b0603080613x32bce46by5d62e1699d1c2454@mail.gmail.com>
+
+Hi All,
+
+Been a while since I've had time to play with the uvc driver but now
+it doesn't seem to compile on Fedora Rawhide (will become FC5 in the
+next week or so) with gcc 4.1. Not sure if its a kernel header file
+that's missing from  the fedora kernel packages.
+
+Output is:
+[root at localhost trunk]# make
+Building USB Video Class driver...
+make[1]: Entering directory `/usr/src/kernels/2.6.15-1.2025_FC5-i686'
+  CC [M]  /home/peterr/download/build/linux-uvc/linux-uvc/trunk/uvcvideo.o
+/home/peterr/download/build/linux-uvc/linux-uvc/trunk/uvcvideo.c: In
+function 'uvc_v4l2_do_ioctl':
+/home/peterr/download/build/linux-uvc/linux-uvc/trunk/uvcvideo.c:2016:
+error: 'v4l2_ioctl_names' undeclared (first use in this function)
+/home/peterr/download/build/linux-uvc/linux-uvc/trunk/uvcvideo.c:2016:
+error: (Each undeclared identifier is reported only once
+/home/peterr/download/build/linux-uvc/linux-uvc/trunk/uvcvideo.c:2016:
+error: for each function it appears in.)
+/home/peterr/download/build/linux-uvc/linux-uvc/trunk/uvcvideo.c: At top level:
+/home/peterr/download/build/linux-uvc/linux-uvc/trunk/uvcvideo.c:3387:
+error: unknown field 'owner' specified in initializer
+/home/peterr/download/build/linux-uvc/linux-uvc/trunk/uvcvideo.c:3387:
+warning: initialization from incompatible pointer typemake[2]: ***
+[/home/peterr/download/build/linux-uvc/linux-uvc/trunk/uvcvideo.o]
+Error 1
+make[1]: *** [_module_/home/peterr/download/build/linux-uvc/linux-uvc/trunk]
+Error 2
+make[1]: Leaving directory `/usr/src/kernels/2.6.15-1.2025_FC5-i686'
+make: *** [uvcvideo] Error 2
+
+
+From phil at firestorm.cx  Wed Mar  8 21:01:16 2006
+From: phil at firestorm.cx (Philip Heron)
+Date: Wed, 08 Mar 2006 20:01:16 +0000
+Subject: [Linux-uvc-devel] Frame Rate control?
+Message-ID: <1141848076.11186.2.camel@beastie.firestorm.cx>
+
+Hi All,
+
+ Quick question.. is it possible to control the frame rate of a UVC
+device? I had a quick look at the spec but I didn't see anything. It's
+probable I'm missing the obvious...
+
+-Phil <phil at firestorm.cx>
+
+
+
+From per at pz.se  Fri Mar 10 23:00:19 2006
+From: per at pz.se (Per Zetterlund)
+Date: Fri, 10 Mar 2006 23:00:19 +0100
+Subject: [Linux-uvc-devel] Read() [Was: Small fix and help offered]
+Message-ID: <c710dd30603101400m310cbf52yc5608b161d5bc4bf@mail.gmail.com>
+
+Hi all,
+
+On 2/27/06, Laurent Pinchart <laurent.pinchart at skynet.be> wrote:
+>
+> You could also implement the V4L2 read() method as it's currently not
+> supported.
+>
+
+Is there any simple V4L viewer that supports read() that I can use when
+doing this?
+
+Best regards,
+  Per
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20060310/0c3ae11d/attachment.html>
+
+From luc at saillard.org  Sun Mar 12 00:33:28 2006
+From: luc at saillard.org (Luc Saillard)
+Date: Sun, 12 Mar 2006 00:33:28 +0100
+Subject: [Linux-uvc-devel] Read() [Was: Small fix and help offered]
+In-Reply-To: <c710dd30603101400m310cbf52yc5608b161d5bc4bf@mail.gmail.com>
+References: <c710dd30603101400m310cbf52yc5608b161d5bc4bf@mail.gmail.com>
+Message-ID: <20060311233328.GS21472@sd291.sivit.org>
+
+On Fri, Mar 10, 2006 at 11:00:19PM +0100, Per Zetterlund wrote:
+> Hi all,
+> 
+> On 2/27/06, Laurent Pinchart <laurent.pinchart at skynet.be> wrote:
+> >
+> > You could also implement the V4L2 read() method as it's currently not
+> > supported.
+> >
+> 
+> Is there any simple V4L viewer that supports read() that I can use when
+> doing this?
+
+You can use capture.c that comes with v4l2 specifications, you will found it
+on the wiki. When this is working, you can use for example ekiga or xawtv to
+test it with a real application, but to be sure that the read method is
+called just desactivate the streaming mode in:
+                cap->capabilities = V4L2_CAP_VIDEO_CAPTURE
+                                  /* | V4L2_CAP_STREAMING */;
+
+Luc
+
+
+From cam at mcc.id.au  Sun Mar 12 03:31:07 2006
+From: cam at mcc.id.au (Cameron McCormack)
+Date: Sun, 12 Mar 2006 13:31:07 +1100
+Subject: [Linux-uvc-devel] Quickcam for notebooks pro not recognised
+Message-ID: <20060312023107.GB15061@port.mcc.id.au>
+
+Hi.
+
+I'm having trouble getting my quickcam for notebooks pro recognised with
+the uvcvideo driver.  It compiled and loads fine (with kernel 2.6.15.6);
+it just isn't detected.  Anything special I need to do?
+
+lsusb tells me:
+
+  Bus 003 Device 003: ID 046d:08b1 Logitech, Inc. 
+
+which isn't in uvc_ids[].  I tried adding an entry to match my IDs but
+still nothing appears in the logs (apart from the general USB messages)
+when I plug my webcam in.
+
+Thanks,
+
+Cameron
+
+-- 
+ Cameron McCormack			ICQ: 26955922
+ cam (at) mcc.id.au			MSN: cam (at) mcc.id.au
+ http://mcc.id.au/			JBR: heycam (at) jabber.org
+
+
+From laurent.pinchart at skynet.be  Sun Mar 12 11:56:52 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Sun, 12 Mar 2006 11:56:52 +0100
+Subject: [Linux-uvc-devel] Quickcam for notebooks pro not recognised
+In-Reply-To: <20060312023107.GB15061@port.mcc.id.au>
+References: <20060312023107.GB15061@port.mcc.id.au>
+Message-ID: <200603121156.52996.laurent.pinchart@skynet.be>
+
+Hi Cameron,
+
+> I'm having trouble getting my quickcam for notebooks pro recognised with
+> the uvcvideo driver.  It compiled and loads fine (with kernel 2.6.15.6);
+> it just isn't detected.  Anything special I need to do?
+>
+> lsusb tells me:
+>
+>   Bus 003 Device 003: ID 046d:08b1 Logitech, Inc.
+>
+> which isn't in uvc_ids[].  I tried adding an entry to match my IDs but
+> still nothing appears in the logs (apart from the general USB messages)
+> when I plug my webcam in.
+
+That's an "old" model, supported by the pwc driver.
+
+http://www.qbik.ch/usb/devices/showdev.php?id=1404
+
+Laurent Pinchart
+
+
+From cam at mcc.id.au  Mon Mar 13 06:49:37 2006
+From: cam at mcc.id.au (Cameron McCormack)
+Date: Mon, 13 Mar 2006 16:49:37 +1100
+Subject: [Linux-uvc-devel] Quickcam for notebooks pro not recognised
+In-Reply-To: <200603121156.52996.laurent.pinchart@skynet.be>
+References: <20060312023107.GB15061@port.mcc.id.au> <200603121156.52996.laurent.pinchart@skynet.be>
+Message-ID: <20060313054937.GA27403@port.mcc.id.au>
+
+Laurent Pinchart:
+> That's an "old" model, supported by the pwc driver.
+
+Oh ok, I didn't realise there were old and new models.  I'll give the
+pwc driver a go, thanks.
+
+Cameron
+
+-- 
+ Cameron McCormack			ICQ: 26955922
+ cam (at) mcc.id.au			MSN: cam (at) mcc.id.au
+ http://mcc.id.au/			JBR: heycam (at) jabber.org
+
+
+From heukaeufer at jhmi.edu  Mon Mar 13 22:42:36 2006
+From: heukaeufer at jhmi.edu (Matthias =?iso-8859-1?q?Heuk=E4ufer?=)
+Date: Mon, 13 Mar 2006 16:42:36 -0500
+Subject: [Linux-uvc-devel] backporting to the 2.6.8 kernel
+In-Reply-To: <20060313110017.105.84245.Mailman@bat.berlios.de>
+References: <20060313110017.105.84245.Mailman@bat.berlios.de>
+Message-ID: <200603131642.36658.heukaeufer@jhmi.edu>
+
+Hi everybody!
+
+I am trying to port the driver to the 2.6.8 kernel. This would be interesting 
+e. g. for people running Debian stable.
+With the attached patch I can cleanly compile and insert the module. 
+Furthermore, the green light on the Quickcam 5000 Pro comes on as soon as I 
+start uvcview. Unfortunately all I can see is a solid green image.
+I have to admit that my experience in C is only slightly better than my 
+knowledge of the kernel internals which is almost zero. Maybe somebody will 
+be able to give me a few hints as to where the problem might be.
+
+Thanks,
+Matthias
+
+Index: uvcvideo.c
+===================================================================
+--- uvcvideo.c	(revision 23)
++++ uvcvideo.c	(working copy)
+@@ -49,6 +49,11 @@
+ #define DRIVER_VERSION		"0.1.0"
+ #define DRIVER_VERSION_NUMBER	KERNEL_VERSION(0, 1, 0)
+ 
++#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,8)
++   typedef __u16 __le16;
++   typedef __u32 __le32;
++#endif
++
+ #define UVC_CTRL_TIMEOUT	300
+ 
+ 
+@@ -1995,7 +2000,11 @@
+ 	up(&video->queue.lock);
+ 
+ 	atomic_inc(&video->count);
++#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,8)
+ 	kref_put(&video->dev->kref, uvc_delete);
++#else
++	kref_put(&video->dev->kref);
++#endif
+ 	return 0;
+ }
+ 
+@@ -2261,9 +2270,15 @@
+ 		page = vmalloc_to_page((void*)addr);
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15)
+                 SetPageReserved(page);
++#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,9)
+ 		if ((ret = remap_pfn_range(vma, start, page_to_pfn(page),
+ 					PAGE_SIZE, vma->vm_page_prot)) < 0)
+ #else
++		if ((ret = remap_page_range(vma, start, (vma->vm_pgoff << 
++					PAGE_SHIFT), PAGE_SIZE, 
++					vma->vm_page_prot)) < 0)
++#endif
++#else
+ 		if ((ret = vm_insert_page(vma, start, page)) < 0)
+ #endif
+ 			goto done;
+@@ -3267,7 +3282,11 @@
+ 	INIT_LIST_HEAD(&dev->terminals);
+ 	INIT_LIST_HEAD(&dev->units);
+ 	INIT_LIST_HEAD(&dev->streaming);
++#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,8)
+ 	kref_init(&dev->kref);
++#else
++	kref_init(&dev->kref, uvc_delete);
++#endif
+ 
+ 	dev->udev = usb_get_dev(udev);
+ 	dev->intf = intf;
+@@ -3278,12 +3297,16 @@
+ 		uvc_trace(UVC_TRACE_PROBE, "Unable to parse UVC descriptors.\n");
+ 		goto error;
+ 	}
+-
++#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,8)
+ 	uvc_printk(KERN_INFO, "Found UVC %u.%02u device %s (%04x:%04x)\n",
+ 		dev->uvc_version >> 8, dev->uvc_version & 0xff,
+ 		udev->product ? udev->product : "<unnamed>",
+ 		udev->descriptor.idVendor, udev->descriptor.idProduct);
+-
++#else
++	uvc_printk(KERN_INFO, "Found UVC %u.%02u device (%04x:%04x)\n",
++		dev->uvc_version >> 8, dev->uvc_version & 0xff,
++		udev->descriptor.idVendor, udev->descriptor.idProduct);
++#endif
+ 	/* Register the video devices */
+ 	uvc_register_video(dev);
+ 
+@@ -3301,7 +3324,11 @@
+ 	return 0;
+ 
+ error:
++#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,8)
+ 	kref_put(&dev->kref, uvc_delete);
++#else
++	kref_put(&dev->kref);
++#endif
+ 	return -ENODEV;
+ }
+ 
+@@ -3330,7 +3357,11 @@
+ 	down(&dev_sem);
+ 
+ 	dev->state |= UVC_DEV_DISCONNECTED;
++#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,8)
+ 	kref_put(&dev->kref, uvc_delete);
++#else
++	kref_put(&dev->kref);
++#endif
+ 
+ 	up(&dev_sem);
+ }
+
+
+From nivw2002 at fastmail.fm  Wed Mar 15 11:43:27 2006
+From: nivw2002 at fastmail.fm (Niv)
+Date: Wed, 15 Mar 2006 12:43:27 +0200
+Subject: [Linux-uvc-devel] svn direction fix
+Message-ID: <4417EFCF.2040400@fastmail.fm>
+
+Hay,
+pls fix http://developer.berlios.de/svn/?group_id=5681
+to reflect
+svn checkout http://svn.berlios.de/svnroot/repos/linux-uvc/linux-uvc/trunk
+instead of
+svn checkout http://svn.berlios.de/svnroot/repos/linux-uvc/trunk
+
+
+From laurent.pinchart at skynet.be  Wed Mar 15 12:41:00 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Wed, 15 Mar 2006 12:41:00 +0100
+Subject: [Linux-uvc-devel] Problems compiling trunk on rawhide
+In-Reply-To: <5256d0b0603080613x32bce46by5d62e1699d1c2454@mail.gmail.com>
+References: <5256d0b0603080613x32bce46by5d62e1699d1c2454@mail.gmail.com>
+Message-ID: <200603151241.00262.laurent.pinchart@skynet.be>
+
+Hi Peter,
+
+sorry for the delay, I've been pretty busy (and the next 3 weeks are going to 
+be even worse).
+
+> Been a while since I've had time to play with the uvc driver but now
+> it doesn't seem to compile on Fedora Rawhide (will become FC5 in the
+> next week or so) with gcc 4.1. Not sure if its a kernel header file
+> that's missing from  the fedora kernel packages.
+
+Linux 2.6.16 will include a few V4L2 changes which break source compatibility. 
+The linux-uvc driver has been updated with conditional compilation based on 
+the kernel version number. It seems that Fedora has applied the V4L2 patches 
+to a 2.6.15 kernel. I don't know how to check for FC-specific kernel version 
+numbers as I have no FC-based Linux box.
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Wed Mar 15 13:21:29 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Wed, 15 Mar 2006 13:21:29 +0100
+Subject: [Linux-uvc-devel] svn direction fix
+In-Reply-To: <4417EFCF.2040400@fastmail.fm>
+References: <4417EFCF.2040400@fastmail.fm>
+Message-ID: <200603151321.29873.laurent.pinchart@skynet.be>
+
+> pls fix http://developer.berlios.de/svn/?group_id=5681
+> to reflect
+> svn checkout http://svn.berlios.de/svnroot/repos/linux-uvc/linux-uvc/trunk
+> instead of
+> svn checkout http://svn.berlios.de/svnroot/repos/linux-uvc/trunk
+
+I would if I could, but that seems to be un uneditable page. If anyone can 
+prove me wrong, please show me how to fix that issue.
+
+Laurent Pinchart
+
+
+From mini at nada.kth.se  Wed Mar 15 13:25:34 2006
+From: mini at nada.kth.se (Mikael Nilsson)
+Date: Wed, 15 Mar 2006 13:25:34 +0100
+Subject: [Linux-uvc-devel] svn direction fix
+In-Reply-To: <200603151321.29873.laurent.pinchart@skynet.be>
+References: <4417EFCF.2040400@fastmail.fm>
+	 <200603151321.29873.laurent.pinchart@skynet.be>
+Message-ID: <1142425534.7476.34.camel@yossarian>
+
+ons 2006-03-15 klockan 13:21 +0100 skrev Laurent Pinchart:
+> > pls fix http://developer.berlios.de/svn/?group_id=5681
+> > to reflect
+> > svn checkout http://svn.berlios.de/svnroot/repos/linux-uvc/linux-uvc/trunk
+> > instead of
+> > svn checkout http://svn.berlios.de/svnroot/repos/linux-uvc/trunk
+> 
+> I would if I could, but that seems to be un uneditable page. If anyone can 
+> prove me wrong, please show me how to fix that issue.
+> 
+
+The simple, short-term solution is to add the correct instructions to
+the http://linux-uvc.berlios.de/ page, noting that the berlios
+instructions are false.
+
+/Mikael
+
+> 
+-- 
+Plus ?a change, plus c'est la m?me chose
+
+
+
+From pbrobinson at gmail.com  Wed Mar 15 13:32:58 2006
+From: pbrobinson at gmail.com (Peter Robinson)
+Date: Wed, 15 Mar 2006 12:32:58 +0000
+Subject: [Linux-uvc-devel] Problems compiling trunk on rawhide
+In-Reply-To: <200603151241.00262.laurent.pinchart@skynet.be>
+References: <5256d0b0603080613x32bce46by5d62e1699d1c2454@mail.gmail.com>
+	 <200603151241.00262.laurent.pinchart@skynet.be>
+Message-ID: <5256d0b0603150432t678bf935hb868a589392d20c8@mail.gmail.com>
+
+Hi Laurent,
+
+> Hi Peter,
+>
+> sorry for the delay, I've been pretty busy (and the next 3 weeks are going to
+> be even worse).
+
+No problem, know that feeling all too well myself.
+
+> > Been a while since I've had time to play with the uvc driver but now
+> > it doesn't seem to compile on Fedora Rawhide (will become FC5 in the
+> > next week or so) with gcc 4.1. Not sure if its a kernel header file
+> > that's missing from  the fedora kernel packages.
+>
+> Linux 2.6.16 will include a few V4L2 changes which break source compatibility.
+> The linux-uvc driver has been updated with conditional compilation based on
+> the kernel version number. It seems that Fedora has applied the V4L2 patches
+> to a 2.6.15 kernel. I don't know how to check for FC-specific kernel version
+> numbers as I have no FC-based Linux box.
+
+The fedora rawhide kernel is running 2.6.16rc5-git12/git13 and will no
+doubt be 2.6.16 pretty shortly after it comes out. So does the driver
+work with 2.6.16?
+
+Peter
+
+
+From laurent.pinchart at skynet.be  Wed Mar 15 13:38:49 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Wed, 15 Mar 2006 13:38:49 +0100
+Subject: [Linux-uvc-devel] [PATCH] Support for V4L2 menu controls
+In-Reply-To: <1140869657.1598.5.camel@beastie.firestorm.cx>
+References: <1140869657.1598.5.camel@beastie.firestorm.cx>
+Message-ID: <200603151338.49506.laurent.pinchart@skynet.be>
+
+Hi Phil,
+
+sorry for the delay, I barely have time to read my mails (it should hopefully 
+get better in a few weeks).
+
+>  The attached patch changes the "Power Line Frequency" integer control
+> to a menu control. This makes the driver a little friendlier when using
+> applications that support them.
+
+Thanks. The patch has been applied. I plan to rewrite the whole control 
+handling code when I'll find some spare time.
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Wed Mar 15 15:09:59 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Wed, 15 Mar 2006 15:09:59 +0100
+Subject: [Linux-uvc-devel] Frame Rate control?
+In-Reply-To: <1141848076.11186.2.camel@beastie.firestorm.cx>
+References: <1141848076.11186.2.camel@beastie.firestorm.cx>
+Message-ID: <200603151509.59452.laurent.pinchart@skynet.be>
+
+Hi Phil,
+
+>  Quick question.. is it possible to control the frame rate of a UVC
+> device? I had a quick look at the spec but I didn't see anything. It's
+> probable I'm missing the obvious...
+
+It's possible, but not implemented yet due to a problem with the V4L2 specs. 
+The issue is that UVC negociates the image size before the frame rate, while 
+V4L2 negociates the frame rate before the image size (this is not entirely 
+true, you can set the image size before the frame rate, but the required 
+buffer length is returned by the image size negociation process, but UVC 
+devices return the required buffer length when negociating the frame rate and 
+compression quality). This has been discussed on the V4L2 mailing list, and I 
+still have to write a proposal for a new IOCTL. This means applications will 
+need to be upgraded to support the new interface.
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Wed Mar 15 17:28:01 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Wed, 15 Mar 2006 17:28:01 +0100
+Subject: [Linux-uvc-devel] Problems compiling trunk on rawhide
+In-Reply-To: <5256d0b0603150432t678bf935hb868a589392d20c8@mail.gmail.com>
+References: <5256d0b0603080613x32bce46by5d62e1699d1c2454@mail.gmail.com> <200603151241.00262.laurent.pinchart@skynet.be> <5256d0b0603150432t678bf935hb868a589392d20c8@mail.gmail.com>
+Message-ID: <200603151728.01189.laurent.pinchart@skynet.be>
+
+Hi Peter,
+
+> The fedora rawhide kernel is running 2.6.16rc5-git12/git13 and will no
+> doubt be 2.6.16 pretty shortly after it comes out. So does the driver
+> work with 2.6.16?
+
+It should. Could you try modifying the version number in the rawhide kernel 
+sources and compile the driver ?
+
+Laurent Pinchart
+
+
+From thomas.david.vaughan at gmail.com  Thu Mar 16 00:03:52 2006
+From: thomas.david.vaughan at gmail.com (THOMAS DAVID VAUGHAN)
+Date: Wed, 15 Mar 2006 15:03:52 -0800
+Subject: [Linux-uvc-devel] Logitech Quickcam Orbit problem/report
+Message-ID: <1142463832.10617.9.camel@localhost.localdomain>
+
+I have a Logitech Quickcam Orbit. The driver built, installed, and
+loaded fine on Ubuntu Hoary x86. All my apps complain about not being
+able to open /dev/video0. I ran a test program that was posted to the
+list in January. The results are below. I'm posting this for feedback to
+the developers. I don't require a response. I checked this driver out of
+the subversion repository today.
+
+Thanks much for the work on this driver.
+
+-Tom
+
+
+$ uname -a
+Linux dreamscometrue 2.6.12-10-686 #1 Sat Mar 11 16:22:51 UTC 2006 i686
+GNU/Linux
+
+$ lsusb
+Bus 005 Device 003: ID 046d:08c2 Logitech, Inc.
+
+$ lsmod | grep uvc
+uvcvideo               32676  0
+v4l1_compat            14692  1 uvcvideo
+videodev                9440  1 uvcvideo
+v4l2_common             5728  1 uvcvideo
+usbcore               118044  8
+snd_usb_audio,snd_usb_lib,uvcvideo,ndiswrapper,usb_storage,ehci_hcd,uhci_hcd
+
+$ ./test /dev/video0
+Device /dev/video0 opened: .
+Video format set: width: 1280 height: 960 buffer size: 2457600
+16 buffers allocated.
+length: 2457600 offset: 0
+Buffer 0 mapped at address 0xb7c20000.
+length: 2457600 offset: 2457600
+Buffer 1 mapped at address 0xb79c8000.
+length: 2457600 offset: 4915200
+Buffer 2 mapped at address 0xb7770000.
+length: 2457600 offset: 7372800
+Buffer 3 mapped at address 0xb7518000.
+length: 2457600 offset: 9830400
+Buffer 4 mapped at address 0xb72c0000.
+length: 2457600 offset: 12288000
+Buffer 5 mapped at address 0xb7068000.
+length: 2457600 offset: 14745600
+Buffer 6 mapped at address 0xb6e10000.
+length: 2457600 offset: 17203200
+Buffer 7 mapped at address 0xb6bb8000.
+length: 2457600 offset: 19660800
+Buffer 8 mapped at address 0xb6960000.
+length: 2457600 offset: 22118400
+Buffer 9 mapped at address 0xb6708000.
+length: 2457600 offset: 24576000
+Buffer 10 mapped at address 0xb64b0000.
+length: 2457600 offset: 27033600
+Buffer 11 mapped at address 0xb6258000.
+length: 2457600 offset: 29491200
+Buffer 12 mapped at address 0xb6000000.
+length: 2457600 offset: 31948800
+Buffer 13 mapped at address 0xb5da8000.
+length: 2457600 offset: 34406400
+Buffer 14 mapped at address 0xb5b50000.
+length: 2457600 offset: 36864000
+Buffer 15 mapped at address 0xb58f8000.
+Unable to dequeue buffer (5).
+
+Nothing too helpful out of `dmesg`:
+
+[4294698.565000] Linux video capture interface: v1.00
+[4294698.575000] uvcvideo: Found UVC 1.00 device <unnamed> (046d:08c2)
+[4294698.605000] usbcore: registered new driver usbvideo
+[4294698.605000] USB Video Class driver (v0.1.0)
+[4294699.748000] 3:3:1: cannot set freq 0 to ep 0x86
+[4294700.748000] 3:3:2: cannot set freq 0 to ep 0x86
+[4294701.757000] 3:3:3: cannot get freq at ep 0x86
+[4294701.862000] usbcore: registered new driver snd-usb-audio
+
+
+
+
+From dcm at MIT.EDU  Thu Mar 16 05:14:09 2006
+From: dcm at MIT.EDU (David Moore)
+Date: Wed, 15 Mar 2006 23:14:09 -0500
+Subject: [Linux-uvc-devel] Frame Rate control?
+Message-ID: <1142482449.24796.12.camel@pisces.mit.edu>
+
+Just thought I'd chime in here...
+
+The V4L2 buffer will end up being the same size regardless of frame rate
+(at least for this implementation), right?  So even if the application
+chooses the frame rate after choosing the image size, the buffer size as
+returned by VIDIOC_S_FMT would still be correct.
+
+UVC would still have to renegotiate the size of its isochronous USB
+buffers after changing the frame rate, but those buffers are independent
+from the V4L2 queue if I understand correctly.
+
+I agree that the V4L2 api is deficient in this respect, but in the case
+of UVC, it seems to me like the current API is still workable, at least
+in the short term.  What do you think?
+
+-David
+
+Laurent Pinchart wrote:
+> Hi Phil,
+>
+> >  Quick question.. is it possible to control the frame rate of a UVC
+> > device? I had a quick look at the spec but I didn't see anything. It's
+> > probable I'm missing the obvious...
+>
+> It's possible, but not implemented yet due to a problem with the V4L2 specs. 
+> The issue is that UVC negociates the image size before the frame rate, while 
+> V4L2 negociates the frame rate before the image size (this is not entirely 
+> true, you can set the image size before the frame rate, but the required 
+> buffer length is returned by the image size negociation process, but UVC 
+> devices return the required buffer length when negociating the frame rate and 
+> compression quality). This has been discussed on the V4L2 mailing list, and I 
+> still have to write a proposal for a new IOCTL. This means applications will 
+> need to be upgraded to support the new interface.
+>
+> Laurent Pinchart
+
+
+
+From dcm at MIT.EDU  Thu Mar 16 05:34:37 2006
+From: dcm at MIT.EDU (David Moore)
+Date: Wed, 15 Mar 2006 23:34:37 -0500
+Subject: [Linux-uvc-devel] Connecting multiple cameras
+Message-ID: <1142483678.24796.23.camel@pisces.mit.edu>
+
+Hi, I'm interested in connecting more than one camera at once,
+specifically, a pair of Logitech Quickcam Pro 5000s.  I only have one at
+the moment, but when I run it at full uncompressed resolution
+(640x480x30fps YUV), it chooses an ISO endpoint with a packet size of
+3060 bytes.  This is more than half of the available ISO bandwidth.
+(cat /proc/bus/usb/devices claims it's 60% -- I expected more than half,
+but not quite that much).  Obviously, this would prevent me from using
+more than one camera.
+
+By my calculation, 640x480x30fps YUV should take 2304 bytes minimum per
+microframe.  So why can't the Quickcam choose its next smaller ISO
+endpoint, which is 2688 bytes per microframe.  This would probably put
+me at less than 50% of the ISO bandwidth?
+
+Do you think this is a hardware limitation of the Quickcam, or is there
+some driver involvement in this decision?
+
+Thanks,
+
+David
+
+
+
+From sbanks at lucent.com  Thu Mar 16 18:23:02 2006
+From: sbanks at lucent.com (Simon Banks)
+Date: Thu, 16 Mar 2006 17:23:02 +0000
+Subject: [Linux-uvc-devel] Release schedule
+Message-ID: <44199EF6.80307@lucent.com>
+
+Lo there... Is there a release schedule on the UVC driver for linux?... 
+Cheers in advance...
+
+
+From jeffrey at firehead.org  Sun Mar 19 05:52:02 2006
+From: jeffrey at firehead.org (Jeffrey Bridge)
+Date: Sat, 18 Mar 2006 22:52:02 -0600
+Subject: [Linux-uvc-devel] non-listed UVC device
+Message-ID: <1142743922.29244.2.camel@diddl.firehead.org>
+
+>From "lsusb -v":
+
+Bus 002 Device 006: ID 054c:00c0 Sony Corp. Handycam DCR-30
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               1.10
+  bDeviceClass            0 (Defined at Interface level)
+  bDeviceSubClass         0 
+  bDeviceProtocol         0 
+  bMaxPacketSize0        64
+  idVendor           0x054c Sony Corp.
+  idProduct          0x00c0 Handycam DCR-30
+  bcdDevice            1.00
+  iManufacturer           0 
+  iProduct                0 
+  iSerial                 0 
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength          284
+    bNumInterfaces          3
+    bConfigurationValue     1
+    iConfiguration          0 
+    bmAttributes         0xc0
+      Self Powered
+    MaxPower                2mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           2
+      bInterfaceClass         0 (Defined at Interface level)
+      bInterfaceSubClass      0 
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0000  1x 0 bytes
+        bInterval               1
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0000  1x 0 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       1
+      bNumEndpoints           2
+      bInterfaceClass         0 (Defined at Interface level)
+      bInterfaceSubClass      0 
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval               1
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0100  1x 256 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       2
+      bNumEndpoints           2
+      bInterfaceClass         0 (Defined at Interface level)
+      bInterfaceSubClass      0 
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval               1
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0180  1x 384 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       3
+      bNumEndpoints           2
+      bInterfaceClass         0 (Defined at Interface level)
+      bInterfaceSubClass      0 
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval               1
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0200  1x 512 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       4
+      bNumEndpoints           2
+      bInterfaceClass         0 (Defined at Interface level)
+      bInterfaceSubClass      0 
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval               1
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0280  1x 640 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       5
+      bNumEndpoints           2
+      bInterfaceClass         0 (Defined at Interface level)
+      bInterfaceSubClass      0 
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval               1
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0300  1x 768 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       6
+      bNumEndpoints           2
+      bInterfaceClass         0 (Defined at Interface level)
+      bInterfaceSubClass      0 
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval               1
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0380  1x 896 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       7
+      bNumEndpoints           2
+      bInterfaceClass         0 (Defined at Interface level)
+      bInterfaceSubClass      0 
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval               1
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x03ff  1x 1023 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       0
+      bNumEndpoints           0
+      bInterfaceClass         1 Audio
+      bInterfaceSubClass      1 Control Device
+      bInterfaceProtocol      0 
+      iInterface              0 
+      AudioControl Interface Descriptor:
+        bLength                 9
+        bDescriptorType        36
+        bDescriptorSubtype      1 (HEADER)
+        bcdADC               1.00
+        wTotalLength           30
+        bInCollection           1
+        baInterfaceNr( 0)       2
+      AudioControl Interface Descriptor:
+        bLength                12
+        bDescriptorType        36
+        bDescriptorSubtype      2 (INPUT_TERMINAL)
+        bTerminalID             1
+        wTerminalType      0x0201 Microphone
+        bAssocTerminal          0
+        bNrChannels             2
+        wChannelConfig     0x0003
+          Left Front (L)
+          Right Front (R)
+        iChannelNames           0 
+        iTerminal               0 
+      AudioControl Interface Descriptor:
+        bLength                 9
+        bDescriptorType        36
+        bDescriptorSubtype      3 (OUTPUT_TERMINAL)
+        bTerminalID             2
+        wTerminalType      0x0101 USB Streaming
+        bAssocTerminal          0
+        bSourceID               1
+        iTerminal               0 
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        2
+      bAlternateSetting       0
+      bNumEndpoints           0
+      bInterfaceClass         1 Audio
+      bInterfaceSubClass      2 Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        2
+      bAlternateSetting       1
+      bNumEndpoints           1
+      bInterfaceClass         1 Audio
+      bInterfaceSubClass      2 Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      AudioStreaming Interface Descriptor:
+        bLength                 7
+        bDescriptorType        36
+        bDescriptorSubtype      1 (AS_GENERAL)
+        bTerminalLink           2
+        bDelay                  1 frames
+        wFormatTag              1 PCM
+      AudioStreaming Interface Descriptor:
+        bLength                11
+        bDescriptorType        36
+        bDescriptorSubtype      2 (FORMAT_TYPE)
+        bFormatType             1 (FORMAT_TYPE_I)
+        bNrChannels             2
+        bSubframeSize           2
+        bBitResolution         16
+        bSamFreqType            1 Discrete
+        tSamFreq[ 0]        16000
+      Endpoint Descriptor:
+        bLength                 9
+        bDescriptorType         5
+        bEndpointAddress     0x83  EP 3 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               1
+        bRefresh                0
+        bSynchAddress           0
+        AudioControl Endpoint Descriptor:
+          bLength                 7
+          bDescriptorType        37
+          bDescriptorSubtype      1 (EP_GENERAL)
+          bmAttributes         0x00
+          bLockDelayUnits         0 Undefined
+          wLockDelay              0 Undefined
+
+I tried adding the following section to uvc_ids, but the module didn't
+print that it recognized anything whatsoever:
+
+        /* Sony Handycam DCR-30 */
+        { .match_flags          = USB_DEVICE_ID_MATCH_DEVICE,
+          .idVendor             = 0x054c,
+          .idProduct            = 0x00c0,
+          .bInterfaceClass      = USB_CLASS_PER_INTERFACE,
+          .bInterfaceSubClass   = 0,
+          .bInterfaceProtocol   = 0 },
+
+Please CC me on replies as I am not subscribed to the list.
+
+jeff
+
+
+
+From craig at nadler.us  Sun Mar 19 06:45:15 2006
+From: craig at nadler.us (Craig W. Nadler)
+Date: Sun, 19 Mar 2006 00:45:15 -0500
+Subject: [Linux-uvc-devel] non-listed UVC device
+In-Reply-To: <1142743922.29244.2.camel@diddl.firehead.org>
+References: <1142743922.29244.2.camel@diddl.firehead.org>
+Message-ID: <441CEFEB.4080204@nadler.us>
+
+I have a Handycam DCR-40 and I can tell you that DCR 20, 30, and 40
+predate the USB Video Class. You'll also notice that the USB port is
+full speed (12Mb) not hi-speed (480Mb). The streaming video you get with
+12Mb isn't even close to DV quality.
+
+Best Regards,
+
+Craig Nadler
+
+Jeffrey Bridge wrote:
+
+>>From "lsusb -v":
+>
+>Bus 002 Device 006: ID 054c:00c0 Sony Corp. Handycam DCR-30
+>Device Descriptor:
+>  bLength                18
+>  bDescriptorType         1
+>  bcdUSB               1.10
+>  bDeviceClass            0 (Defined at Interface level)
+>  bDeviceSubClass         0 
+>  bDeviceProtocol         0 
+>  bMaxPacketSize0        64
+>  idVendor           0x054c Sony Corp.
+>  idProduct          0x00c0 Handycam DCR-30
+>  bcdDevice            1.00
+>  iManufacturer           0 
+>  iProduct                0 
+>  iSerial                 0 
+>  bNumConfigurations      1
+>  Configuration Descriptor:
+>    bLength                 9
+>    bDescriptorType         2
+>    wTotalLength          284
+>    bNumInterfaces          3
+>    bConfigurationValue     1
+>    iConfiguration          0 
+>    bmAttributes         0xc0
+>      Self Powered
+>    MaxPower                2mA
+>    Interface Descriptor:
+>      bLength                 9
+>      bDescriptorType         4
+>      bInterfaceNumber        0
+>      bAlternateSetting       0
+>      bNumEndpoints           2
+>      bInterfaceClass         0 (Defined at Interface level)
+>      bInterfaceSubClass      0 
+>      bInterfaceProtocol      0 
+>      iInterface              0 
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x81  EP 1 IN
+>        bmAttributes            1
+>          Transfer Type            Isochronous
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0000  1x 0 bytes
+>        bInterval               1
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x82  EP 2 IN
+>        bmAttributes            1
+>          Transfer Type            Isochronous
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0000  1x 0 bytes
+>        bInterval               1
+>    Interface Descriptor:
+>      bLength                 9
+>      bDescriptorType         4
+>      bInterfaceNumber        0
+>      bAlternateSetting       1
+>      bNumEndpoints           2
+>      bInterfaceClass         0 (Defined at Interface level)
+>      bInterfaceSubClass      0 
+>      bInterfaceProtocol      0 
+>      iInterface              0 
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x81  EP 1 IN
+>        bmAttributes            1
+>          Transfer Type            Isochronous
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0008  1x 8 bytes
+>        bInterval               1
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x82  EP 2 IN
+>        bmAttributes            1
+>          Transfer Type            Isochronous
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0100  1x 256 bytes
+>        bInterval               1
+>    Interface Descriptor:
+>      bLength                 9
+>      bDescriptorType         4
+>      bInterfaceNumber        0
+>      bAlternateSetting       2
+>      bNumEndpoints           2
+>      bInterfaceClass         0 (Defined at Interface level)
+>      bInterfaceSubClass      0 
+>      bInterfaceProtocol      0 
+>      iInterface              0 
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x81  EP 1 IN
+>        bmAttributes            1
+>          Transfer Type            Isochronous
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0008  1x 8 bytes
+>        bInterval               1
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x82  EP 2 IN
+>        bmAttributes            1
+>          Transfer Type            Isochronous
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0180  1x 384 bytes
+>        bInterval               1
+>    Interface Descriptor:
+>      bLength                 9
+>      bDescriptorType         4
+>      bInterfaceNumber        0
+>      bAlternateSetting       3
+>      bNumEndpoints           2
+>      bInterfaceClass         0 (Defined at Interface level)
+>      bInterfaceSubClass      0 
+>      bInterfaceProtocol      0 
+>      iInterface              0 
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x81  EP 1 IN
+>        bmAttributes            1
+>          Transfer Type            Isochronous
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0008  1x 8 bytes
+>        bInterval               1
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x82  EP 2 IN
+>        bmAttributes            1
+>          Transfer Type            Isochronous
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0200  1x 512 bytes
+>        bInterval               1
+>    Interface Descriptor:
+>      bLength                 9
+>      bDescriptorType         4
+>      bInterfaceNumber        0
+>      bAlternateSetting       4
+>      bNumEndpoints           2
+>      bInterfaceClass         0 (Defined at Interface level)
+>      bInterfaceSubClass      0 
+>      bInterfaceProtocol      0 
+>      iInterface              0 
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x81  EP 1 IN
+>        bmAttributes            1
+>          Transfer Type            Isochronous
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0008  1x 8 bytes
+>        bInterval               1
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x82  EP 2 IN
+>        bmAttributes            1
+>          Transfer Type            Isochronous
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0280  1x 640 bytes
+>        bInterval               1
+>    Interface Descriptor:
+>      bLength                 9
+>      bDescriptorType         4
+>      bInterfaceNumber        0
+>      bAlternateSetting       5
+>      bNumEndpoints           2
+>      bInterfaceClass         0 (Defined at Interface level)
+>      bInterfaceSubClass      0 
+>      bInterfaceProtocol      0 
+>      iInterface              0 
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x81  EP 1 IN
+>        bmAttributes            1
+>          Transfer Type            Isochronous
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0008  1x 8 bytes
+>        bInterval               1
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x82  EP 2 IN
+>        bmAttributes            1
+>          Transfer Type            Isochronous
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0300  1x 768 bytes
+>        bInterval               1
+>    Interface Descriptor:
+>      bLength                 9
+>      bDescriptorType         4
+>      bInterfaceNumber        0
+>      bAlternateSetting       6
+>      bNumEndpoints           2
+>      bInterfaceClass         0 (Defined at Interface level)
+>      bInterfaceSubClass      0 
+>      bInterfaceProtocol      0 
+>      iInterface              0 
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x81  EP 1 IN
+>        bmAttributes            1
+>          Transfer Type            Isochronous
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0008  1x 8 bytes
+>        bInterval               1
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x82  EP 2 IN
+>        bmAttributes            1
+>          Transfer Type            Isochronous
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0380  1x 896 bytes
+>        bInterval               1
+>    Interface Descriptor:
+>      bLength                 9
+>      bDescriptorType         4
+>      bInterfaceNumber        0
+>      bAlternateSetting       7
+>      bNumEndpoints           2
+>      bInterfaceClass         0 (Defined at Interface level)
+>      bInterfaceSubClass      0 
+>      bInterfaceProtocol      0 
+>      iInterface              0 
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x81  EP 1 IN
+>        bmAttributes            1
+>          Transfer Type            Isochronous
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0008  1x 8 bytes
+>        bInterval               1
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x82  EP 2 IN
+>        bmAttributes            1
+>          Transfer Type            Isochronous
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x03ff  1x 1023 bytes
+>        bInterval               1
+>    Interface Descriptor:
+>      bLength                 9
+>      bDescriptorType         4
+>      bInterfaceNumber        1
+>      bAlternateSetting       0
+>      bNumEndpoints           0
+>      bInterfaceClass         1 Audio
+>      bInterfaceSubClass      1 Control Device
+>      bInterfaceProtocol      0 
+>      iInterface              0 
+>      AudioControl Interface Descriptor:
+>        bLength                 9
+>        bDescriptorType        36
+>        bDescriptorSubtype      1 (HEADER)
+>        bcdADC               1.00
+>        wTotalLength           30
+>        bInCollection           1
+>        baInterfaceNr( 0)       2
+>      AudioControl Interface Descriptor:
+>        bLength                12
+>        bDescriptorType        36
+>        bDescriptorSubtype      2 (INPUT_TERMINAL)
+>        bTerminalID             1
+>        wTerminalType      0x0201 Microphone
+>        bAssocTerminal          0
+>        bNrChannels             2
+>        wChannelConfig     0x0003
+>          Left Front (L)
+>          Right Front (R)
+>        iChannelNames           0 
+>        iTerminal               0 
+>      AudioControl Interface Descriptor:
+>        bLength                 9
+>        bDescriptorType        36
+>        bDescriptorSubtype      3 (OUTPUT_TERMINAL)
+>        bTerminalID             2
+>        wTerminalType      0x0101 USB Streaming
+>        bAssocTerminal          0
+>        bSourceID               1
+>        iTerminal               0 
+>    Interface Descriptor:
+>      bLength                 9
+>      bDescriptorType         4
+>      bInterfaceNumber        2
+>      bAlternateSetting       0
+>      bNumEndpoints           0
+>      bInterfaceClass         1 Audio
+>      bInterfaceSubClass      2 Streaming
+>      bInterfaceProtocol      0 
+>      iInterface              0 
+>    Interface Descriptor:
+>      bLength                 9
+>      bDescriptorType         4
+>      bInterfaceNumber        2
+>      bAlternateSetting       1
+>      bNumEndpoints           1
+>      bInterfaceClass         1 Audio
+>      bInterfaceSubClass      2 Streaming
+>      bInterfaceProtocol      0 
+>      iInterface              0 
+>      AudioStreaming Interface Descriptor:
+>        bLength                 7
+>        bDescriptorType        36
+>        bDescriptorSubtype      1 (AS_GENERAL)
+>        bTerminalLink           2
+>        bDelay                  1 frames
+>        wFormatTag              1 PCM
+>      AudioStreaming Interface Descriptor:
+>        bLength                11
+>        bDescriptorType        36
+>        bDescriptorSubtype      2 (FORMAT_TYPE)
+>        bFormatType             1 (FORMAT_TYPE_I)
+>        bNrChannels             2
+>        bSubframeSize           2
+>        bBitResolution         16
+>        bSamFreqType            1 Discrete
+>        tSamFreq[ 0]        16000
+>      Endpoint Descriptor:
+>        bLength                 9
+>        bDescriptorType         5
+>        bEndpointAddress     0x83  EP 3 IN
+>        bmAttributes            1
+>          Transfer Type            Isochronous
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0040  1x 64 bytes
+>        bInterval               1
+>        bRefresh                0
+>        bSynchAddress           0
+>        AudioControl Endpoint Descriptor:
+>          bLength                 7
+>          bDescriptorType        37
+>          bDescriptorSubtype      1 (EP_GENERAL)
+>          bmAttributes         0x00
+>          bLockDelayUnits         0 Undefined
+>          wLockDelay              0 Undefined
+>
+>I tried adding the following section to uvc_ids, but the module didn't
+>print that it recognized anything whatsoever:
+>
+>        /* Sony Handycam DCR-30 */
+>        { .match_flags          = USB_DEVICE_ID_MATCH_DEVICE,
+>          .idVendor             = 0x054c,
+>          .idProduct            = 0x00c0,
+>          .bInterfaceClass      = USB_CLASS_PER_INTERFACE,
+>          .bInterfaceSubClass   = 0,
+>          .bInterfaceProtocol   = 0 },
+>
+>Please CC me on replies as I am not subscribed to the list.
+>
+>jeff
+>
+>_______________________________________________
+>Linux-uvc-devel mailing list
+>Linux-uvc-devel at lists.berlios.de
+>http://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+>
+>
+>  
+>
+
+
+
+From ace at staticwave.ca  Thu Mar 23 04:03:14 2006
+From: ace at staticwave.ca (Gabriel A. Devenyi)
+Date: Wed, 22 Mar 2006 22:03:14 -0500
+Subject: [Linux-uvc-devel] [ANNOUNCE] uvccapture-0.4
+Message-ID: <200603222203.15298.ace@staticwave.ca>
+
+I'm please to announce the latest release of capture software for the UVC V4L2 
+interface.
+
+http://staticwave.ca/source/uvccapture/uvccapture-0.4.tar.bz2
+
+IMPORTANT NOTE: uvccapture now requires libjpeg in order to convert YVYU 
+images to jpegs for saving.
+
+Except from ChangeLog
+-- uvccapture 0.4 21.03.2006 --
+Lots of changes:
+* Added install target in the makefile to install into /usr/local/bin
+* Added signal capturing (CTRL-C, etc) to gracefully exit when in wait loop
+* Added the ability to specify a command to run after each image capture,
+  command is run with the output picture as an argument.  command can be run
+  blocking, or non-blocking.
+* Added support for multiple verbisity levels (add more -v's)
+* Minor output spelling corrections
+* Added output of current bright/contrast/saturation/gain on startup.
+All these thanks to Salvador Gonzalez <ghostx at optonline.net>
+* YVYU Capture Mode - now requires jpeglib, activated for images sizes 
+>960x720
+  allows adjustment of JPEG compression quality (-q) or manually activated 
+(-m)
+YUYV -> JPEG code thanks to Philip Heron <phil at firestorm.cx>
+
+-- 
+Gabriel A. Devenyi
+ace at staticwave.ca
+
+
+From nivv at cs.bgu.ac.il  Sat Mar 25 05:38:11 2006
+From: nivv at cs.bgu.ac.il (Niv)
+Date: Sat, 25 Mar 2006 04:38:11 +0000
+Subject: [Linux-uvc-devel] a udev thing
+Message-ID: <4424C933.2060109@cs.bgu.ac.il>
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+hay there,
+I think that QC 5000 owners may know how to help me.
+I wrote a rule for the webcam, but it seems that the alsa is loaded
+before video for linux and so the microphone in loaded , and my rule is
+not obied.
+
+I was wondering where I may read more to solve it.
+
+BUS="usb", SYSFS{idVendor}="046d", SYSFS{idProduct}="08c5",
+NAME="v4l/video2", S
+YMLINK="video2 qc5000" , GROUP="webcam"
+
+also, I lost my /etc/group and /etc/passwd and wanted to add the missing
+groups.
+
+ls -la /dev/v4l/
+total 0
+drwxr-xr-x 2 root root 120 Mar 24 19:45 .
+drwxr-xr-x 21 root root 29600 Mar 25 00:24 ..
+crw-rw---- 1 root video 81, 64 Mar 22 19:33 radio0
+crw-rw---- 1 root video 81, 224 Mar 22 19:33 vbi0
+crw-rw---- 1 root webcam 81, 2 Mar 24 19:45 video0
+crw-rw---- 1 root tv 81, 0 Mar 24 19:45 video1
+
+I tried to add a group named webcam with gid 81:
+# fgrep 81 /etc/group
+webcam:x:81:niv
+
+but I still get the 81 listed and not "webcam"
+so how do I fix it?
+
+Thanks,
+Niv
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFEJMkzkwazfG0MmCYRAo4NAKC6LLrYIFF3F+ySEj6Suyr67CtzBQCgosJP
+of4cWWcdfGAbs0+bOpUIX5Y=
+=m1jY
+-----END PGP SIGNATURE-----
+
+
+From laurent.pinchart at skynet.be  Sat Mar 25 14:13:15 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Sat, 25 Mar 2006 14:13:15 +0100
+Subject: [Linux-uvc-devel] a udev thing
+In-Reply-To: <4424C933.2060109@cs.bgu.ac.il>
+References: <4424C933.2060109@cs.bgu.ac.il>
+Message-ID: <200603251413.15177.laurent.pinchart@skynet.be>
+
+Hi Niv,
+
+> I think that QC 5000 owners may know how to help me.
+> I wrote a rule for the webcam, but it seems that the alsa is loaded
+> before video for linux and so the microphone in loaded , and my rule is
+> not obied.
+>
+> I was wondering where I may read more to solve it.
+>
+> BUS="usb", SYSFS{idVendor}="046d", SYSFS{idProduct}="08c5",
+> NAME="v4l/video2", S
+> YMLINK="video2 qc5000" , GROUP="webcam"
+
+I committed a new version of the driver two days ago which enable udev to 
+handle the device properly. Tyr to use the following rule:
+
+KERNEL="video[0-9]*", BUS="usb", SYSFS{idVendor}="046d", 
+SYSFS{idProduct}="08c5", NAME="v4l/video2", SYMLINK="video2 qc5000", 
+GROUP="webcam"
+
+> also, I lost my /etc/group and /etc/passwd and wanted to add the missing
+> groups.
+>
+> ls -la /dev/v4l/
+> total 0
+> drwxr-xr-x 2 root root 120 Mar 24 19:45 .
+> drwxr-xr-x 21 root root 29600 Mar 25 00:24 ..
+> crw-rw---- 1 root video 81, 64 Mar 22 19:33 radio0
+> crw-rw---- 1 root video 81, 224 Mar 22 19:33 vbi0
+> crw-rw---- 1 root webcam 81, 2 Mar 24 19:45 video0
+> crw-rw---- 1 root tv 81, 0 Mar 24 19:45 video1
+>
+> I tried to add a group named webcam with gid 81:
+> # fgrep 81 /etc/group
+> webcam:x:81:niv
+>
+> but I still get the 81 listed and not "webcam"
+> so how do I fix it?
+
+81 is the device major number, not the group id. 'root' is the owner name and 
+'webcam' the group name.
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Sat Mar 25 14:18:42 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Sat, 25 Mar 2006 14:18:42 +0100
+Subject: [Linux-uvc-devel] Release schedule
+In-Reply-To: <44199EF6.80307@lucent.com>
+References: <44199EF6.80307@lucent.com>
+Message-ID: <200603251418.42638.laurent.pinchart@skynet.be>
+
+Hi Simon,
+
+> Lo there... Is there a release schedule on the UVC driver for linux?...
+
+No yet. You can already grab the driver from SVN:
+
+svn checkout http://svn.berlios.de/svnroot/repos/linux-uvc/linux-uvc/trunk
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Sat Mar 25 14:51:18 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Sat, 25 Mar 2006 14:51:18 +0100
+Subject: [Linux-uvc-devel] Connecting multiple cameras
+In-Reply-To: <1142483678.24796.23.camel@pisces.mit.edu>
+References: <1142483678.24796.23.camel@pisces.mit.edu>
+Message-ID: <200603251451.18497.laurent.pinchart@skynet.be>
+
+Hi David,
+
+> Hi, I'm interested in connecting more than one camera at once,
+> specifically, a pair of Logitech Quickcam Pro 5000s.
+
+I'm currently working on a robotic project which uses 4 cameras, but at 
+smaller resolutions.
+
+> I only have one at 
+> the moment, but when I run it at full uncompressed resolution
+> (640x480x30fps YUV),
+
+Full uncompressed resolution is 1280x960x7.5fps, but that leads to the same 
+bandwidth.
+
+> it chooses an ISO endpoint with a packet size of 
+> 3060 bytes.  This is more than half of the available ISO bandwidth.
+> (cat /proc/bus/usb/devices claims it's 60% -- I expected more than half,
+> but not quite that much).  Obviously, this would prevent me from using
+> more than one camera.
+>
+> By my calculation, 640x480x30fps YUV should take 2304 bytes minimum per
+> microframe.  So why can't the Quickcam choose its next smaller ISO
+> endpoint, which is 2688 bytes per microframe.  This would probably put
+> me at less than 50% of the ISO bandwidth?
+
+The driver choose the smallest ISO endpoint compatible with the bitrate 
+advertised by the camera (the total bitrate is the payload bitrate plus the 
+header bitrate). At 1280x960x7.5fps, the webcam asks for 3024 bytes per 
+microframe.
+
+> Do you think this is a hardware limitation of the Quickcam, or is there
+> some driver involvement in this decision?
+
+The driver just does what the webcam asks, so that's a hardware limitation. 
+I'll contact Logitech to get more information.
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Sat Mar 25 14:53:34 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Sat, 25 Mar 2006 14:53:34 +0100
+Subject: [Linux-uvc-devel] backporting to the 2.6.8 kernel
+In-Reply-To: <200603131642.36658.heukaeufer@jhmi.edu>
+References: <20060313110017.105.84245.Mailman@bat.berlios.de> <200603131642.36658.heukaeufer@jhmi.edu>
+Message-ID: <200603251453.34509.laurent.pinchart@skynet.be>
+
+Hi Matthias,
+
+> I am trying to port the driver to the 2.6.8 kernel. This would be
+> interesting e. g. for people running Debian stable.
+> With the attached patch I can cleanly compile and insert the module.
+> Furthermore, the green light on the Quickcam 5000 Pro comes on as soon as I
+> start uvcview. Unfortunately all I can see is a solid green image.
+> I have to admit that my experience in C is only slightly better than my
+> knowledge of the kernel internals which is almost zero. Maybe somebody will
+> be able to give me a few hints as to where the problem might be.
+
+Have you been able to solve your problem ? I don't know what could go wrong 
+with 2.6.8, except maybe some USB issues. I can put that in my todo list, but 
+I won't have time to tackle the issue before at least a month.
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Sat Mar 25 14:55:59 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Sat, 25 Mar 2006 14:55:59 +0100
+Subject: [Linux-uvc-devel] Logitech Quickcam Orbit problem/report
+In-Reply-To: <1142463832.10617.9.camel@localhost.localdomain>
+References: <1142463832.10617.9.camel@localhost.localdomain>
+Message-ID: <200603251455.59382.laurent.pinchart@skynet.be>
+
+Hi Thomas,
+
+> I have a Logitech Quickcam Orbit. The driver built, installed, and
+> loaded fine on Ubuntu Hoary x86. All my apps complain about not being
+> able to open /dev/video0. I ran a test program that was posted to the
+> list in January. The results are below. I'm posting this for feedback to
+> the developers. I don't require a response. I checked this driver out of
+> the subversion repository today.
+>
+> Thanks much for the work on this driver.
+
+You're welcome. I'm sorry it doesn't work for you.
+
+> $ uname -a
+> Linux dreamscometrue 2.6.12-10-686 #1 Sat Mar 11 16:22:51 UTC 2006 i686
+> GNU/Linux
+
+Could you test Linux 2.6.15 vanilla (the one from kernel.org) ?
+
+Does your computer detect the webcam as a USB 1.1 or USB 2.0 device ? You can 
+find that information in /proc/bus/usb.
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Sat Mar 25 15:07:31 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Sat, 25 Mar 2006 15:07:31 +0100
+Subject: [Linux-uvc-devel] Frame Rate control?
+In-Reply-To: <1142482449.24796.12.camel@pisces.mit.edu>
+References: <1142482449.24796.12.camel@pisces.mit.edu>
+Message-ID: <200603251507.31957.laurent.pinchart@skynet.be>
+
+Hi Phil,
+
+> The V4L2 buffer will end up being the same size regardless of frame rate
+> (at least for this implementation), right?  So even if the application
+> chooses the frame rate after choosing the image size, the buffer size as
+> returned by VIDIOC_S_FMT would still be correct.
+
+It should, but that's not required. Frame rate and compression parameters are 
+negociated together in the UVC model, and the webcam can request a different 
+buffer size based on all those parameters.
+
+> UVC would still have to renegotiate the size of its isochronous USB
+> buffers after changing the frame rate, but those buffers are independent
+> from the V4L2 queue if I understand correctly.
+
+That's right. USB isochronous buffers are negociated separately, and that's 
+already handled at the moment.
+
+> I agree that the V4L2 api is deficient in this respect, but in the case
+> of UVC, it seems to me like the current API is still workable, at least
+> in the short term.  What do you think?
+
+I could hack the driver, but that would require a-priori knowledge of the 
+supported resolutions/frame rates combinations in the user space application. 
+That's definitely not a viable long-term solution.
+
+Laurent Pinchart
+
+
+From jwspring at comcast.net  Sat Mar 25 16:35:21 2006
+From: jwspring at comcast.net (James W. Spring)
+Date: Sat, 25 Mar 2006 07:35:21 -0800
+Subject: [Linux-uvc-devel] Unable to make with Fedora Core 5
+Message-ID: <44256339.3090309@comcast.net>
+
+The fllowing is what I receive when I attempt to "Make" with driver 
+version 25
+
+
+2.6.15-1.2054_FC5
+uvcdriver]$ make
+Building USB Video Class driver...
+make[1]: Entering directory `/usr/src/kernels/2.6.15-1.2054_FC5-i686'
+CC [M] /usr/local/src/uvcdriver/uvcvideo.o
+/usr/local/src/uvcdriver/uvcvideo.c: In function ?uvc_v4l2_do_ioctl?:
+/usr/local/src/uvcdriver/uvcvideo.c:2054: error: ?v4l2_ioctl_names? 
+undeclared (first use in this function)
+/usr/local/src/uvcdriver/uvcvideo.c:2054: error: (Each undeclared 
+identifier is reported only once
+/usr/local/src/uvcdriver/uvcvideo.c:2054: error: for each function it 
+appears in.)
+/usr/local/src/uvcdriver/uvcvideo.c: At top level:
+/usr/local/src/uvcdriver/uvcvideo.c:3433: error: unknown field ?owner? 
+specified in initializer
+/usr/local/src/uvcdriver/uvcvideo.c:3433: warning: initialization from 
+incompatible pointer type
+make[2]: *** [/usr/local/src/uvcdriver/uvcvideo.o] Error 1
+make[1]: *** [_module_/usr/local/src/uvcdriver] Error 2
+make[1]: Leaving directory `/usr/src/kernels/2.6.15-1.2054_FC5-i686'
+make: *** [uvcvideo] Error 2
+uvcdriver]$
+
+
+
+From laurent.pinchart at skynet.be  Sat Mar 25 17:17:05 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Sat, 25 Mar 2006 17:17:05 +0100
+Subject: [Linux-uvc-devel] Unable to make with Fedora Core 5
+In-Reply-To: <44256339.3090309@comcast.net>
+References: <44256339.3090309@comcast.net>
+Message-ID: <200603251717.06055.laurent.pinchart@skynet.be>
+
+> The fllowing is what I receive when I attempt to "Make" with driver
+> version 25
+>
+>
+> 2.6.15-1.2054_FC5
+> uvcdriver]$ make
+> Building USB Video Class driver...
+> make[1]: Entering directory `/usr/src/kernels/2.6.15-1.2054_FC5-i686'
+> CC [M] /usr/local/src/uvcdriver/uvcvideo.o
+> /usr/local/src/uvcdriver/uvcvideo.c: In function ?uvc_v4l2_do_ioctl?:
+> /usr/local/src/uvcdriver/uvcvideo.c:2054: error: ?v4l2_ioctl_names?
+> undeclared (first use in this function)
+> /usr/local/src/uvcdriver/uvcvideo.c:2054: error: (Each undeclared
+> identifier is reported only once
+> /usr/local/src/uvcdriver/uvcvideo.c:2054: error: for each function it
+> appears in.)
+> /usr/local/src/uvcdriver/uvcvideo.c: At top level:
+> /usr/local/src/uvcdriver/uvcvideo.c:3433: error: unknown field ?owner?
+> specified in initializer
+> /usr/local/src/uvcdriver/uvcvideo.c:3433: warning: initialization from
+> incompatible pointer type
+> make[2]: *** [/usr/local/src/uvcdriver/uvcvideo.o] Error 1
+> make[1]: *** [_module_/usr/local/src/uvcdriver] Error 2
+> make[1]: Leaving directory `/usr/src/kernels/2.6.15-1.2054_FC5-i686'
+> make: *** [uvcvideo] Error 2
+> uvcdriver]$
+
+That's because FC5 includes a 2.6.16 beta kernel, which advertises the 2.6.15 
+kernel version but includes changes from 2.6.16 which breaks source 
+compatibility. the linux-uvc driver should work with 2.6.16, but think your 
+kernel is a 2.6.15. Try to modify the version number in the kernel Makefile 
+to 2.6.16 and see if it helps.
+
+Laurent Pinchart
+
+
+From js4422 at comcast.net  Sat Mar 25 17:53:53 2006
+From: js4422 at comcast.net (James W. Spring)
+Date: Sat, 25 Mar 2006 08:53:53 -0800
+Subject: [Linux-uvc-devel] Unable to make with Fedora Core 5
+In-Reply-To: <200603251717.06055.laurent.pinchart@skynet.be>
+References: <44256339.3090309@comcast.net> <200603251717.06055.laurent.pinchart@skynet.be>
+Message-ID: <442575A1.1020602@comcast.net>
+
+Laurent Pinchart wrote:
+>> The fllowing is what I receive when I attempt to "Make" with driver
+>> version 25
+>>
+>>
+>> 2.6.15-1.2054_FC5
+>> uvcdriver]$ make
+>> Building USB Video Class driver...
+>> make[1]: Entering directory `/usr/src/kernels/2.6.15-1.2054_FC5-i686'
+>> CC [M] /usr/local/src/uvcdriver/uvcvideo.o
+>> /usr/local/src/uvcdriver/uvcvideo.c: In function ?uvc_v4l2_do_ioctl?:
+>> /usr/local/src/uvcdriver/uvcvideo.c:2054: error: ?v4l2_ioctl_names?
+>> undeclared (first use in this function)
+>> /usr/local/src/uvcdriver/uvcvideo.c:2054: error: (Each undeclared
+>> identifier is reported only once
+>> /usr/local/src/uvcdriver/uvcvideo.c:2054: error: for each function it
+>> appears in.)
+>> /usr/local/src/uvcdriver/uvcvideo.c: At top level:
+>> /usr/local/src/uvcdriver/uvcvideo.c:3433: error: unknown field ?owner?
+>> specified in initializer
+>> /usr/local/src/uvcdriver/uvcvideo.c:3433: warning: initialization from
+>> incompatible pointer type
+>> make[2]: *** [/usr/local/src/uvcdriver/uvcvideo.o] Error 1
+>> make[1]: *** [_module_/usr/local/src/uvcdriver] Error 2
+>> make[1]: Leaving directory `/usr/src/kernels/2.6.15-1.2054_FC5-i686'
+>> make: *** [uvcvideo] Error 2
+>> uvcdriver]$
+>>     
+>
+> That's because FC5 includes a 2.6.16 beta kernel, which advertises the 2.6.15 
+> kernel version but includes changes from 2.6.16 which breaks source 
+> compatibility. the linux-uvc driver should work with 2.6.16, but think your 
+> kernel is a 2.6.15. Try to modify the version number in the kernel Makefile 
+> to 2.6.16 and see if it helps.
+>
+> Laurent Pinchart
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> http://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+>
+>   
+This is what I receive after changing and attempting to Make this time.
+I changed lib/modules/2.6.15-1.2054_FC5/build
+VERSION = 2
+PATCHLEVEL = 6
+SUBLEVEL = 16
+# EXTRAVERSION = -1.2054_FC5
+make
+Building USB Video Class driver...
+make[1]: Entering directory `/usr/src/kernels/2.6.15-1.2054_FC5-i686'
+  CC [M]  /usr/local/src/uvcdriver/uvcvideo.o
+/usr/local/src/uvcdriver/uvcvideo.c: In function ?uvc_v4l2_do_ioctl?:
+/usr/local/src/uvcdriver/uvcvideo.c:2054: error: ?v4l2_ioctl_names? 
+undeclared (first use in this function)
+/usr/local/src/uvcdriver/uvcvideo.c:2054: error: (Each undeclared 
+identifier is reported only once
+/usr/local/src/uvcdriver/uvcvideo.c:2054: error: for each function it 
+appears in.)
+/usr/local/src/uvcdriver/uvcvideo.c: At top level:
+/usr/local/src/uvcdriver/uvcvideo.c:3433: error: unknown field ?owner? 
+specified in initializer
+/usr/local/src/uvcdriver/uvcvideo.c:3433: warning: initialization from 
+incompatible pointer type
+make[2]: *** [/usr/local/src/uvcdriver/uvcvideo.o] Error 1
+make[1]: *** [_module_/usr/local/src/uvcdriver] Error 2
+make[1]: Leaving directory `/usr/src/kernels/2.6.15-1.2054_FC5-i686'
+make: *** [uvcvideo] Error 2
+
+
+
+From dcm at MIT.EDU  Sat Mar 25 18:33:45 2006
+From: dcm at MIT.EDU (David Moore)
+Date: Sat, 25 Mar 2006 12:33:45 -0500
+Subject: [Linux-uvc-devel] Unable to make with Fedora Core 5
+In-Reply-To: <442575A1.1020602@comcast.net>
+References: <44256339.3090309@comcast.net>
+	 <200603251717.06055.laurent.pinchart@skynet.be>
+	 <442575A1.1020602@comcast.net>
+Message-ID: <1143308025.28075.17.camel@pisces.mit.edu>
+
+On Sat, 2006-03-25 at 08:53 -0800, James W. Spring wrote:
+
+> This is what I receive after changing and attempting to Make this time.
+> I changed lib/modules/2.6.15-1.2054_FC5/build
+> VERSION = 2
+> PATCHLEVEL = 6
+> SUBLEVEL = 16
+> # EXTRAVERSION = -1.2054_FC5
+
+Try changing this line
+in /lib/modules/2.6.15-1.2054_FC5/build/include/linux/version.h from:
+
+#define LINUX_VERSION_CODE 132623
+
+to:
+
+#define LINUX_VERSION_CODE 132624
+
+and then rebuild.
+
+-David
+
+
+
+From nivv at cs.bgu.ac.il  Sat Mar 25 22:56:08 2006
+From: nivv at cs.bgu.ac.il (Niv)
+Date: Sat, 25 Mar 2006 23:56:08 +0200
+Subject: [Linux-uvc-devel] a udev thing
+In-Reply-To: <200603251413.15177.laurent.pinchart@skynet.be>
+References: <4424C933.2060109@cs.bgu.ac.il> <200603251413.15177.laurent.pinchart@skynet.be>
+Message-ID: <4425BC78.9030001@cs.bgu.ac.il>
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Sweet :-)
+I still need to reset to see it comes up right.
+as for the 81 question, I want to fix it, but dont know how:
+
+$ fgrep 81 /etc/modules.d/aliases
+alias char-major-81     bttv
+
+how can I fix it?
+
+Niv
+
+
+Laurent Pinchart wrote:
+> Hi Niv,
+> 
+>> I think that QC 5000 owners may know how to help me.
+>> I wrote a rule for the webcam, but it seems that the alsa is loaded
+>> before video for linux and so the microphone in loaded , and my rule is
+>> not obied.
+>>
+>> I was wondering where I may read more to solve it.
+>>
+>> BUS="usb", SYSFS{idVendor}="046d", SYSFS{idProduct}="08c5",
+>> NAME="v4l/video2", S
+>> YMLINK="video2 qc5000" , GROUP="webcam"
+> 
+> I committed a new version of the driver two days ago which enable udev to 
+> handle the device properly. Tyr to use the following rule:
+> 
+> KERNEL="video[0-9]*", BUS="usb", SYSFS{idVendor}="046d", 
+> SYSFS{idProduct}="08c5", NAME="v4l/video2", SYMLINK="video2 qc5000", 
+> GROUP="webcam"
+> 
+>> also, I lost my /etc/group and /etc/passwd and wanted to add the missing
+>> groups.
+>>
+>> ls -la /dev/v4l/
+>> total 0
+>> drwxr-xr-x 2 root root 120 Mar 24 19:45 .
+>> drwxr-xr-x 21 root root 29600 Mar 25 00:24 ..
+>> crw-rw---- 1 root video 81, 64 Mar 22 19:33 radio0
+>> crw-rw---- 1 root video 81, 224 Mar 22 19:33 vbi0
+>> crw-rw---- 1 root webcam 81, 2 Mar 24 19:45 video0
+>> crw-rw---- 1 root tv 81, 0 Mar 24 19:45 video1
+>>
+>> I tried to add a group named webcam with gid 81:
+>> # fgrep 81 /etc/group
+>> webcam:x:81:niv
+>>
+>> but I still get the 81 listed and not "webcam"
+>> so how do I fix it?
+> 
+> 81 is the device major number, not the group id. 'root' is the owner name and 
+> 'webcam' the group name.
+> 
+> Laurent Pinchart
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> http://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFEJbx4kwazfG0MmCYRArgQAJ4kY3cgyDlyLY+NbepjS119z2JmLACfWIG8
+yayfcJq7YIEvYPvGbX9VUF0=
+=zMUN
+-----END PGP SIGNATURE-----
+
+
+From js4422 at comcast.net  Sat Mar 25 20:53:25 2006
+From: js4422 at comcast.net (James W. Spring)
+Date: Sat, 25 Mar 2006 11:53:25 -0800
+Subject: [Linux-uvc-devel] Unable to make with Fedora Core 5
+In-Reply-To: <1143308025.28075.17.camel@pisces.mit.edu>
+References: <44256339.3090309@comcast.net>	 <200603251717.06055.laurent.pinchart@skynet.be>	 <442575A1.1020602@comcast.net> <1143308025.28075.17.camel@pisces.mit.edu>
+Message-ID: <44259FB5.5000807@comcast.net>
+
+David Moore wrote:
+> On Sat, 2006-03-25 at 08:53 -0800, James W. Spring wrote:
+>
+>   
+>> This is what I receive after changing and attempting to Make this time.
+>> I changed lib/modules/2.6.15-1.2054_FC5/build
+>> VERSION = 2
+>> PATCHLEVEL = 6
+>> SUBLEVEL = 16
+>> # EXTRAVERSION = -1.2054_FC5
+>>     
+>
+> Try changing this line
+> in /lib/modules/2.6.15-1.2054_FC5/build/include/linux/version.h from:
+>
+> #define LINUX_VERSION_CODE 132623
+>
+> to:
+>
+> #define LINUX_VERSION_CODE 132624
+>
+> and then rebuild.
+>
+> -David
+>
+>
+>   
+David,
+
+The driver compiled thanks.
+
+I still had a error.
+
+James
+uvcdriver]$ make
+Building USB Video Class driver...
+make[1]: Entering directory `/usr/src/kernels/2.6.15-1.2054_FC5-i686'
+CC [M] /usr/local/src/uvcdriver/uvcvideo.o
+/usr/local/src/uvcdriver/uvcvideo.c: In function ?uvc_v4l2_do_ioctl?:
+/usr/local/src/uvcdriver/uvcvideo.c:2062: warning: implicit declaration 
+of function ?v4l2_printk_ioctl?
+Building modules, stage 2.
+MODPOST
+*** Warning: "v4l2_printk_ioctl" [/usr/local/src/uvcdriver/uvcvideo.ko] 
+undefined!
+CC /usr/local/src/uvcdriver/uvcvideo.mod.o
+LD [M] /usr/local/src/uvcdriver/uvcvideo.ko
+make[1]: Leaving directory `/usr/src/kernels/2.6.15-1.2054_FC5-i686'
+
+
+
+From nivv at cs.bgu.ac.il  Sat Mar 25 21:19:07 2006
+From: nivv at cs.bgu.ac.il (Niv)
+Date: Sat, 25 Mar 2006 22:19:07 +0200
+Subject: [Linux-uvc-devel] a udev thing
+In-Reply-To: <200603251413.15177.laurent.pinchart@skynet.be>
+References: <4424C933.2060109@cs.bgu.ac.il> <200603251413.15177.laurent.pinchart@skynet.be>
+Message-ID: <4425A5BB.4080105@cs.bgu.ac.il>
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+works swell :-)
+
+Laurent Pinchart wrote:
+> Hi Niv,
+> 
+>> I think that QC 5000 owners may know how to help me.
+>> I wrote a rule for the webcam, but it seems that the alsa is loaded
+>> before video for linux and so the microphone in loaded , and my rule is
+>> not obied.
+>>
+>> I was wondering where I may read more to solve it.
+>>
+>> BUS="usb", SYSFS{idVendor}="046d", SYSFS{idProduct}="08c5",
+>> NAME="v4l/video2", S
+>> YMLINK="video2 qc5000" , GROUP="webcam"
+> 
+> I committed a new version of the driver two days ago which enable udev to 
+> handle the device properly. Tyr to use the following rule:
+> 
+> KERNEL="video[0-9]*", BUS="usb", SYSFS{idVendor}="046d", 
+> SYSFS{idProduct}="08c5", NAME="v4l/video2", SYMLINK="video2 qc5000", 
+> GROUP="webcam"
+> 
+>> also, I lost my /etc/group and /etc/passwd and wanted to add the missing
+>> groups.
+>>
+>> ls -la /dev/v4l/
+>> total 0
+>> drwxr-xr-x 2 root root 120 Mar 24 19:45 .
+>> drwxr-xr-x 21 root root 29600 Mar 25 00:24 ..
+>> crw-rw---- 1 root video 81, 64 Mar 22 19:33 radio0
+>> crw-rw---- 1 root video 81, 224 Mar 22 19:33 vbi0
+>> crw-rw---- 1 root webcam 81, 2 Mar 24 19:45 video0
+>> crw-rw---- 1 root tv 81, 0 Mar 24 19:45 video1
+>>
+>> I tried to add a group named webcam with gid 81:
+>> # fgrep 81 /etc/group
+>> webcam:x:81:niv
+>>
+>> but I still get the 81 listed and not "webcam"
+>> so how do I fix it?
+> 
+> 81 is the device major number, not the group id. 'root' is the owner name and 
+> 'webcam' the group name.
+> 
+> Laurent Pinchart
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> http://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFEJaW7kwazfG0MmCYRArYVAJ9WavJEMf9/F3D/7v3XYzDxGV04CwCgs1ML
+yBnsmB5PLPvbCuJPiv+fCDs=
+=8fbn
+-----END PGP SIGNATURE-----
+
+
+From dcm at MIT.EDU  Sat Mar 25 21:17:34 2006
+From: dcm at MIT.EDU (David Moore)
+Date: Sat, 25 Mar 2006 15:17:34 -0500
+Subject: [Linux-uvc-devel] Unable to make with Fedora Core 5
+In-Reply-To: <44259FB5.5000807@comcast.net>
+References: <44256339.3090309@comcast.net>
+	 <200603251717.06055.laurent.pinchart@skynet.be>
+	 <442575A1.1020602@comcast.net> <1143308025.28075.17.camel@pisces.mit.edu>
+	 <44259FB5.5000807@comcast.net>
+Message-ID: <1143317854.28075.20.camel@pisces.mit.edu>
+
+For this error, as a temporary solution just comment out the offending
+line in uvcvideo.c.  You'll see that it's just for debugging purposes
+anyway.
+
+As for a long term solution, I have no idea what to do about it.  The
+Fedora Core 5 kernel includes neither v4l2_ioctl_names[] nor
+v4l2_printk_ioctl.
+
+-David
+
+On Sat, 2006-03-25 at 11:53 -0800, James W. Spring wrote:
+> David,
+> 
+> The driver compiled thanks.
+> 
+> I still had a error.
+> 
+> James
+> uvcdriver]$ make
+> Building USB Video Class driver...
+> make[1]: Entering directory `/usr/src/kernels/2.6.15-1.2054_FC5-i686'
+> CC [M] /usr/local/src/uvcdriver/uvcvideo.o
+> /usr/local/src/uvcdriver/uvcvideo.c: In function ?uvc_v4l2_do_ioctl?:
+> /usr/local/src/uvcdriver/uvcvideo.c:2062: warning: implicit declaration 
+> of function ?v4l2_printk_ioctl?
+> Building modules, stage 2.
+> MODPOST
+> *** Warning: "v4l2_printk_ioctl" [/usr/local/src/uvcdriver/uvcvideo.ko] 
+> undefined!
+> CC /usr/local/src/uvcdriver/uvcvideo.mod.o
+> LD [M] /usr/local/src/uvcdriver/uvcvideo.ko
+> make[1]: Leaving directory `/usr/src/kernels/2.6.15-1.2054_FC5-i686'
+> 
+
+
+
+From js4422 at comcast.net  Sat Mar 25 21:36:15 2006
+From: js4422 at comcast.net (James W. Spring)
+Date: Sat, 25 Mar 2006 12:36:15 -0800
+Subject: [Linux-uvc-devel] Unable to make with Fedora Core 5
+In-Reply-To: <1143317854.28075.20.camel@pisces.mit.edu>
+References: <44256339.3090309@comcast.net>	 <200603251717.06055.laurent.pinchart@skynet.be>	 <442575A1.1020602@comcast.net> <1143308025.28075.17.camel@pisces.mit.edu>	 <44259FB5.5000807@comcast.net> <1143317854.28075.20.camel@pisces.mit.edu>
+Message-ID: <4425A9BF.5090305@comcast.net>
+
+David Moore wrote:
+> For this error, as a temporary solution just comment out the offending
+> line in uvcvideo.c.  You'll see that it's just for debugging purposes
+> anyway.
+>
+> As for a long term solution, I have no idea what to do about it.  The
+> Fedora Core 5 kernel includes neither v4l2_ioctl_names[] nor
+> v4l2_printk_ioctl.
+>
+> -David
+>
+> On Sat, 2006-03-25 at 11:53 -0800, James W. Spring wrote:
+>   
+>> David,
+>>
+>> The driver compiled thanks.
+>>
+>> I still had a error.
+>>
+>> James
+>> uvcdriver]$ make
+>> Building USB Video Class driver...
+>> make[1]: Entering directory `/usr/src/kernels/2.6.15-1.2054_FC5-i686'
+>> CC [M] /usr/local/src/uvcdriver/uvcvideo.o
+>> /usr/local/src/uvcdriver/uvcvideo.c: In function ?uvc_v4l2_do_ioctl?:
+>> /usr/local/src/uvcdriver/uvcvideo.c:2062: warning: implicit declaration 
+>> of function ?v4l2_printk_ioctl?
+>> Building modules, stage 2.
+>> MODPOST
+>> *** Warning: "v4l2_printk_ioctl" [/usr/local/src/uvcdriver/uvcvideo.ko] 
+>> undefined!
+>> CC /usr/local/src/uvcdriver/uvcvideo.mod.o
+>> LD [M] /usr/local/src/uvcdriver/uvcvideo.ko
+>> make[1]: Leaving directory `/usr/src/kernels/2.6.15-1.2054_FC5-i686'
+>>
+>>     
+>
+>
+>   
+The uvcvideo driver is not being loaded.
+ lsmod
+Module                  Size  Used by
+v4l1_compat            11973  0
+videodev                9409  0
+snd_usb_audio          69441  0
+snd_usb_lib            15041  1 snd_usb_audio
+snd_rawmidi            24001  1 snd_usb_lib
+snd_hwdep               9541  1 snd_usb_audio
+button                  6609 
+lsmod
+
+No /dev/video is created
+
+
+
+
+From dcm at MIT.EDU  Sat Mar 25 21:37:40 2006
+From: dcm at MIT.EDU (David Moore)
+Date: Sat, 25 Mar 2006 15:37:40 -0500
+Subject: [Linux-uvc-devel] Frame Rate control?
+In-Reply-To: <200603251507.31957.laurent.pinchart@skynet.be>
+References: <1142482449.24796.12.camel@pisces.mit.edu>
+	 <200603251507.31957.laurent.pinchart@skynet.be>
+Message-ID: <1143319060.28075.23.camel@pisces.mit.edu>
+
+On Sat, 2006-03-25 at 15:07 +0100, Laurent Pinchart wrote:
+> I could hack the driver, but that would require a-priori knowledge of the 
+> supported resolutions/frame rates combinations in the user space application. 
+> That's definitely not a viable long-term solution.
+> 
+
+Speaking of that, do you know if the V4L2 API has any plans to add an
+ioctl for enumerating a list of supported resolutions/framerates?  It
+seems like a sorely-needed feature for drivers such as this one.
+
+-David
+
+
+
+From dcm at MIT.EDU  Sat Mar 25 21:54:15 2006
+From: dcm at MIT.EDU (David Moore)
+Date: Sat, 25 Mar 2006 15:54:15 -0500
+Subject: [Linux-uvc-devel] Unable to make with Fedora Core 5
+In-Reply-To: <4425A9BF.5090305@comcast.net>
+References: <44256339.3090309@comcast.net>
+	 <200603251717.06055.laurent.pinchart@skynet.be>
+	 <442575A1.1020602@comcast.net> <1143308025.28075.17.camel@pisces.mit.edu>
+	 <44259FB5.5000807@comcast.net> <1143317854.28075.20.camel@pisces.mit.edu>
+	 <4425A9BF.5090305@comcast.net>
+Message-ID: <1143320055.28075.34.camel@pisces.mit.edu>
+
+Did you do 'make install' followed by 'modprobe uvcvideo'?
+
+As far as I know, the module will not load itself automatically until
+you restart the entire usb subsystem by unloading ehci_hcd, etc. and
+reloading them.  Easier just to do 'modprobe uvcvideo' the first time.
+
+-David
+
+On Sat, 2006-03-25 at 12:36 -0800, James W. Spring wrote:
+> The uvcvideo driver is not being loaded.
+>  lsmod
+> Module                  Size  Used by
+> v4l1_compat            11973  0
+> videodev                9409  0
+> snd_usb_audio          69441  0
+> snd_usb_lib            15041  1 snd_usb_audio
+> snd_rawmidi            24001  1 snd_usb_lib
+> snd_hwdep               9541  1 snd_usb_audio
+> button                  6609 
+> lsmod
+> 
+> No /dev/video is created
+> 
+> 
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> http://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+
+
+
+From dcm at MIT.EDU  Sat Mar 25 22:06:50 2006
+From: dcm at MIT.EDU (David Moore)
+Date: Sat, 25 Mar 2006 16:06:50 -0500
+Subject: [Linux-uvc-devel] Connecting multiple cameras
+In-Reply-To: <200603251451.18497.laurent.pinchart@skynet.be>
+References: <1142483678.24796.23.camel@pisces.mit.edu>
+	 <200603251451.18497.laurent.pinchart@skynet.be>
+Message-ID: <1143320810.28075.44.camel@pisces.mit.edu>
+
+On Sat, 2006-03-25 at 14:51 +0100, Laurent Pinchart wrote:
+> Hi David,
+> 
+> > Hi, I'm interested in connecting more than one camera at once,
+> > specifically, a pair of Logitech Quickcam Pro 5000s.
+> 
+> I'm currently working on a robotic project which uses 4 cameras, but at 
+> smaller resolutions.
+> 
+
+I'm also working with cameras on a mobile robot, but unfortunately after
+some experimentation I think I'm ruling out these quickcams because of
+their "rolling shutter" which causes each line of the image to be
+captured at a different moment in time.  It's unfortunate that getting
+anything better than these generally costs at least $1000.
+
+I'm half-interested in developing an "open-source" hardware
+implementation for a USB camera.  If you're interested in talking about
+it, I have some ideas for what parts to use.  Parts, PCB, and assembly
+would probably add up to at least $300 each, but would decrease with
+quantity.
+
+> 
+> The driver just does what the webcam asks, so that's a hardware limitation. 
+> I'll contact Logitech to get more information.
+> 
+
+If you have a contact with a Logitech engineer, I'm also curious if
+there's some hidden "RAW" feature of these cameras to get the raw bayer
+data instead of the interpolated data.  It would be much more bandwidth
+efficient to transmit just the raw bayer data over the bus and do the
+interpolation in the application.
+
+There's also two "mysterious" extension units identified by the USB
+descriptors.  Do you have any idea what they do?
+
+-David
+
+
+
+From js4422 at comcast.net  Sat Mar 25 22:11:22 2006
+From: js4422 at comcast.net (James W. Spring)
+Date: Sat, 25 Mar 2006 13:11:22 -0800
+Subject: [Linux-uvc-devel] Unable to make with Fedora Core 5
+In-Reply-To: <1143320055.28075.34.camel@pisces.mit.edu>
+References: <44256339.3090309@comcast.net>	 <200603251717.06055.laurent.pinchart@skynet.be>	 <442575A1.1020602@comcast.net> <1143308025.28075.17.camel@pisces.mit.edu>	 <44259FB5.5000807@comcast.net> <1143317854.28075.20.camel@pisces.mit.edu>	 <4425A9BF.5090305@comcast.net> <1143320055.28075.34.camel@pisces.mit.edu>
+Message-ID: <4425B1FA.40209@comcast.net>
+
+David Moore wrote:
+> Did you do 'make install' followed by 'modprobe uvcvideo'?
+>
+> As far as I know, the module will not load itself automatically until
+> you restart the entire usb subsystem by unloading ehci_hcd, etc. and
+> reloading them.  Easier just to do 'modprobe uvcvideo' the first time.
+>
+> -David
+>
+> On Sat, 2006-03-25 at 12:36 -0800, James W. Spring wrote:
+>   
+>> The uvcvideo driver is not being loaded.
+>>  lsmod
+>> Module                  Size  Used by
+>> v4l1_compat            11973  0
+>> videodev                9409  0
+>> snd_usb_audio          69441  0
+>> snd_usb_lib            15041  1 snd_usb_audio
+>> snd_rawmidi            24001  1 snd_usb_lib
+>> snd_hwdep               9541  1 snd_usb_audio
+>> button                  6609 
+>> lsmod
+>>
+>> No /dev/video is created
+>>
+>>
+>> _______________________________________________
+>> Linux-uvc-devel mailing list
+>> Linux-uvc-devel at lists.berlios.de
+>> http://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+>>     
+>
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> http://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+>
+>   
+I needed to comment out the error. I then changed the version.h entry 
+again (ending in 4) and rebuilt the driver.
+I did the make install and now it works.
+
+Thanks for the help.
+
+James
+
+
+From heukaeufer at jhmi.edu  Mon Mar 27 20:25:27 2006
+From: heukaeufer at jhmi.edu (Matthias =?iso-8859-1?q?Heuk=E4ufer?=)
+Date: Mon, 27 Mar 2006 13:25:27 -0500
+Subject: [Linux-uvc-devel] backporting to the 2.6.8 kernel
+Message-ID: <200603271325.27299.heukaeufer@jhmi.edu>
+
+Hi!
+
+So far I did not find a solution. I will keep trying, though. Part of the 
+problem might be that my computer has only USB 1.1.
+
+Thanks for the reply.
+
+Matthias
+ 
+> Have you been able to solve your problem ? I don't know what could go wrong 
+> with 2.6.8, except maybe some USB issues. I can put that in my todo list, 
+but 
+> I won't have time to tackle the issue before at least a month.
+
+> Laurent Pinchart
+
+>> I am trying to port the driver to the 2.6.8 kernel. This would be
+>> interesting e. g. for people running Debian stable.
+>> With the attached patch I can cleanly compile and insert the module.
+>> Furthermore, the green light on the Quickcam 5000 Pro comes on as soon as I
+>> start uvcview. Unfortunately all I can see is a solid green image.
+>> I have to admit that my experience in C is only slightly better than my
+>> knowledge of the kernel internals which is almost zero. Maybe somebody will
+>> be able to give me a few hints as to where the problem might be.
+
+
+From dcm at MIT.EDU  Mon Mar 27 20:59:56 2006
+From: dcm at MIT.EDU (David Moore)
+Date: Mon, 27 Mar 2006 13:59:56 -0500
+Subject: [Linux-uvc-devel] backporting to the 2.6.8 kernel
+In-Reply-To: <200603271325.27299.heukaeufer@jhmi.edu>
+References: <200603271325.27299.heukaeufer@jhmi.edu>
+Message-ID: <1143485996.21641.10.camel@virgo.csail.mit.edu>
+
+Even on 2.6.12, I had stability problems with my Quickcam Pro 5000.
+After poking around, I discovered that many of the USB isochronous
+packets were filled with zeros after being passed from kernel to uvc
+driver.  About 1 in 8 packets had this problem.  Since the packet header
+would also be zeroed, parsing of the stream would loose sync and cause
+the whole thing to fail.
+
+Upgrading to 2.6.15 solved it for me.
+
+So it may be a lost cause to try to get it working under 2.6.8.  If
+anything, the fact that you have only USB 1.1 might help you, because I
+suspect most of the bugs are in the ehci_hcd driver since that has been
+tested less than uhci (especially with hi speed iso transfers -- uvc
+might be the only driver to ever exercise that functionality).
+
+-David
+
+
+On Mon, 2006-03-27 at 13:25 -0500, Matthias Heuk?ufer wrote:
+> Hi!
+> 
+> So far I did not find a solution. I will keep trying, though. Part of the 
+> problem might be that my computer has only USB 1.1.
+> 
+> Thanks for the reply.
+> 
+> Matthias
+>  
+> > Have you been able to solve your problem ? I don't know what could go wrong 
+> > with 2.6.8, except maybe some USB issues. I can put that in my todo list, 
+> but 
+> > I won't have time to tackle the issue before at least a month.
+> 
+> > Laurent Pinchart
+> 
+> >> I am trying to port the driver to the 2.6.8 kernel. This would be
+> >> interesting e. g. for people running Debian stable.
+> >> With the attached patch I can cleanly compile and insert the module.
+> >> Furthermore, the green light on the Quickcam 5000 Pro comes on as soon as I
+> >> start uvcview. Unfortunately all I can see is a solid green image.
+> >> I have to admit that my experience in C is only slightly better than my
+> >> knowledge of the kernel internals which is almost zero. Maybe somebody will
+> >> be able to give me a few hints as to where the problem might be.
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> http://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+
+
+
+From mxhaard at free.fr  Mon Mar 27 23:58:20 2006
+From: mxhaard at free.fr (michel Xhaard)
+Date: Mon, 27 Mar 2006 23:58:20 +0200
+Subject: [Linux-uvc-devel] backporting to the 2.6.8 kernel
+In-Reply-To: <1143485996.21641.10.camel@virgo.csail.mit.edu>
+References: <200603271325.27299.heukaeufer@jhmi.edu> <1143485996.21641.10.camel@virgo.csail.mit.edu>
+Message-ID: <200603272358.21056.mxhaard@free.fr>
+
+Le Lundi 27 Mars 2006 20:59, David Moore a ?crit?:
+> Even on 2.6.12, I had stability problems with my Quickcam Pro 5000.
+> After poking around, I discovered that many of the USB isochronous
+> packets were filled with zeros after being passed from kernel to uvc
+> driver.  About 1 in 8 packets had this problem.  Since the packet header
+> would also be zeroed, parsing of the stream would loose sync and cause
+> the whole thing to fail.
+>
+> Upgrading to 2.6.15 solved it for me.
+>
+> So it may be a lost cause to try to get it working under 2.6.8.  If
+> anything, the fact that you have only USB 1.1 might help you, because I
+> suspect most of the bugs are in the ehci_hcd driver since that has been
+> tested less than uhci (especially with hi speed iso transfers -- uvc
+> might be the only driver to ever exercise that functionality).
+>
+> -David
+>
+> On Mon, 2006-03-27 at 13:25 -0500, Matthias Heuk?ufer wrote:
+> > Hi!
+> >
+> > So far I did not find a solution. I will keep trying, though. Part of the
+> > problem might be that my computer has only USB 1.1.
+> >
+> > Thanks for the reply.
+> >
+> > Matthias
+> >
+> > > Have you been able to solve your problem ? I don't know what could go
+> > > wrong with 2.6.8, except maybe some USB issues. I can put that in my
+> > > todo list,
+> >
+> > but
+> >
+> > > I won't have time to tackle the issue before at least a month.
+> > >
+> > > Laurent Pinchart
+> > >
+> > >> I am trying to port the driver to the 2.6.8 kernel. This would be
+> > >> interesting e. g. for people running Debian stable.
+> > >> With the attached patch I can cleanly compile and insert the module.
+> > >> Furthermore, the green light on the Quickcam 5000 Pro comes on as soon
+> > >> as I start uvcview. Unfortunately all I can see is a solid green
+> > >> image. I have to admit that my experience in C is only slightly better
+> > >> than my knowledge of the kernel internals which is almost zero. Maybe
+> > >> somebody will be able to give me a few hints as to where the problem
+> > >> might be.
+> >
+
+I have mail to the list on january about SMP and ehci broken in 2.6.11 kernel 
+upgrading to 2.6.15 solve the problem.
+regards
+-- 
+Michel Xhaard
+http://mxhaard.free.fr
+
+
+From chrivers at iversen-net.dk  Tue Mar 28 14:34:03 2006
+From: chrivers at iversen-net.dk (Christian Iversen)
+Date: Tue, 28 Mar 2006 14:34:03 +0200
+Subject: [Linux-uvc-devel] Minor patch
+Message-ID: <200603281434.04009.chrivers@iversen-net.dk>
+
+
+This patch makes many programs display a more readable message when selecting 
+video devices. 
+
+-- 
+Regards,
+Christian Iversen
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: uvc-description-field.patch
+Type: text/x-diff
+Size: 497 bytes
+Desc: not available
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20060328/67e6d5e5/attachment.patch>
+
+From chrivers at iversen-net.dk  Tue Mar 28 15:09:35 2006
+From: chrivers at iversen-net.dk (Christian Iversen)
+Date: Tue, 28 Mar 2006 15:09:35 +0200
+Subject: [Linux-uvc-devel] Problems with QuickCam Pro 5000
+Message-ID: <200603281509.35196.chrivers@iversen-net.dk>
+
+Hi. I've recently bought a Logitech QC Pro 5000. I've compiled and 
+installed the driver on a 2.6.14 kernel.
+
+uvcviewer works fine. I get a good clean picture in (what seems to 
+be) 640x480 x 30fps.
+
+Now, I've tried various programs, to see if I can make this webcam work with 
+anything other than uvcviewer.
+
+#### Lavrec ####
+
+[root at zephyr]~ #LAV_VIDEO_DEV=/dev/video1 lavrec -v2  test.avi
+   INFO: [lavrec] Recording parameters:
+   INFO: [lavrec] Output format:      AVI
+   INFO: [lavrec] Input Source:       Auto detect
+
+   INFO: [lavrec] Decimation:         4
+   INFO: [lavrec] Quality:            50
+   INFO: [lavrec] Recording time:     -1 sec
+   INFO: [lavrec]
+   INFO: [lavrec] MJPEG buffer size:  256 KB
+   INFO: [lavrec] # of MJPEG buffers: 64
+   INFO: [lavrec] Audio parameters:
+   INFO: [lavrec] Audio sample size:           16 bit
+   INFO: [lavrec] Audio sampling rate:         44100 Hz
+   INFO: [lavrec] Audio is MONO
+   INFO: [lavrec] Audio input recording level: Use mixer setting
+   INFO: [lavrec] Level of correction for Audio/Video synchronization:
+   INFO: [lavrec] Lost frame compensation and frame drop/insert
+--DEBUG: [lavrec] Maximum size per file will be 1739 MB
+   INFO: [lavrec] Using mmap(2) system call for capture
+   INFO: [lavrec] Auto detecting input and norm ...
+   INFO: [lavrec] Trying Composite ...
+**ERROR: [lavrec] Error getting video input status: Invalid argument
+++ WARN: [lavrec] Not ready for capture (state = 0)!
+zsh: segmentation fault  LAV_VIDEO_DEV=/dev/video1 lavrec -v2 test.avi
+
+I think the problem here is that lavrec expects PAL, NTSC or SECAM. Of course, 
+selecting one of those standards is not going to work.
+
+
+#### Transcode ####
+
+[root at zephyr]~ #transcode -x v4l2,null -i /dev/video1 -g160x120 -y ffmpeg -F 
+mpeg4 -w 1024 -c 0-0:0:10 -o test.avi
+transcode v1.0.2 (C) 2001-2003 Thomas Oestreich, 2003-2004 T. Bitterberg
+[transcode] (probe) suggested AV correction -D 0 (0 ms) | AV 0 ms | 0 ms
+[transcode] auto-probing source /dev/video1 (ok)
+[transcode] V: import format    | unknown  (V=v4l2|A=null)
+[transcode] V: import frame     | 160x120  1.33:1
+[transcode] V: bits/pixel       | 2.133
+[transcode] V: decoding fps,frc | 25.000,3
+[transcode] V: Y'CbCr           | YV12/I420
+[transcode] A: import format    | 0x1     PCM          [44100,16,2]
+[transcode] A: export format    | 0x55    MPEG layer-3 [44100,16,2]  128 kbps
+[transcode] V: encoding fps,frc | 25.000,3
+[transcode] A: bytes per frame  | 7056 (7056.000000)
+[transcode] A: adjustment       | 0 at 1000
+[transcode] V: IA32/AMD64 accel | sse (sse 3dnowext 3dnow mmxext mmx asm C)
+tc_memcpy: using sse for memcpy
+[transcode] V: video buffer     | 10 @ 160x120
+[import_null.so] v0.2.0 (2002-01-19) (video) null | (audio) null
+[import_v4l2.so] v1.3.5 (2005-03-11) (video) v4l2 | (audio) pcm
+[export_ffmpeg.so] v0.3.13 (2004-08-03) (video) Lavc51.0.0 | (audio) 
+MPEG/AC3/PCM
+[import_v4l2.so]: v4l2 video grabbing
+[import_v4l2.so]: resync disabled
+[import_v4l2.so]: video grabbing, driver = uvcvideo, card = USB Video Class 
+device
+[import_v4l2.so]: VIDIOC_S_FMT: : Invalid argument
+[import_v4l2.so]: VIDIOC_S_FMT: : Invalid argument
+[import_v4l2.so]: VIDIOC_S_FMT: : Invalid argument
+[import_v4l2.so]: no usable pixel format supported by card
+video import module error: OPEN failed
+[transcode] critical: failed to open input source
+
+I'm not exactly sure what format import_v4l2.so wants, but it doesn't seem to 
+be supported. 
+
+#### XawTV ####
+
+This is xawtv-3.94, running on Linux/i686 (2.6.14-zephyr)
+xinerama 0: 1280x1024+0+0
+xinerama 1: 1280x1024+1280+0
+X Error of failed request:  XF86DGANoDirectVideoMode
+  Major opcode of failed request:  137 (XFree86-DGA)
+  Minor opcode of failed request:  1 (XF86DGAGetVideoLL)
+  Serial number of failed request:  13
+  Current serial number in output stream:  13
+v4l-conf had some trouble, trying to continue anyway
+Warning: Cannot convert string "-*-ledfixed-medium-r-*--39-*-*-*-c-*-*-*" to 
+type FontStruct
+ioctl: VIDIOC_G_STD(std=0xbf859bb4 
+[PAL_G,PAL_I,PAL_D,PAL_K,PAL_M,PAL_N,PAL_60,NTSC_M,?,SECAM_B,SECAM_G,?ATSC_8_VSB,ATSC_16_VSB,
+(null),(null),(null),(null),(null),(null)]): Invalid argument
+config: invalid value for input: Television
+valid choices for "input": "Camera"
+config: invalid value for norm: PAL
+valid choices for "norm":
+ioctl: VIDIOC_S_CTRL(id=9963778;value=124): Input/output error
+ioctl: VIDIOC_S_STD(std=0x0 []): Invalid argument
+ioctl: VIDIOC_DQBUF(index=0;type=VIDEO_CAPTURE;bytesused=0;flags=0x0 
+[];field=ANY;;timecode.type=0;timecode.flags=0;timecode.frames=0;timecode.seconds=0;timecode.minutes=0;timecode.hours=0;timecode.userbits="";sequence=0;memory=unknown): 
+Invalid argument
+ioctl: VIDIOC_DQBUF(index=0;type=VIDEO_CAPTURE;bytesused=0;flags=0x0 
+[];field=ANY;;timecode.type=0;timecode.flags=0;timecode.frames=0;timecode.seconds=0;timecode.minutes=0;timecode.hours=0;timecode.userbits="";sequence=0;memory=unknown): 
+Invalid argument
+<ctrl-c pressed here>
+zsh: segmentation fault  xawtv -nodga -c /dev/video1
+
+I don't know what the problem with this is, either. Is XawTV supposed to work?
+
+#### Kopete ####
+
+(which is what I mostly want to use this cam for)
+
+I actually get a picture! It's even in 30fps. Unfortunately, the colors are 
+all wrong! The color of the first pixel on each scanline is duplicated 
+throughout that line. I have a picture of that effect here:
+
+http://iversen-net.dk/~chrivers/uvc/kopete-qc-problems.png
+
+
+####
+
+Now, if anybody has any idea on making any of these cases work, I'd be very 
+interested.
+
+-- 
+Regards,
+Christian Iversen
+
+
+From pbrobinson at gmail.com  Tue Mar 28 20:10:39 2006
+From: pbrobinson at gmail.com (Peter Robinson)
+Date: Tue, 28 Mar 2006 19:10:39 +0100
+Subject: [Linux-uvc-devel] Problems compiling trunk on rawhide
+In-Reply-To: <200603151728.01189.laurent.pinchart@skynet.be>
+References: <5256d0b0603080613x32bce46by5d62e1699d1c2454@mail.gmail.com>
+	 <200603151241.00262.laurent.pinchart@skynet.be>
+	 <5256d0b0603150432t678bf935hb868a589392d20c8@mail.gmail.com>
+	 <200603151728.01189.laurent.pinchart@skynet.be>
+Message-ID: <5256d0b0603281010j28dc699ev7305c2f90407ce1e@mail.gmail.com>
+
+Hi Laurent,
+
+> > The fedora rawhide kernel is running 2.6.16rc5-git12/git13 and will no
+> > doubt be 2.6.16 pretty shortly after it comes out. So does the driver
+> > work with 2.6.16?
+>
+> It should. Could you try modifying the version number in the rawhide kernel
+> sources and compile the driver ?
+
+Just tried it again with official FC5 and the new 2.6.16 kernel. It
+now compiles but gives me an unknown symbol error:
+
+Linux video capture interface: v1.00
+uvcvideo: Unknown symbol v4l2_printk_ioctl
+
+Cheers,
+Peter
+
+
+From tante at emptiness.de  Tue Mar 28 20:57:26 2006
+From: tante at emptiness.de (=?ISO-8859-1?Q?J=FCrgen_Geuter?=)
+Date: Tue, 28 Mar 2006 20:57:26 +0200
+Subject: [Linux-uvc-devel] Problems compiling trunk on rawhide
+In-Reply-To: <5256d0b0603281010j28dc699ev7305c2f90407ce1e@mail.gmail.com>
+References: <5256d0b0603080613x32bce46by5d62e1699d1c2454@mail.gmail.com>	 <200603151241.00262.laurent.pinchart@skynet.be>	 <5256d0b0603150432t678bf935hb868a589392d20c8@mail.gmail.com>	 <200603151728.01189.laurent.pinchart@skynet.be> <5256d0b0603281010j28dc699ev7305c2f90407ce1e@mail.gmail.com>
+Message-ID: <44298716.9090208@emptiness.de>
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Peter Robinson wrote:
+
+Hossa
+
+> Just tried it again with official FC5 and the new 2.6.16 kernel. It
+> now compiles but gives me an unknown symbol error:
+> 
+> Linux video capture interface: v1.00
+> uvcvideo: Unknown symbol v4l2_printk_ioctl
+
+I used the patch that Luca Barbieri supplied and got the same error you
+have.
+The symbol v4l2_printk_ioctl is only used once in the source of
+uvcvideo.c so I tried commenting it out and it worked fine (Logitech
+Quickcam 5000 and Ekiga 2.01).
+If you want a patch you can get it from my gentoo ebuild overlay at
+http://gambit.ath.cx/~tante/ebuilds/media-video/uvcvideo/
+(the patch is in the "files" subdirectory).
+For all gentoo users this message implicly means that the ebuild is
+updated to work with 2.6.16 kernels now. Hope everything works (even
+though I'm not sure that commenting out the "non working" part won't
+break something else, I know only very little c and even less kernel stuff).
+
+J?rgen Geuter
+- --
+ICQ # 81510866  -  tante at jabber.org  -  MSN thanatos at gambit.ath.cx
+"Governments can be useful to the governed only so long as inherent
+tendencies toward tyranny are restrained."
+Frank Herbert, 'God Emperor Of Dune'
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFEKYcVrAehKXTNZasRAgNEAJ9wV//6cUYB4//RCkbBotXkQcCCsgCffrPs
+VZYMZenzGLP+xmyKJ8Y1U+U=
+=eP/x
+-----END PGP SIGNATURE-----
+
+
+From yanjing at yahoo.co.jp  Wed Mar 29 09:56:30 2006
+From: yanjing at yahoo.co.jp (=?iso-2022-jp?B?eWFuamluZw==?=)
+Date: Wed, 29 Mar 2006 09:56:30 +0200
+Subject: [Linux-uvc-devel] =?iso-2022-jp?B?GyRCPXckTjtSJCw6biRDJD8lWyE8JWAlWiE8JTgbKEI=?=
+Message-ID: <200603290756.k2T7uUt32154@bat.berlios.de>
+
+????????????????
+http://wettissues.com/hot
+??
+daxi at coq.zzn.com
+
+
+
+
+From nivv at cs.bgu.ac.il  Wed Mar 29 18:24:59 2006
+From: nivv at cs.bgu.ac.il (Niv)
+Date: Wed, 29 Mar 2006 18:24:59 +0200
+Subject: [Linux-uvc-devel] QC 5K owners: how to fix alsa for the mic?
+Message-ID: <442AB4DB.8050303@cs.bgu.ac.il>
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Hello all,
+I am aware that this is a uvc ML, but I dont know the alsa ML and got
+good advice here in the past.
+I also have trouble finding keywords to google for this problem.
+here goes:
+
+I have several sound devices that change.
+* a usb sound card with output only
+* a usb webcam with a microphone
+* a bluetooth adapter that provides a sound device with my BT headset
+
+my problem is that if I boot with the webcam disconnected like this:
+$ cat /proc/asound/cards
+0 [V8237          ]: VIA8237 - VIA 8237
+                     VIA 8237 with CMI9761 at 0xe800, irq 11
+1 [Bt878          ]: Bt87x - Brooktree Bt878
+                     Brooktree Bt878 at 0xe8101000, irq 11
+2 [Audio          ]: USB-Audio - USB Audio
+                     C-Media INC. USB Audio at usb-0000:00:10.3-2, full
+speed
+3 [Headset        ]: Bluetooth SCO - BT Headset
+                     BT Headset 1
+
+then after plugging the webcam:
+
+# cat /proc/asound/cards
+0 [V8237          ]: VIA8237 - VIA 8237
+                     VIA 8237 with CMI9761 at 0xe800, irq 11
+1 [Bt878          ]: Bt87x - Brooktree Bt878
+                     Brooktree Bt878 at 0xe8101000, irq 11
+2 [Audio          ]: USB-Audio - USB Audio
+                     C-Media INC. USB Audio at usb-0000:00:10.3-2, full
+speed
+3 [Headset        ]: Bluetooth SCO - BT Headset
+                     BT Headset 1
+4 [U0x46d0x8c5    ]: USB-Audio - USB Device 0x46d:0x8c5
+                     USB Device 0x46d:0x8c5 at usb-0000:00:10.4-1, high
+speed
+
+but if I reboot the headset takes device 4 and the webcam device 3.
+
+I tried mending /etc/modules.d/alsa:
+
+alias snd-card-0 snd-via82xx
+options snd-via82xx index=0
+alias snd-card-1 snd-bt87x
+alias snd-card-2 snd-bt-sco
+alias snd-card-3 snd-usb-audio
+alias snd-card-4 snd-usb-audio
+options snd cards_limit=5
+
+but it doesnt help
+I did manage to fix the oss using udev rules.
+
+how can I fix it?
+
+Niv
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFEKrTbkwazfG0MmCYRAtk/AJ4wmoQKBGDBcxzlmv8kUCFVU7plnACgs9Fs
+UVae3HpJR4SuYhcT/KpCYBU=
+=mnT1
+-----END PGP SIGNATURE-----
+
+
+From dcm at MIT.EDU  Wed Mar 29 19:13:33 2006
+From: dcm at MIT.EDU (David Moore)
+Date: Wed, 29 Mar 2006 12:13:33 -0500
+Subject: [Linux-uvc-devel] QC 5K owners: how to fix alsa for the mic?
+In-Reply-To: <442AB4DB.8050303@cs.bgu.ac.il>
+References: <442AB4DB.8050303@cs.bgu.ac.il>
+Message-ID: <1143652413.18263.1.camel@virgo.csail.mit.edu>
+
+Sounds like an application bug.  Your application should be referring to
+the ALSA devices by name, not by index.
+
+-David
+
+On Wed, 2006-03-29 at 18:24 +0200, Niv wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> Hello all,
+> I am aware that this is a uvc ML, but I dont know the alsa ML and got
+> good advice here in the past.
+> I also have trouble finding keywords to google for this problem.
+> here goes:
+> 
+> I have several sound devices that change.
+> * a usb sound card with output only
+> * a usb webcam with a microphone
+> * a bluetooth adapter that provides a sound device with my BT headset
+> 
+> my problem is that if I boot with the webcam disconnected like this:
+> $ cat /proc/asound/cards
+> 0 [V8237          ]: VIA8237 - VIA 8237
+>                      VIA 8237 with CMI9761 at 0xe800, irq 11
+> 1 [Bt878          ]: Bt87x - Brooktree Bt878
+>                      Brooktree Bt878 at 0xe8101000, irq 11
+> 2 [Audio          ]: USB-Audio - USB Audio
+>                      C-Media INC. USB Audio at usb-0000:00:10.3-2, full
+> speed
+> 3 [Headset        ]: Bluetooth SCO - BT Headset
+>                      BT Headset 1
+> 
+> then after plugging the webcam:
+> 
+> # cat /proc/asound/cards
+> 0 [V8237          ]: VIA8237 - VIA 8237
+>                      VIA 8237 with CMI9761 at 0xe800, irq 11
+> 1 [Bt878          ]: Bt87x - Brooktree Bt878
+>                      Brooktree Bt878 at 0xe8101000, irq 11
+> 2 [Audio          ]: USB-Audio - USB Audio
+>                      C-Media INC. USB Audio at usb-0000:00:10.3-2, full
+> speed
+> 3 [Headset        ]: Bluetooth SCO - BT Headset
+>                      BT Headset 1
+> 4 [U0x46d0x8c5    ]: USB-Audio - USB Device 0x46d:0x8c5
+>                      USB Device 0x46d:0x8c5 at usb-0000:00:10.4-1, high
+> speed
+> 
+> but if I reboot the headset takes device 4 and the webcam device 3.
+> 
+> I tried mending /etc/modules.d/alsa:
+> 
+> alias snd-card-0 snd-via82xx
+> options snd-via82xx index=0
+> alias snd-card-1 snd-bt87x
+> alias snd-card-2 snd-bt-sco
+> alias snd-card-3 snd-usb-audio
+> alias snd-card-4 snd-usb-audio
+> options snd cards_limit=5
+> 
+> but it doesnt help
+> I did manage to fix the oss using udev rules.
+> 
+> how can I fix it?
+> 
+> Niv
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.4.2.2 (GNU/Linux)
+> Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+> 
+> iD8DBQFEKrTbkwazfG0MmCYRAtk/AJ4wmoQKBGDBcxzlmv8kUCFVU7plnACgs9Fs
+> UVae3HpJR4SuYhcT/KpCYBU=
+> =mnT1
+> -----END PGP SIGNATURE-----
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> http://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+
+
+
+From eduardo.perez at uc3m.es  Wed Mar 29 21:34:11 2006
+From: eduardo.perez at uc3m.es (Eduardo =?iso-8859-1?Q?P=E9rez?= Ureta)
+Date: Wed, 29 Mar 2006 19:34:11 +0000
+Subject: [Linux-uvc-devel] Problems with QuickCam Pro 5000
+In-Reply-To: <200603281509.35196.chrivers@iversen-net.dk>
+References: <200603281509.35196.chrivers@iversen-net.dk>
+Message-ID: <20060329193411.GA17295@localhost.localdomain>
+
+On 2006-03-28 15:09:35 +0200, Christian Iversen wrote:
+> Hi. I've recently bought a Logitech QC Pro 5000. I've compiled and 
+> installed the driver on a 2.6.14 kernel.
+> 
+> uvcviewer works fine. I get a good clean picture in (what seems to 
+> be) 640x480 x 30fps.
+> 
+> Now, I've tried various programs, to see if I can make this webcam work with 
+> anything other than uvcviewer.
+> 
+> #### Lavrec ####
+> 
+> [root at zephyr]~ #LAV_VIDEO_DEV=/dev/video1 lavrec -v2  test.avi
+>    INFO: [lavrec] Recording parameters:
+>    INFO: [lavrec] Output format:      AVI
+>    INFO: [lavrec] Input Source:       Auto detect
+> 
+>    INFO: [lavrec] Decimation:         4
+>    INFO: [lavrec] Quality:            50
+>    INFO: [lavrec] Recording time:     -1 sec
+>    INFO: [lavrec]
+>    INFO: [lavrec] MJPEG buffer size:  256 KB
+>    INFO: [lavrec] # of MJPEG buffers: 64
+>    INFO: [lavrec] Audio parameters:
+>    INFO: [lavrec] Audio sample size:           16 bit
+>    INFO: [lavrec] Audio sampling rate:         44100 Hz
+>    INFO: [lavrec] Audio is MONO
+>    INFO: [lavrec] Audio input recording level: Use mixer setting
+>    INFO: [lavrec] Level of correction for Audio/Video synchronization:
+>    INFO: [lavrec] Lost frame compensation and frame drop/insert
+> --DEBUG: [lavrec] Maximum size per file will be 1739 MB
+>    INFO: [lavrec] Using mmap(2) system call for capture
+>    INFO: [lavrec] Auto detecting input and norm ...
+>    INFO: [lavrec] Trying Composite ...
+> **ERROR: [lavrec] Error getting video input status: Invalid argument
+> ++ WARN: [lavrec] Not ready for capture (state = 0)!
+> zsh: segmentation fault  LAV_VIDEO_DEV=/dev/video1 lavrec -v2 test.avi
+> 
+> I think the problem here is that lavrec expects PAL, NTSC or SECAM. Of course, 
+> selecting one of those standards is not going to work.
+
+Then, most probably, there is a problem in lavrec that should be fixed there.
+You should ask lavrec maintainers if they made lavrec work with a USB webcam.
+
+> #### Transcode ####
+> 
+> [root at zephyr]~ #transcode -x v4l2,null -i /dev/video1 -g160x120 -y ffmpeg -F 
+> mpeg4 -w 1024 -c 0-0:0:10 -o test.avi
+> transcode v1.0.2 (C) 2001-2003 Thomas Oestreich, 2003-2004 T. Bitterberg
+> [transcode] (probe) suggested AV correction -D 0 (0 ms) | AV 0 ms | 0 ms
+> [transcode] auto-probing source /dev/video1 (ok)
+> [transcode] V: import format    | unknown  (V=v4l2|A=null)
+> [transcode] V: import frame     | 160x120  1.33:1
+> [transcode] V: bits/pixel       | 2.133
+> [transcode] V: decoding fps,frc | 25.000,3
+> [transcode] V: Y'CbCr           | YV12/I420
+> [transcode] A: import format    | 0x1     PCM          [44100,16,2]
+> [transcode] A: export format    | 0x55    MPEG layer-3 [44100,16,2]  128 kbps
+> [transcode] V: encoding fps,frc | 25.000,3
+> [transcode] A: bytes per frame  | 7056 (7056.000000)
+> [transcode] A: adjustment       | 0 at 1000
+> [transcode] V: IA32/AMD64 accel | sse (sse 3dnowext 3dnow mmxext mmx asm C)
+> tc_memcpy: using sse for memcpy
+> [transcode] V: video buffer     | 10 @ 160x120
+> [import_null.so] v0.2.0 (2002-01-19) (video) null | (audio) null
+> [import_v4l2.so] v1.3.5 (2005-03-11) (video) v4l2 | (audio) pcm
+> [export_ffmpeg.so] v0.3.13 (2004-08-03) (video) Lavc51.0.0 | (audio) 
+> MPEG/AC3/PCM
+> [import_v4l2.so]: v4l2 video grabbing
+> [import_v4l2.so]: resync disabled
+> [import_v4l2.so]: video grabbing, driver = uvcvideo, card = USB Video Class 
+> device
+> [import_v4l2.so]: VIDIOC_S_FMT: : Invalid argument
+> [import_v4l2.so]: VIDIOC_S_FMT: : Invalid argument
+> [import_v4l2.so]: VIDIOC_S_FMT: : Invalid argument
+> [import_v4l2.so]: no usable pixel format supported by card
+> video import module error: OPEN failed
+> [transcode] critical: failed to open input source
+> 
+> I'm not exactly sure what format import_v4l2.so wants, but it doesn't seem to 
+> be supported. 
+
+You should ask the import_v4l2 maintainer to print the formats tried on
+every VIDIOC_S_FMT call instead of just 'Invalid argument'.
+And if one of those pixel formats is supposed to work with the webcam
+them maybe there is a problem in the uvc driver.
+
+> #### XawTV ####
+> 
+> This is xawtv-3.94, running on Linux/i686 (2.6.14-zephyr)
+> xinerama 0: 1280x1024+0+0
+> xinerama 1: 1280x1024+1280+0
+> X Error of failed request:  XF86DGANoDirectVideoMode
+>   Major opcode of failed request:  137 (XFree86-DGA)
+>   Minor opcode of failed request:  1 (XF86DGAGetVideoLL)
+>   Serial number of failed request:  13
+>   Current serial number in output stream:  13
+> v4l-conf had some trouble, trying to continue anyway
+> Warning: Cannot convert string "-*-ledfixed-medium-r-*--39-*-*-*-c-*-*-*" to 
+> type FontStruct
+> ioctl: VIDIOC_G_STD(std=0xbf859bb4 
+> [PAL_G,PAL_I,PAL_D,PAL_K,PAL_M,PAL_N,PAL_60,NTSC_M,?,SECAM_B,SECAM_G,?ATSC_8_VSB,ATSC_16_VSB,
+> (null),(null),(null),(null),(null),(null)]): Invalid argument
+> config: invalid value for input: Television
+> valid choices for "input": "Camera"
+> config: invalid value for norm: PAL
+> valid choices for "norm":
+> ioctl: VIDIOC_S_CTRL(id=9963778;value=124): Input/output error
+> ioctl: VIDIOC_S_STD(std=0x0 []): Invalid argument
+> ioctl: VIDIOC_DQBUF(index=0;type=VIDEO_CAPTURE;bytesused=0;flags=0x0 
+> [];field=ANY;;timecode.type=0;timecode.flags=0;timecode.frames=0;timecode.seconds=0;timecode.minutes=0;timecode.hours=0;timecode.userbits="";sequence=0;memory=unknown): 
+> Invalid argument
+> ioctl: VIDIOC_DQBUF(index=0;type=VIDEO_CAPTURE;bytesused=0;flags=0x0 
+> [];field=ANY;;timecode.type=0;timecode.flags=0;timecode.frames=0;timecode.seconds=0;timecode.minutes=0;timecode.hours=0;timecode.userbits="";sequence=0;memory=unknown): 
+> Invalid argument
+> <ctrl-c pressed here>
+> zsh: segmentation fault  xawtv -nodga -c /dev/video1
+> 
+> I don't know what the problem with this is, either. Is XawTV supposed to work?
+
+This seems like a bug in the uvc driver that does not correctly support
+VIDIOC_DQBUF but maybe XawTV is not totally ready for USB webcams.
+
+> #### Kopete ####
+> 
+> (which is what I mostly want to use this cam for)
+
+There are people in this list that have the webcam working with kopete.
+You should ask them. Maybe there is some patch left to apply to kopete or
+the uvc driver.
+
+> I actually get a picture! It's even in 30fps. Unfortunately, the colors are 
+> all wrong! The color of the first pixel on each scanline is duplicated 
+> throughout that line. I have a picture of that effect here:
+> 
+> http://iversen-net.dk/~chrivers/uvc/kopete-qc-problems.png
+> 
+> 
+> ####
+> 
+> Now, if anybody has any idea on making any of these cases work, I'd be very 
+> interested.
+
+
+From chrivers at iversen-net.dk  Thu Mar 30 00:47:11 2006
+From: chrivers at iversen-net.dk (Christian Iversen)
+Date: Thu, 30 Mar 2006 00:47:11 +0200
+Subject: [Linux-uvc-devel] Problems with QuickCam Pro 5000
+In-Reply-To: <20060329193411.GA17295@localhost.localdomain>
+References: <200603281509.35196.chrivers@iversen-net.dk> <20060329193411.GA17295@localhost.localdomain>
+Message-ID: <200603300047.12026.chrivers@iversen-net.dk>
+
+On Wednesday 29 March 2006 21:34, Eduardo P?rez Ureta wrote:
+> On 2006-03-28 15:09:35 +0200, Christian Iversen wrote:
+> > Hi. I've recently bought a Logitech QC Pro 5000. I've compiled and
+> > installed the driver on a 2.6.14 kernel.
+> >
+> > uvcviewer works fine. I get a good clean picture in (what seems to
+> > be) 640x480 x 30fps.
+> >
+> > Now, I've tried various programs, to see if I can make this webcam work
+> > with anything other than uvcviewer.
+> >
+> > #### Lavrec ####
+> >
+> > [root at zephyr]~ #LAV_VIDEO_DEV=/dev/video1 lavrec -v2  test.avi
+> >    INFO: [lavrec] Recording parameters:
+> >    INFO: [lavrec] Output format:      AVI
+> >    INFO: [lavrec] Input Source:       Auto detect
+> >
+> >    INFO: [lavrec] Decimation:         4
+> >    INFO: [lavrec] Quality:            50
+> >    INFO: [lavrec] Recording time:     -1 sec
+> >    INFO: [lavrec]
+> >    INFO: [lavrec] MJPEG buffer size:  256 KB
+> >    INFO: [lavrec] # of MJPEG buffers: 64
+> >    INFO: [lavrec] Audio parameters:
+> >    INFO: [lavrec] Audio sample size:           16 bit
+> >    INFO: [lavrec] Audio sampling rate:         44100 Hz
+> >    INFO: [lavrec] Audio is MONO
+> >    INFO: [lavrec] Audio input recording level: Use mixer setting
+> >    INFO: [lavrec] Level of correction for Audio/Video synchronization:
+> >    INFO: [lavrec] Lost frame compensation and frame drop/insert
+> > --DEBUG: [lavrec] Maximum size per file will be 1739 MB
+> >    INFO: [lavrec] Using mmap(2) system call for capture
+> >    INFO: [lavrec] Auto detecting input and norm ...
+> >    INFO: [lavrec] Trying Composite ...
+> > **ERROR: [lavrec] Error getting video input status: Invalid argument
+> > ++ WARN: [lavrec] Not ready for capture (state = 0)!
+> > zsh: segmentation fault  LAV_VIDEO_DEV=/dev/video1 lavrec -v2 test.avi
+> >
+> > I think the problem here is that lavrec expects PAL, NTSC or SECAM. Of
+> > course, selecting one of those standards is not going to work.
+>
+> Then, most probably, there is a problem in lavrec that should be fixed
+> there. You should ask lavrec maintainers if they made lavrec work with a
+> USB webcam.
+
+Ok, fair enough.
+
+> > #### Transcode ####
+> >
+> > [root at zephyr]~ #transcode -x v4l2,null -i /dev/video1 -g160x120 -y ffmpeg
+> > -F mpeg4 -w 1024 -c 0-0:0:10 -o test.avi
+> > transcode v1.0.2 (C) 2001-2003 Thomas Oestreich, 2003-2004 T. Bitterberg
+> > [transcode] (probe) suggested AV correction -D 0 (0 ms) | AV 0 ms | 0 ms
+> > [transcode] auto-probing source /dev/video1 (ok)
+> > [transcode] V: import format    | unknown  (V=v4l2|A=null)
+> > [transcode] V: import frame     | 160x120  1.33:1
+> > [transcode] V: bits/pixel       | 2.133
+> > [transcode] V: decoding fps,frc | 25.000,3
+> > [transcode] V: Y'CbCr           | YV12/I420
+> > [transcode] A: import format    | 0x1     PCM          [44100,16,2]
+> > [transcode] A: export format    | 0x55    MPEG layer-3 [44100,16,2]  128
+> > kbps [transcode] V: encoding fps,frc | 25.000,3
+> > [transcode] A: bytes per frame  | 7056 (7056.000000)
+> > [transcode] A: adjustment       | 0 at 1000
+> > [transcode] V: IA32/AMD64 accel | sse (sse 3dnowext 3dnow mmxext mmx asm
+> > C) tc_memcpy: using sse for memcpy
+> > [transcode] V: video buffer     | 10 @ 160x120
+> > [import_null.so] v0.2.0 (2002-01-19) (video) null | (audio) null
+> > [import_v4l2.so] v1.3.5 (2005-03-11) (video) v4l2 | (audio) pcm
+> > [export_ffmpeg.so] v0.3.13 (2004-08-03) (video) Lavc51.0.0 | (audio)
+> > MPEG/AC3/PCM
+> > [import_v4l2.so]: v4l2 video grabbing
+> > [import_v4l2.so]: resync disabled
+> > [import_v4l2.so]: video grabbing, driver = uvcvideo, card = USB Video
+> > Class device
+> > [import_v4l2.so]: VIDIOC_S_FMT: : Invalid argument
+> > [import_v4l2.so]: VIDIOC_S_FMT: : Invalid argument
+> > [import_v4l2.so]: VIDIOC_S_FMT: : Invalid argument
+> > [import_v4l2.so]: no usable pixel format supported by card
+> > video import module error: OPEN failed
+> > [transcode] critical: failed to open input source
+> >
+> > I'm not exactly sure what format import_v4l2.so wants, but it doesn't
+> > seem to be supported.
+>
+> You should ask the import_v4l2 maintainer to print the formats tried on
+> every VIDIOC_S_FMT call instead of just 'Invalid argument'.
+> And if one of those pixel formats is supposed to work with the webcam
+> them maybe there is a problem in the uvc driver.
+
+I'll contact Erik Slagter (who wrote that plugin), or try to patch it myself. 
+It's not that hard, and I'll get back to you when I have more information. 
+
+> > #### XawTV ####
+> >
+> > This is xawtv-3.94, running on Linux/i686 (2.6.14-zephyr)
+> > xinerama 0: 1280x1024+0+0
+> > xinerama 1: 1280x1024+1280+0
+> > X Error of failed request:  XF86DGANoDirectVideoMode
+> >   Major opcode of failed request:  137 (XFree86-DGA)
+> >   Minor opcode of failed request:  1 (XF86DGAGetVideoLL)
+> >   Serial number of failed request:  13
+> >   Current serial number in output stream:  13
+> > v4l-conf had some trouble, trying to continue anyway
+> > Warning: Cannot convert string "-*-ledfixed-medium-r-*--39-*-*-*-c-*-*-*"
+> > to type FontStruct
+> > ioctl: VIDIOC_G_STD(std=0xbf859bb4
+> > [PAL_G,PAL_I,PAL_D,PAL_K,PAL_M,PAL_N,PAL_60,NTSC_M,?,SECAM_B,SECAM_G,?ATS
+> >C_8_VSB,ATSC_16_VSB, (null),(null),(null),(null),(null),(null)]): Invalid
+> > argument
+> > config: invalid value for input: Television
+> > valid choices for "input": "Camera"
+> > config: invalid value for norm: PAL
+> > valid choices for "norm":
+> > ioctl: VIDIOC_S_CTRL(id=9963778;value=124): Input/output error
+> > ioctl: VIDIOC_S_STD(std=0x0 []): Invalid argument
+> > ioctl: VIDIOC_DQBUF(index=0;type=VIDEO_CAPTURE;bytesused=0;flags=0x0
+> > [];field=ANY;;timecode.type=0;timecode.flags=0;timecode.frames=0;timecode
+> >.seconds=0;timecode.minutes=0;timecode.hours=0;timecode.userbits="";sequen
+> >ce=0;memory=unknown): Invalid argument
+> > ioctl: VIDIOC_DQBUF(index=0;type=VIDEO_CAPTURE;bytesused=0;flags=0x0
+> > [];field=ANY;;timecode.type=0;timecode.flags=0;timecode.frames=0;timecode
+> >.seconds=0;timecode.minutes=0;timecode.hours=0;timecode.userbits="";sequen
+> >ce=0;memory=unknown): Invalid argument
+> > <ctrl-c pressed here>
+> > zsh: segmentation fault  xawtv -nodga -c /dev/video1
+> >
+> > I don't know what the problem with this is, either. Is XawTV supposed to
+> > work?
+>
+> This seems like a bug in the uvc driver that does not correctly support
+> VIDIOC_DQBUF but maybe XawTV is not totally ready for USB webcams.
+
+VIDEOC_DQBUF is supposed to dequeue a buffered image, or? And does this 
+explain that the webcam LED turns on for a split second, and then turns off 
+again? And does it explain why there's no / a black image only?
+
+> > #### Kopete ####
+> >
+> > (which is what I mostly want to use this cam for)
+>
+> There are people in this list that have the webcam working with kopete.
+> You should ask them. Maybe there is some patch left to apply to kopete or
+> the uvc driver.
+
+Anybody here who have tried kopete?
+
+And thanks for your reply!
+
+
+-- 
+Regards,
+Christian Iversen
+
+
+From akos at pipacs.com  Thu Mar 30 09:56:35 2006
+From: akos at pipacs.com (Akos Polster)
+Date: Thu, 30 Mar 2006 09:56:35 +0200
+Subject: [Linux-uvc-devel] Problems with QuickCam Pro 5000
+In-Reply-To: <200603300047.12026.chrivers@iversen-net.dk>
+References: <200603281509.35196.chrivers@iversen-net.dk>
+	 <20060329193411.GA17295@localhost.localdomain>
+	 <200603300047.12026.chrivers@iversen-net.dk>
+Message-ID: <fccd046c0603292356k67e8961dm56afce25085f0df5@mail.gmail.com>
+
+> Anybody here who have tried kopete?
+
+I see the same behaviour with Kopete (same QC model)
+
+ ~ Akos.
+
+--
+Akos Polster
+http://akos.pipacs.com
+mailto:akos at pipacs.com
+
+
+From heukaeufer at jhmi.edu  Fri Mar 31 00:24:16 2006
+From: heukaeufer at jhmi.edu (Matthias =?utf-8?q?Heuk=C3=A4ufer?=)
+Date: Thu, 30 Mar 2006 17:24:16 -0500
+Subject: [Linux-uvc-devel] Re: backporting to the 2.6.8 kernel
+In-Reply-To: <1143485996.21641.10.camel@virgo.csail.mit.edu>
+References: <200603271325.27299.heukaeufer@jhmi.edu> <1143485996.21641.10.camel@virgo.csail.mit.edu>
+Message-ID: <200603301724.17055.heukaeufer@jhmi.edu>
+
+This seems to be more difficult than I expected. Did you keep the code to look 
+at single packets?
+
+Matthias
+
+On Monday 27 March 2006 01:59 pm, David Moore wrote:
+> Even on 2.6.12, I had stability problems with my Quickcam Pro 5000.
+> After poking around, I discovered that many of the USB isochronous
+> packets were filled with zeros after being passed from kernel to uvc
+> driver.  About 1 in 8 packets had this problem.  Since the packet header
+> would also be zeroed, parsing of the stream would loose sync and cause
+> the whole thing to fail.
+>
+> Upgrading to 2.6.15 solved it for me.
+>
+> So it may be a lost cause to try to get it working under 2.6.8.  If
+> anything, the fact that you have only USB 1.1 might help you, because I
+> suspect most of the bugs are in the ehci_hcd driver since that has been
+> tested less than uhci (especially with hi speed iso transfers -- uvc
+> might be the only driver to ever exercise that functionality).
+>
+> -David
+>
+> On Mon, 2006-03-27 at 13:25 -0500, Matthias Heuk?ufer wrote:
+> > Hi!
+> >
+> > So far I did not find a solution. I will keep trying, though. Part of the
+> > problem might be that my computer has only USB 1.1.
+> >
+> > Thanks for the reply.
+> >
+> > Matthias
+> >
+> > > Have you been able to solve your problem ? I don't know what could go
+> > > wrong with 2.6.8, except maybe some USB issues. I can put that in my
+> > > todo list,
+> >
+> > but
+> >
+> > > I won't have time to tackle the issue before at least a month.
+> > >
+> > > Laurent Pinchart
+> > >
+> > >> I am trying to port the driver to the 2.6.8 kernel. This would be
+> > >> interesting e. g. for people running Debian stable.
+> > >> With the attached patch I can cleanly compile and insert the module.
+> > >> Furthermore, the green light on the Quickcam 5000 Pro comes on as soon
+> > >> as I start uvcview. Unfortunately all I can see is a solid green
+> > >> image. I have to admit that my experience in C is only slightly better
+> > >> than my knowledge of the kernel internals which is almost zero. Maybe
+> > >> somebody will be able to give me a few hints as to where the problem
+> > >> might be.
+> >
+> > _______________________________________________
+> > Linux-uvc-devel mailing list
+> > Linux-uvc-devel at lists.berlios.de
+> > http://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+
+
+From louisg00 at bellsouth.net  Fri Mar 31 05:29:44 2006
+From: louisg00 at bellsouth.net (Louis E Garcia II)
+Date: Thu, 30 Mar 2006 22:29:44 -0500
+Subject: [Linux-uvc-devel] Fusion brightness
+Message-ID: <1143775784.5132.7.camel@soncomputer>
+
+I finally got the logitech fusion working on my FC5 box with updated
+2.6.16 kernel. I am testing it with ekiga and the picture is darker then
+in windows. Is controlling the brightness or any other options like
+resolution part of the driver or is it per application?
+
+-Louis
+
+
+
+From ace at staticwave.ca  Fri Mar 31 05:59:16 2006
+From: ace at staticwave.ca (Gabriel A. Devenyi)
+Date: Thu, 30 Mar 2006 22:59:16 -0500
+Subject: [Linux-uvc-devel] Fusion brightness
+In-Reply-To: <1143775784.5132.7.camel@soncomputer>
+References: <1143775784.5132.7.camel@soncomputer>
+Message-ID: <200603302259.17089.ace@staticwave.ca>
+
+On March 30, 2006 22:29, Louis E Garcia II wrote:
+> I finally got the logitech fusion working on my FC5 box with updated
+> 2.6.16 kernel. I am testing it with ekiga and the picture is darker then
+> in windows. Is controlling the brightness or any other options like
+> resolution part of the driver or is it per application?
+
+The standard image features (brightness etc) are provided by the V4L 
+interface, but the application must support reading/changing them. Try 
+uvccapture (http://staticwave.ca/source/uvccapture/) to set the brightness. 
+If you're lucky ekiga won't reset the camera settings when it starts.
+
+-- 
+Gabriel A. Devenyi
+ace at staticwave.ca
+
+
+From luc at saillard.org  Fri Mar 31 10:07:58 2006
+From: luc at saillard.org (Luc Saillard)
+Date: Fri, 31 Mar 2006 10:07:58 +0200
+Subject: [Linux-uvc-devel] Fusion brightness
+In-Reply-To: <1143775784.5132.7.camel@soncomputer>
+References: <1143775784.5132.7.camel@soncomputer>
+Message-ID: <20060331080758.GD13788@sd291.sivit.org>
+
+On Thu, Mar 30, 2006 at 10:29:44PM -0500, Louis E Garcia II wrote:
+> I finally got the logitech fusion working on my FC5 box with updated
+> 2.6.16 kernel. I am testing it with ekiga and the picture is darker then
+> in windows. Is controlling the brightness or any other options like
+> resolution part of the driver or is it per application?
+> 
+ 
+With ekiga, you can control the brightness, just display the video control
+panel.
+
+Luc
+
+
+From joakim.lindgren at vasterbotten.police.se  Fri Mar 31 13:00:35 2006
+From: joakim.lindgren at vasterbotten.police.se (Joakim Lindgren)
+Date: Fri, 31 Mar 2006 13:00:35 +0200
+Subject: [Linux-uvc-devel] Problems with kernel 2.6.16
+Message-ID: <1143802835.6533.2.camel@dhcppc15>
+
+[root at dhcppc22 ~]# modprobe uvcvideo
+FATAL: Error inserting uvcvideo
+(/lib/modules/2.6.16-1.2080_FC5/usb/media/uvcvideo.ko): Unknown symbol
+in module, or unknown parameter (see dmesg)
+[root at dhcppc22 ~]# dmesg |grep uvcvideo
+uvcvideo: Unknown symbol v4l2_printk_ioctl
+
+any idea?
+
+Regards
+
+Joakim Lindgren
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20060331/667eb4fe/attachment.html>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 191 bytes
+Desc: This is a digitally signed message part
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20060331/667eb4fe/attachment.pgp>
+
+From dcm at MIT.EDU  Fri Mar 31 14:16:04 2006
+From: dcm at MIT.EDU (David Moore)
+Date: Fri, 31 Mar 2006 07:16:04 -0500
+Subject: [Linux-uvc-devel] Fusion brightness
+In-Reply-To: <1143775784.5132.7.camel@soncomputer>
+References: <1143775784.5132.7.camel@soncomputer>
+Message-ID: <442D1D84.8070109@mit.edu>
+
+I noticed a similar problem.  For me, after playing with the V4L2 
+"Gamma" control, it was fixed.  I think the camera powers up with a 
+gamma of 1.0 instead of the normal 2.2.  After setting it to 2.2, it 
+looked fine.  Unfortunately, I know of no V4L2 app that exposes the 
+gamma control (I wrote my own).
+
+-David
+
+Louis E Garcia II wrote:
+> I finally got the logitech fusion working on my FC5 box with updated
+> 2.6.16 kernel. I am testing it with ekiga and the picture is darker then
+> in windows. Is controlling the brightness or any other options like
+> resolution part of the driver or is it per application?
+> 
+> -Louis
+> 
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> http://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+
+
+From laurent.pinchart at skynet.be  Fri Mar 31 15:28:55 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Fri, 31 Mar 2006 15:28:55 +0200
+Subject: [Linux-uvc-devel] Problems with kernel 2.6.16
+In-Reply-To: <1143802835.6533.2.camel@dhcppc15>
+References: <1143802835.6533.2.camel@dhcppc15>
+Message-ID: <200603311528.55429.laurent.pinchart@skynet.be>
+
+> [root at dhcppc22 ~]# modprobe uvcvideo
+> FATAL: Error inserting uvcvideo
+> (/lib/modules/2.6.16-1.2080_FC5/usb/media/uvcvideo.ko): Unknown symbol
+> in module, or unknown parameter (see dmesg)
+> [root at dhcppc22 ~]# dmesg |grep uvcvideo
+> uvcvideo: Unknown symbol v4l2_printk_ioctl
+
+Fixed in current SVN.
+
+Laurent Pinchart
+
+
+
+From laurent.pinchart at skynet.be  Fri Mar 31 15:34:34 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Fri, 31 Mar 2006 15:34:34 +0200
+Subject: [Linux-uvc-devel] Minor patch
+In-Reply-To: <200603281434.04009.chrivers@iversen-net.dk>
+References: <200603281434.04009.chrivers@iversen-net.dk>
+Message-ID: <200603311534.34318.laurent.pinchart@skynet.be>
+
+> This patch makes many programs display a more readable message when
+> selecting video devices.
+
+Thanks. Applied.
+
+Laurent Pinchart
+
+
+
+From laurent.pinchart at skynet.be  Fri Mar 31 15:56:10 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Fri, 31 Mar 2006 15:56:10 +0200
+Subject: [Linux-uvc-devel] Connecting multiple cameras
+In-Reply-To: <1143320810.28075.44.camel@pisces.mit.edu>
+References: <1142483678.24796.23.camel@pisces.mit.edu> <200603251451.18497.laurent.pinchart@skynet.be> <1143320810.28075.44.camel@pisces.mit.edu>
+Message-ID: <200603311556.10871.laurent.pinchart@skynet.be>
+
+> I'm also working with cameras on a mobile robot, but unfortunately after
+> some experimentation I think I'm ruling out these quickcams because of
+> their "rolling shutter" which causes each line of the image to be
+> captured at a different moment in time.  It's unfortunate that getting
+> anything better than these generally costs at least $1000.
+
+Indeed. As we only need to detect static objects, we will stop the robot for a 
+second to grab images. That's not a perfect solution, I'll ask Logitech if 
+they plan to develop a camera with a better sensor.
+
+> I'm half-interested in developing an "open-source" hardware
+> implementation for a USB camera.  If you're interested in talking about
+> it, I have some ideas for what parts to use.  Parts, PCB, and assembly
+> would probably add up to at least $300 each, but would decrease with
+> quantity.
+
+I'm indeed very interested. Can you give me more information ? Have you 
+contacted other people ?
+
+> > The driver just does what the webcam asks, so that's a hardware
+> > limitation. I'll contact Logitech to get more information.
+>
+> If you have a contact with a Logitech engineer, I'm also curious if
+> there's some hidden "RAW" feature of these cameras to get the raw bayer
+> data instead of the interpolated data.  It would be much more bandwidth
+> efficient to transmit just the raw bayer data over the bus and do the
+> interpolation in the application.
+
+I'll ask them.
+
+> There's also two "mysterious" extension units identified by the USB
+> descriptors.  Do you have any idea what they do?
+
+Those extension units are mostly used for internal purpose (debug, device 
+identification, ...). They expose a few interesting controls such as color 
+correction for which I still need to implement support in the linux-uvc 
+driver.
+
+Laurent Pinchart
+
+
+

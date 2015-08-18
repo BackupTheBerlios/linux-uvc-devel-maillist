@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Multiple camera framerate.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multiple%20camera%20framerate.&In-Reply-To=%3C201004271034.o3RAYc9f007644%40singularity.tronunltd.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005709.html">
+   <LINK REL="Next"  HREF="005703.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Multiple camera framerate.</H1>
+    <B>Ian Latter</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multiple%20camera%20framerate.&In-Reply-To=%3C201004271034.o3RAYc9f007644%40singularity.tronunltd.com%3E"
+       TITLE="[Linux-uvc-devel] Multiple camera framerate.">ian.latter at midnightcode.org
+       </A><BR>
+    <I>Tue Apr 27 13:34:38 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005709.html">[Linux-uvc-devel] Multiple camera framerate.
+</A></li>
+        <LI>Next message: <A HREF="005703.html">[Linux-uvc-devel] Multiple camera framerate.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5701">[ date ]</a>
+              <a href="thread.html#5701">[ thread ]</a>
+              <a href="subject.html#5701">[ subject ]</a>
+              <a href="author.html#5701">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+
+  Do they need to be simultaneous?  I.e. from your
+description, ideally they would be, but then the higher
+the frame-rate the lesser the delta between frames
+(assuming your solution moves slowly or observes
+something that moves slowly).
+
+  Implementation could be interesting.  I don't know what 
+UVC does when you don't de-queue the capture buffer 
+(VIDIOC_DQBUF), whether the camera captures 
+frames but doesn't send them to the host over the wire,
+or whether the camera captures frames and sends 
+them to the host to have the host UVC driver dump 
+them.
+
+      *However* 
+
+  Assuming the former; you could try setting the 
+frame rate that you want on all of the cameras in
+your solution, then running a &quot;capture&quot; thread that
+walks the cameras sequentially in a 10-cameras-per-
+second walk to DQ them.
+  If you think you can sustain multiple cameras 
+simultaneously, then you could kick off (concurrency) 
+&quot;capture&quot; threads of 10-cameras-per-second for 
+(total/concurrency) cameras each. 
+
+  This is silly - I don't remember the timing models - 
+you should be able to kick off a thread per camera 
+and use a mutex to prevent unwanted simultanety, and
+then use signals with select(?) in each thread to 
+manage its own timing .. or did that result in a signal
+for the process, rather than the thread .. hmm .. maybe
+you should be mixing both ideas.
+
+  Either way do any further image handling in a 
+&quot;processing&quot; thread to keep your image handling out
+of your capture timing ...
+
+
+Chalk it up as one thought ;-)
+
+
+
+----- Original Message -----
+&gt;<i>From: &quot;Dennis Muhlestein&quot; &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">djmuhlestein at gmail.com</A>&gt;
+</I>&gt;<i>To: &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel at lists.berlios.de</A>&gt;
+</I>&gt;<i>Subject:  [Linux-uvc-devel] Multiple camera framerate.
+</I>&gt;<i>Date: Mon, 26 Apr 2010 14:43:39 -0600
+</I>&gt;<i>
+</I>&gt;<i> I have a project I've been playing with that uses a number
+</I>of cameras to 
+&gt;<i> construct video from 360 degrees.  All cameras can be
+</I>configured as long 
+&gt;<i> as I don't overload the underlying ISO bandwidth limits. 
+</I>(&quot;No space 
+&gt;<i> left on device.&quot; has been discussed a few times on this list.)
+</I>&gt;<i> 
+</I>&gt;<i> The application works well, but I'd like to experiment
+</I>with making the 
+&gt;<i> video quality better.  There is always some sheering when
+</I>the cameras 
+&gt;<i> are moving but the higher framerate I can capture at, the
+</I>less the 
+&gt;<i> sheering effect will degrade the video quality.
+</I>&gt;<i> 
+</I>&gt;<i> Can anyone suggest a way to configure the cameras at a
+</I>higher framerate 
+&gt;<i> without overloading the USB bus?  Suppose I can read at 10
+</I>fps right now 
+&gt;<i> without overloading the USB bus.  I'd like to set the
+</I>framerate to 15, 
+&gt;<i> but still just capture around 10.
+</I>&gt;<i> 
+</I>&gt;<i> Any thoughts?
+</I>&gt;<i> 
+</I>&gt;<i> Thanks
+</I>&gt;<i> Dennis
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i> 
+</I>
+
+--
+Ian Latter
+Late night coder ..
+<A HREF="http://midnightcode.org/">http://midnightcode.org/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005709.html">[Linux-uvc-devel] Multiple camera framerate.
+</A></li>
+	<LI>Next message: <A HREF="005703.html">[Linux-uvc-devel] Multiple camera framerate.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5701">[ date ]</a>
+              <a href="thread.html#5701">[ thread ]</a>
+              <a href="subject.html#5701">[ subject ]</a>
+              <a href="author.html#5701">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

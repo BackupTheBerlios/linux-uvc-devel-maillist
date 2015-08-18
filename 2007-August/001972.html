@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] I cannot get my Apple iSight to work
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20I%20cannot%20get%20my%20Apple%20iSight%20to%20work&In-Reply-To=%3C200708142222.38110.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001959.html">
+   <LINK REL="Next"  HREF="001975.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] I cannot get my Apple iSight to work</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20I%20cannot%20get%20my%20Apple%20iSight%20to%20work&In-Reply-To=%3C200708142222.38110.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] I cannot get my Apple iSight to work">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Aug 14 22:22:37 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001959.html">[Linux-uvc-devel] I cannot get my Apple iSight to work
+</A></li>
+        <LI>Next message: <A HREF="001975.html">[Linux-uvc-devel] I cannot get my Apple iSight to work
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1972">[ date ]</a>
+              <a href="thread.html#1972">[ thread ]</a>
+              <a href="subject.html#1972">[ subject ]</a>
+              <a href="author.html#1972">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Felix,
+
+First of all, sorry for the late reply.
+
+On Sunday 12 August 2007, Felix M&#246;ller wrote:
+&gt;<i> Felix M&#246;ller schrieb:
+</I>&gt;<i> &gt; Hi,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; I cannot get my iSight in an early 2006 MacBook working.
+</I>
+There are a couple of problems with the iSight. The main issue is that the 
+device is not UVC compliant. It requires hacks in the driver to work 
+properly.
+
+The second issue is that the webcam has no firmware memory. The host has to 
+upload the firmware every time the computer is started. There is a userspace 
+firmware loading utility called fxload that handles firmware loading, so I'm 
+not very keen on adding firmware loading support to the driver itself. It 
+seems the concensus among kernels developers is to use the fxload utility. I 
+could of course change my mind if I'm proven wrong :-)
+
+I don't own any MacBook so I can't test driver hacks. A few users helped me in 
+creating a patch for the Linux UVC driver to support iSight webcams. I wasn't 
+very happy with the last version, so I asked for feedback on a revised patch. 
+I got no reply so far.
+
+&gt;<i> &gt; Is there anything I could try? I am willing to compile from SVN or
+</I>&gt;<i> &gt; provide any needed information.
+</I>
+The current version of the iSight patch doesn't apply cleanly to the latest 
+SVN revision. You could fix the patch and test it. You will have to load the 
+firmware with a userspace utility.
+
+I attached the most recent patch I have, as well as a userspace utility which 
+should upload the firmware.
+
+&gt;<i> &gt; Hope to get this working ...
+</I>&gt;<i>
+</I>&gt;<i> trying uvccapture I get the following:
+</I>&gt;<i>
+</I>&gt;<i> /uvccapture-0.4 # ./uvccapture -v
+</I>&gt;<i> Using videodevice: /dev/video0
+</I>&gt;<i> Saving images to: snap.jpg
+</I>&gt;<i> Image size: 320x240
+</I>&gt;<i> Taking snapshot every 0 seconds
+</I>&gt;<i> Taking images using mmap
+</I>&gt;<i> Unable to set format: 22.
+</I>&gt;<i>  Init v4L2 failed !! exit fatal
+</I>&gt;<i>
+</I>&gt;<i> modprobing with trace=15 I get the following:
+</I>&gt;<i> &gt; uvcvideo: Adding mapping Brightness to control
+</I>&gt;<i> &gt; 00000000-0000-0000-0000-000000000101/2. uvcvideo: Adding mapping Contrast
+</I>&gt;<i> &gt; to control 00000000-0000-0000-0000-000000000101/3. uvcvideo: Adding
+</I>&gt;<i> &gt; mapping Hue to control 00000000-0000-0000-0000-000000000101/6. uvcvideo:
+</I>&gt;<i> &gt; Adding mapping Saturation to control
+</I>&gt;<i> &gt; 00000000-0000-0000-0000-000000000101/7. uvcvideo: Adding mapping
+</I>&gt;<i> &gt; Sharpness to control 00000000-0000-0000-0000-000000000101/8. uvcvideo:
+</I>&gt;<i> &gt; Adding mapping Gamma to control 00000000-0000-0000-0000-000000000101/9.
+</I>&gt;<i> &gt; uvcvideo: Adding mapping Backlight Compensation to control
+</I>&gt;<i> &gt; 00000000-0000-0000-0000-000000000101/1. uvcvideo: Adding mapping Gain to
+</I>&gt;<i> &gt; control 00000000-0000-0000-0000-000000000101/4. uvcvideo: Adding mapping
+</I>&gt;<i> &gt; Power Line Frequency to control 00000000-0000-0000-0000-000000000101/5.
+</I>&gt;<i> &gt; uvcvideo: Adding mapping Hue, Auto to control
+</I>&gt;<i> &gt; 00000000-0000-0000-0000-000000000101/16. uvcvideo: Adding mapping Pan
+</I>&gt;<i> &gt; (relative) to control 63610682-5070-49ab-b8cc-b3855e8d2256/1. uvcvideo:
+</I>&gt;<i> &gt; Adding mapping Tilt (relative) to control
+</I>&gt;<i> &gt; 63610682-5070-49ab-b8cc-b3855e8d2256/1. uvcvideo: Adding mapping Pan/Tilt
+</I>&gt;<i> &gt; (reset) to control 63610682-5070-49ab-b8cc-b3855e8d2256/2. uvcvideo:
+</I>&gt;<i> &gt; Adding mapping Exposure, Auto to control
+</I>&gt;<i> &gt; 00000000-0000-0000-0000-000000000001/2. uvcvideo: Adding mapping Exposure
+</I>&gt;<i> &gt; (Absolute) to control 00000000-0000-0000-0000-000000000001/4. uvcvideo:
+</I>&gt;<i> &gt; Adding mapping White Balance Temperature, Auto to control
+</I>&gt;<i> &gt; 00000000-0000-0000-0000-000000000101/11. uvcvideo: Adding mapping White
+</I>&gt;<i> &gt; Balance Temperature to control 00000000-0000-0000-0000-000000000101/10.
+</I>&gt;<i> &gt; uvcvideo: Probing known UVC device 4 (05ac:8501)
+</I>&gt;<i> &gt; uvcvideo: iSight: firmware already loaded.
+</I>&gt;<i> &gt; uvcvideo: Found format YUV 4:2:2 (UYVY).
+</I>&gt;<i> &gt; uvcvideo: - 640x480 (30.0 fps)
+</I>&gt;<i> &gt; uvcvideo: - 352x288 (30.0 fps)
+</I>&gt;<i> &gt; uvcvideo: - 320x240 (30.0 fps)
+</I>&gt;<i> &gt; uvcvideo: Found a Status endpoint (addr 81).
+</I>&gt;<i> &gt; uvcvideo: Found UVC 1.00 device Built-in iSight (05ac:8501)
+</I>&gt;<i> &gt; uvcvideo: Added control 00000000-0000-0000-0000-000000000101/2 to device
+</I>&gt;<i> &gt; 4 entity 2 uvcvideo: Added control 00000000-0000-0000-0000-000000000101/7
+</I>&gt;<i> &gt; to device 4 entity 2 uvcvideo: Added control
+</I>&gt;<i> &gt; 00000000-0000-0000-0000-000000000101/8 to device 4 entity 2 uvcvideo:
+</I>&gt;<i> &gt; Added control 00000000-0000-0000-0000-000000000101/9 to device 4 entity 2
+</I>&gt;<i> &gt; uvcvideo: Scanning UVC chain: OT 3 &lt;- PU 2 &lt;- IT 1
+</I>&gt;<i> &gt; uvcvideo: Found a valid video chain (1 -&gt; 3).
+</I>&gt;<i> &gt; uvcvideo: Failed to query (135) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>&gt;<i> &gt; uvcvideo: UVC device initialized.
+</I>&gt;<i> &gt; usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> &gt; USB Video Class driver (v0.1.0)
+</I>&gt;<i>
+</I>&gt;<i> I hope somebody has an idea what to try. ;)
+</I>
+Have a look at the kernel log (dmesg) after trying uvccapture. You might get 
+more information.
+
+Please also note that the Linux UVC driver supplied with openSUSE includes an 
+old iSight patch (as well as possible other patches). I can't help you much 
+with that driver.
+
+Best regards,
+
+Laurent Pinchart
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: isight.fw.patch
+Type: text/x-diff
+Size: 3720 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070814/5e0d5f12/attachment.patch">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070814/5e0d5f12/attachment.patch</A>&gt;
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: isight.mine.patch
+Type: text/x-diff
+Size: 6146 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070814/5e0d5f12/attachment-0001.patch">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070814/5e0d5f12/attachment-0001.patch</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001959.html">[Linux-uvc-devel] I cannot get my Apple iSight to work
+</A></li>
+	<LI>Next message: <A HREF="001975.html">[Linux-uvc-devel] I cannot get my Apple iSight to work
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1972">[ date ]</a>
+              <a href="thread.html#1972">[ thread ]</a>
+              <a href="subject.html#1972">[ subject ]</a>
+              <a href="author.html#1972">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

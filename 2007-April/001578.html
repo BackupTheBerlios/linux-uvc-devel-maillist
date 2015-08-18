@@ -1,0 +1,215 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20VIDIOC_%5BGS%5D_JPEGCOMP%20support&In-Reply-To=%3CEFE3E62A-C489-45B7-A4B2-B0E53E953AB3%40federated.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001584.html">
+   <LINK REL="Next"  HREF="001585.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support</H1>
+    <B>Jim Studt</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20VIDIOC_%5BGS%5D_JPEGCOMP%20support&In-Reply-To=%3CEFE3E62A-C489-45B7-A4B2-B0E53E953AB3%40federated.com%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support">jim at federated.com
+       </A><BR>
+    <I>Thu Apr 12 03:15:51 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001584.html">[Linux-uvc-devel] Logitech Pro5000: uncompressed format
+</A></li>
+        <LI>Next message: <A HREF="001585.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1578">[ date ]</a>
+              <a href="thread.html#1578">[ thread ]</a>
+              <a href="subject.html#1578">[ subject ]</a>
+              <a href="author.html#1578">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I had a sneaky suspicion my camera was stuck in top quality. Laurent  
+Pinchart's comments from March 25th confirmed and were a nice  
+blueprint for this patch.
+
+Possible rough edges:
+
+-  I was unable to determine what the range of the  
+v4l2_jpegcompression.quality field should be, so I chose 0-100 since  
+that is familiar to users of JPEG, it is mapped to the allowed ranges  
+of the device, respecting the resolution.
+
+-  I didn't really understand the privilege issues, so I copied the  
+code from the VIDIOC_S_PARM, maybe the priv check should be removed.
+
+-  The code now defaults to the minimum quality instead of the  
+maximum. This is an unfortunate effect of getting a 0 passed in the  
+first time. There is a probably a good place to stick in a 10000 for  
+the first probe somewhere in the startup code.
+
+- At the bottom of uvc_probe_video() where it tries to fall back to a  
+lesser bandwidth mode (I think), I switched it to fall back to the  
+minimum quality instead of the maximum.
+
+- It only supports the quality field of the ioctl, but I think that  
+is appropriate.
+
+- If the reported range and resolution would cause a divide by zero  
+error in the computation we just take the maximum.
+
+- The &quot;get&quot; function returns the actual quality, not the requested. I  
+think that is appropriate, it expose the granularity to the application.
+
+Now I can drop my 640x480 frames from 100+kb/frame to 25kb or so.
+
+Index: uvc_video.c
+===================================================================
+--- uvc_video.c	(revision 93)
++++ uvc_video.c	(working copy)
+@@ -150,7 +150,7 @@
+int uvc_probe_video(struct uvc_video_device *video, struct  
+uvc_streaming_control *probe)
+{
+-	struct uvc_streaming_control probe_min, probe_max;
++	struct uvc_streaming_control probe_min, probe_max, probe_res;
+	__u16 bandwidth;
+	unsigned int i;
+	int ret;
+@@ -170,10 +170,26 @@
+	/* Get the minimum and maximum values for compression settings. */
+	if (!(video-&gt;dev-&gt;quirks &amp; UVC_QUIRK_PROBE_MINMAX)) {
+		if ((ret = uvc_get_video_ctrl(video, &amp;probe_min, 1, GET_MIN)) &lt; 0 ||
+-		    (ret = uvc_get_video_ctrl(video, &amp;probe_max, 1, GET_MAX)) &lt; 0)
++		    (ret = uvc_get_video_ctrl(video, &amp;probe_max, 1, GET_MAX)) &lt; 0 ||
++		    (ret = uvc_get_video_ctrl(video, &amp;probe_res, 1, GET_RES)) &lt; 0)
+			goto done;
++		/* pin wCompQuality to the legal range */
++		if ( probe-&gt;wCompQuality &lt; probe_min.wCompQuality) probe- 
+ &gt;wCompQuality = probe_min.wCompQuality;
++		else if ( probe-&gt;wCompQuality &gt; probe_max.wCompQuality) probe- 
+ &gt;wCompQuality = probe_max.wCompQuality;
++		else {
++		    int range, steps, step_size;
+-		probe-&gt;wCompQuality = probe_max.wCompQuality;
++		    /* this mess of code makes sure wCompQuality lands on one of  
+the legal values */
++		    step_size = probe_res.wCompQuality;
++		    range = probe_max.wCompQuality - probe_min.wCompQuality;
++		    if ( range != 0 &amp;&amp; step_size != 0) {
++			steps = range / step_size;
++			probe-&gt;wCompQuality = probe_min.wCompQuality +
++			    (probe-&gt;wCompQuality - probe_min.wCompQuality + step_size/2) 
+*steps/range*step_size;
++		    } else {
++			probe-&gt;wCompQuality = probe_max.wCompQuality;
++		    }
++		}
+	}
+	for (i = 0; i &lt; 2; ++i) {
+@@ -193,7 +209,7 @@
+		/* TODO: negotiate compression parameters */
+		probe-&gt;wKeyFrameRate = probe_min.wKeyFrameRate;
+		probe-&gt;wPFrameRate = probe_min.wPFrameRate;
+-		probe-&gt;wCompQuality = probe_max.wCompQuality;
++		probe-&gt;wCompQuality = probe_min.wCompQuality;
+		probe-&gt;wCompWindowSize = probe_min.wCompWindowSize;
+	}
+Index: uvc_v4l2.c
+===================================================================
+--- uvc_v4l2.c	(revision 93)
++++ uvc_v4l2.c	(working copy)
+@@ -314,6 +314,42 @@
+	return 0;
+}
++static int uvc_v4l2_get_jpegcompression(struct uvc_video_device *video,
++		struct v4l2_jpegcompression *parm)
++{
++	memset(parm, 0, sizeof *parm);
++	parm-&gt;quality = video-&gt;streaming-&gt;ctrl.wCompQuality/100;  /* scale  
+from UVC 10000 to familiar 10 */
++	// Are DQT and DRI required in UVC? Maybe we should turn on their  
+bits in jpeg_markers?
++
++	return 0;
++}
++
++static int uvc_v4l2_set_jpegcompression(struct uvc_video_device *video,
++		struct v4l2_jpegcompression *parm)
++{
++	struct uvc_streaming_control probe;
++	int ret;
++	int quality;
++
++	memcpy(&amp;probe, &amp;video-&gt;streaming-&gt;ctrl, sizeof probe);
++	quality = parm-&gt;quality * 100; /* scale from famliar 100 to UVC  
+10000 */
++
++	uvc_trace(UVC_TRACE_FORMAT, &quot;Setting jpeg quality to %d.\n&quot;, quality);
++
++	probe.wCompQuality = quality;
++	/* Probe the device with the new settings. */
++	if ((ret = uvc_probe_video(video, &amp;probe)) &lt; 0)
++		return ret;
++
++	/* Commit the new settings. */
++	if ((ret = uvc_set_video_ctrl(video, &amp;probe, 0)) &lt; 0)
++		return ret;
++
++	memcpy(&amp;video-&gt;streaming-&gt;ctrl, &amp;probe, sizeof probe);
++
++	return 0;
++}
++
+/*  
+------------------------------------------------------------------------
+   * Privilege management
+   */
+@@ -710,6 +746,15 @@
+	}
+		break;
++	case VIDIOC_G_JPEGCOMP:
++		return uvc_v4l2_get_jpegcompression(video, (struct  
+v4l2_jpegcompression*)arg);
++	
++	case VIDIOC_S_JPEGCOMP:
++		if ((ret = uvc_acquire_privileges(handle)) &lt; 0)
++			return ret;
++
++		return uvc_v4l2_set_jpegcompression(video, (struct  
+v4l2_jpegcompression*)arg);
++	
+	/* Get &amp; Set streaming parameters */
+	case VIDIOC_G_PARM:
+		return uvc_v4l2_get_streamparm(video, (struct v4l2_streamparm*)arg);
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001584.html">[Linux-uvc-devel] Logitech Pro5000: uncompressed format
+</A></li>
+	<LI>Next message: <A HREF="001585.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1578">[ date ]</a>
+              <a href="thread.html#1578">[ thread ]</a>
+              <a href="subject.html#1578">[ subject ]</a>
+              <a href="author.html#1578">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

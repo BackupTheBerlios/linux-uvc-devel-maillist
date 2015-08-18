@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Running multiple webcams on the same hub
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Running%20multiple%20webcams%20on%20the%20same%20hub&In-Reply-To=%3C201009130111.35110.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006001.html">
+   <LINK REL="Next"  HREF="005967.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Running multiple webcams on the same hub</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Running%20multiple%20webcams%20on%20the%20same%20hub&In-Reply-To=%3C201009130111.35110.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Running multiple webcams on the same hub">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Mon Sep 13 01:11:34 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006001.html">[Linux-uvc-devel] 064e:a219 Suyin Corp. &quot;1.3M WebCam&quot; (Acer	Aspire 5745G)
+</A></li>
+        <LI>Next message: <A HREF="005967.html">[Linux-uvc-devel] Running multiple webcams on the same hub
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5963">[ date ]</a>
+              <a href="thread.html#5963">[ thread ]</a>
+              <a href="subject.html#5963">[ subject ]</a>
+              <a href="author.html#5963">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Martin,
+
+On Friday 27 August 2010 16:14:52 Martin wrote:
+&gt;<i> The problem:
+</I>&gt;<i> 
+</I>&gt;<i> From reading around this list and elsewhere, it appears that you simply
+</I>&gt;<i> cannot run more than one webcam video stream per USB root hub.
+</I>&gt;<i>
+</I>&gt;<i> When enabled for video streaming, the webcam reserves the full
+</I>&gt;<i> isochronous bandwidth needed to stream data at the selected resolution
+</I>&gt;<i> and framerate, regardless of whether your application acquires the full
+</I>&gt;<i> framerate or just samples at one frame per second.
+</I>
+That's not correct. The webcam reports its bandwidth requirements, and the 
+driver allocates bandwidth accordingly. Some cameras are buggy and report high 
+bandwidth requirements when they could use lower bandwidths.
+
+&gt;<i> Hence, trying to set a low framerate in your user application has no effect
+</I>&gt;<i> to reduce the bandwidth from the webcam.
+</I>
+That's correct, because most webcams can't buffer a whole frame of video data 
+and send it slowly over USB (embedded RAM is expensive). Even at lower frame 
+rates, webcams might thus need high bandwidth for a short time. As USB 
+bandwidth reservation takes the peak bandwidth into account, bandwidth will be 
+wasted.
+
+&gt;<i> The webcam is still streaming at the maximum framerate regardless.
+</I>&gt;<i> 
+</I>&gt;<i> I'm guessing that the video stream is being 'pushed' out by the webcam
+</I>&gt;<i> firmware and so the UVC driver must take all that it is given...
+</I>
+The webcam sends a frame at high speed and then waits a (relatively) long time 
+before sending the next frame.
+
+&gt;<i> *A possible solution* ?
+</I>&gt;<i> 
+</I>&gt;<i> Instead, could the UVC driver 'simulate' a reduced framerate by instead
+</I>&gt;<i> using the &quot;STILL_IMAGE_FRAME&quot; mode of the webcam and grab for itself a
+</I>&gt;<i> set number of images per second? Or even only when polled by a read from
+</I>&gt;<i> the user application?
+</I>
+Still image capture isn't supported yet. The reason is that most webcams just 
+ask the driver to take the next picture in the video stream to emulate still 
+image capture. Very few cameras support out-of-band still image capture, and I 
+don't own any that support that.
+
+As most cameras just ask the driver to capture the next frame in an active 
+video stream this won't solve your problem anyway.
+
+&gt;<i> On *nix, &quot;everything is a file&quot;... Could the uvc driver accept reading
+</I>&gt;<i> of /dev/videoX by the command &quot;cp&quot; so that still image data is copied,
+</I>&gt;<i> formatted for a jpg or png?
+</I>
+It would need to process the image (compress it to JPG or PNG), and that's not 
+the job of a kernel driver, so no.
+
+&gt;<i> Could the &quot;quirks&quot; setting be abused to set the image grab rate? Or some
+</I>&gt;<i> other neater method?
+</I>&gt;<i> 
+</I>&gt;<i> Further details:
+</I>&gt;<i> 
+</I>&gt;<i> I'm trying to use two webcams simultaneously:
+</I>&gt;<i> 
+</I>&gt;<i>   iManufacturer           1 Sweex
+</I>&gt;<i>   iProduct                2 WC060 Series HD Webcam
+</I>
+Please post the whole USB descriptors (lsusb -v)
+
+&gt;<i> On separate hubs, they work fine. On the same hub, the second one to
+</I>&gt;<i> start shows the error:
+</I>&gt;<i> 
+</I>&gt;<i> &quot;Error starting stream VIDIOC_STREAMON: No space left on device&quot;.
+</I>&gt;<i> 
+</I>&gt;<i> I've only got the one root hub on the system I want to use for the two
+</I>&gt;<i> webcams!
+</I>&gt;<i> 
+</I>&gt;<i> Their descriptors show:
+</I>&gt;<i> 
+</I>&gt;<i>         bFrameIntervalType                  2
+</I>&gt;<i>         dwFrameInterval( 0)           2000000
+</I>&gt;<i>         dwFrameInterval( 1)           4000000
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Can I tweak the UVC driver to preferentially choose the slower frame
+</I>&gt;<i> rate available?
+</I>
+You can select a frame rate explictly with VIDIOC_S_PARM.
+
+&gt;<i> Aside: The MJPG format doesn't seem to work, nor are any compression
+</I>&gt;<i> settings visible...
+</I>
+Maybe your webcam doesn't support MJPG.
+
+&gt;<i> Given a few hints or a patch, I can hack the kernel module to test :-)
+</I>&gt;<i> 
+</I>&gt;<i> This is running on Gentoo, kernel 2.6.34 using the in-kernel uvc module.
+</I>&gt;<i> 
+</I>&gt;<i> Any comment/ideas welcomed.
+</I>
+If you don't need to capture frames simultaneously, you can just start the 
+video stream, capture a frame, stop the video stream, and repeat the sequence 
+on the second webcam.
+
+If you need higher frame rates, search the mailing list archives for 
+discussions about bandwidth (dwMaxPayloadTransferSize is a keyword). You can 
+also have a look at the &quot;Multiple camera framerate.&quot; mail thread started by  
+Dennis Muhlestein.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006001.html">[Linux-uvc-devel] 064e:a219 Suyin Corp. &quot;1.3M WebCam&quot; (Acer	Aspire 5745G)
+</A></li>
+	<LI>Next message: <A HREF="005967.html">[Linux-uvc-devel] Running multiple webcams on the same hub
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5963">[ date ]</a>
+              <a href="thread.html#5963">[ thread ]</a>
+              <a href="subject.html#5963">[ subject ]</a>
+              <a href="author.html#5963">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

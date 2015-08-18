@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] About SiGma Micro USB Web Camera support
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20About%20SiGma%20Micro%20USB%20Web%20Camera%20support&In-Reply-To=%3CE1C1C047-DA10-42BA-BB37-FDCF8C18FD96%40iki.fi%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003580.html">
+   <LINK REL="Next"  HREF="003588.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] About SiGma Micro USB Web Camera support</H1>
+    <B>Juho V&#228;h&#228;-Herttua</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20About%20SiGma%20Micro%20USB%20Web%20Camera%20support&In-Reply-To=%3CE1C1C047-DA10-42BA-BB37-FDCF8C18FD96%40iki.fi%3E"
+       TITLE="[Linux-uvc-devel] About SiGma Micro USB Web Camera support">juhovh at iki.fi
+       </A><BR>
+    <I>Fri Jun  6 07:14:35 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003580.html">[Linux-uvc-devel] About SiGma Micro USB Web Camera support
+</A></li>
+        <LI>Next message: <A HREF="003588.html">[Linux-uvc-devel] About SiGma Micro USB Web Camera support PATCH
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3587">[ date ]</a>
+              <a href="thread.html#3587">[ thread ]</a>
+              <a href="subject.html#3587">[ subject ]</a>
+              <a href="author.html#3587">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 6.6.2008, at 5.09, Laurent Pinchart wrote:
+&gt;<i> Format conversion doesn't belong in the kernel. Linus Torvald has  
+</I>&gt;<i> been quite
+</I>&gt;<i> clear on that.
+</I>
+I agree with that.
+
+&gt;<i> There is currently no universal userspace solution. The gstreamer  
+</I>&gt;<i> framework is
+</I>&gt;<i> interesting but not as stable as it should be with v4l2 devices. Other
+</I>&gt;<i> projects such as the one you mentioned have been started but are  
+</I>&gt;<i> usually
+</I>&gt;<i> nowhere near completion.
+</I>
+So have to just wait...but until that need to get the driver issues  
+fixed.
+
+&gt;<i> I had a closer look at the USB descriptors. The camera reports a  
+</I>&gt;<i> selector unit
+</I>&gt;<i> and two input terminals, one for the camera sensor and one for a  
+</I>&gt;<i> composite
+</I>&gt;<i> input.
+</I>&gt;<i>
+</I>&gt;<i> Does your webcam really have multiple inputs ?
+</I>
+No, and I have no idea what the composite input is doing there  
+actually... If you think it might disturb something I can test it.  
+However yesterday I had some time to dig into it and what I've found  
+out so far:
+
+Failed querying control 9963788 on device '/dev/video0'. (5 - Input/ 
+output error)
+
+The mentioned query control in hex is 0x98090C which in turn is White  
+Balance Temperature, Auto. If I make an exclusion in for example  
+uvc_find_control where I add the exclusion:
+
+if (v4l2_id == 0x0098090c) return;
+
+then the camera will work just fine. If I do an lsusb -v it will print:
+
+         bmControls     0x0000163f
+           Brightness
+           Contrast
+           Hue
+           Saturation
+           Sharpness
+           Gamma
+           Gain
+           Power Line Frequency
+           White Balance Temperature, Auto
+
+So the camera is reporting to support the white balance temperature  
+auto setting, no problem with the driver there. Then if I check the  
+kernel logs while running the driver I can find:
+
+[ 1599.394979] uvcvideo: Failed to query (135) UVC control 11 (unit  
+5) : -32 (exp. 1).
+
+This is the part where the device actually fails. The gstreamer  
+program does a GET_DEF request (135) to the &quot;White Balance  
+Temperature, Auto&quot; (11) which then returns the error code -32, which  
+seems to be a general error code because I also get it for  
+nonexistant controls. By the spec  
+PU_WHITE_BALANCE_COMPONENT_AUTO_CONTROL should also support the  
+commands SET_CUR, GET_CUR, GET_INFO, GET_DEF so I tried to do  
+GET_INFO and GET_CUR for it instead of GET_DEF. But all fail exactly  
+the same way. I haven't tried SET_CUR because it requires a bit more  
+modifications, but will test it if I have time.
+
+Now how do you think, is the camera faulty with reporting the White  
+Balance Temperature, Auto or is there still something that could be  
+done? If it's considered to be faulty I can add a hack to ignore the  
+white balance thing for this camera type and test it...
+
+Oh and could add luvcview output also for reference to show it really  
+fails with it:
+
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">juhovh at prudent</A>:~/Source/linux-uvc$ luvcview -l
+luvcview version 0.2.1
+Video driver: x11
+A window manager is available
+video /dev/video0
+Available controls of device 'Camera 1' (Type 1=Integer 2=Boolean  
+3=Menu 4=Button)
+V4L2_CID_BASE         (predefined controls):
+  index:9963776    name:Brightness                       type:1  
+min:-16   max:16    step:1     def:0     now:0
+  index:9963777    name:Contrast                         type:1 min: 
+0     max:15    step:1     def:0     now:0
+  index:9963778    name:Saturation                       type:1 min: 
+0     max:50    step:1     def:25    now:25
+  index:9963779    name:Hue                              type:1  
+min:-18   max:18    step:1     def:0     now:0
+error getting base controls
+
+After patching it to ignore the white balance I get:
+
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">juhovh at prudent</A>:~/Source/linux-uvc$ luvcview -l
+luvcview version 0.2.1
+Video driver: x11
+A window manager is available
+video /dev/video0
+Available controls of device 'Camera 1' (Type 1=Integer 2=Boolean  
+3=Menu 4=Button)
+V4L2_CID_BASE         (predefined controls):
+  index:9963776    name:Brightness                       type:1  
+min:-16   max:16    step:1     def:0     now:0
+  index:9963777    name:Contrast                         type:1 min: 
+0     max:15    step:1     def:0     now:0
+  index:9963778    name:Saturation                       type:1 min: 
+0     max:50    step:1     def:25    now:25
+  index:9963779    name:Hue                              type:1  
+min:-18   max:18    step:1     def:0     now:0
+  index:9963792    name:Gamma                            type:1 min: 
+0     max:40    step:1     def:40    now:40
+  index:9963795    name:Gain                             type:1 min: 
+0     max:255   step:1     def:64    now:64
+V4L2_CID_PRIVATE_BASE (driver specific controls):
+
+This looks much better to me. Please give some comments on the issue  
+since you have more experience about these things. :)
+
+
+Regards,
+
+Juho
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: PGP.sig
+Type: application/pgp-signature
+Size: 186 bytes
+Desc: This is a digitally signed message part
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080606/347c34f2/attachment.pgp">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080606/347c34f2/attachment.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003580.html">[Linux-uvc-devel] About SiGma Micro USB Web Camera support
+</A></li>
+	<LI>Next message: <A HREF="003588.html">[Linux-uvc-devel] About SiGma Micro USB Web Camera support PATCH
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3587">[ date ]</a>
+              <a href="thread.html#3587">[ thread ]</a>
+              <a href="subject.html#3587">[ subject ]</a>
+              <a href="author.html#3587">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

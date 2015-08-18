@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech QC 9000 lockup on dwFrameInterval	change during Skype call
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QC%209000%20lockup%20on%20dwFrameInterval%0A%09change%20during%20Skype%20call&In-Reply-To=%3C200712070137.46488.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002546.html">
+   <LINK REL="Next"  HREF="002574.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech QC 9000 lockup on dwFrameInterval	change during Skype call</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QC%209000%20lockup%20on%20dwFrameInterval%0A%09change%20during%20Skype%20call&In-Reply-To=%3C200712070137.46488.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Logitech QC 9000 lockup on dwFrameInterval	change during Skype call">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Fri Dec  7 01:37:46 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002546.html">[Linux-uvc-devel] Logitech QC 9000 lockup on dwFrameInterval	change during Skype call
+</A></li>
+        <LI>Next message: <A HREF="002574.html">[Linux-uvc-devel] Logitech QC 9000 lockup on dwFrameInterval change during Skype call
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2548">[ date ]</a>
+              <a href="thread.html#2548">[ thread ]</a>
+              <a href="subject.html#2548">[ subject ]</a>
+              <a href="author.html#2548">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thursday 06 December 2007, Philipp Kolmann wrote:
+&gt;<i> Hi Laurent,
+</I>&gt;<i>
+</I>&gt;<i> thanks for looking into this issue.
+</I>&gt;<i>
+</I>&gt;<i> On Wed, Dec 05, 2007 at 11:31:58PM +0100, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; Hi Philipp,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Tuesday 04 December 2007, Philipp Kolmann wrote:
+</I>&gt;<i> &gt; &gt; Hi,
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I have a Logitech QuickCam 9000 which works really nice during daylight
+</I>&gt;<i> &gt; &gt; with Skype 2.0 Beta.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Skype starts the Video-Calls with 15fps settings (dwFrameInterval:
+</I>&gt;<i> &gt; &gt; 666666) wich works nicely. After some time, it changes the fps to 30fps
+</I>&gt;<i> &gt; &gt; (dwFrameInterval: 333333) and the cam locks up.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Changing the frame rate from 15fps to 30fps would exceed the allocated
+</I>&gt;<i> &gt; bus bandwidth. That's not allowed by the UVC spec. Changing from 30fps to
+</I>&gt;<i> &gt; 15fps might be legal but I'm not sure about it.
+</I>&gt;<i>
+</I>&gt;<i> It works for me with good light. Not in bad light conditions tough.
+</I>&gt;<i>
+</I>&gt;<i> &gt; &gt; The only possibility to solve this issue is to unplug the cam
+</I>&gt;<i> &gt; &gt; completely from the computer.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; The device shouldn't deadlock, that might be a device bug.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; I have added a few lines of debug code to the uvc module I will attach
+</I>&gt;<i> &gt; &gt; to this report. Additional I have attached the output of these debug
+</I>&gt;<i> &gt; &gt; lines to syslog.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Maybe you have an idea, what's going wrong here. Skype told me to get
+</I>&gt;<i> &gt; &gt; in touch with you, since it works during daylight but not with bad
+</I>&gt;<i> &gt; &gt; light during the night.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; If you would have any patches to test, I am more then willing to test
+</I>&gt;<i> &gt; &gt; them.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I hope you can help me with this issue,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; The application should stop video streaming before changing the frame
+</I>&gt;<i> &gt; rate. Could you add debug messages to VIDIOC_STREAMOFF and see if it gets
+</I>&gt;<i> &gt; called before changing the frame rate ?
+</I>&gt;<i>
+</I>&gt;<i> I added debug output to VIDIOC_STREAMON and VIDIOC_STREAMOFF.
+</I>&gt;<i> VIDIOC_STREAMON is called after all initial setup is done, but then no
+</I>&gt;<i> VIDIOC_STREAMOFF before changes.
+</I>&gt;<i>
+</I>&gt;<i> &gt; If it doesn't, I'm not sure who is to blame. V4L2 doesn't clearly state
+</I>&gt;<i> &gt; if changing the frame rate during video streaming is allowed or not.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I will raise the issue on the video4linux mailing list if you confirm
+</I>&gt;<i> &gt; that Skype doesn't stop streaming before changing the frame rate.
+</I>&gt;<i>
+</I>&gt;<i> Attached find a new syslog with the new debugging in it.
+</I>
+For some unknown reason, the camera crashes when requesting a higher frame 
+rate in low light conditions while streaming.
+
+Raising the frame rate while streaming is probably illegal. It would raise the 
+bandwidth, which requires bandwidth renegotiation when using isochronous 
+transfers.
+
+As we can't fix the webcam itself, there are two main solutions.
+
+- The uvcvideo driver could stop streaming, renegotiate the parameters and 
+restart streaming. The webcam might still crash as the cause of the crash is 
+not understood.
+
+- Skype could stop streaming, change the frame rate and restart streaming. 
+Ditto about the webcam crash.
+
+It would be interesting to write a small application to stress-test different 
+use cases and see what works before making modifications to Skype or to the 
+driver.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002546.html">[Linux-uvc-devel] Logitech QC 9000 lockup on dwFrameInterval	change during Skype call
+</A></li>
+	<LI>Next message: <A HREF="002574.html">[Linux-uvc-devel] Logitech QC 9000 lockup on dwFrameInterval change during Skype call
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2548">[ date ]</a>
+              <a href="thread.html#2548">[ thread ]</a>
+              <a href="subject.html#2548">[ subject ]</a>
+              <a href="author.html#2548">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

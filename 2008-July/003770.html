@@ -1,0 +1,254 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] asus f9sg webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20asus%20f9sg%20webcam&In-Reply-To=%3C1215496270.6957.5.camel%40erwin-laptop%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003769.html">
+   <LINK REL="Next"  HREF="003780.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] asus f9sg webcam</H1>
+    <B>erwin</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20asus%20f9sg%20webcam&In-Reply-To=%3C1215496270.6957.5.camel%40erwin-laptop%3E"
+       TITLE="[Linux-uvc-devel] asus f9sg webcam">marconico at tiscali.it
+       </A><BR>
+    <I>Tue Jul  8 07:51:10 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003769.html">[Linux-uvc-devel] Medion akoya mini Netbook, integrated Webcam
+</A></li>
+        <LI>Next message: <A HREF="003780.html">[Linux-uvc-devel] asus f9sg webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3770">[ date ]</a>
+              <a href="thread.html#3770">[ thread ]</a>
+              <a href="subject.html#3770">[ subject ]</a>
+              <a href="author.html#3770">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Ok folks these are all the things i tried:
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">rwin at erwin-laptop</A>:~$ sudo lsusb -d 174f:8a31 -v | grep &quot;14 Video&quot;
+[sudo] password for erwin:
+      bFunctionClass         14 Video
+      bInterfaceClass        14 Video
+      bInterfaceClass        14 Video
+      bInterfaceClass        14 Video
+      bInterfaceClass        14 Video
+      bInterfaceClass        14 Video
+      bInterfaceClass        14 Video
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$ lsmod | grep uvcvideo
+uvcvideo               48644  0 
+compat_ioctl32          2304  1 uvcvideo
+videodev               29312  1 uvcvideo
+v4l1_compat            15364  2 uvcvideo,videodev
+v4l2_common            18432  2 uvcvideo,videodev
+usbcore               138632  8
+uvcvideo,usbhid,hci_usb,usb_storage,libusual,uhci_hcd,ehci_hcd
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$ luvcview -L
+luvcview version 0.2.1 
+Video driver: x11
+A window manager is available
+video /dev/video0 
+/dev/video0 does not support read i/o
+{ pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+{ discrete: width = 640, height = 480 }
+        Time interval between frame: 1/20, 
+{ discrete: width = 160, height = 120 }
+        Time interval between frame: 1/24, 
+{ discrete: width = 176, height = 144 }
+        Time interval between frame: 1/24, 
+{ discrete: width = 320, height = 240 }
+        Time interval between frame: 1/24, 
+{ discrete: width = 352, height = 288 }
+        Time interval between frame: 1/24, 
+{ discrete: width = 800, height = 600 }
+        Time interval between frame: 1/7, 
+{ discrete: width = 1024, height = 768 }
+        Time interval between frame: 1/7, 
+{ discrete: width = 1280, height = 800 }
+        Time interval between frame: 1/7, 
+{ discrete: width = 1280, height = 960 }
+        Time interval between frame: 1/7, 
+{ discrete: width = 1280, height = 1024 }
+        Time interval between frame: 1/7, 
+
+then i tried 
+luvcview -f yuv -s 640x480blank
+luvcview -f yuv -s 160x120
+luvcview -f yuv -s 176x144blank
+luvcview -f yuv -s 320x240no
+luvcview -f yuv -s 352x288error 5
+luvcview -f yuv -s 800x600too big
+luvcview -f yuv -s 1024x768too big
+luvcview -f yuv -s 1280x800too big
+luvcview -f yuv -s 1280x960too big
+luvcview -f yuv -s 1280x1024too big
+but i had only snapshot or green screen, but no streaming.
+
+finally i ttried this:
+mplayer <A HREF="tv://">tv://</A> -tv
+driver=v4l2:device=/dev/video0:outfmt=yuy2:width=160:height=120 -vo x11
+MPlayer 2:1.0~rc1-0ubuntu13.2+medibuntu1 (C) 2000-2006 MPlayer Team
+CPU: Intel(R) Core(TM)2 Duo CPU     T8300  @ 2.40GHz (Family: 6, Model:
+23, Stepping: 6)
+CPUflags:  MMX: 1 MMX2: 1 3DNow: 0 3DNow2: 0 SSE: 1 SSE2: 1
+Compiled with runtime CPU detection.
+Creating config file: /home/erwin/.mplayer/config
+Can't open joystick device /dev/input/js0: No such file or directory
+Can't init input joystick
+mplayer: could not connect to socket
+mplayer: No such file or directory
+Failed to open LIRC support. You will not be able to use your remote
+control.
+
+Playing <A HREF="tv://.">tv://.</A>
+TV file format detected.
+Selected driver: v4l2
+ name: Video 4 Linux 2 input
+ author: Martin Olschewski &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">olschewski at zpr.uni-koeln.de</A>&gt;
+ comment: first try, more to come ;-)
+v4l2: ioctl get standard failed: Invalid argument
+Selected device: USB2.0 UVC PC Camera
+ Capabilites:  video capture  streaming
+ supported norms:
+ inputs: 0 = Camera 1;
+ Current input: 0
+ Current format: YUYV
+v4l2: ioctl set format failed: Input/output error
+v4l2: ioctl enum norm failed: Invalid argument
+Error: Cannot set norm!
+Selected input hasn't got a tuner!
+v4l2: ioctl set mute failed: Invalid argument
+FPS not specified in the header or invalid, use the -fps option.
+No stream found.
+
+v4l2: ioctl set mute failed: Invalid argument
+v4l2: 0 frames successfully processed, 0 frames dropped.
+
+Exiting... (End of file)
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$ mplayer <A HREF="tv://">tv://</A> -tv
+driver=v4l2:device=/dev/video0:outfmt=yuy2:width=640:height=480 -vo x11
+MPlayer 2:1.0~rc1-0ubuntu13.2+medibuntu1 (C) 2000-2006 MPlayer Team
+CPU: Intel(R) Core(TM)2 Duo CPU     T8300  @ 2.40GHz (Family: 6, Model:
+23, Stepping: 6)
+CPUflags:  MMX: 1 MMX2: 1 3DNow: 0 3DNow2: 0 SSE: 1 SSE2: 1
+Compiled with runtime CPU detection.
+Can't open joystick device /dev/input/js0: No such file or directory
+Can't init input joystick
+mplayer: could not connect to socket
+mplayer: No such file or directory
+Failed to open LIRC support. You will not be able to use your remote
+control.
+
+Playing <A HREF="tv://.">tv://.</A>
+TV file format detected.
+Selected driver: v4l2
+ name: Video 4 Linux 2 input
+ author: Martin Olschewski &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">olschewski at zpr.uni-koeln.de</A>&gt;
+ comment: first try, more to come ;-)
+v4l2: ioctl get standard failed: Invalid argument
+Selected device: USB2.0 UVC PC Camera
+ Capabilites:  video capture  streaming
+ supported norms:
+ inputs: 0 = Camera 1;
+ Current input: 0
+ Current format: YUYV
+v4l2: ioctl set format failed: Input/output error
+v4l2: ioctl set mute failed: Invalid argument
+v4l2: 0 frames successfully processed, 0 frames dropped.
+
+
+MPlayer interrupted by signal 11 in module: demux_open
+- MPlayer crashed by bad usage of CPU/FPU/RAM.
+  Recompile MPlayer with --enable-debug and make a 'gdb' backtrace and
+  disassembly. Details in
+DOCS/HTML/en/bugreports_what.html#bugreports_crash.
+- MPlayer crashed. This shouldn't happen.
+  It can be a bug in the MPlayer code _or_ in your drivers _or_ in your
+  gcc version. If you think it's MPlayer's fault, please read
+  DOCS/HTML/en/bugreports.html and follow the instructions there. We
+can't and
+  won't help unless you provide this information when reporting a
+possible bug.
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$ mplayer <A HREF="tv://">tv://</A> -tv
+driver=v4l2:device=/dev/video0:outfmt=yuy2:width=176:height=144 -vo x11
+MPlayer 2:1.0~rc1-0ubuntu13.2+medibuntu1 (C) 2000-2006 MPlayer Team
+CPU: Intel(R) Core(TM)2 Duo CPU     T8300  @ 2.40GHz (Family: 6, Model:
+23, Stepping: 6)
+CPUflags:  MMX: 1 MMX2: 1 3DNow: 0 3DNow2: 0 SSE: 1 SSE2: 1
+Compiled with runtime CPU detection.
+Can't open joystick device /dev/input/js0: No such file or directory
+Can't init input joystick
+mplayer: could not connect to socket
+mplayer: No such file or directory
+Failed to open LIRC support. You will not be able to use your remote
+control.
+
+Playing <A HREF="tv://.">tv://.</A>
+TV file format detected.
+Selected driver: v4l2
+ name: Video 4 Linux 2 input
+ author: Martin Olschewski &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">olschewski at zpr.uni-koeln.de</A>&gt;
+ comment: first try, more to come ;-)
+v4l2: ioctl get standard failed: Invalid argument
+Selected device: USB2.0 UVC PC Camera
+ Capabilites:  video capture  streaming
+ supported norms:
+ inputs: 0 = Camera 1;
+ Current input: 0
+ Current format: YUYV
+v4l2: ioctl set format failed: Input/output error
+v4l2: ioctl set mute failed: Invalid argument
+v4l2: 0 frames successfully processed, 0 frames dropped.
+
+
+MPlayer interrupted by signal 11 in module: demux_open
+- MPlayer crashed by bad usage of CPU/FPU/RAM.
+  Recompile MPlayer with --enable-debug and make a 'gdb' backtrace and
+  disassembly. Details in
+DOCS/HTML/en/bugreports_what.html#bugreports_crash.
+- MPlayer crashed. This shouldn't happen.
+  It can be a bug in the MPlayer code _or_ in your drivers _or_ in your
+  gcc version. If you think it's MPlayer's fault, please read
+  DOCS/HTML/en/bugreports.html and follow the instructions there. We
+can't and
+  won't help unless you provide this information when reporting a
+possible bug.
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$ 
+
+Any suggestions???
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003769.html">[Linux-uvc-devel] Medion akoya mini Netbook, integrated Webcam
+</A></li>
+	<LI>Next message: <A HREF="003780.html">[Linux-uvc-devel] asus f9sg webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3770">[ date ]</a>
+              <a href="thread.html#3770">[ thread ]</a>
+              <a href="subject.html#3770">[ subject ]</a>
+              <a href="author.html#3770">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

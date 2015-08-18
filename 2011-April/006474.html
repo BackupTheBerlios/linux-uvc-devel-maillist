@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Fixing bandwidth quirk ***just inquire
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Fixing%20bandwidth%20quirk%20%2A%2A%2Ajust%20inquire&In-Reply-To=%3C1302889418.12477.21.camel%40zwerg%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006497.html">
+   <LINK REL="Next"  HREF="006495.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Fixing bandwidth quirk ***just inquire</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Fixing%20bandwidth%20quirk%20%2A%2A%2Ajust%20inquire&In-Reply-To=%3C1302889418.12477.21.camel%40zwerg%3E"
+       TITLE="[Linux-uvc-devel] Fixing bandwidth quirk ***just inquire">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Fri Apr 15 19:43:38 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006497.html">[Linux-uvc-devel] [patch] jpeg compression hacks. Tester are welcome!!!
+</A></li>
+        <LI>Next message: <A HREF="006495.html">[Linux-uvc-devel] Fixing bandwidth quirk ***just inquire
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6474">[ date ]</a>
+              <a href="thread.html#6474">[ thread ]</a>
+              <a href="subject.html#6474">[ subject ]</a>
+              <a href="author.html#6474">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>There is new patch. With this patch you can recalculate bandwith for
+jpeg stream. See my post in list and try it:
+[patch] jpeg compression hacks. Tester are welcome!!!
+
+On Fr, 2011-03-11 at 10:38 +0000, Paulo Assis wrote:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> 2011/3/11 Alexey Fisher &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt;:
+</I>&gt;<i> &gt; Raw stream is &quot;simple&quot;, for example YUYV need 16 bits to describe one
+</I>&gt;<i> &gt; pixel. No extra action is done on this stream. Even if the camera lie
+</I>&gt;<i> &gt; about it setting, we can still calculate it our self. For example if you
+</I>&gt;<i> &gt; use YUYV 640x480 with 30 fps:
+</I>&gt;<i> &gt; 640&#215;480&#215;16=4915200 bit or 4915200/8=614400 byte
+</I>&gt;<i> &gt; so dwMaxVideoFrameSize=614400.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Same value you will get if you check lsusb -vd xxxx:xxxx
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; To calculate bandwidth uvc use framerate. This value deiced, can you or
+</I>&gt;<i> &gt; not use your webcam with some particular settings on your usb hub.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Compressed stream can use different compression algorithms, most populas
+</I>&gt;<i> &gt; is jpeg. Compression depend on texture what your cam capture, and on the
+</I>&gt;<i> &gt; time it has for compression. For example if camera forced to push 30fps,
+</I>&gt;<i> &gt; it will choice speed against compression rate.
+</I>&gt;<i> 
+</I>&gt;<i> actually it can also only send a part of the sensor image, just try
+</I>&gt;<i> any of the logitech HD models,
+</I>&gt;<i> when you pick a different frame rate (even for the same resolution)
+</I>&gt;<i> you will get a very different image (more or less zoomed),
+</I>&gt;<i> The compression ration seems more or less the same (at least the
+</I>&gt;<i> quantization tables don't seem to alter).
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> &gt; With compressed stream we can't say for sure, how match bandwidth do we
+</I>&gt;<i> &gt; need. On cam's i tested it variate between 6% and  30% of uncompressed
+</I>&gt;<i> &gt; stream. If you provide wrong bandwidth to the cam, it will just freeze
+</I>&gt;<i> &gt; or send you black frame.
+</I>&gt;<i> 
+</I>&gt;<i> Yes but you can decide on a maximum (say 40% :D) that is never
+</I>&gt;<i> reached, this is better than allocating 100% of the bandwidth and can
+</I>&gt;<i> be the difference between a working camera and a non working one.
+</I>&gt;<i> 
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; So, manufacture should provide correct settings and they are different
+</I>&gt;<i> &gt; for each cam.
+</I>&gt;<i> 
+</I>&gt;<i> I totally agree with this, but unfortunately, this is not always the
+</I>&gt;<i> case, hence the need for the quirks.
+</I>&gt;<i> In fact the bandwidth settings should vary at least according to
+</I>&gt;<i> resolution, but what wee see in some cases is that manufactures just
+</I>&gt;<i> use the same value for every situation (laziness related maybe).
+</I>&gt;<i> 
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Or we should add new quirk setting, what adjust compression ratio too.
+</I>&gt;<i> &gt; But before, we need some test cases, to find worts compression ratio,
+</I>&gt;<i> &gt; and add statistic collection to the driver.
+</I>&gt;<i> 
+</I>&gt;<i> V4l2 has jpeg compression related ioctls, Laurent event created a
+</I>&gt;<i> patch for uvc, but for some reason it was never integrated, in fact I
+</I>&gt;<i> add support for it in guvcview, but as I remember although the cameras
+</I>&gt;<i> I tested seem to accepted it, it didn't really cause any change in the
+</I>&gt;<i> compression ratio, so I doubt very much it would cause any on the
+</I>&gt;<i> bandwidth settings.
+</I>&gt;<i> 
+</I>&gt;<i> Regards,
+</I>&gt;<i> Paulo
+</I>&gt;<i> 
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Am Freitag, den 11.03.2011, 00:35 +0200 schrieb Asmaa ElAssal:
+</I>&gt;<i> &gt;&gt; Yes, sir, but I use another one.
+</I>&gt;<i> &gt;&gt; I received that analysiz from someone on that site about that old
+</I>&gt;<i> &gt;&gt; webcam. I want to understand the problem of that previous cam
+</I>&gt;<i> &gt;&gt; Excuse me, Could you more explain &quot;Compressed stream is not really
+</I>&gt;<i> &gt;&gt; predictable&quot; and it's different of the uncompressed format.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; On Thu, Mar 10, 2011 at 11:59 PM, Alexey Fisher
+</I>&gt;<i> &gt;&gt; &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt; wrote:
+</I>&gt;<i> &gt;&gt;         Compressed stream is not really predictable. Every camera can
+</I>&gt;<i> &gt;&gt;         act
+</I>&gt;<i> &gt;&gt;         differently, so my be it will brick more than fix.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;         Do your camera need this quirk?
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;         Am Donnerstag, den 10.03.2011, 19:43 +0000 schrieb modysama:
+</I>&gt;<i> &gt;&gt;         &gt; modysama &lt;asmaa.elassal.student &lt;at&gt; pua.edu.eg&gt; writes:
+</I>&gt;<i> &gt;&gt;         &gt;
+</I>&gt;<i> &gt;&gt;         &gt; &gt;
+</I>&gt;<i> &gt;&gt;         &gt; &gt; Fixing bandwidth quirk is only works for uncompressed
+</I>&gt;<i> &gt;&gt;         stream
+</I>&gt;<i> &gt;&gt;         &gt; the YUYV format, it doesn&#8217;t work for MJPG.
+</I>&gt;<i> &gt;&gt;         &gt; &gt; Why??need explain, please
+</I>&gt;<i> &gt;&gt;         &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt;&gt;         &gt; &gt; Linux-uvc-devel mailing list
+</I>&gt;<i> &gt;&gt;         &gt; &gt; Linux-uvc-devel &lt;at&gt; lists.berlios.de
+</I>&gt;<i> &gt;&gt;         &gt; &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i> &gt;&gt;         &gt; &gt;
+</I>&gt;<i> &gt;&gt;         &gt;
+</I>&gt;<i> &gt;&gt;         &gt;
+</I>&gt;<i> &gt;&gt;         &gt;
+</I>&gt;<i> &gt;&gt;         &gt;
+</I>&gt;<i> &gt;&gt;         &gt; _______________________________________________
+</I>&gt;<i> &gt;&gt;         &gt; Linux-uvc-devel mailing list
+</I>&gt;<i> &gt;&gt;         &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> &gt;&gt;         &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;         --
+</I>&gt;<i> &gt;&gt;         Regards,
+</I>&gt;<i> &gt;&gt;                Alexey
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; --
+</I>&gt;<i> &gt;&gt; Asmaa El-said Rashad
+</I>&gt;<i> &gt;&gt; Pharos University of Alex
+</I>&gt;<i> &gt;&gt; Computer Department
+</I>&gt;<i> &gt;&gt; 5th year
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; Linux-uvc-devel mailing list
+</I>&gt;<i> &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i> &gt;
+</I>
+-- 
+Regards,
+        Alexey
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006497.html">[Linux-uvc-devel] [patch] jpeg compression hacks. Tester are welcome!!!
+</A></li>
+	<LI>Next message: <A HREF="006495.html">[Linux-uvc-devel] Fixing bandwidth quirk ***just inquire
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6474">[ date ]</a>
+              <a href="thread.html#6474">[ thread ]</a>
+              <a href="subject.html#6474">[ subject ]</a>
+              <a href="author.html#6474">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

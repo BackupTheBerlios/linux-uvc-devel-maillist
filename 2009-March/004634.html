@@ -1,0 +1,675 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [Fwd: Re: Problem with DFM 21AUC03-ML]
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BFwd%3A%20Re%3A%20Problem%20with%20DFM%2021AUC03-ML%5D&In-Reply-To=%3C336f6bae0903091006i49315ec5ob56941b15444f541%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004633.html">
+   <LINK REL="Next"  HREF="004635.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [Fwd: Re: Problem with DFM 21AUC03-ML]</H1>
+    <B>Sebastian Scherer</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BFwd%3A%20Re%3A%20Problem%20with%20DFM%2021AUC03-ML%5D&In-Reply-To=%3C336f6bae0903091006i49315ec5ob56941b15444f541%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] [Fwd: Re: Problem with DFM 21AUC03-ML]">smash0190spam at gmail.com
+       </A><BR>
+    <I>Mon Mar  9 18:06:39 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004633.html">[Linux-uvc-devel] [Fwd: Re: Problem with DFM 21AUC03-ML]
+</A></li>
+        <LI>Next message: <A HREF="004635.html">[Linux-uvc-devel] [Fwd: Re: Problem with DFM 21AUC03-ML]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4634">[ date ]</a>
+              <a href="thread.html#4634">[ thread ]</a>
+              <a href="subject.html#4634">[ subject ]</a>
+              <a href="author.html#4634">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+I tried a raw dump with luvcview -c. The resulting file is 744x480
+big. With the following commands I can decode the image properly in
+matlab:
+fid = fopen('frame000.raw');
+A=fread(fid,357120,'uchar');
+Ares = reshape(A,744,480);
+imshow(demosaic(uint8(Ares),'grbg'))
+
+Is there a way I could hack the driver to produce the same result?
+This would be much more convient (and efficient) to use the data in
+some vision code I am writing. I tried changing
+	.name		= &quot;YUV 4:2:2 (YUYV)&quot;,
+		.guid		= UVC_GUID_FORMAT_YUY2,
+		.fcc		= V4L2_PIX_FMT_YUYV,
+	
+the fcc to
+ V4L2_PIX_FMT_SBGGR8 but that caused a segfault with luvcview. Is
+there a way I could force it to use bayer?
+Thank you
+
+
+Sebastian
+
+
+2009/3/9 Sebastian Scherer &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">smash0190spam at gmail.com</A>&gt;:
+&gt;<i> Hi,
+</I>&gt;<i> Thank you so much for your help!
+</I>&gt;<i>
+</I>&gt;<i> How do I capture raw frames?
+</I>&gt;<i>
+</I>&gt;<i> What would it take to get the single frame capture implemented?
+</I>&gt;<i>
+</I>&gt;<i> Another strange thing is that the camera also supports 60 frames per
+</I>&gt;<i> second and it does not show up as a format. Could this be related to
+</I>&gt;<i> the 372 size?
+</I>&gt;<i>
+</I>&gt;<i> This is the output from guvcview --verbose:
+</I>&gt;<i> guvcview 1.0.2
+</I>&gt;<i> video_device: /dev/video0
+</I>&gt;<i> vid_sleep: 0
+</I>&gt;<i> resolution: 372 x 480
+</I>&gt;<i> windowsize: 480 x 700
+</I>&gt;<i> vert pane: 578
+</I>&gt;<i> spin behavior: 0
+</I>&gt;<i> mode: uyvy
+</I>&gt;<i> fps: 1/30
+</I>&gt;<i> Display Fps: 0
+</I>&gt;<i> bpp: 0
+</I>&gt;<i> hwaccel: 1
+</I>&gt;<i> grabmethod: 1
+</I>&gt;<i> avi_format: 2
+</I>&gt;<i> sound: 0
+</I>&gt;<i> sound Device: 2
+</I>&gt;<i> sound samp rate: 0
+</I>&gt;<i> sound Channels: 0
+</I>&gt;<i> Sound Block Size: 1 seconds
+</I>&gt;<i> Sound Format: 80
+</I>&gt;<i> Sound bit Rate: 160 Kbps
+</I>&gt;<i> Pan Step: 2 degrees
+</I>&gt;<i> Tilt Step: 2 degrees
+</I>&gt;<i> Video Filter Flags: 0
+</I>&gt;<i> image inc: 0
+</I>&gt;<i> profile(default):/home/ulb/default.gpfl
+</I>&gt;<i> language catalog=&gt; dir:/usr/share/locale type&#65533;&#1595;r&#65533;@&#65533;gtk20
+</I>&gt;<i> lang:en_US.UTF-8 cat:guvcview.mo
+</I>&gt;<i> uyvy: setting format to 1498831189
+</I>&gt;<i> video device: /dev/video0
+</I>&gt;<i> /dev/video0 - device 1
+</I>&gt;<i> Init. DFx 21AUC03 (location: usb-0000:00:1a.7-2)
+</I>&gt;<i> { pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+</I>&gt;<i> { discrete: width = 372, height = 480 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 320, height = 480 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/30,
+</I>&gt;<i> { pixelformat = 'UYVY', description = 'YUV 4:2:2 (UYVY)' }
+</I>&gt;<i> { discrete: width = 372, height = 480 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 320, height = 480 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/30,
+</I>&gt;<i> checking format: 1498831189
+</I>&gt;<i> vid:199e
+</I>&gt;<i> pid:8202
+</I>&gt;<i> driver:uvcvideo
+</I>&gt;<i> Controls:
+</I>&gt;<i> control[0]: 0x980913 &#160;Gain, 16:1:64, default 16
+</I>&gt;<i> control[1]: 0x9a0901 &#160;Exposure, Auto, 0:1:3, default 6
+</I>&gt;<i> control[2]: 0x9a0902 &#160;Exposure (Absolute), 1:1:2550, default 127
+</I>&gt;<i> resolutions of 2&#186; format=2
+</I>&gt;<i> frame rates of 1&#186; resolution=1
+</I>&gt;<i> Def. Res: 0 &#160;numb. fps:1
+</I>&gt;<i> --------------------------------------- device #0
+</I>&gt;<i> [ Default Input, Default Output ]
+</I>&gt;<i> Name &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = /dev/dsp
+</I>&gt;<i> Host API &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = OSS
+</I>&gt;<i> Max inputs = 16, Max outputs = 16
+</I>&gt;<i> Def. low input latency &#160; = &#160; &#160;0.012
+</I>&gt;<i> Def. low output latency &#160;= &#160; &#160;0.012
+</I>&gt;<i> Def. high input latency &#160;= &#160; &#160;0.046
+</I>&gt;<i> Def. high output latency = &#160; &#160;0.046
+</I>&gt;<i> Def. sample rate &#160; &#160; &#160; &#160; = 44100.00
+</I>&gt;<i> --------------------------------------- device #1
+</I>&gt;<i> Name &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = HDA Intel: ALC260 Analog (hw:0,0)
+</I>&gt;<i> Host API &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = ALSA
+</I>&gt;<i> Max inputs = 2, Max outputs = 2
+</I>&gt;<i> Def. low input latency &#160; = &#160; &#160;0.012
+</I>&gt;<i> Def. low output latency &#160;= &#160; &#160;0.012
+</I>&gt;<i> Def. high input latency &#160;= &#160; &#160;0.046
+</I>&gt;<i> Def. high output latency = &#160; &#160;0.046
+</I>&gt;<i> Def. sample rate &#160; &#160; &#160; &#160; = 44100.00
+</I>&gt;<i> --------------------------------------- device #2
+</I>&gt;<i> Name &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = HDA Intel: ALC260 Digital (hw:0,1)
+</I>&gt;<i> Host API &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = ALSA
+</I>&gt;<i> Max inputs = 0, Max outputs = 2
+</I>&gt;<i> Def. low input latency &#160; = &#160; -1.000
+</I>&gt;<i> Def. low output latency &#160;= &#160; &#160;0.012
+</I>&gt;<i> Def. high input latency &#160;= &#160; -1.000
+</I>&gt;<i> Def. high output latency = &#160; &#160;0.046
+</I>&gt;<i> Def. sample rate &#160; &#160; &#160; &#160; = 44100.00
+</I>&gt;<i> --------------------------------------- device #3
+</I>&gt;<i> Name &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = front
+</I>&gt;<i> Host API &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = ALSA
+</I>&gt;<i> Max inputs = 0, Max outputs = 2
+</I>&gt;<i> Def. low input latency &#160; = &#160; -1.000
+</I>&gt;<i> Def. low output latency &#160;= &#160; &#160;0.012
+</I>&gt;<i> Def. high input latency &#160;= &#160; -1.000
+</I>&gt;<i> Def. high output latency = &#160; &#160;0.046
+</I>&gt;<i> Def. sample rate &#160; &#160; &#160; &#160; = 44100.00
+</I>&gt;<i> --------------------------------------- device #4
+</I>&gt;<i> Name &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = surround40
+</I>&gt;<i> Host API &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = ALSA
+</I>&gt;<i> Max inputs = 0, Max outputs = 2
+</I>&gt;<i> Def. low input latency &#160; = &#160; -1.000
+</I>&gt;<i> Def. low output latency &#160;= &#160; &#160;0.012
+</I>&gt;<i> Def. high input latency &#160;= &#160; -1.000
+</I>&gt;<i> Def. high output latency = &#160; &#160;0.046
+</I>&gt;<i> Def. sample rate &#160; &#160; &#160; &#160; = 44100.00
+</I>&gt;<i> --------------------------------------- device #5
+</I>&gt;<i> Name &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = surround51
+</I>&gt;<i> Host API &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = ALSA
+</I>&gt;<i> Max inputs = 0, Max outputs = 2
+</I>&gt;<i> Def. low input latency &#160; = &#160; -1.000
+</I>&gt;<i> Def. low output latency &#160;= &#160; &#160;0.012
+</I>&gt;<i> Def. high input latency &#160;= &#160; -1.000
+</I>&gt;<i> Def. high output latency = &#160; &#160;0.046
+</I>&gt;<i> Def. sample rate &#160; &#160; &#160; &#160; = 44100.00
+</I>&gt;<i> --------------------------------------- device #6
+</I>&gt;<i> Name &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = surround71
+</I>&gt;<i> Host API &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = ALSA
+</I>&gt;<i> Max inputs = 0, Max outputs = 2
+</I>&gt;<i> Def. low input latency &#160; = &#160; -1.000
+</I>&gt;<i> Def. low output latency &#160;= &#160; &#160;0.012
+</I>&gt;<i> Def. high input latency &#160;= &#160; -1.000
+</I>&gt;<i> Def. high output latency = &#160; &#160;0.046
+</I>&gt;<i> Def. sample rate &#160; &#160; &#160; &#160; = 44100.00
+</I>&gt;<i> --------------------------------------- device #7
+</I>&gt;<i> Name &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = iec958
+</I>&gt;<i> Host API &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = ALSA
+</I>&gt;<i> Max inputs = 0, Max outputs = 2
+</I>&gt;<i> Def. low input latency &#160; = &#160; -1.000
+</I>&gt;<i> Def. low output latency &#160;= &#160; &#160;0.012
+</I>&gt;<i> Def. high input latency &#160;= &#160; -1.000
+</I>&gt;<i> Def. high output latency = &#160; &#160;0.046
+</I>&gt;<i> Def. sample rate &#160; &#160; &#160; &#160; = 44100.00
+</I>&gt;<i> --------------------------------------- device #8
+</I>&gt;<i> Name &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = spdif
+</I>&gt;<i> Host API &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = ALSA
+</I>&gt;<i> Max inputs = 0, Max outputs = 2
+</I>&gt;<i> Def. low input latency &#160; = &#160; -1.000
+</I>&gt;<i> Def. low output latency &#160;= &#160; &#160;0.012
+</I>&gt;<i> Def. high input latency &#160;= &#160; -1.000
+</I>&gt;<i> Def. high output latency = &#160; &#160;0.046
+</I>&gt;<i> Def. sample rate &#160; &#160; &#160; &#160; = 44100.00
+</I>&gt;<i> --------------------------------------- device #9
+</I>&gt;<i> [ Default ALSA Input, Default ALSA Output ]
+</I>&gt;<i> Name &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = default
+</I>&gt;<i> Host API &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = ALSA
+</I>&gt;<i> Max inputs = 128, Max outputs = 128
+</I>&gt;<i> Def. low input latency &#160; = &#160; &#160;0.043
+</I>&gt;<i> Def. low output latency &#160;= &#160; &#160;0.043
+</I>&gt;<i> Def. high input latency &#160;= &#160; &#160;0.046
+</I>&gt;<i> Def. high output latency = &#160; &#160;0.046
+</I>&gt;<i> Def. sample rate &#160; &#160; &#160; &#160; = 44100.00
+</I>&gt;<i> --------------------------------------- device #10
+</I>&gt;<i> Name &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = dmix
+</I>&gt;<i> Host API &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; = ALSA
+</I>&gt;<i> Max inputs = 0, Max outputs = 2
+</I>&gt;<i> Def. low input latency &#160; = &#160; -1.000
+</I>&gt;<i> Def. low output latency &#160;= &#160; &#160;0.043
+</I>&gt;<i> Def. high input latency &#160;= &#160; -1.000
+</I>&gt;<i> Def. high output latency = &#160; &#160;0.043
+</I>&gt;<i> Def. sample rate &#160; &#160; &#160; &#160; = 48000.00
+</I>&gt;<i> ----------------------------------------------
+</I>&gt;<i> SampleRate:0 Channels:0
+</I>&gt;<i> Video driver: x11
+</I>&gt;<i> A window manager is available
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> 2009/3/9 Paulo Assis &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">pj.assis at gmail.com</A>&gt;:
+</I>&gt;&gt;<i> For the list (I keep pressing the reply button, and forget to change the
+</I>&gt;&gt;<i> address)
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Sebastian,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Sebastian Scherer escreveu:
+</I>&gt;&gt;&gt;<i> Hi,
+</I>&gt;&gt;&gt;<i> Thank you for your replies. I tried guvcview with both formats but the
+</I>&gt;&gt;&gt;<i> output seems to be the same. It would be fine with me to manually
+</I>&gt;&gt;&gt;<i> correct the output.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i> What is the console output from guvcview --verbose ?
+</I>&gt;&gt;<i> Setting an unsupported device format would only make guvcview drop back
+</I>&gt;&gt;<i> to the first supported device format.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> However I would really like to capture the full resolution images.
+</I>&gt;&gt;&gt;<i> How can I use capture still images?
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i> I don't think that's implemented in linux uvc.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Also the 372 does not really make sense because this should not be a
+</I>&gt;&gt;&gt;<i> frame size that is supported by the camera. Maybe halving the size
+</I>&gt;&gt;&gt;<i> messes up the encoding?
+</I>&gt;&gt;&gt;<i> Thank you
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i> Your best bet is to grab a RAW frame and try to analyse it.
+</I>&gt;&gt;<i> I would say that the 372 pix line needs to be converted to 744, UYVY has
+</I>&gt;&gt;<i> 2 bytes per pixel, although you need 4 bytes to render 2 pixels, in this
+</I>&gt;&gt;<i> case it seems you are getting a format with 1 byte per pixel.
+</I>&gt;&gt;&gt;<i> Sebastian
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> 2009/3/9 Paulo Assis &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">pj.assis at gmail.com</A>&gt;:
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> Sebastien, I've taken another look at luvcview output and it reports
+</I>&gt;&gt;&gt;&gt;<i> UYVY not YUYV, luvcview doesn't support this format I believe,
+</I>&gt;&gt;&gt;&gt;<i> you should try the latest version from guvcview (1.0.2), and see if
+</I>&gt;&gt;&gt;&gt;<i> outputs the frame correctly.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> Best regards,
+</I>&gt;&gt;&gt;&gt;<i> Paulo
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> Sebastian Scherer escreveu:
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i> Hi,
+</I>&gt;&gt;&gt;&gt;&gt;<i> After looking a little more carefully it might be that the resolution
+</I>&gt;&gt;&gt;&gt;&gt;<i> problem is related to de-bayering.
+</I>&gt;&gt;&gt;&gt;&gt;<i> I uploaded a sample image captured from the video:
+</I>&gt;&gt;&gt;&gt;&gt;<i> <A HREF="http://www.frc.ri.cmu.edu/~basti/01-20090306125232-17.jpg">http://www.frc.ri.cmu.edu/~basti/01-20090306125232-17.jpg</A>
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i> Does anybody have any insight what the problem could be?
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i> I downloaded the latest drivers and used them on Ubuntu 8.10 but the
+</I>&gt;&gt;&gt;&gt;&gt;<i> problem persists.
+</I>&gt;&gt;&gt;&gt;&gt;<i> Thank you
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i> Sebastian
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> Hi,
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> I have a problem with this camera.
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> <A HREF="http://www.theimagingsource.com/en_US/products/oem-cameras/usb-cmos-color/dfm21auc03ml/">http://www.theimagingsource.com/en_US/products/oem-cameras/usb-cmos-color/dfm21auc03ml/</A>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> It shows a picture but I cannot set the frame size and resolution of
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> the camera. The camera supports
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> 60 frames per second and a resolution of 744x480 YUV2. However I
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> always get 372x480 and the colors are wrong.
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> This is what dmesg reports:
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> [179400.340015] usb 6-1: new high speed USB device using ehci_hcd and address 3
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> [179400.777492] usb 6-1: configuration #1 chosen from 1 choice
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> [179400.777790] uvcvideo: Found UVC 1.00 device DFx 21AUC03 (199e:8202)
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> [179401.306390] input: DFx 21AUC03 as
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> /devices/pci0000:00/0000:00:1a.7/usb6/6-1/6-1:1.0/input/input7
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> This is whalt lsusb reports:
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> Bus 006 Device 003: ID 199e:8202 The Imaging Source Europe GmbH
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> Device Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;18
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160;bDescriptorType &#160; &#160; &#160; &#160; 1
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160;bcdUSB &#160; &#160; &#160; &#160; &#160; &#160; &#160; 2.00
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160;bDeviceClass &#160; &#160; &#160; &#160; &#160;239 Miscellaneous Device
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160;bDeviceSubClass &#160; &#160; &#160; &#160; 2 ?
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160;bDeviceProtocol &#160; &#160; &#160; &#160; 1 Interface Association
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160;bMaxPacketSize0 &#160; &#160; &#160; &#160;64
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160;idVendor &#160; &#160; &#160; &#160; &#160; 0x199e The Imaging Source Europe GmbH
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160;idProduct &#160; &#160; &#160; &#160; &#160;0x8202
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160;bcdDevice &#160; &#160; &#160; &#160; &#160; &#160;8.13
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160;iManufacturer &#160; &#160; &#160; &#160; &#160; 2 The Imaging Source Europe GmbH
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160;iProduct &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;1 DFx 21AUC03
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160;iSerial &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 3 38800104
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160;bNumConfigurations &#160; &#160; &#160;1
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160;Configuration Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 9
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160; 2
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160;wTotalLength &#160; &#160; &#160; &#160; &#160;349
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160;bNumInterfaces &#160; &#160; &#160; &#160; &#160;2
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160;bConfigurationValue &#160; &#160; 1
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160;iConfiguration &#160; &#160; &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160;bmAttributes &#160; &#160; &#160; &#160; 0x80
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;(Bus Powered)
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160;MaxPower &#160; &#160; &#160; &#160; &#160; &#160; &#160;500mA
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160;Interface Association:
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 8
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160;11
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bFirstInterface &#160; &#160; &#160; &#160; 0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bInterfaceCount &#160; &#160; &#160; &#160; 2
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bFunctionClass &#160; &#160; &#160; &#160; 14 Video
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bFunctionSubClass &#160; &#160; &#160; 3 Video Interface Collection
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bFunctionProtocol &#160; &#160; &#160; 0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;iFunction &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160;Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 9
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160; 4
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bInterfaceNumber &#160; &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bAlternateSetting &#160; &#160; &#160; 0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bNumEndpoints &#160; &#160; &#160; &#160; &#160; 1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bInterfaceClass &#160; &#160; &#160; &#160;14 Video
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bInterfaceSubClass &#160; &#160; &#160;1 Video Control
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bInterfaceProtocol &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;iInterface &#160; &#160; &#160; &#160; &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;VideoControl Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;13
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160;36
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorSubtype &#160; &#160; &#160;1 (HEADER)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bcdUVC &#160; &#160; &#160; &#160; &#160; &#160; &#160; 1.00
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wTotalLength &#160; &#160; &#160; &#160; &#160; 78
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwClockFrequency &#160; &#160; &#160; &#160;6.000000MHz
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bInCollection &#160; &#160; &#160; &#160; &#160; 1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;baInterfaceNr( 0) &#160; &#160; &#160; 1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;VideoControl Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;18
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160;36
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorSubtype &#160; &#160; &#160;2 (INPUT_TERMINAL)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bTerminalID &#160; &#160; &#160; &#160; &#160; &#160; 1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wTerminalType &#160; &#160; &#160;0x0201 Camera Sensor
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bAssocTerminal &#160; &#160; &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;iTerminal &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wObjectiveFocalLengthMin &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wObjectiveFocalLengthMax &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wOcularFocalLength &#160; &#160; &#160; &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bControlSize &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;3
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bmControls &#160; &#160; &#160; &#160; &#160; 0x0000001a
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Auto-Exposure Mode
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Exposure Time (Absolute)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Exposure Time (Relative)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;VideoControl Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;12
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160;36
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorSubtype &#160; &#160; &#160;5 (PROCESSING_UNIT)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;Warning: Descriptor too short
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bUnitID &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 3
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bSourceID &#160; &#160; &#160; &#160; &#160; &#160; &#160; 1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wMaxMultiplier &#160; &#160; &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bControlSize &#160; &#160; &#160; &#160; &#160; &#160;3
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bmControls &#160; &#160; 0x00000200
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Gain
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;iProcessing &#160; &#160; &#160; &#160; &#160; &#160; 0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bmVideoStandards &#160; &#160; 0x1a
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;NTSC - 525/60
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;SECAM - 625/50
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;NTSC - 625/50
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;VideoControl Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;26
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160;36
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorSubtype &#160; &#160; &#160;6 (EXTENSION_UNIT)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bUnitID &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 4
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;guidExtensionCode &#160; &#160; &#160; &#160; {2652215a-8932-5641-894a-5c557cdf9664}
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bNumControl &#160; &#160; &#160; &#160; &#160; &#160; 4
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bNrPins &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;baSourceID( 0) &#160; &#160; &#160; &#160; &#160;3
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bControlSize &#160; &#160; &#160; &#160; &#160; &#160;1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bmControls( 0) &#160; &#160; &#160; 0x1f
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;iExtension &#160; &#160; &#160; &#160; &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;VideoControl Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 9
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160;36
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorSubtype &#160; &#160; &#160;3 (OUTPUT_TERMINAL)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bTerminalID &#160; &#160; &#160; &#160; &#160; &#160; 2
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wTerminalType &#160; &#160; &#160;0x0101 USB Streaming
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bAssocTerminal &#160; &#160; &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bSourceID &#160; &#160; &#160; &#160; &#160; &#160; &#160; 4
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;iTerminal &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;Endpoint Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 7
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160; 5
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bEndpointAddress &#160; &#160; 0x81 &#160;EP 1 IN
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bmAttributes &#160; &#160; &#160; &#160; &#160; &#160;3
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Transfer Type &#160; &#160; &#160; &#160; &#160; &#160;Interrupt
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Synch Type &#160; &#160; &#160; &#160; &#160; &#160; &#160; None
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Usage Type &#160; &#160; &#160; &#160; &#160; &#160; &#160; Data
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wMaxPacketSize &#160; &#160; 0x0008 &#160;1x 8 bytes
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bInterval &#160; &#160; &#160; &#160; &#160; &#160; &#160; 9
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160;Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 9
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160; 4
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bInterfaceNumber &#160; &#160; &#160; &#160;1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bAlternateSetting &#160; &#160; &#160; 0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bNumEndpoints &#160; &#160; &#160; &#160; &#160; 1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bInterfaceClass &#160; &#160; &#160; &#160;14 Video
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bInterfaceSubClass &#160; &#160; &#160;2 Video Streaming
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;bInterfaceProtocol &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;iInterface &#160; &#160; &#160; &#160; &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;VideoStreaming Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;15
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;36
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorSubtype &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;1 (INPUT_HEADER)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bNumFormats &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;2
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wTotalLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;217
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bEndPointAddress &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;130
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bmInfo &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bTerminalLink &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 2
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bStillCaptureMethod &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 2
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bTriggerSupport &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bTriggerUsage &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bControlSize &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bmaControls( 0) &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;27
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bmaControls( 1) &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;27
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;VideoStreaming Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;27
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;36
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorSubtype &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;4 (FORMAT_UNCOMPRESSED)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bFormatIndex &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bNumFrameDescriptors &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;2
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;guidFormat
+</I>&gt;&gt;&gt;&gt;&gt;<i> {59555932-0000-1000-8000-00aa00389b71}
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bBitsPerPixel &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;16
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDefaultFrameIndex &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bAspectRatioX &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bAspectRatioY &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bmInterlaceFlags &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0x00
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Interlaced stream or variable: No
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Fields per frame: 1 fields
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Field 1 first: No
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Field pattern: Field 1 only
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;bCopyProtect &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;VideoStreaming Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;30
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;36
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorSubtype &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;5 (FRAME_UNCOMPRESSED)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bFrameIndex &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bmCapabilities &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0x00
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Still image unsupported
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wWidth &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;372
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wHeight &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 480
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwMinBitRate &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;838992000
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwMaxBitRate &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;838992000
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwMaxVideoFrameBufferSize &#160; &#160; &#160;786432
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwDefaultFrameInterval &#160; &#160; &#160; &#160; 333333
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bFrameIntervalType &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwFrameInterval( 0) &#160; &#160; &#160; &#160; &#160; &#160;333333
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;VideoStreaming Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;30
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;36
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorSubtype &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;5 (FRAME_UNCOMPRESSED)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bFrameIndex &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 2
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bmCapabilities &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0x00
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Still image unsupported
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wWidth &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;320
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wHeight &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 480
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwMinBitRate &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;838992000
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwMaxBitRate &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;838992000
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwMaxVideoFrameBufferSize &#160; &#160; &#160;786432
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwDefaultFrameInterval &#160; &#160; &#160; &#160; 333333
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bFrameIntervalType &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwFrameInterval( 0) &#160; &#160; &#160; &#160; &#160; &#160;333333
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;VideoStreaming Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;11
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;36
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorSubtype &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;3 (STILL_IMAGE_FRAME)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bEndpointAddress &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bNumImageSizePatterns &#160; &#160; &#160; &#160; &#160; &#160; &#160; 1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wWidth( 0) &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;744
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wHeight( 0) &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 480
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bNumCompressionPatterns &#160; &#160; &#160; &#160; &#160; &#160; 1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bCompression( 0) &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;VideoStreaming Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;27
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;36
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorSubtype &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;4 (FORMAT_UNCOMPRESSED)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bFormatIndex &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;2
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bNumFrameDescriptors &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;2
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;guidFormat
+</I>&gt;&gt;&gt;&gt;&gt;<i> {55595659-0000-1000-8000-00aa00389b71}
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bBitsPerPixel &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;16
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDefaultFrameIndex &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bAspectRatioX &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bAspectRatioY &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bmInterlaceFlags &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0x00
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Interlaced stream or variable: No
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Fields per frame: 1 fields
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Field 1 first: No
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Field pattern: Field 1 only
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;bCopyProtect &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;VideoStreaming Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;30
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;36
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorSubtype &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;5 (FRAME_UNCOMPRESSED)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bFrameIndex &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bmCapabilities &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0x00
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Still image unsupported
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wWidth &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;372
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wHeight &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 480
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwMinBitRate &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;838992000
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwMaxBitRate &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;838992000
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwMaxVideoFrameBufferSize &#160; &#160; &#160;786432
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwDefaultFrameInterval &#160; &#160; &#160; &#160; 333333
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bFrameIntervalType &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwFrameInterval( 0) &#160; &#160; &#160; &#160; &#160; &#160;333333
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;VideoStreaming Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;30
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;36
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorSubtype &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;5 (FRAME_UNCOMPRESSED)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bFrameIndex &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 2
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bmCapabilities &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0x00
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Still image unsupported
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wWidth &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;320
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wHeight &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 480
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwMinBitRate &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;838992000
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwMaxBitRate &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;838992000
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwMaxVideoFrameBufferSize &#160; &#160; &#160;786432
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwDefaultFrameInterval &#160; &#160; &#160; &#160; 333333
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bFrameIntervalType &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;dwFrameInterval( 0) &#160; &#160; &#160; &#160; &#160; &#160;333333
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;VideoStreaming Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;11
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;36
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorSubtype &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;3 (STILL_IMAGE_FRAME)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bEndpointAddress &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bNumImageSizePatterns &#160; &#160; &#160; &#160; &#160; &#160; &#160; 1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wWidth( 0) &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;744
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wHeight( 0) &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 480
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bNumCompressionPatterns &#160; &#160; &#160; &#160; &#160; &#160; 1
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bCompression( 0) &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;0
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;VideoStreaming Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 6
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;36
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorSubtype &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 13 (COLORFORMAT)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bColorPrimaries &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0 (Unspecified)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bTransferCharacteristics &#160; &#160; &#160; &#160; &#160; &#160;0 (Unspecified)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bMatrixCoefficients &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0 (Unspecified)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160;Endpoint Descriptor:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 7
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bDescriptorType &#160; &#160; &#160; &#160; 5
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bEndpointAddress &#160; &#160; 0x82 &#160;EP 2 IN
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bmAttributes &#160; &#160; &#160; &#160; &#160; &#160;2
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Transfer Type &#160; &#160; &#160; &#160; &#160; &#160;Bulk
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Synch Type &#160; &#160; &#160; &#160; &#160; &#160; &#160; None
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160;Usage Type &#160; &#160; &#160; &#160; &#160; &#160; &#160; Data
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;wMaxPacketSize &#160; &#160; 0x0200 &#160;1x 512 bytes
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160; &#160; &#160; &#160;bInterval &#160; &#160; &#160; &#160; &#160; &#160; &#160; 1
+</I>&gt;&gt;&gt;&gt;&gt;<i> Device Qualifier (for other device speed):
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160;bLength &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;10
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160;bDescriptorType &#160; &#160; &#160; &#160; 6
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160;bcdUSB &#160; &#160; &#160; &#160; &#160; &#160; &#160; 2.00
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160;bDeviceClass &#160; &#160; &#160; &#160; &#160;239 Miscellaneous Device
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160;bDeviceSubClass &#160; &#160; &#160; &#160; 2 ?
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160;bDeviceProtocol &#160; &#160; &#160; &#160; 1 Interface Association
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160;bMaxPacketSize0 &#160; &#160; &#160; &#160;64
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160;bNumConfigurations &#160; &#160; &#160;1
+</I>&gt;&gt;&gt;&gt;&gt;<i> Device Status: &#160; &#160; 0x0000
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160;(Bus Powered)
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i> This is what I get with lucview:
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i> luvcview 0.2.4
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i> SDL information:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160;Video driver: x11
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160;A window manager is available
+</I>&gt;&gt;&gt;&gt;&gt;<i> Device information:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160;Device path: &#160;/dev/video0
+</I>&gt;&gt;&gt;&gt;&gt;<i> Stream settings:
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160;Frame format: UYVY
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160;Frame size: &#160; 372x480 (requested size 744x480 is not supported by device)
+</I>&gt;&gt;&gt;&gt;&gt;<i> &#160;Frame rate: &#160; 30/1 fps (requested frame rate 60 fps is not supported by device)
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i> Thank you!
+</I>&gt;&gt;&gt;&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;&gt;&gt;&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;&gt;&gt;&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;&gt;&gt;&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;&gt;&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;&gt;&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;&gt;&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i> Best regards,
+</I>&gt;&gt;<i> Paulo
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I></PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004633.html">[Linux-uvc-devel] [Fwd: Re: Problem with DFM 21AUC03-ML]
+</A></li>
+	<LI>Next message: <A HREF="004635.html">[Linux-uvc-devel] [Fwd: Re: Problem with DFM 21AUC03-ML]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4634">[ date ]</a>
+              <a href="thread.html#4634">[ thread ]</a>
+              <a href="subject.html#4634">[ subject ]</a>
+              <a href="author.html#4634">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

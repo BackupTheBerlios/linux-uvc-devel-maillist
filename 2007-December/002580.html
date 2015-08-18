@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Built-in iSight Firmware Tools
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Built-in%20iSight%20Firmware%20Tools&In-Reply-To=%3C1197337224.15974.20.camel%40thilivren%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002579.html">
+   <LINK REL="Next"  HREF="002581.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Built-in iSight Firmware Tools</H1>
+    <B>&#201;tienne Bersac</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Built-in%20iSight%20Firmware%20Tools&In-Reply-To=%3C1197337224.15974.20.camel%40thilivren%3E"
+       TITLE="[Linux-uvc-devel] Built-in iSight Firmware Tools">bersace03 at gmail.com
+       </A><BR>
+    <I>Tue Dec 11 02:40:24 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002579.html">[Linux-uvc-devel] Built-in iSight Firmware Tools
+</A></li>
+        <LI>Next message: <A HREF="002581.html">[Linux-uvc-devel] Built-in iSight Firmware Tools
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2580">[ date ]</a>
+              <a href="thread.html#2580">[ thread ]</a>
+              <a href="subject.html#2580">[ subject ]</a>
+              <a href="author.html#2580">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+Thanks for testing and feedbacks.
+
+&gt;<i> 1) The build system seems broken to me:
+</I>&gt;<i> 
+</I>&gt;<i>  * It doesn't set proper permissions (e.g root for ift-load)
+</I>
+Is it a bug of permissions or ownership ?
+
+
+&gt;<i> And that would still generate &quot;//lib/firmware...&quot; path. Because of the
+</I>&gt;<i> -prefix=/ I pressume.
+</I>
+/lib/firmware have nothing to do with ${prefix} and friends, it is
+hardcoded both in ift-extract and isight.rules. ift-extract has an
+option if you want to output in a different directory (e.g.  '.'), see
+info ift-extract. Only ${sysconfdir} should be overriden for proper
+installation of the udev rules.
+
+&gt;<i> 2) Probably the USB_BUS and USB_DEV env variables are not set
+</I>&gt;<i> as you seem to expect them to be in ift-load. May be you should either
+</I>&gt;<i> pass those explicitly in the udev rule or just make ift-load find the
+</I>&gt;<i> device itself basid on the device and vendor id?
+</I>
+Do you have the firmware in /lib/firmware/isight.fw ? I dropped device
+probe because it's udev job. Please confirm the bug. Write a udev rules
+running a script which dump `export` to a log file to see what info udev
+exports in env.
+
+&gt;<i> 4)  * Meant to use syslog/vsyslog functions (instead of g_error) to send
+</I>&gt;<i> the log messages to the syslog.
+</I>
+If you read carefully the beginning of load.c, it overload
+g_{message,warning,error} ;). I renamed them to
+ift_{message,warning,error} to avoid confusion. ift_error uses exit(-1)
+instead of abort() as overloaded g_error() did.
+
+&gt;<i>  * openlog(&quot;ift-extract&quot;, 0, LOG_SYSLOG); - That should probably be
+</I>&gt;<i> something like:
+</I>&gt;<i> 
+</I>&gt;<i> openlog(&quot;ift-load&quot;, LOG_PERROR, LOG_USER);
+</I>
+Fixed, thanks.
+
+
+I produce a 0.5.1 bugfixe release with your feedbacks. Don't hesitate to
+provide deeper info. I don't mind releasing several releases per
+weeks ;)
+
+
+Regards,
+&#201;tienne.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002579.html">[Linux-uvc-devel] Built-in iSight Firmware Tools
+</A></li>
+	<LI>Next message: <A HREF="002581.html">[Linux-uvc-devel] Built-in iSight Firmware Tools
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2580">[ date ]</a>
+              <a href="thread.html#2580">[ thread ]</a>
+              <a href="subject.html#2580">[ subject ]</a>
+              <a href="author.html#2580">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

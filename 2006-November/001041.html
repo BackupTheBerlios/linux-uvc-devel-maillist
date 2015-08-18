@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Experimental%20patch%20for%20USB%20problem%20with%0A%09Logitech%20webcams&In-Reply-To=%3C200611212230.13884.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001028.html">
+   <LINK REL="Next"  HREF="000960.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Experimental%20patch%20for%20USB%20problem%20with%0A%09Logitech%20webcams&In-Reply-To=%3C200611212230.13884.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Nov 21 22:30:13 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001028.html">[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+</A></li>
+        <LI>Next message: <A HREF="000960.html">[Linux-uvc-devel] Hardware issues with UVC Linux driver and	some USB controllers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1041">[ date ]</a>
+              <a href="thread.html#1041">[ thread ]</a>
+              <a href="subject.html#1041">[ subject ]</a>
+              <a href="author.html#1041">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Evgeny,
+
+first of all, thank you for your help. You have spent quite a lot of time to 
+try to fix the Logitech hardware issue, and I think I can speak in the name 
+of everybody here to thank you for your efforts, even if the perfect patch 
+hasn't been found yet :-)
+
+&gt;<i> &gt; Are you sure about that ? Could you give more information about the
+</I>&gt;<i> &gt; interference you noticed ?
+</I>&gt;<i>
+</I>&gt;<i> Almost sure. I investigate hardware bug, that leads to -32 and -110 error.
+</I>&gt;<i> I wrote small program that changes camera controls several hundreds times
+</I>&gt;<i> per second. I recieve -32 error after 2-3 seconds of changing controls. As
+</I>&gt;<i> you know, I posted small patch, that delays usb_control_msg() for at least
+</I>&gt;<i> 500 microseconds after previous control message. With this patch I receive
+</I>&gt;<i> -32 error not so often - after 100 - 200 thousands of changes. Then I
+</I>&gt;<i> modified driver to delay control message for at least 500 microseconds
+</I>&gt;<i> after ANY submitted URB. I never receive -32 nor -110 error anymore. Please
+</I>&gt;<i> note, that I perform video capture and manipulations with control in
+</I>&gt;<i> different threads.
+</I>
+I'll try your patch in a few days. My computer isn't affected by the hardware 
+bug, so I can't test fixes easily here. My boyfriend has a laptop which 
+suffers a lot from the problem, so I can fortunately (for me, not for 
+him :-)) test patches on his computer.
+
+&gt;<i> After that, I think that camera hardware have not enough time to apply
+</I>&gt;<i> changes when we try  to change controls too quickly. Am I right? Can this
+</I>&gt;<i> be true?
+</I>
+Only the hardware/firmware developers could answer that. What really puzzles 
+me is that the webcam works in Windows, and I've been told by Logitech that 
+their driver contained no special workaround.
+
+&gt;<i> Also, I noticed strange behavior in VIDIOC_S_CTRL. It always returns zero
+</I>&gt;<i> not depending is there an error in uvc_ctrl_commit or not. It looks like a
+</I>&gt;<i> typo. Do we need &quot;return ret;&quot; after line 518 in uvc_v4l2.c ?
+</I>
+You're right. I committed a patch to the split branch which fixes 
+VIDIOC_S_CTRL and some other ioctls. Thanks a lot.
+
+&gt;<i> &gt; Isochronous URBs are submitted in interrupt context, so we can't use
+</I>&gt;<i> &gt; mutexes there.
+</I>&gt;<i>
+</I>&gt;<i> What about to move submitting to interrupt bottom half?
+</I>
+I'd like to avoid that if possible. I would like to keep the driver as 
+hardware independent as possible, and using a bottom half interrupt handler 
+to work around a vendor bug is a big change. We're not even sure yet that it 
+would work.
+
+Cheers,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001028.html">[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+</A></li>
+	<LI>Next message: <A HREF="000960.html">[Linux-uvc-devel] Hardware issues with UVC Linux driver and	some USB controllers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1041">[ date ]</a>
+              <a href="thread.html#1041">[ thread ]</a>
+              <a href="subject.html#1041">[ subject ]</a>
+              <a href="author.html#1041">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

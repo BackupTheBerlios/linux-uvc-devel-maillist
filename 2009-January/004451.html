@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Problem with webcam: 18ec:3288 (Arkmikro	chipset)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problem%20with%20webcam%3A%2018ec%3A3288%20%28Arkmikro%0A%09chipset%29&In-Reply-To=%3C200901040135.21502.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004450.html">
+   <LINK REL="Next"  HREF="004452.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Problem with webcam: 18ec:3288 (Arkmikro	chipset)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problem%20with%20webcam%3A%2018ec%3A3288%20%28Arkmikro%0A%09chipset%29&In-Reply-To=%3C200901040135.21502.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Problem with webcam: 18ec:3288 (Arkmikro	chipset)">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sun Jan  4 01:35:21 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004450.html">[Linux-uvc-devel] I can see them; they can't see me.
+</A></li>
+        <LI>Next message: <A HREF="004452.html">[Linux-uvc-devel] Philips SPC620 stopped working after kernel update
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4451">[ date ]</a>
+              <a href="thread.html#4451">[ thread ]</a>
+              <a href="subject.html#4451">[ subject ]</a>
+              <a href="author.html#4451">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Monday 29 December 2008, K wrote:
+&gt;<i> Hi Laurent,
+</I>&gt;<i>
+</I>&gt;<i> I tried the quirks=2 settings. The loading looks better but Motion returns
+</I>&gt;<i> a 640x480 picture whose content is completely black. It seems the Jpeg
+</I>&gt;<i> format used by this webcam is not supported. Ok, here we go:
+</I>&gt;<i>
+</I>&gt;<i> I tried all of this with &quot;echo 2 &gt; ... quirks&quot;
+</I>&gt;<i>
+</I>&gt;<i> dmesg:
+</I>&gt;<i>
+</I>&gt;<i> uvcvideo 4-2:1.0: usb_probe_interface
+</I>&gt;<i> uvcvideo 4-2:1.0: usb_probe_interface - got id
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device USB2.0 PC CAMERA (18ec:3288)
+</I>&gt;<i> uvcvideo: Forcing device quirks 0x2 by module parameter for testing
+</I>&gt;<i> purpose. uvcvideo: Please report required quirks to the linux-uvc-devel
+</I>&gt;<i> mailing list. uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported.
+</I>&gt;<i> Enabling workaround.
+</I>&gt;<i> input: USB2.0 PC CAMERA as /class/input/input28
+</I>&gt;<i> uhci_hcd 0000:00:09.1: reserve dev 7 ep81-INT, period 8, phase 4, 23 us
+</I>&gt;<i> usb 4-2: adding 4-2:1.1 (config #1, interface 1)
+</I>&gt;<i> usb 4-2:1.1: uevent
+</I>&gt;<i> drivers/usb/core/inode.c: creating file '007'
+</I>&gt;<i> usb 4-2: New USB device found, idVendor=18ec, idProduct=3288
+</I>&gt;<i> usb 4-2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+</I>&gt;<i> usb 4-2: Product: USB2.0 PC CAMERA
+</I>&gt;<i> usb 4-2: Manufacturer: ARKMICRO
+</I>&gt;<i>
+</I>&gt;<i> Motion complains about the Jpeg format. I captured the binary stream of a
+</I>&gt;<i> single frame using &quot;./capture_example -d /dev/video2 -c 1 -o &gt; vid2.dump&quot;.
+</I>&gt;<i> This file has been attached to this mail, watching with an hexa editor, it
+</I>&gt;<i> actually doesn't look like Jpeg as there is not 'JFIF' string inside.
+</I>
+If you skip the first 13 bytes (that surprisingly look like a possibly valid 
+UVC header), the remaining data make a valid JPEG frame except for the lack 
+of JFIF marker. I can see why applications would have trouble decoding that. 
+Could you please capture a few consecutive frames and send them to me ? I'd 
+like to have a look at the header.
+
+&gt;<i> [1] Thread 1 started
+</I>&gt;<i> [1] cap.driver: &quot;uvcvideo&quot;
+</I>&gt;<i> [1] cap.card: &quot;USB2.0 PC CAMERA&quot;
+</I>&gt;<i> [1] cap.bus_info: &quot;0000:00:09.1&quot;
+</I>&gt;<i> [1] cap.capabilities=0x04000001
+</I>&gt;<i> [1] - VIDEO_CAPTURE
+</I>&gt;<i> [1] - STREAMING
+</I>&gt;<i> [1] Supported palettes:
+</I>&gt;<i> [1] 0: MJPG (MJPEG)
+</I>&gt;<i> [1] index_format 2 Test palette MJPG (640x480)
+</I>&gt;<i> [1] Using palette MJPG (640x480) bytesperlines 0 sizeimage 614400
+</I>&gt;<i> colorspace 00000000
+</I>&gt;<i> [1] VIDIOC_G_JPEGCOMP not supported but it should be (does your webcam
+</I>&gt;<i> driver support this ioctl?)
+</I>&gt;<i> [1] found control 0x00980900, &quot;Brightness&quot;, range 0,255
+</I>&gt;<i> [1]     &quot;Brightness&quot;, default 123, current 123
+</I>&gt;<i> [1] found control 0x00980901, &quot;Contrast&quot;, range 0,255
+</I>&gt;<i> [1]     &quot;Contrast&quot;, default 160, current 160
+</I>&gt;<i> [1] found control 0x00980902, &quot;Saturation&quot;, range 0,255
+</I>&gt;<i> [1]     &quot;Saturation&quot;, default 140, current 140
+</I>&gt;<i> [1] found control 0x00980903, &quot;Hue&quot;, range -128,127
+</I>&gt;<i> [1]     &quot;Hue&quot;, default 0, current 0
+</I>&gt;<i> [1] found control 0x00980910, &quot;Gamma&quot;, range 1,16
+</I>&gt;<i> [1]     &quot;Gamma&quot;, default 8, current 8
+</I>&gt;<i> [1] found control 0x00980913, &quot;Gain&quot;, range 0,65535
+</I>&gt;<i> [1]     &quot;Gain&quot;, default 16, current 0
+</I>&gt;<i> [1] mmap information:
+</I>&gt;<i> [1] frames=4
+</I>&gt;<i> [1] 0 length=614400
+</I>&gt;<i> [1] 1 length=614400
+</I>&gt;<i> [1] 2 length=614400
+</I>&gt;<i> [1] 3 length=614400
+</I>&gt;<i> [1] Using V4L2
+</I>&gt;<i> [1] Resizing pre_capture buffer to 1 items
+</I>&gt;<i> Not a JPEG file: starts with 0xb2 0x10
+</I>&gt;<i> [1] Resizing pre_capture buffer to 3 items
+</I>&gt;<i> Not a JPEG file: starts with 0x55 0x9b
+</I>&gt;<i> [1] Started stream webcam server in port 8082
+</I>&gt;<i> Corrupt JPEG data: 1 extraneous bytes before marker 0xd9
+</I>
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004450.html">[Linux-uvc-devel] I can see them; they can't see me.
+</A></li>
+	<LI>Next message: <A HREF="004452.html">[Linux-uvc-devel] Philips SPC620 stopped working after kernel update
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4451">[ date ]</a>
+              <a href="thread.html#4451">[ thread ]</a>
+              <a href="subject.html#4451">[ subject ]</a>
+              <a href="author.html#4451">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

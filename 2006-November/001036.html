@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Experimental%20patch%20for%20USB%20problem%20with%0A%09Logitech%20webcams&In-Reply-To=%3C2eed5f740611211222h62fa1040n6490df02f5765198%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001030.html">
+   <LINK REL="Next"  HREF="001013.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams</H1>
+    <B>Vidar Normann</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Experimental%20patch%20for%20USB%20problem%20with%0A%09Logitech%20webcams&In-Reply-To=%3C2eed5f740611211222h62fa1040n6490df02f5765198%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams">vidarno at gmail.com
+       </A><BR>
+    <I>Tue Nov 21 21:22:02 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001030.html">[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+</A></li>
+        <LI>Next message: <A HREF="001013.html">[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1036">[ date ]</a>
+              <a href="thread.html#1036">[ thread ]</a>
+              <a href="subject.html#1036">[ subject ]</a>
+              <a href="author.html#1036">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 11/21/06, Martin Rubli &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux at rubli.info</A>&gt; wrote:
+&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> &gt; -45 error seems to be related to usbaudio and audio stream capture. The
+</I>&gt;<i> &gt; solution provided is to resend URB in case of EL2NSYNC error. There are
+</I>&gt;<i> &gt; patch for 2.6.19-rc kernels, that fixed this issue. For older kernels we
+</I>&gt;<i> &gt; have to fix it in driver code.
+</I>&gt;<i>
+</I>&gt;<i> I've never seen -45 before, so I'd really be interested in knowing whether
+</I>&gt;<i> this occurred while audio was active. Vidar, do you remember?
+</I>
+
+Audio was not active, at least I specified on the command line that ffmpeg
+should
+not record audio, only video.
+
+On 11/19/06, Evgeny &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">evgeny at indent.ru</A>&gt; wrote:Hi, Vidar
+
+&gt;&gt;<i> uvcvideo: Failed to resubmit isoc URB (-45).
+</I>&gt;&gt;<i> uvcvideo: Failed to resubmit isoc URB (-45).
+</I>&gt;&gt;<i> uvcvideo: Failed to resubmit isoc URB (-45).
+</I>&gt;&gt;<i> uvcvideo: Failed to resubmit isoc URB (-45).
+</I>&gt;&gt;<i> usb 1-4: USB disconnect, address 6
+</I>&gt;&gt;<i> usb 1-4: new high speed USB device using ehci_hcd and address 7
+</I>&gt;&gt;<i> ----
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>I cannot reproduce your error. How did you get it? What kernel do you use?
+</I>Do
+&gt;<i>you capture audio and video streams or only video?
+</I>
+I have not reproduced the error later, as I am currently attempting to start
+a stream
+instead and then record from the stream, to circumvent this issue.
+Nevertheless,
+the error came after a loop ran the following command several times (50+?):
+/usr/local/bin/ffmpeg -t 900 -vd &quot;/dev/video0&quot; -an -vcodec mpeg4 -s 640x480
+-y &quot;/home/terje/cam1/`date +%A`/`date +%H%M`.avi&quot;
+
+This command records a 15 minute video in xvid-format from the webcam, audio
+disabled or not captured. The kernel used was 2.6.17-2-686.
+Hope this helps.
+
+Also, this will probably interest you: Due to suggestions here I purchased
+another
+USB controller to be able to record from two webcams at the same time. After
+installing it I tried to connect the two webcams after the computer was
+booted up,
+but this froze the machine. I tried both webcams, in both the old (onboard)
+controller
+and new (pci) controller but still the machine froze after outputting the
+standard
+messages from uvc. I also tried uninstalling the new controller, but to no
+avail. After
+a few attempts the only thing that worked was recompiling uvc without your
+patches,
+at which point it worked. Any ideas why?
+
+Regards,
+Vidar
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061121/c0fa62a9/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061121/c0fa62a9/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001030.html">[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+</A></li>
+	<LI>Next message: <A HREF="001013.html">[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1036">[ date ]</a>
+              <a href="thread.html#1036">[ thread ]</a>
+              <a href="subject.html#1036">[ subject ]</a>
+              <a href="author.html#1036">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

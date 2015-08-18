@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Exposure setting problems with Creative Live! Cam Socialize HDfrom Sabrina
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Exposure%20setting%20problems%20with%20Creative%20Live%21%20Cam%0A%20Socialize%20HDfrom%20Sabrina&In-Reply-To=%3CCAJmcYhaG-EPiVeOUi4W6ym1n98rZM6fQQ0JNp6phUrHf7356mg%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006809.html">
+   <LINK REL="Next"  HREF="006812.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Exposure setting problems with Creative Live! Cam Socialize HDfrom Sabrina</H1>
+    <B>Sabrina Friedman</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Exposure%20setting%20problems%20with%20Creative%20Live%21%20Cam%0A%20Socialize%20HDfrom%20Sabrina&In-Reply-To=%3CCAJmcYhaG-EPiVeOUi4W6ym1n98rZM6fQQ0JNp6phUrHf7356mg%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Exposure setting problems with Creative Live! Cam Socialize HDfrom Sabrina">utebachmeier at gmail.com
+       </A><BR>
+    <I>Thu Aug 18 22:28:29 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006809.html">[Linux-uvc-devel] UVC + Dell XPS 15 + Ubuntu 11.04
+</A></li>
+        <LI>Next message: <A HREF="006812.html">[Linux-uvc-devel] error proofing mjpeg stream
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6810">[ date ]</a>
+              <a href="thread.html#6810">[ thread ]</a>
+              <a href="subject.html#6810">[ subject ]</a>
+              <a href="author.html#6810">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Alexey,
+
+On Monday 01 August 2011 08:12:07 Alexey Rempel wrote:
+&gt;<i> Am 31.07.2011 18:28, schrieb Laurent Pinchart:
+</I>&gt;<i> &gt; On Saturday 30 July 2011 15:08:14 Michael Stapelberg wrote:
+</I>&gt;<i> &gt;&gt; Hi,
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; I recently bought a Creative Live! Cam Socialize HD (ID 041e:4080) after
+</I>&gt;<i> &gt;&gt; verifying that it is a device supported by the uvcvideo driver.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; The device basically works, but to get 30 fps (at 640x480, but also with
+</I>&gt;<i> &gt;&gt; higher resolutions), I need to set the 'Exposure, Auto' setting to 1
+</I>&gt;<i> &gt;&gt; (Manual Mode). Afterwards, I can set the 'Exposure (Absolute)' setting
+</I>&gt;<i> &gt;&gt; to one of the values 39, 78, 156, 312, 625, 1250, 2500, &#8230;. All other
+</I>&gt;<i> &gt;&gt; values lead to a heavily over-exposed picture. This effect was already
+</I>&gt;<i> &gt;&gt; mentioned on this list for a different cam [1]. I wonder what we can do
+</I>&gt;<i> &gt;&gt; about it, as the step size for this setting is reported as '1' while in
+</I>&gt;<i> &gt;&gt; reality it seems logarithmic &#8211; with the exception of the step 312 to
+</I>&gt;<i> &gt;&gt; 625.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Those values are 2500 / 64, 32, 16, 8, 4, 2 and 1. There's unfortunately
+</I>&gt;<i> &gt; no way for the driver to know that other values will lead to bad
+</I>&gt;<i> &gt; results. I've seen bad firmware bugs, but this one is high on the list.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;&gt; So, I can live with changing the configuration after plugging in the
+</I>&gt;<i> &gt;&gt; cam, which I would automate with udev.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; However, I have noticed that I need to have an active video capture
+</I>&gt;<i> &gt;&gt; running, otherwise setting these values with uvcdynctrl has no effect. I
+</I>&gt;<i> &gt;&gt; tested it like this:
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; 1) Plug in the camera, wait until the white LED (which indicates
+</I>&gt;<i> &gt;&gt; capturing)
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;    goes off. This takes about 5 seconds.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; 2) Use uvcdynctrl -s 'Exposure, Auto' 1
+</I>&gt;<i> &gt;&gt; 3) Verify the result with uvcdynctrl -g 'Exposure, Auto', which also
+</I>&gt;<i> &gt;&gt; returns 1 4) Use uvcdynctrl -s 'Exposure (Absolute)' 312, verify it
+</I>&gt;<i> &gt;&gt; 5) Use gst-launch v4l2src ! xvimagesink
+</I>&gt;<i> &gt;&gt; &#8594;  The video is at 5 fps instead of 30 fps
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; If I do it like this, it works:
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; 1) Plug in the camera, wait until the white LED (which indicates
+</I>&gt;<i> &gt;&gt; capturing)
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;    goes off. This takes about 5 seconds.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; 2) Use gst-launch v4l2src ! xvimagesink, leave it open
+</I>&gt;<i> &gt;&gt; 3) Use uvcdynctrl -s 'Exposure, Auto' 1, verify it
+</I>&gt;<i> &gt;&gt; 4) Use uvcdynctrl -s 'Exposure (Absolute)' 312, verify it
+</I>&gt;<i> &gt;&gt; &#8594;  The video works correctly
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; That's weird. I'm wondering if the camera doesn't just reset all controls
+</I>&gt;<i> &gt; when the video stream is started. What happens in the second case if you
+</I>&gt;<i> &gt; stop the video stream and restart it ? Are exposure settings correct, or
+</I>&gt;<i> &gt; do they go back to bad values ?
+</I>&gt;<i>
+</I>&gt;<i> How about usb autosuspend? well be settings stored if usbautosupend is
+</I>&gt;<i> disabled, at least for the cam?
+</I>
+The uvcvideo restores controls at resume time, so this shouldn't be an issue.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+Sabrina Friedman
+Billige Fl&#252;ge Marketing GmbH
+Emanuelstr. 3,
+10317 Berlin
+Deutschland
+Telefon: +49 (33) 5310967
+Email: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">utebachmeier at gmail.com</A>
+Site: <A HREF="http://flug.airego.de">http://flug.airego.de</A> - Billige Fl&#252;ge vergleichen
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006809.html">[Linux-uvc-devel] UVC + Dell XPS 15 + Ubuntu 11.04
+</A></li>
+	<LI>Next message: <A HREF="006812.html">[Linux-uvc-devel] error proofing mjpeg stream
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6810">[ date ]</a>
+              <a href="thread.html#6810">[ thread ]</a>
+              <a href="subject.html#6810">[ subject ]</a>
+              <a href="author.html#6810">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

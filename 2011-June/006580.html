@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Quanta integrated webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quanta%20integrated%20webcam&In-Reply-To=%3Calpine.LNX.2.00.1106112144060.7428%40tristan%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006566.html">
+   <LINK REL="Next"  HREF="006582.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Quanta integrated webcam</H1>
+    <B>Carl Michal</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quanta%20integrated%20webcam&In-Reply-To=%3Calpine.LNX.2.00.1106112144060.7428%40tristan%3E"
+       TITLE="[Linux-uvc-devel] Quanta integrated webcam">michal at physics.ubc.ca
+       </A><BR>
+    <I>Sun Jun 12 06:55:15 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006566.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+        <LI>Next message: <A HREF="006582.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6580">[ date ]</a>
+              <a href="thread.html#6580">[ thread ]</a>
+              <a href="subject.html#6580">[ subject ]</a>
+              <a href="author.html#6580">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;&gt;<i>
+</I>&gt;&gt;<i>  2011/6/7 Alexey Fisher &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt;:
+</I>&gt;&gt;<i> &gt;  On Mo, 2011-06-06 at 17:31 -0700, Carl Michal wrote:
+</I>&gt;&gt;<i> &gt; &gt;  Hello,
+</I>&gt;&gt;<i> &gt; &gt; 
+</I>&gt;&gt;<i> &gt; &gt;  I'm having some trouble with a Quanta integrated webcam. &#160;It 
+</I>&gt;&gt;<i> &gt; &gt;  identifies
+</I>&gt;&gt;<i> &gt; &gt;  itself as: Laptop_Integrated_Webcam_2HDM, usbid: 0408:2fb1. &#160;This is 
+</I>&gt;&gt;<i> &gt; &gt;  built
+</I>&gt;&gt;<i> &gt; &gt;  in to a Dell XPS-15 (L501X).
+</I>&gt;&gt;<i> &gt; &gt; 
+</I>&gt;&gt;<i> &gt; &gt;  The uvcvideo module works, but the video stutters and has some
+</I>&gt;&gt;<i> &gt; &gt;  distortions, even at low resolutions and frame rates.
+</I>&gt;&gt;<i> &gt; &gt; 
+</I>&gt;&gt;<i> &gt; &gt;  With the Camera Output set to MJPG (in guvcview) &quot;Ignoring empty 
+</I>&gt;&gt;<i> &gt; &gt;  buffer ...&quot;
+</I>&gt;&gt;<i> &gt; &gt;  messages occur with most glitches.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>  I would say the camera is not returning the full frame (or maybe empty
+</I>&gt;&gt;<i>  ones) for same reason.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> &gt; &gt; 
+</I>&gt;&gt;<i> &gt; &gt;  If the output is set to YV12, the errors look like:
+</I>&gt;&gt;<i> &gt; &gt; 
+</I>&gt;&gt;<i> &gt; &gt;  VIDIOC_DQBUF - Unable to dequeue buffer : Input/output error
+</I>&gt;&gt;<i> &gt; &gt;  Error grabbing image
+</I>&gt;&gt;<i> &gt; &gt;  libv4l2: error converting / decoding frame data: v4l-convert: error
+</I>&gt;&gt;<i> &gt; &gt;  parsing JPEG header: Not a JPG file ?
+</I>&gt;&gt;<i> &gt; &gt; 
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>  YV12 is a format returned by libv4l, and it's obtained by
+</I>&gt;&gt;<i>  decompressing the MJPG stream, so in fact the camera is still in MJPG
+</I>&gt;&gt;<i>  format like above.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> &gt; &gt;  With cheese, the video preview looks ok, but video capture is
+</I>&gt;&gt;<i> &gt; &gt;  unusable - the video stutters badly at low resolution, and the capture
+</I>&gt;&gt;<i> &gt; &gt;  hangs at high resolution (the program doesn't hang, but after a couple 
+</I>&gt;&gt;<i> &gt; &gt;  of
+</I>&gt;&gt;<i> &gt; &gt;  frames no more get captured).
+</I>&gt;&gt;<i> &gt; 
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>  Probably the same situation as above (incomplete or empty frames)
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>  You should also increase uvc video verbosity and check dmesg for errors.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>  From the looks of it I would say you are having some hardware sync
+</I>&gt;&gt;<i>  issues, did you try all possible resolutions and frame rates ?
+</I>&gt;&gt;<i>  Do these issues happen in all formats
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>  Regards,
+</I>&gt;&gt;<i>  Paulo
+</I>&gt;&gt;<i>
+</I>
+I've looked through the traces I've gotten with this webcam a little and 
+noticed something that may help.  The out of sync errors are always starts 
+with a sequence like this:
+
+Jun 11 21:41:59 uvcvideo: Frame complete (EOF found) buf: 1, bytes: 64684.
+Jun 11 21:41:59 uvcvideo: EOF in empty payload.
+Jun 11 21:41:59 uvcvideo: uvc_v4l2_poll
+Jun 11 21:41:59 uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+Jun 11 21:41:59 uvcvideo: Dequeuing buffer 1 (4, 64684 bytes).
+Jun 11 21:41:59 uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+Jun 11 21:41:59 uvcvideo: Queuing buffer 1.
+Jun 11 21:41:59 uvcvideo: uvc_v4l2_poll
+Jun 11 21:41:59 uvcvideo: Frame complete (EOF found) buf: 2, bytes: 64728.
+Jun 11 21:41:59 uvcvideo: EOF in empty payload.
+Jun 11 21:41:59 uvcvideo: uvc_v4l2_poll
+Jun 11 21:41:59 uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+Jun 11 21:41:59 uvcvideo: Dequeuing buffer 2 (4, 64728 bytes).
+Jun 11 21:41:59 uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+Jun 11 21:41:59 uvcvideo: Queuing buffer 2.
+Jun 11 21:41:59 uvcvideo: uvc_v4l2_poll
+Jun 11 21:41:59 uvcvideo: Frame complete (FID bit toggled) buf: 3, bytes: 63504.
+Jun 11 21:41:59 uvcvideo: Frame complete (EOF found) buf: 0, bytes: 1072.
+Jun 11 21:41:59 uvcvideo: EOF in empty payload.
+Jun 11 21:41:59 uvcvideo: uvc_v4l2_poll
+Jun 11 21:41:59 uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+Jun 11 21:41:59 uvcvideo: Dequeuing buffer 3 (4, 63504 bytes).
+Jun 11 21:41:59 uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+Jun 11 21:41:59 uvcvideo: Queuing buffer 3.
+Jun 11 21:41:59 uvcvideo: uvc_v4l2_poll
+Jun 11 21:41:59 uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+Jun 11 21:41:59 uvcvideo: Dequeuing buffer 0 (4, 1072 bytes).
+Jun 11 21:41:59 uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+Jun 11 21:41:59 uvcvideo: Queuing buffer 0.
+Jun 11 21:41:59 uvcvideo: uvc_v4l2_poll
+Jun 11 21:41:59 uvcvideo: Dropping payload (out of sync).
+Jun 11 21:41:59 uvcvideo: Dropping payload (out of sync).
+
+I've added a couple of fields to the frame complete messages to indicate 
+which buffer is marked as complete and how many bytes were delivered to 
+it.
+
+Most frames are terminated with EOF, but occasionally an FID and EOF 
+are found in the same packet. So two buffers are marked as completed, but 
+the second one shouldn't be (I don't think).
+
+Any advice on where to look next?
+
+Carl
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006566.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+	<LI>Next message: <A HREF="006582.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6580">[ date ]</a>
+              <a href="thread.html#6580">[ thread ]</a>
+              <a href="subject.html#6580">[ subject ]</a>
+              <a href="author.html#6580">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

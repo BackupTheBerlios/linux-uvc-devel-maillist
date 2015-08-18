@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] unicap ucview tests
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20unicap%20ucview%20tests&In-Reply-To=%3C200704201039.27252.fvera%40ucv.cl%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001639.html">
+   <LINK REL="Next"  HREF="001613.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] unicap ucview tests</H1>
+    <B>Francisco Vera</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20unicap%20ucview%20tests&In-Reply-To=%3C200704201039.27252.fvera%40ucv.cl%3E"
+       TITLE="[Linux-uvc-devel] unicap ucview tests">fvera at ucv.cl
+       </A><BR>
+    <I>Fri Apr 20 16:39:27 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001639.html">[Linux-uvc-devel] Logitech QuickCam for Notebooks Pro	(046d:08cb) Problems
+</A></li>
+        <LI>Next message: <A HREF="001613.html">[Linux-uvc-devel] Problems with QuickCam Pro 5000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1612">[ date ]</a>
+              <a href="thread.html#1612">[ thread ]</a>
+              <a href="subject.html#1612">[ subject ]</a>
+              <a href="author.html#1612">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Dear Arne an UVC users,
+
+I just downloaded unicap ucview from <A HREF="http://www.unicap-imaging.org">http://www.unicap-imaging.org</A>
+
+I have made some test on a pixelink (PL-A782) 6.6 Megapixles firewire 
+industrial camera (not relevant to this list) and a logitech fusion webcam.
+
+The output from dmesg:
+------------------------------------
+ieee1394: Node added: ID:BUS[0-00:1023]  GUID[0001687307820168]
+ieee1394: Node changed: 0-00:1023 -&gt; 0-01:1023
+ieee1394: raw1394: /dev/raw1394 device initialized
+video1394: Installed video1394 module
+ieee1394: Node changed: 0-01:1023 -&gt; 0-00:1023
+ieee1394: Node suspended: ID:BUS[0-00:1023]  GUID[0001687307820168]
+usb 4-3: new high speed USB device using ehci_hcd and address 4
+usb 4-3: configuration #1 chosen from 1 choice
+Linux video capture interface: v2.00
+uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:08c1)
+usbcore: registered new driver uvcvideo
+USB Video Class driver (v0.1.0)
+-----------------------------------
+
+Compiling and installing unicap and ucview:
+-----------------------------------
+./configure
+make
+make install
+
+no problems for unicap and ucview, then: 
+ldconfig
+
+now ucview is working
+-------------------------------------
+
+For the firewire camera:
+-------------------------------------
+This camera works with coriander but it is not stable, I am not aware of other 
+application that can use this camera in linux.
+
+plugged this camera
+chmod o+rw /dev/raw1394
+chmod o+rw /dev/video1394/0
+
+ucview detected resolutions 320x240 and 640x480
+the image shown for 320x240 has a drift
+the image for 640x480 was ok but only at 25 fps
+
+I think that other resolutions and speed could be obtained if the video1394 is 
+used (instead of raw1394)
+---------------------------------------
+
+For the logitech fusion:
+
+I have to run first luvcview to initialize the camera for  ucview to show 
+images.
+I also have this problem using ffmpeg, so I usually call:
+
+v4lctl  bright &quot;75%&quot;
+ffmpeg -an -vd /dev/video0 -s 1280x960 -r 6 -b 5000 -y -vcodec mpeg4 -f 
+avi - | /usr/bin/mplayer -vf screenshot - 
+
+
+uvcview detected modes: uncompressed and MJPEG
+
+for uncompressed it detected: 1024x786 and 1280x960
+the first worked at 10 fps and the other 7.5 fps
+
+there are initialization problems so I needed to start first luvcview and 
+afterwards run ucview.
+
+For MJPEG it detected: 160x120 320x240 352x288 640x480 704x576 960x720
+
+perfect black screens was showing for all resolutions
+(obviously a problem with image formats)
+640x480 (black) was at 15 fps, but that must be caused by the default fps for 
+the uvc driver, luvcview -i 30 -s 640x480 works ok at 30 fps.
+
+I have installed the last uvc driver in debian using module-assistant (m-a):
+m-a prepare
+m-a update
+m-a  ( select linux-uvc, get, build, install)
+
+unloaded the previous driver, unpluged the webcam, plugged again, ucview:
+black screens again for mjpg, and uncompressed format works ok.
+
+dmesg:
+---------------------------
+usbcore: deregistering driver uvcvideo
+usb 4-3: USB disconnect, address 6
+usb 4-3: new high speed USB device using ehci_hcd and address 7
+usb 4-3: configuration #1 chosen from 1 choice
+7:3:1: cannot set freq 0 to ep 0x86
+7:3:2: cannot set freq 0 to ep 0x86
+7:3:3: cannot set freq 16000 to ep 0x86
+uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:08c1)
+usbcore: registered new driver uvcvideo
+USB Video Class driver (v0.1.0-c)
+--------------------------------
+
+Hope this help to improve this new v4l2 library and viewer.
+
+Francisco Vera
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001639.html">[Linux-uvc-devel] Logitech QuickCam for Notebooks Pro	(046d:08cb) Problems
+</A></li>
+	<LI>Next message: <A HREF="001613.html">[Linux-uvc-devel] Problems with QuickCam Pro 5000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1612">[ date ]</a>
+              <a href="thread.html#1612">[ thread ]</a>
+              <a href="subject.html#1612">[ subject ]</a>
+              <a href="author.html#1612">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

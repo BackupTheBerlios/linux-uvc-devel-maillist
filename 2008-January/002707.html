@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] uvcvideo: usb power management
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvcvideo%3A%20usb%20power%20management&In-Reply-To=%3C20080109093911.GA4208%40ifup.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002709.html">
+   <LINK REL="Next"  HREF="002708.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] uvcvideo: usb power management</H1>
+    <B>Brandon Philips</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvcvideo%3A%20usb%20power%20management&In-Reply-To=%3C20080109093911.GA4208%40ifup.org%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] uvcvideo: usb power management">brandon at ifup.org
+       </A><BR>
+    <I>Wed Jan  9 10:39:11 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002709.html">[Linux-uvc-devel] v4l-dvb-kernel and uvcvideo
+</A></li>
+        <LI>Next message: <A HREF="002708.html">[Linux-uvc-devel] [PATCH] uvcvideo: usb power management
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2707">[ date ]</a>
+              <a href="thread.html#2707">[ thread ]</a>
+              <a href="subject.html#2707">[ subject ]</a>
+              <a href="author.html#2707">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 19:17 Sat 15 Dec 2007, Laurent Pinchart wrote:
+&gt;<i> On Thursday 13 December 2007, Brandon Philips wrote:
+</I>&gt;<i> &gt; This patch enables usb power management in the UVC driver.  As cameras
+</I>&gt;<i> &gt; are built into more and more modern laptops it is important that we get
+</I>&gt;<i> &gt; power management for them working.
+</I>&gt;<i> 
+</I>&gt;<i> Thanks for the patch. Comments inlined.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Signed-off-by: Oliver Neukum &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">oliver at neukum.org</A>&gt;
+</I>&gt;<i> &gt; Reviewed-by: Brandon Philips &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bphilips at suse.de</A>&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; ---
+</I>&gt;<i> &gt;  uvc_driver.c |    7 ++++++-
+</I>&gt;<i> &gt;  uvc_v4l2.c   |    6 ++++++
+</I>&gt;<i> &gt;  2 files changed, 12 insertions(+), 1 deletion(-)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Index: uvc/uvc_v4l2.c
+</I>&gt;<i> &gt; ===================================================================
+</I>&gt;<i> &gt; --- uvc.orig/uvc_v4l2.c
+</I>&gt;<i> &gt; +++ uvc/uvc_v4l2.c
+</I>&gt;<i> &gt; @@ -413,10 +413,15 @@ static int uvc_v4l2_open(struct inode *i
+</I>&gt;<i> &gt;  		goto done;
+</I>&gt;<i> &gt;  	}
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; +	ret = usb_autopm_get_interface(video-&gt;dev-&gt;intf);
+</I>&gt;<i> &gt; +	if (ret &lt; 0)
+</I>&gt;<i> &gt; +		goto done;
+</I>&gt;<i> &gt; +
+</I>&gt;<i> &gt;  	/* Create the device handle. */
+</I>&gt;<i> &gt;  	handle = kzalloc(sizeof *handle, GFP_KERNEL);
+</I>&gt;<i> &gt;  	if (handle == NULL) {
+</I>&gt;<i> &gt;  		ret = -ENOMEM;
+</I>&gt;<i> &gt; +		usb_autopm_put_interface(video-&gt;dev-&gt;intf);
+</I>&gt;<i> &gt;  		goto done;
+</I>&gt;<i> &gt;  	}
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; @@ -455,6 +460,7 @@ static int uvc_v4l2_release(struct inode
+</I>&gt;<i> &gt;  	kfree(handle);
+</I>&gt;<i> &gt;  	file-&gt;private_data = NULL;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; +	usb_autopm_put_interface(video-&gt;dev-&gt;intf);
+</I>&gt;<i> &gt;  	kref_put(&amp;video-&gt;dev-&gt;kref, uvc_delete);
+</I>&gt;<i> &gt;  	return 0;
+</I>&gt;<i> &gt;  }
+</I>&gt;<i> 
+</I>&gt;<i> Is autosuspend interface-based or device-based ? If I understand things 
+</I>&gt;<i> correctly, a device won't be autosuspended as long as at least one of its 
+</I>&gt;<i> interfaces have a PM counter greater than 0. In that case incrementing the PM 
+</I>&gt;<i> counter for the control interface should be enough, there's no need to 
+</I>&gt;<i> increment the streaming interface PM counter. Am I right ?
+</I>
+autosuspend won't happen until all interfaces on a device reach 0 (see
+usb/core/driver.c: autosuspend_check()).  So, incrementing just the one
+interface is fine.
+
+&gt;<i> &gt; Index: uvc/uvc_driver.c
+</I>&gt;<i> &gt; ===================================================================
+</I>&gt;<i> &gt; --- uvc.orig/uvc_driver.c
+</I>&gt;<i> &gt; +++ uvc/uvc_driver.c
+</I>&gt;<i> &gt; @@ -678,8 +678,10 @@ static int uvc_parse_streaming(struct uv
+</I>&gt;<i> &gt;  			format-&gt;frame = frame;
+</I>&gt;<i> &gt;  			ret = uvc_parse_format(dev, streaming, format,
+</I>&gt;<i> &gt;  				&amp;interval, buffer, buflen);
+</I>&gt;<i> &gt; -			if (ret &lt; 0)
+</I>&gt;<i> &gt; +			if (ret &lt; 0) {
+</I>&gt;<i> &gt; +				kfree(format);
+</I>&gt;<i> &gt;  				return ret;
+</I>&gt;<i> &gt; +			}
+</I>&gt;<i> 
+</I>&gt;<i> Are you sure about this ? format is freed in uvc_delete().
+</I>
+Yes, this is unnecessary.  Do you need me to resubmit?
+
+&gt;<i> &gt;  			frame += format-&gt;nframes;
+</I>&gt;<i> &gt;  			format++;
+</I>&gt;<i> &gt; @@ -1605,6 +1607,8 @@ static int uvc_suspend(struct usb_interf
+</I>&gt;<i> &gt;  	uvc_trace(UVC_TRACE_SUSPEND, &quot;Suspending interface %u\n&quot;,
+</I>&gt;<i> &gt;  		intf-&gt;cur_altsetting-&gt;desc.bInterfaceNumber);
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; +	usb_kill_urb(dev-&gt;int_urb);
+</I>&gt;<i> &gt; +
+</I>&gt;<i> 
+</I>&gt;<i> The URB should be resubmitted on resume. I'll take care of this.
+</I>
+Ok.
+
+&gt;<i> &gt;  	/* Controls are cached on the fly so they don't need to be saved. */
+</I>&gt;<i> &gt;  	if (intf-&gt;cur_altsetting-&gt;desc.bInterfaceSubClass == SC_VIDEOCONTROL)
+</I>&gt;<i> &gt;  		return 0;
+</I>&gt;<i> &gt; @@ -1809,6 +1813,7 @@ struct uvc_driver uvc_driver = {
+</I>&gt;<i> &gt;  		.suspend	= uvc_suspend,
+</I>&gt;<i> &gt;  		.resume		= uvc_resume,
+</I>&gt;<i> &gt;  		.id_table	= uvc_ids,
+</I>&gt;<i> &gt; +		.supports_autosuspend = 1,
+</I>&gt;<i> &gt;  	},
+</I>&gt;<i> &gt;  };
+</I>&gt;<i> 
+</I>&gt;<i> What about devices that don't implement suspend properly ? Do I need some kind 
+</I>&gt;<i> of quirk for them ?
+</I>
+I am not sure how broken devices are handled in this case.  Oliver?
+
+Cheers,
+
+	Brandon
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002709.html">[Linux-uvc-devel] v4l-dvb-kernel and uvcvideo
+</A></li>
+	<LI>Next message: <A HREF="002708.html">[Linux-uvc-devel] [PATCH] uvcvideo: usb power management
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2707">[ date ]</a>
+              <a href="thread.html#2707">[ thread ]</a>
+              <a href="subject.html#2707">[ subject ]</a>
+              <a href="author.html#2707">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

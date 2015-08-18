@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Add GUID to UVC
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Add%20GUID%20to%20UVC&In-Reply-To=%3Cloom.20110302T150222-830%40post.gmane.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="006339.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Add GUID to UVC</H1>
+    <B>Robert Lukassen</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Add%20GUID%20to%20UVC&In-Reply-To=%3Cloom.20110302T150222-830%40post.gmane.org%3E"
+       TITLE="[Linux-uvc-devel] Add GUID to UVC">robert.lukassen at tomtom.com
+       </A><BR>
+    <I>Wed Mar  2 15:08:49 CET 2011</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="006339.html">[Linux-uvc-devel] Add GUID to UVC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6327">[ date ]</a>
+              <a href="thread.html#6327">[ thread ]</a>
+              <a href="subject.html#6327">[ subject ]</a>
+              <a href="author.html#6327">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I have a request to add support for a particular pixel-format (RGB565) to the
+list of recognized formats in UVC. This format is known in video for linux, but
+UVC does not list it.
+
+Here are the (rather minimal) patches with respect to the latest version of the
+UVC driver as used in Ubuntu 10.04 (kernel 2.6.32-28):
+
+diff -uN /usr/src/linux-source-2.6.32/drivers/media/video/uvc/uvc_driver.c
+uvc-new/uvc_driver.c
+--- /usr/src/linux-source-2.6.32/drivers/media/video/uvc/uvc_driver.c	2009-12-03
+04:51:21.000000000 +0100
++++ uvc-new/uvc_driver.c	2011-03-02 14:54:36.000000000 +0100
+@@ -92,6 +92,11 @@
+ 		.guid		= UVC_GUID_FORMAT_BY8,
+ 		.fcc		= V4L2_PIX_FMT_SBGGR8,
+ 	},
++	{
++		.name		= &quot;RGB565&quot;,
++		.guid		= UVC_GUID_FORMAT_RGBP,
++		.fcc		= V4L2_PIX_FMT_RGB565,
++	},
+ };
+ 
+ /* ------------------------------------------------------------------------
+diff -uN /usr/src/linux-source-2.6.32/drivers/media/video/uvc/uvcvideo.h
+uvc-new/uvcvideo.h
+--- /usr/src/linux-source-2.6.32/drivers/media/video/uvc/uvcvideo.h	2009-12-03
+04:51:21.000000000 +0100
++++ uvc-new/uvcvideo.h	2011-03-02 14:55:14.000000000 +0100
+@@ -130,7 +130,9 @@
+ #define UVC_GUID_FORMAT_BY8 \
+ 	{ 'B',  'Y',  '8',  ' ', 0x00, 0x00, 0x10, 0x00, \
+ 	 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}
+-
++#define UVC_GUID_FORMAT_RGBP \
++	{ 'R',  'G',  'B',  'P', 0x00, 0x00, 0x10, 0x00, \
++	 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}
+ 
+ /* ------------------------------------------------------------------------
+  * Driver specific constants.
+
+There is a product in the market that uses this pixel format, but as the RGBP
+format is not supported out-of-the-box by UVC, we need to patch the kernel
+driver each time we go along with a kernel upgrade.
+
+Best regards,
+
+Robert Lukassen
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="006339.html">[Linux-uvc-devel] Add GUID to UVC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6327">[ date ]</a>
+              <a href="thread.html#6327">[ thread ]</a>
+              <a href="subject.html#6327">[ subject ]</a>
+              <a href="author.html#6327">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

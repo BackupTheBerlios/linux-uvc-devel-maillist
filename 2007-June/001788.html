@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] YUYV to RGB converter
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20YUYV%20to%20RGB%20converter&In-Reply-To=%3Cf9a7555e0706080226o2ddba2cawbf91cd50b5018ef%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001783.html">
+   <LINK REL="Next"  HREF="001771.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] YUYV to RGB converter</H1>
+    <B>Ben Lau</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20YUYV%20to%20RGB%20converter&In-Reply-To=%3Cf9a7555e0706080226o2ddba2cawbf91cd50b5018ef%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] YUYV to RGB converter">benlau at embedded.hk
+       </A><BR>
+    <I>Fri Jun  8 11:26:02 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001783.html">[Linux-uvc-devel] YUYV to RGB converter
+</A></li>
+        <LI>Next message: <A HREF="001771.html">[Linux-uvc-devel] Bison Integrated Webcam - Used in Acer 5104WLMi
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1788">[ date ]</a>
+              <a href="thread.html#1788">[ thread ]</a>
+              <a href="subject.html#1788">[ subject ]</a>
+              <a href="author.html#1788">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 6/8/07, Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+&gt;<i> Hi Paolo,
+</I>&gt;<i>
+</I>&gt;<i> &gt; when I grab frames from my Logitech Fusion cam (using
+</I>&gt;<i> &gt; a code based on
+</I>&gt;<i> &gt; <A HREF="http://v4l2spec.bytesex.org/v4l2spec/capture.c">http://v4l2spec.bytesex.org/v4l2spec/capture.c</A>) i can
+</I>&gt;<i> &gt; save them in YUYV format.
+</I>&gt;<i> &gt; Now i need to convert them in RGB format in order to
+</I>&gt;<i> &gt; see them with common viewers. Are there helper
+</I>&gt;<i> &gt; functions in v4l2 API for this?
+</I>&gt;<i>
+</I>&gt;<i> No there isn't. V4L2 is a kernel/userspace interface and doesn't provide video
+</I>&gt;<i> format conversion.
+</I>&gt;<i>
+</I>&gt;<i> &gt; Otherwise, is there any other lib which I can use,
+</I>&gt;<i> &gt; instead of writing from scratch a converter?
+</I>&gt;<i>
+</I>&gt;<i> There are probably YUYV to RGB converters in major codec libraries and/or in
+</I>&gt;<i> webcam applications.
+</I>&gt;<i>
+</I>&gt;<i> Lots of people have stated their interest for a userspace V4L2 library which
+</I>&gt;<i> would handle simple video format conversions. Unfortunately, nobody has
+</I>&gt;<i> implemented it yet. Wanna have a go ? :-)
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>
+Hi Laurent Pinchart,
+
+In fact, I have implemented a v4l2 library for my own project. And
+just published on web. You could download the source code through
+Bazaar:
+
+bzr branch <A HREF="http://benlau.e-fever.org/projects/bzr/libv4l2">http://benlau.e-fever.org/projects/bzr/libv4l2</A> libv4l2
+
+Features of the library:
+
+- V4L2 API (only)
+
+- Query and set video device properties that include:
+	Resolution , Image Format, Channel, Norm , fps,...
+
+- Read/Write and Memory mapped streaming I/O
+
+- YUYV/YUV420 to RGB conversion. (No MJPEG yet)
+
+- A simple GTK+ dialog to choose the video device to open and set the
+properties.
+
+- Utility to convert video frame to IplImage format for use with OpenCV.
+
+License: BSD
+
+The source comes with two libraries. They are libv4l2 and libcv-v4l2.
+libv4l2 is the core library to deal with v4l2 device. libcv-v4l2 is
+&quot;supposed&quot; to be an extension to OpenCV for access low level device
+setting, but only few functions are implemented and the design is not
+well. It will be completely rewrote afterward. All features that
+should not be provided by libv4l2 will be there(e.g GTK+ Dialog)
+
+libv4l2 itself is a very simple library that just requires standard
+library like libc6-dev in order to build, but libcv-v4l2 need packages
+of  gtk+-2.0 and OpenCV.
+
+The package of OpenCV has been available in Debian Etch/SID, they
+could be installed by :
+
+  	apt-get install libcv-dev libcvaux-dev libhighgui-dev
+
+The build instructions:
+
+aclocal
+automake
+autoconf
+./configure --prefix=/tmp/usr # for testing
+make
+make install
+
+There are two demo applications available. The first one is a video
+viewer with two dialogs to choose the input video device and set the
+properties respectively. The other one is a face detection program
+based on the sample code from OpenCV :
+
+/tmp/usr/bin/v4l2-demo
+/tmp/usr/bin/facedetect
+
+The library is still under development. The API may change for new
+version. Therefore, only static link libraries are provided.
+
+API Doc:
+
+<A HREF="http://benlau.e-fever.org/projects/docs/libcv-v4l2/index.html">http://benlau.e-fever.org/projects/docs/libcv-v4l2/index.html</A>
+<A HREF="http://benlau.e-fever.org/projects/docs/libv4l2/index.html">http://benlau.e-fever.org/projects/docs/libv4l2/index.html</A>
+
+Known Issue: Could not use streaming I/O with EM28XX driver. The mmap
+function reports error.
+
+Please feel free to contact me for any comment for the source. :)
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001783.html">[Linux-uvc-devel] YUYV to RGB converter
+</A></li>
+	<LI>Next message: <A HREF="001771.html">[Linux-uvc-devel] Bison Integrated Webcam - Used in Acer 5104WLMi
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1788">[ date ]</a>
+              <a href="thread.html#1788">[ thread ]</a>
+              <a href="subject.html#1788">[ subject ]</a>
+              <a href="author.html#1788">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

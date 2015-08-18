@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] How to mark a payload end
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20How%20to%20mark%20a%20payload%20end&In-Reply-To=%3C1275663236.13411.22.camel%40claunia-laptop%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005794.html">
+   <LINK REL="Next"  HREF="005770.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] How to mark a payload end</H1>
+    <B>Natalia Portillo</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20How%20to%20mark%20a%20payload%20end&In-Reply-To=%3C1275663236.13411.22.camel%40claunia-laptop%3E"
+       TITLE="[Linux-uvc-devel] How to mark a payload end">claunia at claunia.com
+       </A><BR>
+    <I>Fri Jun  4 16:53:56 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005794.html">[Linux-uvc-devel] UVC userpointer  streaming (memory mapping)
+</A></li>
+        <LI>Next message: <A HREF="005770.html">[Linux-uvc-devel] How to mark a payload end
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5768">[ date ]</a>
+              <a href="thread.html#5768">[ thread ]</a>
+              <a href="subject.html#5768">[ subject ]</a>
+              <a href="author.html#5768">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I'm programming an emulated UVC webcam in QEMU and I've found a little
+problem.
+
+While I'm trying to send a bulk payload made from a JPEG sized 5809
+bytes, uvcvideo never detects the payload ends and continue asking
+frames until buffer (~53KiB) overflows.
+
+I attach the code snippet that generates the payload (code is under
+GLPv2) as snippet.c
+
+Trace from uvcvideo as dmesg.txt
+
+Crash of uvccapture as uvccapture.txt
+
+I've checked the specifications and I'm unable to find what I'm doing
+wrong or how should be done the payload to get it working.
+
+Any help will be thanked.
+
+Regards,
+Natalia Portillo
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: snippet.c
+Type: text/x-csrc
+Size: 1247 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100604/72a65ab5/attachment.c">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100604/72a65ab5/attachment.c</A>&gt;
+-------------- next part --------------
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at debian</A>:~# uvccapture
+ format asked unavailable get width 176 height 144 
+ioctl querycontrol error 22 
+ioctl querycontrol error 22 
+ioctl querycontrol error 22 
+*** glibc detected *** uvccapture: free(): invalid next size (normal): 0x085172f0 ***
+======= Backtrace: =========
+/lib/i686/cmov/libc.so.6(+0x6c104)[0xb76b9104]
+/lib/i686/cmov/libc.so.6(+0x6d983)[0xb76ba983]
+/lib/i686/cmov/libc.so.6(cfree+0x6d)[0xb76bd96d]
+uvccapture[0x804a353]
+uvccapture[0x80498f0]
+/lib/i686/cmov/libc.so.6(__libc_start_main+0xe5)[0xb7663c85]
+uvccapture[0x8048bc1]
+======= Memory map: ========
+08048000-0804c000 r-xp 00000000 08:01 28786673   /usr/bin/uvccapture
+0804c000-0804d000 rw-p 00003000 08:01 28786673   /usr/bin/uvccapture
+08517000-08538000 rw-p 00000000 00:00 0          [heap]
+b7500000-b7521000 rw-p 00000000 00:00 0 
+b7521000-b7600000 ---p 00000000 00:00 0 
+b762d000-b764a000 r-xp 00000000 08:01 16987594   /lib/libgcc_s.so.1
+b764a000-b764b000 rw-p 0001c000 08:01 16987594   /lib/libgcc_s.so.1
+b764b000-b764d000 rw-p 00000000 00:00 0 
+b764d000-b7793000 r-xp 00000000 08:01 195780     /lib/i686/cmov/libc-2.11.1.so
+b7793000-b7795000 r--p 00146000 08:01 195780     /lib/i686/cmov/libc-2.11.1.so
+b7795000-b7796000 rw-p 00148000 08:01 195780     /lib/i686/cmov/libc-2.11.1.so
+b7796000-b7799000 rw-p 00000000 00:00 0 
+b7799000-b77b8000 r-xp 00000000 08:01 412590     /usr/lib/libjpeg.so.62.0.0
+b77b8000-b77b9000 rw-p 0001e000 08:01 412590     /usr/lib/libjpeg.so.62.0.0
+b77c9000-b77cb000 rw-p 00000000 00:00 0 
+b77cb000-b77cc000 r-xp 00000000 00:00 0          [vdso]
+b77cc000-b77e8000 r-xp 00000000 08:01 16839934   /lib/ld-2.11.1.so
+b77e8000-b77e9000 r--p 0001b000 08:01 16839934   /lib/ld-2.11.1.so
+b77e9000-b77ea000 rw-p 0001c000 08:01 16839934   /lib/ld-2.11.1.so
+bfaa8000-bfabd000 rw-p 00000000 00:00 0          [stack]
+Exiting...
+Aborted
+
+-------------- next part --------------
+[   56.142980] uvcvideo: Control 0x00980901 not found.
+[   56.143020] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[   56.143027] uvcvideo: Control 0x00980902 not found.
+[   56.143039] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[   56.143045] uvcvideo: Control 0x00980913 not found.
+[   56.143070] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMON)
+[   56.151168] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[   57.260706] uvcvideo: Frame complete (overflow).
+[   57.302511] uvcvideo: Frame complete (overflow).
+[   57.336522] uvcvideo: Frame complete (overflow).
+[   57.336598] uvcvideo: Dequeuing buffer 0 (3, 52850 bytes).
+[   57.336678] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[   57.336685] uvcvideo: Queuing buffer 0.
+[   57.372937] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMOFF)
+[   57.734405] uvcvideo: uvc_v4l2_release
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005794.html">[Linux-uvc-devel] UVC userpointer  streaming (memory mapping)
+</A></li>
+	<LI>Next message: <A HREF="005770.html">[Linux-uvc-devel] How to mark a payload end
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5768">[ date ]</a>
+              <a href="thread.html#5768">[ thread ]</a>
+              <a href="subject.html#5768">[ subject ]</a>
+              <a href="author.html#5768">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

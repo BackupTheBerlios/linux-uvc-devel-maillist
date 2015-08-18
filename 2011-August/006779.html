@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] error proofing mjpeg stream
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20error%20proofing%20mjpeg%20stream&In-Reply-To=%3C4E410FA3.70304%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006780.html">
+   <LINK REL="Next"  HREF="006783.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] error proofing mjpeg stream</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20error%20proofing%20mjpeg%20stream&In-Reply-To=%3C4E410FA3.70304%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] error proofing mjpeg stream">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Tue Aug  9 12:44:51 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006780.html">[Linux-uvc-devel] [uvc] Can I have your UserPointer streaming	patch
+</A></li>
+        <LI>Next message: <A HREF="006783.html">[Linux-uvc-devel] error proofing mjpeg stream
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6779">[ date ]</a>
+              <a href="thread.html#6779">[ thread ]</a>
+              <a href="subject.html#6779">[ subject ]</a>
+              <a href="author.html#6779">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hall all, Laurent, Carl,
+
+i just was looking on how my webcam do mjpeg stream and created some 
+&quot;visualisation&quot; patch. I got some interesting results (may be it can 
+help you Carl with your webcam).
+
+The idea is as fallow, use jpeg bits for error corection. According to 
+uvc documentation, webcam should set SOI (start of image) and EOI (end 
+of image) magic. In some situations it is possible to use it if FID is 
+brocken.
+
+I got fallowing result (N - mean header is ok, but no data is present; 
+!SOI - mean new SOI without EOI; * - image data):
+
+[ 5132.744070] [FID 19]NNNNNNNNNNNNNNN
+[SOI]NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN![SOI]NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN![SOI]NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN![SOI]NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN![SOI]NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN![SOI]**NNNNNN**NNNNNNN*NNNNNNN**NNNNNNN**NNNNNN***NNNNNN**N![SOI]NNNNNN**NNNNNN***NNNNNN**NNNNNN****NNNNN***NNNNNN***N![SOI]NNNN***NNNNNN***NNNNN***NNNNNN***NNNNN*****NNNN****NN![SOI]NNN****NNNN***NNNNNN***NNNNN****NNNNN***NNNNNN***NNNNN![SOI]**NNNNNNN**NNNNNN***NNNNNN**NNNNNNN*[EOI]
+[ 5132.812069] N
+[ 5132.812072] [FID 20]NNNNNNNNNNNNNNN
+[SOI]NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN![SOI]NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN![SOI]NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN![SOI]NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN![SOI]NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN![SOI]**NNNNNN**NNNNNNN*NNNNNNN**NNNNNNN**NNNNNN***NNNNNN**N![SOI]NNNNNN**NNNNNN***NNNNNN**NNNNNN****NNNNN***NNNNNN***N![SOI]NNNN****NNNNN***NNNNN***NNNNNN***NNNNNN****NNNN****NN![SOI]NNN****NNNN***NNNNNN***NNNNN****NNNNN***NNNNNN***NNNNN![SOI]**NNNNNNN**NNNNNN***NNNNNN**NNNNNNN*[EOI]
+[ 5132.876082] N
+[ 5132.876085] [FID 21]NNNNNNNNNNNNNNN
+[SOI]NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN![SOI]NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN![SOI]NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN![SOI]NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN![SOI]NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN![SOI]**NNNNNN**NNNNNNN*NNNNNNN**NNNNNNN**NNNNNN***NNNNNN**N![SOI]NNNNNN**NNNNNN***NNNNNN**NNNNNN****NNNNN***NNNNNN***N![SOI]NNNN***NNNNNN***NNNNN***NNNNNN***NNNNNN****NNNN****NN![SOI]NNN****NNNN***NNNNNN***NNNNNN***NNNNN***NNNNNN***NNNNN![SOI]***NNNNNN**NNNNNN***NNNNNN**NNNNNNN*[EOI]
+[ 5132.944079] N
+
+
+As you can see, my webcam try to resent SOI lots of times and only last 
+try is correct. For next example i added logic to send ENODATA on each 
+packet with correct header but no data. Here is the result:
+
+
+[ 6080.694075] [FID 17]
+[SOI]**NNNNNN**NNNNNNN*NNNNNNN**NNNNNNN**NNNNNNN**NNNNNN**NNNNNNN*
+*NNNNNN***NNNNNN**NNNNNNN***NNNNN***NNNNNN***NNNNN****NNNNN***
+NNNNN***NNNNNN****NNNNN****NNNN****NNNNN****NNNN****NNNNN***NNNNNN***
+NNNNN***NNNNNN***NNNNN***NNNNNN**NNNNNNN**NNNNNN**NNNNNNN*[EOI]
+[ 6080.726076] 
+NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+[ 6080.762070] [FID 18]
+[SOI]**NNNNNN**NNNNNNN*NNNNNNN**NNNNNNN**NNNNNNN**NNNNNN***NNNNNN**
+NNNNNN***NNNNNN**NNNNNNN***NNNNN***NNNNNN***NNNNN****NNNNN***
+NNNNN****NNNNN****NNNNN****NNNN****NNNNN****NNNN****NNNNN***NNNNNN***
+NNNNN***NNNNNN***NNNNN***NNNNNN**NNNNNNN**NNNNNN**NNNNNNN*[EOI]
+[ 6080.790084] 
+NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+[ 6080.826075] [FID 19]
+[SOI]**NNNNNN**NNNNNNN*NNNNNNN**NNNNNNN**NNNNNNN**NNNNNN***NNNNNN**
+NNNNNN***NNNNNN**NNNNNNN***NNNNN***NNNNNN***NNNNN****NNNNN***NNNNNN
+***NNNNN****NNNNN****NNNN****NNNNN****NNNN****NNNNN***NNNNNN***NNNNN
+***NNNNNN***NNNNN***NNNNNN**NNNNNNN**NNNNNN**NNNNNNN*[EOI]
+
+
+Now the stream seems to be less erroneous. I wonder if we actually 
+should do it all the time, i mean send -ENODATA on empty packets.
+
+Regards,
+Alexey
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: tmp.diff
+Type: text/x-patch
+Size: 2295 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110809/b6333fd7/attachment.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110809/b6333fd7/attachment.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006780.html">[Linux-uvc-devel] [uvc] Can I have your UserPointer streaming	patch
+</A></li>
+	<LI>Next message: <A HREF="006783.html">[Linux-uvc-devel] error proofing mjpeg stream
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6779">[ date ]</a>
+              <a href="thread.html#6779">[ thread ]</a>
+              <a href="subject.html#6779">[ subject ]</a>
+              <a href="author.html#6779">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

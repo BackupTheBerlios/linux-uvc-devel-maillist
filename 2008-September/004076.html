@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [BUG] NULL pointer dereference caused by uvcvideo	stress test
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BBUG%5D%20NULL%20pointer%20dereference%20caused%20by%20uvcvideo%0A%09stress%20test&In-Reply-To=%3Cgbiduj%249p3%241%40ger.gmane.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004078.html">
+   <LINK REL="Next"  HREF="004077.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [BUG] NULL pointer dereference caused by uvcvideo	stress test</H1>
+    <B>Alan Jenkins</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BBUG%5D%20NULL%20pointer%20dereference%20caused%20by%20uvcvideo%0A%09stress%20test&In-Reply-To=%3Cgbiduj%249p3%241%40ger.gmane.org%3E"
+       TITLE="[Linux-uvc-devel] [BUG] NULL pointer dereference caused by uvcvideo	stress test">alan-jenkins at tuffmail.co.uk
+       </A><BR>
+    <I>Fri Sep 26 12:36:02 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004078.html">[Linux-uvc-devel] Logitech quickcam communicate delux	(046d:0992) not working under linux
+</A></li>
+        <LI>Next message: <A HREF="004077.html">[Linux-uvc-devel] [BUG] NULL pointer dereference caused by	uvcvideo stress test
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4076">[ date ]</a>
+              <a href="thread.html#4076">[ thread ]</a>
+              <a href="subject.html#4076">[ subject ]</a>
+              <a href="author.html#4076">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>This is is on v2.6.27-rc6.  I originally saw it on todays -tip tree.
+
+# while true; do modprobe uvcvideo; modprobe -r uvcvideo; done
+
+After a few tens of cycles, modprobe gets stuck in &quot;D&quot; state, and the
+following backtrace appears:
+
+[  253.419987] uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (eb1a:2761)
+[  253.423321] input: UVC Camera (eb1a:2761) as /class/input/input22
+[  253.433324] usbcore: registered new interface driver uvcvideo
+[  253.433324] USB Video Class driver (v0.1.0)
+[  253.453324] BUG: unable to handle kernel NULL pointer dereference at
+00000030
+[  253.453324] IP: [&lt;e02913de&gt;] :videodev:video_open+0x8b/0xe4
+[  253.453324] *pdpt = 000000001e7c3001 *pde = 0000000000000000 
+[  253.453324] Oops: 0000 [#1] 
+[  253.453324] Modules linked in: uvcvideo(-) compat_ioctl32 videodev
+v4l1_compat aes_i586 aes_generic af_packet i915 drm cpufreq_userspace
+cpufreq_powersave cpufreq_ondemand cpufreq_stats freq_table
+cpufreq_conservative fan wmi sbs sbshc ip6t_LOG nf_conntrack_ipv6 ipt_LOG
+xt_limit ipt_addrtype xt_state xt_tcpudp xt_conntrack ip6table_filter
+ip6_tables ipv6 nf_nat_irc nf_conntrack_irc nf_nat_ftp nf_nat
+nf_conntrack_ipv4 nf_conntrack_ftp nf_conntrack iptable_filter ip_tables
+x_tables dm_crypt dm_mod fuse joydev libusual arc4 ecb crypto_blkcipher
+ath5k psmouse mac80211 serio_raw led_class cfg80211 snd_hda_intel pcspkr
+ata_generic snd_pcm_oss snd_mixer_oss iTCO_wdt iTCO_vendor_support ehci_hcd
+uhci_hcd ahci snd_pcm snd_timer usbcore snd_page_alloc snd_hwdep shpchp
+pci_hotplug snd soundcore video output battery ac eeepc_laptop backlight
+button intel_agp agpgart sg evdev thermal processor [last unloaded:
+v4l1_compat]
+[  253.453324] 
+[  253.453324] Pid: 5824, comm: hald-probe-vide Not tainted (2.6.27-rc6eeepc
+#36)
+[  253.453324] EIP: 0060:[&lt;e02913de&gt;] EFLAGS: 00010246 CPU: 0
+[  253.453324] EIP is at video_open+0x8b/0xe4 [videodev]
+[  253.453324] EAX: 00000000 EBX: e02949c4 ECX: e0291353 EDX: de515400
+[  253.453324] ESI: cbd44d00 EDI: 00000000 EBP: de51982c ESP: df1bde98
+[  253.453324]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+[  253.453324] Process hald-probe-vide (pid: 5824, ti=df1bc000 task=deb57810
+task.ti=df1bc000)
+[  253.453324] Stack: 00000000 de4e0940 00000000 de51982c c01602b2 cbd44d00
+00000000 cbd44d00 
+[  253.453324]        de51982c df1bdf14 c01601d2 c015d139 df02cd80 deca4d80
+df1bdf14 cbd44d00 
+[  253.453324]        df1bdf14 00008001 c015d23d cbd44d00 00000000 00000000
+df1bdf14 c01666fa 
+[  253.453324] Call Trace:
+[  253.453324]  [&lt;c01602b2&gt;] chrdev_open+0xe0/0xf6
+[  253.453324]  [&lt;c01601d2&gt;] chrdev_open+0x0/0xf6
+[  253.453324]  [&lt;c015d139&gt;] __dentry_open+0xf2/0x1da
+[  253.453324]  [&lt;c015d23d&gt;] nameidata_to_filp+0x1c/0x2c
+[  253.453324]  [&lt;c01666fa&gt;] do_filp_open+0x343/0x61e
+[  253.453324]  [&lt;c014df91&gt;] handle_mm_fault+0x27d/0x528
+[  253.453324]  [&lt;c016dcf9&gt;] alloc_fd+0x46/0xad
+[  253.453324]  [&lt;c015cf74&gt;] do_sys_open+0x3f/0xb3
+[  253.453324]  [&lt;c015d02c&gt;] sys_open+0x1e/0x23
+[  253.453324]  [&lt;c01035c1&gt;] sysenter_do_call+0x12/0x21
+[  253.453324]  [&lt;c0270000&gt;] clone_policy+0x94/0xe0
+[  253.453324]  =======================
+[  253.453324] Code: c4 0c 85 d2 74 6d 8b 02 8b 5e 10 85 c0 74 15 8b 00 85
+c0 74 0b 83 38 02 74 0a ff 80 40 01 00 00 8b 02 eb 02 31 c0 89 46 10 31 ff
+&lt;8b&gt; 48 30 85 c9 74 36 89 f2 89 e8 ff d1 85 c0 89 c7 74 2a 8b 46 
+[  253.453324] EIP: [&lt;e02913de&gt;] video_open+0x8b/0xe4 [videodev] SS:ESP
+0068:df1bde98
+[  253.453324] ---[ end trace 68c40b35b81e3876 ]---
+[  253.459996] usbcore: deregistering interface driver uvcvideo
+
+SysRQ-W shows where modprobe is stuck:
+
+[  286.043318] SysRq : Show Blocked State
+[  286.043318]   task                PC stack   pid father
+[  286.043318] modprobe      D de4c4600     0  5823   5060
+[  286.043318]        deb89130 00000086 de4c46e4 de4c4600 00000082 00000082
+e0297544 deb89130 
+[  286.043318]        dea0b000 e03eb03c c027e8b2 e0297548 e0297548 deb89130
+e0297544 df024000 
+[  286.043318]        c027e7bb e01853c0 de515400 e029105f df024034 e03e2505
+df024034 e03e24e2 
+[  286.043318] Call Trace:
+[  286.043318]  [&lt;c027e8b2&gt;] __mutex_lock_slowpath+0x3e/0x60
+[  286.043318]  [&lt;c027e7bb&gt;] mutex_lock+0x16/0x19
+[  286.043318]  [&lt;e01853c0&gt;] usb_hcd_flush_endpoint+0x42/0x8c [usbcore]
+[  286.043318]  [&lt;e029105f&gt;] video_unregister_device+0xd/0x46 [videodev]
+[  286.043318]  [&lt;e03e2505&gt;] uvc_delete+0x23/0xad [uvcvideo]
+[  286.043318]  [&lt;e03e24e2&gt;] uvc_delete+0x0/0xad [uvcvideo]
+[  286.043318]  [&lt;c01abef0&gt;] kref_put+0x35/0x3f
+[  286.043318]  [&lt;e01884c5&gt;] usb_unbind_interface+0x43/0x92 [usbcore]
+[  286.043318]  [&lt;c01f618b&gt;] __device_release_driver+0x58/0x76
+[  286.043318]  [&lt;c01f61f3&gt;] driver_detach+0x4a/0x6f
+[  286.043318]  [&lt;c01f5845&gt;] bus_remove_driver+0x60/0x7e
+[  286.043318]  [&lt;e018800e&gt;] usb_deregister+0x6b/0x73 [usbcore]
+[  286.043318]  [&lt;c0132d96&gt;] sys_delete_module+0x15a/0x1b8
+[  286.043318]  [&lt;c01502f0&gt;] remove_vma+0x43/0x48
+[  286.043318]  [&lt;c0150b5d&gt;] do_munmap+0x18a/0x1a4
+[  286.043318]  [&lt;c01035c1&gt;] sysenter_do_call+0x12/0x21
+[  286.043318]  [&lt;c0270000&gt;] clone_policy+0x94/0xe0
+[  286.043318]  =======================
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004078.html">[Linux-uvc-devel] Logitech quickcam communicate delux	(046d:0992) not working under linux
+</A></li>
+	<LI>Next message: <A HREF="004077.html">[Linux-uvc-devel] [BUG] NULL pointer dereference caused by	uvcvideo stress test
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4076">[ date ]</a>
+              <a href="thread.html#4076">[ thread ]</a>
+              <a href="subject.html#4076">[ subject ]</a>
+              <a href="author.html#4076">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

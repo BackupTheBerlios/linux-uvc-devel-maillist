@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Please test this USB EHCI patch
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Please%20test%20this%20USB%20EHCI%20patch&In-Reply-To=%3C1208381193.8438.24.camel%40ll-laptop%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003377.html">
+   <LINK REL="Next"  HREF="003387.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Please test this USB EHCI patch</H1>
+    <B>Lambros Lambrou</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Please%20test%20this%20USB%20EHCI%20patch&In-Reply-To=%3C1208381193.8438.24.camel%40ll-laptop%3E"
+       TITLE="[Linux-uvc-devel] Please test this USB EHCI patch">lambros at lambrou.net
+       </A><BR>
+    <I>Wed Apr 16 23:26:33 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003377.html">[Linux-uvc-devel] UVC client driver????
+</A></li>
+        <LI>Next message: <A HREF="003387.html">[Linux-uvc-devel] Creative Live!(R) Cam Video IM Pro
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3384">[ date ]</a>
+              <a href="thread.html#3384">[ thread ]</a>
+              <a href="subject.html#3384">[ subject ]</a>
+              <a href="author.html#3384">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Sat, 2008-04-12 at 03:13 +0200,
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel-request at lists.berlios.de</A> wrote:
+
+&gt;<i> Date: Fri, 11 Apr 2008 15:09:21 -0300
+</I>&gt;<i> From: Herton Ronaldo Krzesinski &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">herton at mandriva.com.br</A>&gt;
+</I>&gt;<i> Subject: Re: [Linux-uvc-devel] Please test this USB EHCI patch
+</I>&gt;<i> To: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> Cc: Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt;
+</I>&gt;<i> Message-ID: &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">200804111509.21952.herton at mandriva.com.br</A>&gt;
+</I>&gt;<i> Content-Type: text/plain;  charset=&quot;iso-8859-1&quot;
+</I>&gt;<i> 
+</I>&gt;<i> Em Tuesday 25 March 2008 17:54:58 Laurent Pinchart escreveu:
+</I>&gt;<i> &gt; Hi everybody,
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; some people have run into EHCI-related issue where the video would freeze and 
+</I>&gt;<i> &gt; the Linux UVC driver would print &quot;uvcvideo: Failed to resubmit video URB 
+</I>&gt;<i> &gt; (-45)&quot; errors after a while.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Alan Stern was kind enough to write a quick patch to try to solve the issue. 
+</I>&gt;<i> &gt; Could you please test it and report the results ? I'm particularly interested 
+</I>&gt;<i> &gt; in hearing from people who ran into the -45 error frequently. Please retest 
+</I>&gt;<i> &gt; your camera without the patch, make sure you can reproduce the problem 
+</I>&gt;<i> &gt; accurately, and try to recompile your kernel with the patch applied.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Thanks in advance for your help.
+</I>
+I'm very happy to report success with this patch.  I was having constant
+problems with my Webcam video locking up with this exact error.  After
+compiling a kernel with this patch, the camera now works perfectly!
+
+For some reason, I was having difficulties actually locating and
+applying the patch.  I eventually found it here:
+<A HREF="http://permalink.gmane.org/gmane.linux.usb.general/2929">http://permalink.gmane.org/gmane.linux.usb.general/2929</A>
+
+I tried to apply this against my current Ubuntu kernel sources
+(2.6.24-16.30).  Unfortunately, a couple of hunks failed to apply, and
+it became clear the patch wouldn't work against this kernel version.
+
+I didn't really want to download and install a &quot;vanilla&quot; kernel, for
+fear of breaking a lot of other stuff that might need repairing (nVidia
+drivers, Wifi drivers, other Ubuntu-specific stuff etc).  So I
+downloaded a patch file from kernel.org for version 2.6.25.  Then I
+edited the patch file to isolate just the changes that affected the file
+ehci_sched.c .  I applied this patch to my Ubuntu kernel source tree.
+Then I applied Alan Stern's webcam patch (from the URL above), which
+worked correctly (no missing hunks).  I built the resulting kernel, and
+it worked flawlessly with no breakages whatsoever, which was great news!
+
+I don't know if this patch will ever make it into Ubuntu Hardy, but I
+hope it will be accepted into the mainline kernel in time for hardy+1.
+
+Thankyou to Alan Stern for his patch that has finally fixed my system,
+and to everyone else who has worked on this problem.  Hope others find
+this information useful.
+
+Regards,
+Lambros
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003377.html">[Linux-uvc-devel] UVC client driver????
+</A></li>
+	<LI>Next message: <A HREF="003387.html">[Linux-uvc-devel] Creative Live!(R) Cam Video IM Pro
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3384">[ date ]</a>
+              <a href="thread.html#3384">[ thread ]</a>
+              <a href="subject.html#3384">[ subject ]</a>
+              <a href="author.html#3384">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

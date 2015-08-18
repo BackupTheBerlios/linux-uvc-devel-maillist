@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] max fps that can be achieved using logitech	fusion webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20max%20fps%20that%20can%20be%20achieved%20using%20logitech%0A%09fusion%20webcam&In-Reply-To=%3C200612201528.57271.fvera%40ucv.cl%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001097.html">
+   <LINK REL="Next"  HREF="001100.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] max fps that can be achieved using logitech	fusion webcam</H1>
+    <B>Francisco Vera</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20max%20fps%20that%20can%20be%20achieved%20using%20logitech%0A%09fusion%20webcam&In-Reply-To=%3C200612201528.57271.fvera%40ucv.cl%3E"
+       TITLE="[Linux-uvc-devel] max fps that can be achieved using logitech	fusion webcam">fvera at ucv.cl
+       </A><BR>
+    <I>Wed Dec 20 19:28:57 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001097.html">[Linux-uvc-devel] w3cam replacement
+</A></li>
+        <LI>Next message: <A HREF="001100.html">[Linux-uvc-devel] max fps that can be achieved using logitech	fusion webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1098">[ date ]</a>
+              <a href="thread.html#1098">[ thread ]</a>
+              <a href="subject.html#1098">[ subject ]</a>
+              <a href="author.html#1098">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I need to know what is the max fps for the logitech fusion.
+
+In the past days I have read almost all the messages fron the last two months 
+from this list, the discussion on the thread Trouble recording from two 
+webcams was illuminating, and the table from 
+<A HREF="http://www.mail-archive.com/linux-uvc-devel%40lists.berlios.de/msg00306.html">http://www.mail-archive.com/linux-uvc-devel%40lists.berlios.de/msg00306.html</A>
+from logitech, it is clear that 30 fps can be achieved in mjpeg and yuv modes, 
+real tests with other logitech cameras report 15 fps at 640x480 and 10 fps at 
+960x720.
+
+When I installed the fusion on my windows xp using the software bundled with 
+this camera, one can record video at a resolution of 640x480, but when 
+playing this video on linux one can see that the video is only at 15 fps.
+
+Yesterday I got the uvcvideo driver from cvs (split branch) and installed in 
+my debian sid pc. Luvcview works at 640x480 15 fps in mjpeg mode and 1024x576 
+10 fps in yuv mode.
+
+I can record video using:
+ ffmpeg -an -r 50 -y -vd /dev/video0 -sameq -t 4 -s 1024x576  test.avi
+and ffmpeg say:
+-------------
+[video4linux2 @ 0xb7ef0610][4]Capabilities: 4000001
+Input #0, video4linux2, from '':
+  Duration: N/A, bitrate: N/A
+  Stream #0.0: Video: rawvideo, yuv422, 1024x576, 471859 kb/s, 50.00 fps(r)
+Output #0, avi, to 'test.avi':
+  Stream #0.0: Video: mpeg4, yuv420p, 1024x576, q=2-31, 200 kb/s, 50.00 fps(c)
+------------------
+
+But this video has duplicate frames (5) so in reality it is only 10 fps, 
+trying other frame rates also produce duplicated frames and 10 fps effective.
+
+I can also view video with mplayer using (in a window or full window):
+ffmpeg -an -vd /dev/video0 -s 1024x576 -r 10 -b 5000 -y -vcodec mpeg4 -f 
+avi - | /usr/bin/mplayer -
+
+If someone find how to record video un mjpeg mode with ffmpeg, please post to 
+this list.
+
+installing: apt-get install libpt-plugins-V4L2 allows ekiga to works, but it 
+is inestable.
+
+installing v4l2ucp-1.2 allows to change some parameters for the camera
+
+I have looked into the code but appears like the code automatically detect the 
+best frame rate for the camera?.
+
+Does someone knows if it is possible to capture 30 fps with these cameras in 
+640x480?
+
+I need this information urgent because if it is possible, in these days I will 
+buy 3 more of these cams. if not I will have to go to plan B, and buy a non 
+expensive digital cameras (not a webcam) that can grab video at 640x480 and 
+30 fps.
+
+I really appreciate the work from the people involved in this driver,
+
+Regards,
+
+Francisco
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001097.html">[Linux-uvc-devel] w3cam replacement
+</A></li>
+	<LI>Next message: <A HREF="001100.html">[Linux-uvc-devel] max fps that can be achieved using logitech	fusion webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1098">[ date ]</a>
+              <a href="thread.html#1098">[ thread ]</a>
+              <a href="subject.html#1098">[ subject ]</a>
+              <a href="author.html#1098">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

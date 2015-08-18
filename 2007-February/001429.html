@@ -1,0 +1,209 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Cannot run linux-uvc under CENTOS
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Cannot%20run%20linux-uvc%20under%20CENTOS&In-Reply-To=%3Ce47b5af60702180729o5650fac1oac161aa4a3b5f449%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001441.html">
+   <LINK REL="Next"  HREF="001443.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Cannot run linux-uvc under CENTOS</H1>
+    <B>Cristiane koda</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Cannot%20run%20linux-uvc%20under%20CENTOS&In-Reply-To=%3Ce47b5af60702180729o5650fac1oac161aa4a3b5f449%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Cannot run linux-uvc under CENTOS">cristiane.koda at gmail.com
+       </A><BR>
+    <I>Sun Feb 18 16:29:53 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001441.html">[Linux-uvc-devel] Quick Cam Pro 5000 046d:08ce don't run on	Ubuntu Feisty Fawn
+</A></li>
+        <LI>Next message: <A HREF="001443.html">[Linux-uvc-devel] Cannot run linux-uvc under CENTOS
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1429">[ date ]</a>
+              <a href="thread.html#1429">[ thread ]</a>
+              <a href="subject.html#1429">[ subject ]</a>
+              <a href="author.html#1429">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+    I'm trying to install the uvcvideo driver on CENTOS, but I'm getting
+some erros during make..
+    The Kernel version is: 2.6.9-42.EL
+
+--------------------BEGIN---------------------
+[<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at localhost</A> trunk]# make
+Building USB Video Class driver...
+make[1]: Entering directory `/usr/src/kernels/2.6.9-42.EL-i686'
+  CC [M]  /home/utrafe/uvcvideo-r75/trunk/uvc_driver.o
+In file included from /home/utrafe/uvcvideo-r75/trunk/uvcvideo.h:8,
+                 from /home/utrafe/uvcvideo-r75/trunk/uvc_driver.c:44:
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:134: error: syntax error before
+&quot;gfp_flags&quot;
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:136: warning: static
+declaration of 'kzalloc' follows non-static declaration
+include/linux/slab.h:101: warning: previous declaration of 'kzalloc' was
+here
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h: In function `kzalloc':
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:136: error: number of arguments
+doesn't match prototype
+include/linux/slab.h:101: error: prototype declaration
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:137: error: `size' undeclared
+(first use in this function)
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:137: error: (Each undeclared
+identifier is reported only once
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:137: error: for each function
+it appears in.)
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:137: error: `gfp_flags'
+undeclared (first use in this function)
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h: In function `vm_insert_page':
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:158: warning: implicit
+declaration of function `remap_pfn_range'
+make[2]: *** [/home/utrafe/uvcvideo-r75/trunk/uvc_driver.o] Error 1
+make[1]: *** [_module_/home/utrafe/uvcvideo-r75/trunk] Error 2
+make[1]: Leaving directory `/usr/src/kernels/2.6.9-42.EL-i686'
+make: *** [uvcvideo] Error 2
+------------------END--------------------------------
+
+     So, as a test I modified the file uvc_compat.h, removing from the line
+134, &quot;__nocast&quot;, then it compiles but I can't add the driver to the kernel,
+using modprobe.
+
+     Here is the output:
+
+----------------BEGIN---------------------------
+[<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at localhost</A> trunk]# make
+Building USB Video Class driver...
+make[1]: Entering directory `/usr/src/kernels/2.6.9-42.EL-i686'
+  CC [M]  /home/utrafe/uvcvideo-r75/trunk/uvc_driver.o
+In file included from /home/utrafe/uvcvideo-r75/trunk/uvcvideo.h:8,
+                 from /home/utrafe/uvcvideo-r75/trunk/uvc_driver.c:44:
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:136: warning: static
+declaration of 'kzalloc' follows non-static declaration
+include/linux/slab.h:101: warning: previous declaration of 'kzalloc' was
+here
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h: In function `vm_insert_page':
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:158: warning: implicit
+declaration of function `remap_pfn_range'
+  CC [M]  /home/utrafe/uvcvideo-r75/trunk/uvc_queue.o
+In file included from /home/utrafe/uvcvideo-r75/trunk/uvcvideo.h:8,
+                 from /home/utrafe/uvcvideo-r75/trunk/uvc_queue.c:24:
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:136: warning: static
+declaration of 'kzalloc' follows non-static declaration
+include/linux/slab.h:101: warning: previous declaration of 'kzalloc' was
+here
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h: In function `vm_insert_page':
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:158: warning: implicit
+declaration of function `remap_pfn_range'
+  CC [M]  /home/utrafe/uvcvideo-r75/trunk/uvc_v4l2.o
+In file included from /home/utrafe/uvcvideo-r75/trunk/uvcvideo.h:8,
+                 from /home/utrafe/uvcvideo-r75/trunk/uvc_v4l2.c:28:
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:136: warning: static
+declaration of 'kzalloc' follows non-static declaration
+include/linux/slab.h:101: warning: previous declaration of 'kzalloc' was
+here
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h: In function `vm_insert_page':
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:158: warning: implicit
+declaration of function `remap_pfn_range'
+  CC [M]  /home/utrafe/uvcvideo-r75/trunk/uvc_video.o
+In file included from /home/utrafe/uvcvideo-r75/trunk/uvcvideo.h:8,
+                 from /home/utrafe/uvcvideo-r75/trunk/uvc_video.c:24:
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:136: warning: static
+declaration of 'kzalloc' follows non-static declaration
+include/linux/slab.h:101: warning: previous declaration of 'kzalloc' was
+here
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h: In function `vm_insert_page':
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:158: warning: implicit
+declaration of function `remap_pfn_range'
+/home/utrafe/uvcvideo-r75/trunk/uvc_video.c: In function `uvc_video_enable':
+/home/utrafe/uvcvideo-r75/trunk/uvc_video.c:696: warning: 'ep' might be used
+uninitialized in this function
+  CC [M]  /home/utrafe/uvcvideo-r75/trunk/uvc_ctrl.o
+In file included from /home/utrafe/uvcvideo-r75/trunk/uvcvideo.h:8,
+                 from /home/utrafe/uvcvideo-r75/trunk/uvc_ctrl.c:24:
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:136: warning: static
+declaration of 'kzalloc' follows non-static declaration
+include/linux/slab.h:101: warning: previous declaration of 'kzalloc' was
+here
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h: In function `vm_insert_page':
+/home/utrafe/uvcvideo-r75/trunk/uvc_compat.h:158: warning: implicit
+declaration of function `remap_pfn_range'
+  LD [M]  /home/utrafe/uvcvideo-r75/trunk/uvcvideo.o
+  Building modules, stage 2.
+  MODPOST
+*** Warning: &quot;usb_get_intf&quot; [/home/utrafe/uvcvideo-r75/trunk/uvcvideo.ko]
+undefined!
+*** Warning: &quot;remap_pfn_range&quot; [/home/utrafe/uvcvideo-r75/trunk/uvcvideo.ko]
+undefined!
+*** Warning: &quot;usb_put_intf&quot; [/home/utrafe/uvcvideo-r75/trunk/uvcvideo.ko]
+undefined!
+  CC      /home/utrafe/uvcvideo-r75/trunk/uvcvideo.mod.o
+  LD [M]  /home/utrafe/uvcvideo-r75/trunk/uvcvideo.ko
+make[1]: Leaving directory `/usr/src/kernels/2.6.9-42.EL-i686'
+[<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at localhost</A> trunk]#
+------------------END-------------------------------
+
+[<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at localhost</A> trunk]# ls
+Makefile      uvc_ctrl.o    uvc_queue.c  uvc_v4l2.o   uvcvideo.ko
+uvc_video.o
+uvc_compat.h  uvc_driver.c  uvc_queue.o  uvc_video.c  uvcvideo.mod.c
+uvcvideo.o
+uvc_ctrl.c    uvc_driver.o  uvc_v4l2.c   uvcvideo.h   uvcvideo.mod.o
+[<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at localhost</A> trunk]# modprobe uvcvideo
+FATAL: Module uvcvideo not found.
+
+The dmesg output is:
+usb 1-5: new high speed USB device using address 3
+usbcore: registered new driver snd-usb-audio
+uvcvideo: Unknown symbol usb_put_intf
+uvcvideo: Unknown symbol v4l_compat_translate_ioctl
+uvcvideo: Unknown symbol remap_pfn_range
+uvcvideo: Unknown symbol usb_get_intf
+uvcvideo: Unknown symbol video_devdata
+uvcvideo: Unknown symbol video_unregister_device
+uvcvideo: Unknown symbol video_device_alloc
+uvcvideo: Unknown symbol video_register_device
+uvcvideo: Unknown symbol v4l2_ioctl_names
+uvcvideo: Unknown symbol video_usercopy
+uvcvideo: Unknown symbol video_device_release
+
+    Any ideas? Any help is really appreciated.
+
+Thanks in advance!
+Cristiane
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070218/c9618f75/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070218/c9618f75/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001441.html">[Linux-uvc-devel] Quick Cam Pro 5000 046d:08ce don't run on	Ubuntu Feisty Fawn
+</A></li>
+	<LI>Next message: <A HREF="001443.html">[Linux-uvc-devel] Cannot run linux-uvc under CENTOS
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1429">[ date ]</a>
+              <a href="thread.html#1429">[ thread ]</a>
+              <a href="subject.html#1429">[ subject ]</a>
+              <a href="author.html#1429">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

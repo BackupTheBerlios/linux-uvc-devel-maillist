@@ -1,0 +1,309 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH v4 1/2] USB: EHCI: Move sysfs related bits	into ehci-sysfs.c
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%20v4%201/2%5D%20USB%3A%20EHCI%3A%20Move%20sysfs%20related%20bits%0A%09into%20ehci-sysfs.c&In-Reply-To=%3C0f7b5fa21a812cd4ca73a17d137170247a0867e1.1309710420.git.kirr%40mns.spb.ru%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006698.html">
+   <LINK REL="Next"  HREF="006700.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH v4 1/2] USB: EHCI: Move sysfs related bits	into ehci-sysfs.c</H1>
+    <B>Kirill Smelkov</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%20v4%201/2%5D%20USB%3A%20EHCI%3A%20Move%20sysfs%20related%20bits%0A%09into%20ehci-sysfs.c&In-Reply-To=%3C0f7b5fa21a812cd4ca73a17d137170247a0867e1.1309710420.git.kirr%40mns.spb.ru%3E"
+       TITLE="[Linux-uvc-devel] [PATCH v4 1/2] USB: EHCI: Move sysfs related bits	into ehci-sysfs.c">kirr at mns.spb.ru
+       </A><BR>
+    <I>Sun Jul  3 18:36:56 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006698.html">[Linux-uvc-devel] [PATCH v4 0/2] USB: EHCI: Allow users to override	80% max periodic bandwidth
+</A></li>
+        <LI>Next message: <A HREF="006700.html">[Linux-uvc-devel] [PATCH v4 2/2] USB: EHCI: Allow users to override 80% max periodic bandwidth
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6699">[ date ]</a>
+              <a href="thread.html#6699">[ thread ]</a>
+              <a href="subject.html#6699">[ subject ]</a>
+              <a href="author.html#6699">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The only sysfs attr implemented so far is &quot;companion&quot; from ehci-hub.c,
+but in the next patch we are going to add another sysfs file, so prior
+to that let's structure things and move already-in-there sysfs code to
+separate file.
+
+NOTE: All the code I'm moving into this new file was written by Alan
+Stern (in 57e06c11 &quot;EHCI: force high-speed devices to run at full
+speed&quot;; Jan 16 2007), that's why I'm putting
+
+    Copyright (C) 2007 by Alan Stern
+
+there after explicit request from the author.
+
+Signed-off-by: Kirill Smelkov &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">kirr at mns.spb.ru</A>&gt;
+Acked-by: Alan Stern &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">stern at rowland.harvard.edu</A>&gt;
+---
+ drivers/usb/host/ehci-hcd.c   |    5 +-
+ drivers/usb/host/ehci-hub.c   |   75 --------------------------------
+ drivers/usb/host/ehci-sysfs.c |   94 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 97 insertions(+), 77 deletions(-)
+ create mode 100644 drivers/usb/host/ehci-sysfs.c
+
+diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
+index e18862c..8306155 100644
+--- a/drivers/usb/host/ehci-hcd.c
++++ b/drivers/usb/host/ehci-hcd.c
+@@ -336,6 +336,7 @@ static void ehci_work(struct ehci_hcd *ehci);
+ #include &quot;ehci-mem.c&quot;
+ #include &quot;ehci-q.c&quot;
+ #include &quot;ehci-sched.c&quot;
++#include &quot;ehci-sysfs.c&quot;
+ 
+ /*-------------------------------------------------------------------------*/
+ 
+@@ -520,7 +521,7 @@ static void ehci_stop (struct usb_hcd *hcd)
+ 	ehci_reset (ehci);
+ 	spin_unlock_irq(&amp;ehci-&gt;lock);
+ 
+-	remove_companion_file(ehci);
++	remove_sysfs_files(ehci);
+ 	remove_debug_files (ehci);
+ 
+ 	/* root hub is shut down separately (first, when possible) */
+@@ -754,7 +755,7 @@ static int ehci_run (struct usb_hcd *hcd)
+ 	 * since the class device isn't created that early.
+ 	 */
+ 	create_debug_files(ehci);
+-	create_companion_file(ehci);
++	create_sysfs_files(ehci);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/usb/host/ehci-hub.c b/drivers/usb/host/ehci-hub.c
+index ea6184b..d9e8d71 100644
+--- a/drivers/usb/host/ehci-hub.c
++++ b/drivers/usb/host/ehci-hub.c
+@@ -471,29 +471,6 @@ static int ehci_bus_resume (struct usb_hcd *hcd)
+ 
+ /*-------------------------------------------------------------------------*/
+ 
+-/* Display the ports dedicated to the companion controller */
+-static ssize_t show_companion(struct device *dev,
+-			      struct device_attribute *attr,
+-			      char *buf)
+-{
+-	struct ehci_hcd		*ehci;
+-	int			nports, index, n;
+-	int			count = PAGE_SIZE;
+-	char			*ptr = buf;
+-
+-	ehci = hcd_to_ehci(bus_to_hcd(dev_get_drvdata(dev)));
+-	nports = HCS_N_PORTS(ehci-&gt;hcs_params);
+-
+-	for (index = 0; index &lt; nports; ++index) {
+-		if (test_bit(index, &amp;ehci-&gt;companion_ports)) {
+-			n = scnprintf(ptr, count, &quot;%d\n&quot;, index + 1);
+-			ptr += n;
+-			count -= n;
+-		}
+-	}
+-	return ptr - buf;
+-}
+-
+ /*
+  * Sets the owner of a port
+  */
+@@ -528,58 +505,6 @@ static void set_owner(struct ehci_hcd *ehci, int portnum, int new_owner)
+ 	}
+ }
+ 
+-/*
+- * Dedicate or undedicate a port to the companion controller.
+- * Syntax is &quot;[-]portnum&quot;, where a leading '-' sign means
+- * return control of the port to the EHCI controller.
+- */
+-static ssize_t store_companion(struct device *dev,
+-			       struct device_attribute *attr,
+-			       const char *buf, size_t count)
+-{
+-	struct ehci_hcd		*ehci;
+-	int			portnum, new_owner;
+-
+-	ehci = hcd_to_ehci(bus_to_hcd(dev_get_drvdata(dev)));
+-	new_owner = PORT_OWNER;		/* Owned by companion */
+-	if (sscanf(buf, &quot;%d&quot;, &amp;portnum) != 1)
+-		return -EINVAL;
+-	if (portnum &lt; 0) {
+-		portnum = - portnum;
+-		new_owner = 0;		/* Owned by EHCI */
+-	}
+-	if (portnum &lt;= 0 || portnum &gt; HCS_N_PORTS(ehci-&gt;hcs_params))
+-		return -ENOENT;
+-	portnum--;
+-	if (new_owner)
+-		set_bit(portnum, &amp;ehci-&gt;companion_ports);
+-	else
+-		clear_bit(portnum, &amp;ehci-&gt;companion_ports);
+-	set_owner(ehci, portnum, new_owner);
+-	return count;
+-}
+-static DEVICE_ATTR(companion, 0644, show_companion, store_companion);
+-
+-static inline int create_companion_file(struct ehci_hcd *ehci)
+-{
+-	int	i = 0;
+-
+-	/* with integrated TT there is no companion! */
+-	if (!ehci_is_TDI(ehci))
+-		i = device_create_file(ehci_to_hcd(ehci)-&gt;self.controller,
+-				       &amp;dev_attr_companion);
+-	return i;
+-}
+-
+-static inline void remove_companion_file(struct ehci_hcd *ehci)
+-{
+-	/* with integrated TT there is no companion! */
+-	if (!ehci_is_TDI(ehci))
+-		device_remove_file(ehci_to_hcd(ehci)-&gt;self.controller,
+-				   &amp;dev_attr_companion);
+-}
+-
+-
+ /*-------------------------------------------------------------------------*/
+ 
+ static int check_reset_complete (
+diff --git a/drivers/usb/host/ehci-sysfs.c b/drivers/usb/host/ehci-sysfs.c
+new file mode 100644
+index 0000000..29824a9
+--- /dev/null
++++ b/drivers/usb/host/ehci-sysfs.c
+@@ -0,0 +1,94 @@
++/*
++ * Copyright (C) 2007 by Alan Stern
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2 of the License, or (at your
++ * option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++ * for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++/* this file is part of ehci-hcd.c */
++
++
++/* Display the ports dedicated to the companion controller */
++static ssize_t show_companion(struct device *dev,
++			      struct device_attribute *attr,
++			      char *buf)
++{
++	struct ehci_hcd		*ehci;
++	int			nports, index, n;
++	int			count = PAGE_SIZE;
++	char			*ptr = buf;
++
++	ehci = hcd_to_ehci(bus_to_hcd(dev_get_drvdata(dev)));
++	nports = HCS_N_PORTS(ehci-&gt;hcs_params);
++
++	for (index = 0; index &lt; nports; ++index) {
++		if (test_bit(index, &amp;ehci-&gt;companion_ports)) {
++			n = scnprintf(ptr, count, &quot;%d\n&quot;, index + 1);
++			ptr += n;
++			count -= n;
++		}
++	}
++	return ptr - buf;
++}
++
++/*
++ * Dedicate or undedicate a port to the companion controller.
++ * Syntax is &quot;[-]portnum&quot;, where a leading '-' sign means
++ * return control of the port to the EHCI controller.
++ */
++static ssize_t store_companion(struct device *dev,
++			       struct device_attribute *attr,
++			       const char *buf, size_t count)
++{
++	struct ehci_hcd		*ehci;
++	int			portnum, new_owner;
++
++	ehci = hcd_to_ehci(bus_to_hcd(dev_get_drvdata(dev)));
++	new_owner = PORT_OWNER;		/* Owned by companion */
++	if (sscanf(buf, &quot;%d&quot;, &amp;portnum) != 1)
++		return -EINVAL;
++	if (portnum &lt; 0) {
++		portnum = - portnum;
++		new_owner = 0;		/* Owned by EHCI */
++	}
++	if (portnum &lt;= 0 || portnum &gt; HCS_N_PORTS(ehci-&gt;hcs_params))
++		return -ENOENT;
++	portnum--;
++	if (new_owner)
++		set_bit(portnum, &amp;ehci-&gt;companion_ports);
++	else
++		clear_bit(portnum, &amp;ehci-&gt;companion_ports);
++	set_owner(ehci, portnum, new_owner);
++	return count;
++}
++static DEVICE_ATTR(companion, 0644, show_companion, store_companion);
++
++static inline int create_sysfs_files(struct ehci_hcd *ehci)
++{
++	int	i = 0;
++
++	/* with integrated TT there is no companion! */
++	if (!ehci_is_TDI(ehci))
++		i = device_create_file(ehci_to_hcd(ehci)-&gt;self.controller,
++				       &amp;dev_attr_companion);
++	return i;
++}
++
++static inline void remove_sysfs_files(struct ehci_hcd *ehci)
++{
++	/* with integrated TT there is no companion! */
++	if (!ehci_is_TDI(ehci))
++		device_remove_file(ehci_to_hcd(ehci)-&gt;self.controller,
++				   &amp;dev_attr_companion);
++}
+-- 
+1.7.6.rc3
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006698.html">[Linux-uvc-devel] [PATCH v4 0/2] USB: EHCI: Allow users to override	80% max periodic bandwidth
+</A></li>
+	<LI>Next message: <A HREF="006700.html">[Linux-uvc-devel] [PATCH v4 2/2] USB: EHCI: Allow users to override 80% max periodic bandwidth
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6699">[ date ]</a>
+              <a href="thread.html#6699">[ thread ]</a>
+              <a href="subject.html#6699">[ subject ]</a>
+              <a href="author.html#6699">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

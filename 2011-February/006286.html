@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] HP Pavillion DV3 WebCam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20HP%20Pavillion%20DV3%20WebCam&In-Reply-To=%3CAANLkTi%3DkXC5V4uARwM1YjY9rm4fPSJXALmiwrN8BK623%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006272.html">
+   <LINK REL="Next"  HREF="006308.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] HP Pavillion DV3 WebCam</H1>
+    <B>Paulo Assis</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20HP%20Pavillion%20DV3%20WebCam&In-Reply-To=%3CAANLkTi%3DkXC5V4uARwM1YjY9rm4fPSJXALmiwrN8BK623%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] HP Pavillion DV3 WebCam">pj.assis at gmail.com
+       </A><BR>
+    <I>Wed Feb 16 11:24:16 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006272.html">[Linux-uvc-devel] HP Pavillion DV3 WebCam
+</A></li>
+        <LI>Next message: <A HREF="006308.html">[Linux-uvc-devel] HP Pavillion DV3 WebCam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6286">[ date ]</a>
+              <a href="thread.html#6286">[ thread ]</a>
+              <a href="subject.html#6286">[ subject ]</a>
+              <a href="author.html#6286">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Carlos Hi,
+
+2011/2/15 Carlos Silva &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">r3pek at r3pek.org</A>&gt;:
+&gt;<i> No help on this? :(
+</I>&gt;<i>
+</I>&gt;<i> On Tue, Feb 1, 2011 at 23:32, Carlos Silva &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">r3pek at r3pek.org</A>&gt; wrote:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Hi,
+</I>&gt;&gt;<i> I recently bought an&#160;HP Pavillion DV3 laptop that has an integrated
+</I>&gt;&gt;<i> webcam. After searching a while I found out that the webcam is an UVC webcam
+</I>&gt;&gt;<i> but it isn't on the list of supported cams.
+</I>&gt;&gt;<i> This is the usb entry of lsusb:
+</I>&gt;&gt;<i> Bus 002 Device 004: ID 174f:1118 Syntek
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I added the usb vendor + product id to the driver like this:
+</I>&gt;&gt;<i> &#160;&#160; &#160; &#160; &#160;/* Syntek (HP Pavillion dv3) */
+</I>&gt;&gt;<i> &#160;&#160; &#160; &#160; &#160;{ .match_flags &#160; &#160; &#160; &#160; &#160;= USB_DEVICE_ID_MATCH_DEVICE
+</I>&gt;&gt;<i> &#160;&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;| USB_DEVICE_ID_MATCH_INT_INFO,
+</I>&gt;&gt;<i> &#160;&#160; &#160; &#160; &#160; &#160;.idVendor &#160; &#160; &#160; &#160; &#160; &#160; = 0x174f,
+</I>&gt;&gt;<i> &#160;&#160; &#160; &#160; &#160; &#160;.idProduct &#160; &#160; &#160; &#160; &#160; &#160;= 0x1118,
+</I>&gt;&gt;<i> &#160;&#160; &#160; &#160; &#160; &#160;.bInterfaceClass &#160; &#160; &#160;= USB_CLASS_VIDEO,
+</I>&gt;&gt;<i> &#160;&#160; &#160; &#160; &#160; &#160;.bInterfaceSubClass &#160; = 1,
+</I>&gt;&gt;<i> &#160;&#160; &#160; &#160; &#160; &#160;.bInterfaceProtocol &#160; = 0,
+</I>&gt;&gt;<i> &#160;&#160; &#160; &#160; &#160; &#160;.driver_info &#160; &#160; &#160; &#160; &#160;= UVC_QUIRK_STREAM_NO_FID },
+</I>&gt;&gt;<i>
+</I>
+You shouldn't really need to add this, if you want to test driver
+quirks just pass them when loading the driver module, in this case:
+
+modprobe uvcvideo quirks=0x00000010
+
+or for a permanent change just create /etc/modprobe.d/uvcvideo.conf
+and add the following line:
+options uvcvideo quirks=0x00000010
+
+&gt;&gt;<i> The device is recognized by the driver:
+</I>&gt;&gt;<i> uvcvideo: Found UVC 1.00 device HP Webcam (174f:1118)
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Now I have a problem. When I try to use it, the &quot;in use&quot; led from the
+</I>&gt;&gt;<i> camera lights up, but software doesn't receive any image (stays black all
+</I>&gt;&gt;<i> the time).
+</I>&gt;&gt;<i> Here is my dmesg:
+</I>&gt;&gt;<i> uvcvideo: Failed to resubmit video URB (-1).
+</I>&gt;&gt;<i> uvcvideo: Trying format 0x56595559 (YUYV): 640x480.
+</I>&gt;&gt;<i> uvcvideo: Using default frame interval 41666.6 us (24.0 fps).
+</I>&gt;&gt;<i> uvcvideo: Setting frame interval to 1/24 (416666).
+</I>&gt;&gt;<i> uvcvideo: Trying format 0x56595559 (YUYV): 640x480.
+</I>&gt;&gt;<i> ^^ This last 2 lines repeat themself several times (the first one has got
+</I>&gt;&gt;<i> my attention but I don't know what's the problem)
+</I>&gt;&gt;<i> Attached is a log of &quot;guvcview&quot; program starting and closing. After it
+</I>&gt;&gt;<i> starts, it starts printing the errors:
+</I>&gt;&gt;<i> &#160;Could not grab image (select timeout): Resource temporarily unavailable
+</I>&gt;&gt;<i> &#160;Could not grab image (select timeout): Resource temporarily unavailable
+</I>&gt;&gt;<i> &#160;Could not grab image (select timeout): Resource temporarily unavailable
+</I>&gt;&gt;<i> &#160;Could not grab image (select timeout): Resource temporarily unavailable
+</I>&gt;&gt;<i> &#160;Could not grab image (select timeout): Resource temporarily unavailable
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Any pointers on how can I help getting this camera supported on the
+</I>&gt;&gt;<i> driver?
+</I>&gt;<i>
+</I>
+
+Did you try it without the quirk ? Not all syntek cameras require it:
+<A HREF="../2009-March/004705.html">http://lists.berlios.de/pipermail/linux-uvc-devel/2009-March/004705.html</A>
+
+also increasing the driver verbosity would be helpful, just add
+trace=65535 to the driver options.
+
+Regards,
+Paulo
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006272.html">[Linux-uvc-devel] HP Pavillion DV3 WebCam
+</A></li>
+	<LI>Next message: <A HREF="006308.html">[Linux-uvc-devel] HP Pavillion DV3 WebCam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6286">[ date ]</a>
+              <a href="thread.html#6286">[ thread ]</a>
+              <a href="subject.html#6286">[ subject ]</a>
+              <a href="author.html#6286">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

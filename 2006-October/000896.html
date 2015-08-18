@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%0A%09%3D%3Futf-8%3Fq%3Fuvcvideo_-_Unable_to_allocate_buffers%3F%3D%0A%09%3D%3Futf-8%3Fq%3F%3D3A_22%3D2E%3D09Init_v4L2_failed%3F%3D&In-Reply-To=%3C200610261243.39079.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000895.html">
+   <LINK REL="Next"  HREF="000903.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%0A%09%3D%3Futf-8%3Fq%3Fuvcvideo_-_Unable_to_allocate_buffers%3F%3D%0A%09%3D%3Futf-8%3Fq%3F%3D3A_22%3D2E%3D09Init_v4L2_failed%3F%3D&In-Reply-To=%3C200610261243.39079.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Thu Oct 26 12:43:38 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000895.html">[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+</A></li>
+        <LI>Next message: <A HREF="000903.html">[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#896">[ date ]</a>
+              <a href="thread.html#896">[ thread ]</a>
+              <a href="subject.html#896">[ subject ]</a>
+              <a href="author.html#896">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+&gt;<i> &gt; &gt; This is probably a more decriptiive subject.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; On further thought this may be related to uvcvideo using mmap only, I
+</I>&gt;<i> &gt; &gt; had to use the read/write option on other modules on the ARM to get
+</I>&gt;<i> &gt; &gt; them to work properly.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; That's interesting. I'd like to know why the request fails. Are you
+</I>&gt;<i> &gt; familiar with Linux programming enough to add a few print statements in
+</I>&gt;<i> &gt; the driver and see where it fails ?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Laurent Pinchart
+</I>&gt;<i>
+</I>&gt;<i> Thanks for your help.
+</I>&gt;<i>
+</I>&gt;<i> If you could give me some guidance on where to start looking in uvcvideo
+</I>&gt;<i> it would be a great help.
+</I>
+Sure.
+
+The code starts in uvc_v4l2_do_ioctl. To allocate the buffers, an application 
+calls VIDIOC_REQBUFS. You will find a first check in that function, which 
+returns the error code you noticed.
+
+	if (rb-&gt;type != V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+	    rb-&gt;memory != V4L2_MEMORY_MMAP)
+		return -EINVAL;
+
+Try to add a print statement before and after the check. If the check fails, 
+print rb-&gt;type and rb-&gt;memory.
+
+I can't see any other place where the driver might return -EINVAL in response 
+to VIDIOC_REQBUFS.
+
+&gt;<i> I am not an expert by any description but I can probably bumble through
+</I>&gt;<i> adding a few print statements.
+</I>
+Use printk(KERN_DEBUG &quot;message&quot;, arg1, arg2, ...) to print messages to the 
+kernel log. You can then retrieve them using the dmesg command.
+
+&gt;<i> I had taken the direction of running 
+</I>&gt;<i> luvcview under gdb to see exactly what was being returned from the
+</I>&gt;<i> driver. I am currently making my way through the luvcview code to learn
+</I>&gt;<i> exactly how it works.
+</I>
+The driver seems to return -22 (-EINVAL) when luvcview tries to allocate the 
+buffers with the VIDIOC_REQBUFS ioctl. Check the ioctl() return value (should 
+be -1) and the errno value (should be 22).
+
+&gt;<i> I had originally been working with cameras that use the spca or gspca
+</I>&gt;<i> driver when I found this comment from Michel on the spca50x-devs mailing
+</I>&gt;<i> list which was the key to making them work on the device:
+</I>&gt;<i>
+</I>&gt;<i> Le Vendredi 30 D&#233;cembre 2005 05:24, &#23385;&#38054;&#19996; a &#233;crit :
+</I>&gt;<i>  sqd,
+</I>&gt;<i>  You should run spcaserv with read method parameters (-g)  instead mmap . 
+</I>&gt;<i> I have see some memory corruption with mmap only with the Arm CPU, maybe a
+</I>&gt;<i> wrong memory alignement
+</I>
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000895.html">[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+</A></li>
+	<LI>Next message: <A HREF="000903.html">[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#896">[ date ]</a>
+              <a href="thread.html#896">[ thread ]</a>
+              <a href="subject.html#896">[ subject ]</a>
+              <a href="author.html#896">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

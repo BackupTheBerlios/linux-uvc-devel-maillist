@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Microsoft NX-6000
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20NX-6000&In-Reply-To=%3C200701222310.50503.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001280.html">
+   <LINK REL="Next"  HREF="001281.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Microsoft NX-6000</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20NX-6000&In-Reply-To=%3C200701222310.50503.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Microsoft NX-6000">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Jan 22 23:10:50 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001280.html">[Linux-uvc-devel] Microsoft NX-6000
+</A></li>
+        <LI>Next message: <A HREF="001281.html">[Linux-uvc-devel] Microsoft NX-6000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1283">[ date ]</a>
+              <a href="thread.html#1283">[ thread ]</a>
+              <a href="subject.html#1283">[ subject ]</a>
+              <a href="author.html#1283">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi James,
+
+&gt;<i> &gt; Could you raise the trace level to 255 (modprobe uvcvideo trace=255) ?
+</I>&gt;<i> &gt; The driver should get much more verbose then.
+</I>&gt;<i>
+</I>&gt;<i> Good call. It's getting to  uvc_queue_waiton(buf, nonblocking) around
+</I>&gt;<i> line 294 in uvc_queue.c. I'm guessing it's waiting for the camera to
+</I>&gt;<i> become ready and it never does. Which means the camera needs some kind
+</I>&gt;<i> of setup/go/something instruction before hand?
+</I>
+It waits for a buffer to become ready. This means the camera probably doesn't 
+send enough data (or any data at all).
+
+&gt;<i> I can't find where you get the buffer value from the camera... can you
+</I>&gt;<i> point me in the right direction?
+</I>
+The video streaming code is in uvc_video.c. uvc_video_complete_isoc() is 
+called when an isochronous URB completes. It will in turn call 
+uvc_video_decode() to copy data from individual isochronous buffers to the 
+image buffer, stripping the headers. Something is probably wrong there.
+
+Cheers,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001280.html">[Linux-uvc-devel] Microsoft NX-6000
+</A></li>
+	<LI>Next message: <A HREF="001281.html">[Linux-uvc-devel] Microsoft NX-6000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1283">[ date ]</a>
+              <a href="thread.html#1283">[ thread ]</a>
+              <a href="subject.html#1283">[ subject ]</a>
+              <a href="author.html#1283">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

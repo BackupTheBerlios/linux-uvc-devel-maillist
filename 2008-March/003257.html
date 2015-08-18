@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Unable%20to%20set%20auto%20exposure%20and%20white%20balance%0A%09with%20svn%20revision%20193&In-Reply-To=%3C200803232126.07988.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003251.html">
+   <LINK REL="Next"  HREF="003285.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Unable%20to%20set%20auto%20exposure%20and%20white%20balance%0A%09with%20svn%20revision%20193&In-Reply-To=%3C200803232126.07988.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sun Mar 23 21:26:07 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003251.html">[Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193
+</A></li>
+        <LI>Next message: <A HREF="003285.html">[Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3257">[ date ]</a>
+              <a href="thread.html#3257">[ thread ]</a>
+              <a href="subject.html#3257">[ subject ]</a>
+              <a href="author.html#3257">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Armin,
+
+On Friday 21 March 2008, Armin Berres wrote:
+&gt;<i> Hi!
+</I>&gt;<i>
+</I>&gt;<i> I just updated the uvc driver to the latest version available in Debian
+</I>&gt;<i> (r193) in the hope to be able to set the red and blue component of the
+</I>&gt;<i> white balance when using a Philips SPC1300NC.
+</I>&gt;<i> After noticing that the private controls are gone and updating some
+</I>&gt;<i> keys everything but one thing works again: I can't set the auto exposure
+</I>&gt;<i> any more. When I query V4L2_CID_EXPOSURE_AUTO it is set to 3.
+</I>&gt;<i> V4L2_EXPOSURE_AUTO and V4L2_EXPOSURE_MANUAL at the same time?
+</I>
+3 is actually supposed to mean V4L2_EXPOSURE_APERTURE_PRIORITY. The control 
+values were not properly defined in uvc_compat.h, I've just committed a fix 
+to SVN.
+
+&gt;<i> Setting it to V4L2_EXPOSURE_AUTO or V4L2_EXPOSURE_MANUAL doesn't work, I
+</I>&gt;<i> just get the error code 5, Input/output error. When loadng the uvc module
+</I>&gt;<i>
+</I>&gt;<i> with 'trace=0x004' I find the following in the syslog:
+</I>&gt;<i> | uvcvideo: Failed to query (1) UVC control 2 (unit 1) : -32 (exp. 1).
+</I>&gt;<i> | uvcvideo: usb_control_msg was delayed
+</I>&gt;<i>
+</I>&gt;<i> The svn revision 120 worked just fine.
+</I>
+Please try to recompile your userspace application using uvc_compat.h from 
+r196 or videodev2.h from the linux-next git tree. You can also modify your 
+header files manually with the following definition of the 
+v4l2_exposure_auto_type enumeration:
+
+enum  v4l2_exposure_auto_type {
+        V4L2_EXPOSURE_MANUAL = 0,
+        V4L2_EXPOSURE_AUTO = 1,
+        V4L2_EXPOSURE_SHUTTER_PRIORITY = 2,
+        V4L2_EXPOSURE_APERTURE_PRIORITY = 3
+};
+
+&gt;<i> Now my other problem: When reading r187 I hoped to be able to manually
+</I>&gt;<i> set the white balance, but it doesn't seem to be possible.
+</I>&gt;<i> Setting V4L2_CID_AUTO_WHITE_BALANCE to 0 doesn't seem to have an effect.
+</I>&gt;<i> The control seems to be neither V4L2_CTRL_TYPE_BOOLEAN nor
+</I>&gt;<i> V4L2_CTRL_TYPE_INTEGER, so what else it is?
+</I>
+The control is boolean, and is supposed to work. Do you get an error when you 
+try to modify it ? Is anything printed to the kernel log ? Do you get the 
+previously written value when you read the control back ?
+
+&gt;<i> When trying to get V4L2_CID_RED_BALANCE or V4L2_CID_BLUE_BALANCE I get
+</I>&gt;<i> the error code 22, Invalid argument. In the syslog I find
+</I>&gt;<i>
+</I>&gt;<i> | uvcvideo: Control 0x0098090e not found.
+</I>&gt;<i> | uvcvideo: Control 0x0098090f not found.
+</I>&gt;<i>
+</I>&gt;<i> Is this expected to work, or can't this work? It is quite important for
+</I>&gt;<i> me, to get the manual white balance running.
+</I>
+The SPC1300NC has a white balance temperature control, you should use 
+V4L2_CID_WHITE_BALANCE_TEMPERATURE instead of V4L2_CID_RED_BALANCE and 
+V4L2_CID_BLUE_BALANCE.
+
+&gt;<i> Any help is welcome :)
+</I>
+Hope this helped :-)
+
+&gt;<i> Greetings,
+</I>&gt;<i> Armin
+</I>
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003251.html">[Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193
+</A></li>
+	<LI>Next message: <A HREF="003285.html">[Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3257">[ date ]</a>
+              <a href="thread.html#3257">[ thread ]</a>
+              <a href="subject.html#3257">[ subject ]</a>
+              <a href="author.html#3257">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

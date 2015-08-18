@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Building on 2.6.10 kernels with svn 226
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Building%20on%202.6.10%20kernels%20with%20svn%20226&In-Reply-To=%3C4884BD87.1040106%40redembedded.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003845.html">
+   <LINK REL="Next"  HREF="003896.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Building on 2.6.10 kernels with svn 226</H1>
+    <B>Darren Longhorn</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Building%20on%202.6.10%20kernels%20with%20svn%20226&In-Reply-To=%3C4884BD87.1040106%40redembedded.com%3E"
+       TITLE="[Linux-uvc-devel] Building on 2.6.10 kernels with svn 226">darren.longhorn at redembedded.com
+       </A><BR>
+    <I>Mon Jul 21 18:47:03 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003845.html">[Linux-uvc-devel] Building on 2.6.10 kernels with svn 226
+</A></li>
+        <LI>Next message: <A HREF="003896.html">[Linux-uvc-devel] Building on 2.6.10 kernels with svn 226
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3895">[ date ]</a>
+              <a href="thread.html#3895">[ thread ]</a>
+              <a href="subject.html#3895">[ subject ]</a>
+              <a href="author.html#3895">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Darren Longhorn wrote:
+&gt;<i> Laurent Pinchart wrote:
+</I>&gt;&gt;<i> Hi Darren,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> On Tuesday 15 July 2008, Darren Longhorn wrote:
+</I>&gt;&gt;<i>   
+</I>&gt;&gt;&gt;<i> Firstly, I realise that kernels as old as 2.6.10 are not supported! So
+</I>&gt;&gt;&gt;<i> I don't expect anyone is much interested in these issues, but I wanted
+</I>&gt;&gt;&gt;<i> to document it somewhere and this list seemed to be the appropriate place.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> The main issue I have found are the use of linux/videodev2.h in place
+</I>&gt;&gt;&gt;<i> of linux/videodev.h This causes various compilation errors. Including
+</I>&gt;&gt;&gt;<i> lack of definitions from linux/mm.h which videodev2.h does not
+</I>&gt;&gt;&gt;<i> provide. I belive this may be related to the non-availability of
+</I>&gt;&gt;&gt;<i> media/v4l2-common.h so I have reverted back to including
+</I>&gt;&gt;&gt;<i> linux/videodev.h on kernels &lt; 2.6.15
+</I>&gt;&gt;&gt;<i>     
+</I>&gt;&gt;<i> I've included linux/videodev.h in uvc_compat.h for kernels older than 2.6.18. 
+</I>&gt;&gt;<i> This should fix your compilation issues.
+</I>&gt;&gt;<i>
+</I>
+Hi Laurent,
+
+I just got around to merging with svn 233. I think that the 
+conditional inclusion of linux/videodev.h needs to be earlier in the 
+file, in order to provide a definition of VM_RESERVED for 
+vm_insert_page().
+
+While I actually have kzalloc implemented in my kernel, I don't have 
+__nocast for gfp_t, so I added:
+#if LINUX_VERSION_CODE &lt; KERNEL_VERSION(2,6,12)
+#define __nocast
+#endif
+
+Also the arm_v5t_le- toolchain generates the error 'missing binary 
+operator before token &quot;(&quot;' for the following line:
+#if !defined(RHEL_RELEASE_CODE) || RHEL_RELEASE_CODE &lt; 
+RHEL_RELEASE_VERSION(5,2)
+
+Cheers
+
+Darren
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003845.html">[Linux-uvc-devel] Building on 2.6.10 kernels with svn 226
+</A></li>
+	<LI>Next message: <A HREF="003896.html">[Linux-uvc-devel] Building on 2.6.10 kernels with svn 226
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3895">[ date ]</a>
+              <a href="thread.html#3895">[ thread ]</a>
+              <a href="subject.html#3895">[ subject ]</a>
+              <a href="author.html#3895">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

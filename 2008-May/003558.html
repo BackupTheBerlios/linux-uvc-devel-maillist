@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] uvc: release streaming interface to fix	suspend to RAM
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvc%3A%20release%20streaming%20interface%20to%20fix%0A%09suspend%20to%20RAM&In-Reply-To=%3C20080529234147.GA2353%40plankton.ifup.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003555.html">
+   <LINK REL="Next"  HREF="003567.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] uvc: release streaming interface to fix	suspend to RAM</H1>
+    <B>Brandon Philips</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvc%3A%20release%20streaming%20interface%20to%20fix%0A%09suspend%20to%20RAM&In-Reply-To=%3C20080529234147.GA2353%40plankton.ifup.org%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] uvc: release streaming interface to fix	suspend to RAM">brandon at ifup.org
+       </A><BR>
+    <I>Fri May 30 01:41:47 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003555.html">[Linux-uvc-devel] [linux-uvc-devel] driver doesn't return from	vidioc_dqbuf ioctl (Dan McGee)
+</A></li>
+        <LI>Next message: <A HREF="003567.html">[Linux-uvc-devel] [PATCH] uvc: release streaming interface to	fix suspend to RAM
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3558">[ date ]</a>
+              <a href="thread.html#3558">[ thread ]</a>
+              <a href="subject.html#3558">[ subject ]</a>
+              <a href="author.html#3558">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Bug report: <A HREF="https://bugzilla.novell.com/show_bug.cgi?id=387876">https://bugzilla.novell.com/show_bug.cgi?id=387876</A>
+
+If probe fails the UVC driver may still be bound to a streaming
+interface.  This interface must be released with
+usb_driver_release_interface() otherwise the interface will continue to
+be bound causing suspend operations to fail.
+
+Tested using this little hack:
+&gt;<i> +++ uvc_video.c
+</I>&gt;<i> @@ -870,6 +870,8 @@ int uvc_video_init(st
+</I>&gt;<i>        if ((ret = uvc_get_video_ctrl(video, probe, 1, GET_DEF)) &lt; 0 &amp;&amp;
+</I>&gt;<i>             (ret = uvc_get_video_ctrl(video, probe, 1, GET_CUR)) &lt; 0)
+</I>&gt;<i>                 return ret;
+</I>&gt;<i> +
+</I>&gt;<i> +       return -EIO;
+</I>&gt;<i>  
+</I>
+Signed-off-by: Brandon Philips &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bphilips at suse.de</A>&gt;
+
+---
+ uvc_driver.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+Index: uvc/uvc_driver.c
+===================================================================
+--- uvc.orig/uvc_driver.c
++++ uvc/uvc_driver.c
+@@ -865,6 +865,8 @@ static int uvc_parse_standard_control(st
+ 
+ 			if (uvc_parse_streaming(dev, streaming) &lt; 0) {
+ 				usb_put_intf(intf);
++				usb_driver_release_interface(&amp;uvc_driver.driver,
++					intf);
+ 				kfree(streaming-&gt;format);
+ 				kfree(streaming-&gt;header.bmaControls);
+ 				kfree(streaming);
+@@ -1524,6 +1526,8 @@ void uvc_delete(struct kref *kref)
+ 		struct uvc_streaming *streaming;
+ 		streaming = list_entry(p, struct uvc_streaming, list);
+ 		usb_put_intf(streaming-&gt;intf);
++		usb_driver_release_interface(&amp;uvc_driver.driver,
++			streaming-&gt;intf);
+ 		kfree(streaming-&gt;format);
+ 		kfree(streaming-&gt;header.bmaControls);
+ 		kfree(streaming);
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003555.html">[Linux-uvc-devel] [linux-uvc-devel] driver doesn't return from	vidioc_dqbuf ioctl (Dan McGee)
+</A></li>
+	<LI>Next message: <A HREF="003567.html">[Linux-uvc-devel] [PATCH] uvc: release streaming interface to	fix suspend to RAM
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3558">[ date ]</a>
+              <a href="thread.html#3558">[ thread ]</a>
+              <a href="subject.html#3558">[ subject ]</a>
+              <a href="author.html#3558">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

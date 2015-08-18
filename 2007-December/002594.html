@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] uvcvideo: usb power management
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvcvideo%3A%20usb%20power%20management&In-Reply-To=%3C20071213015919.GD530%40ifup.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002593.html">
+   <LINK REL="Next"  HREF="002605.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] uvcvideo: usb power management</H1>
+    <B>Brandon Philips</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvcvideo%3A%20usb%20power%20management&In-Reply-To=%3C20071213015919.GD530%40ifup.org%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] uvcvideo: usb power management">brandon at ifup.org
+       </A><BR>
+    <I>Thu Dec 13 02:59:19 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002593.html">[Linux-uvc-devel] OmniVision webcam, error -45
+</A></li>
+        <LI>Next message: <A HREF="002605.html">[Linux-uvc-devel] [PATCH] uvcvideo: usb power management
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2594">[ date ]</a>
+              <a href="thread.html#2594">[ thread ]</a>
+              <a href="subject.html#2594">[ subject ]</a>
+              <a href="author.html#2594">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>This patch enables usb power management in the UVC driver.  As cameras
+are built into more and more modern laptops it is important that we get
+power management for them working.
+
+How-to Test
+-----------
+0. Apply and recompile with CONFIG_USB_DEBUG
+1. Plug in the camera
+2. rmmod usb-snd-audio # no pm in usb-snd-audio yet and many cameras
+   have a mic
+3. Locate the device with lsusb
+4. Go to its sysfs directory
+5. echo &quot;auto&quot; &gt; power/level
+6. wait for messages about the device and its root hub being suspended
+   in syslog. It'll take a few seconds
+
+Signed-off-by: Oliver Neukum &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">oliver at neukum.org</A>&gt;
+Reviewed-by: Brandon Philips &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bphilips at suse.de</A>&gt;
+
+---
+ uvc_driver.c |    7 ++++++-
+ uvc_v4l2.c   |    6 ++++++
+ 2 files changed, 12 insertions(+), 1 deletion(-)
+
+Index: uvc/uvc_v4l2.c
+===================================================================
+--- uvc.orig/uvc_v4l2.c
++++ uvc/uvc_v4l2.c
+@@ -413,10 +413,15 @@ static int uvc_v4l2_open(struct inode *i
+ 		goto done;
+ 	}
+ 
++	ret = usb_autopm_get_interface(video-&gt;dev-&gt;intf);
++	if (ret &lt; 0)
++		goto done;
++
+ 	/* Create the device handle. */
+ 	handle = kzalloc(sizeof *handle, GFP_KERNEL);
+ 	if (handle == NULL) {
+ 		ret = -ENOMEM;
++		usb_autopm_put_interface(video-&gt;dev-&gt;intf);
+ 		goto done;
+ 	}
+ 
+@@ -455,6 +460,7 @@ static int uvc_v4l2_release(struct inode
+ 	kfree(handle);
+ 	file-&gt;private_data = NULL;
+ 
++	usb_autopm_put_interface(video-&gt;dev-&gt;intf);
+ 	kref_put(&amp;video-&gt;dev-&gt;kref, uvc_delete);
+ 	return 0;
+ }
+Index: uvc/uvc_driver.c
+===================================================================
+--- uvc.orig/uvc_driver.c
++++ uvc/uvc_driver.c
+@@ -678,8 +678,10 @@ static int uvc_parse_streaming(struct uv
+ 			format-&gt;frame = frame;
+ 			ret = uvc_parse_format(dev, streaming, format,
+ 				&amp;interval, buffer, buflen);
+-			if (ret &lt; 0)
++			if (ret &lt; 0) {
++				kfree(format);
+ 				return ret;
++			}
+ 
+ 			frame += format-&gt;nframes;
+ 			format++;
+@@ -1605,6 +1607,8 @@ static int uvc_suspend(struct usb_interf
+ 	uvc_trace(UVC_TRACE_SUSPEND, &quot;Suspending interface %u\n&quot;,
+ 		intf-&gt;cur_altsetting-&gt;desc.bInterfaceNumber);
+ 
++	usb_kill_urb(dev-&gt;int_urb);
++
+ 	/* Controls are cached on the fly so they don't need to be saved. */
+ 	if (intf-&gt;cur_altsetting-&gt;desc.bInterfaceSubClass == SC_VIDEOCONTROL)
+ 		return 0;
+@@ -1809,6 +1813,7 @@ struct uvc_driver uvc_driver = {
+ 		.suspend	= uvc_suspend,
+ 		.resume		= uvc_resume,
+ 		.id_table	= uvc_ids,
++		.supports_autosuspend = 1,
+ 	},
+ };
+ 
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002593.html">[Linux-uvc-devel] OmniVision webcam, error -45
+</A></li>
+	<LI>Next message: <A HREF="002605.html">[Linux-uvc-devel] [PATCH] uvcvideo: usb power management
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2594">[ date ]</a>
+              <a href="thread.html#2594">[ thread ]</a>
+              <a href="subject.html#2594">[ subject ]</a>
+              <a href="author.html#2594">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

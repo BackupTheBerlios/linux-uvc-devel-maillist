@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Skype w/ logitech quickcam 9000 pro
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Skype%20w/%20logitech%20quickcam%209000%20pro&In-Reply-To=%3C200801152038.13175.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002775.html">
+   <LINK REL="Next"  HREF="002796.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Skype w/ logitech quickcam 9000 pro</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Skype%20w/%20logitech%20quickcam%209000%20pro&In-Reply-To=%3C200801152038.13175.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Skype w/ logitech quickcam 9000 pro">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Jan 15 20:38:13 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002775.html">[Linux-uvc-devel] Skype w/ logitech quickcam 9000 pro
+</A></li>
+        <LI>Next message: <A HREF="002796.html">[Linux-uvc-devel] Skype w/ logitech quickcam 9000 pro
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2785">[ date ]</a>
+              <a href="thread.html#2785">[ thread ]</a>
+              <a href="subject.html#2785">[ subject ]</a>
+              <a href="author.html#2785">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Andrew,
+
+On Tuesday 15 January 2008, Andrew Perrin wrote:
+&gt;<i> On Tue, 15 Jan 2008, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; Hi Andrew,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Tuesday 15 January 2008, Andrew Perrin wrote:
+</I>&gt;<i> &gt;&gt; I have a quickcam 9000 pro working fine with luvcview, but it gives the
+</I>&gt;<i> &gt;&gt; famous &quot;black rectangle&quot; with Skype. This is the latest (166) rev. of
+</I>&gt;<i> &gt;&gt; uvcvideo. These messages are in the log when I try:
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; Jan 14 19:53:08 joehill kernel: ohci_hcd 0000:00:0b.0: leak ed f74175c0
+</I>&gt;<i> &gt;&gt; (#81) state 2
+</I>&gt;<i> &gt;&gt; Jan 14 19:53:22 joehill kernel: uvcvideo: Failed to submit URB 0 (-28).
+</I>&gt;<i> &gt;&gt; Jan 14 19:53:30 joehill kernel: ohci_hcd 0000:00:0b.0: leak ed f7417600
+</I>&gt;<i> &gt;&gt; (#81) state 2
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; -28 is -ENOSPC. It means using the device would exceed the available USB
+</I>&gt;<i> &gt; bus bandwidth. If your webcam is plugged into a hub try moving it to a
+</I>&gt;<i> &gt; root port. Make sure you're using an EHCI controller.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Best regards,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Laurent Pinchart
+</I>&gt;<i>
+</I>&gt;<i> Very interesting, and thanks for your quick reply. Plugging it directly
+</I>&gt;<i> into the USB port (instead of through a hub) makes both luvcview *and
+</I>&gt;<i> Skype* give a very flickery, but recognizable, image. luvcview dies after
+</I>&gt;<i> a few seconds with the result:
+</I>&gt;<i>
+</I>&gt;<i> Ignoring empty buffer ...
+</I>&gt;<i> Ignoring empty buffer ...
+</I>&gt;<i> Ignoring empty buffer ...
+</I>&gt;<i> Ignoring empty buffer ...
+</I>&gt;<i> Unable to dequeue buffer (22).
+</I>&gt;<i> Error grabbing
+</I>&gt;<i>   Clean Up done Quit
+</I>&gt;<i>
+</I>&gt;<i> ...while Skype just keeps the flickery image on.  /var/log/syslog
+</I>&gt;<i> contains:
+</I>&gt;<i>
+</I>&gt;<i> usb 1-6: new high speed USB device using ehci_hcd and address 9
+</I>&gt;<i> usb 1-6:  configuration #1 chosen from 1 choice
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:0990)
+</I>&gt;<i> usb 1-6: USB disconnect, address 9
+</I>&gt;<i> usb 1-6: new high speed USB device using ehci_hcd and address 10
+</I>&gt;<i> usb 1-6: device descriptor read/all, error -71
+</I>
+Your webcam seem to be very flaky. Failing to respond to the first GET 
+DESCRIPTOR request with -71 means serious hardware trouble.
+
+&gt;<i> usb 1-6: new high speed USB device using ehci_hcd and address 11
+</I>&gt;<i> usb 1-6: configuration #1 chosen from 1 choice
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:0990)
+</I>&gt;<i> uvcvideo: Failed to query (131) UVC control 1 (unit 0) : -71 (exp. 26).
+</I>&gt;<i> uvcvideo: Failed to query (131) UVC control 1 (unit 0) : -71 (exp. 26).
+</I>
+You should check your cables. Is your computer in an extremely noisy 
+environment (electrically speaking) ? Do you experience the same kind of 
+trouble with other USB devices ?
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002775.html">[Linux-uvc-devel] Skype w/ logitech quickcam 9000 pro
+</A></li>
+	<LI>Next message: <A HREF="002796.html">[Linux-uvc-devel] Skype w/ logitech quickcam 9000 pro
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2785">[ date ]</a>
+              <a href="thread.html#2785">[ thread ]</a>
+              <a href="subject.html#2785">[ subject ]</a>
+              <a href="author.html#2785">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

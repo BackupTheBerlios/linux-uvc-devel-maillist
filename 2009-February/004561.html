@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] QuickCam Orbit AF does not work
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20QuickCam%20Orbit%20AF%20does%20not%20work&In-Reply-To=%3C499AC759.4020409%40podzimek.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004568.html">
+   <LINK REL="Next"  HREF="004563.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] QuickCam Orbit AF does not work</H1>
+    <B>Andrej Podzimek</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20QuickCam%20Orbit%20AF%20does%20not%20work&In-Reply-To=%3C499AC759.4020409%40podzimek.org%3E"
+       TITLE="[Linux-uvc-devel] QuickCam Orbit AF does not work">andrej at podzimek.org
+       </A><BR>
+    <I>Tue Feb 17 15:19:05 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004568.html">[Linux-uvc-devel] [ANNOUNCE] Minoru3D camera supported by the Linux	UVC driver
+</A></li>
+        <LI>Next message: <A HREF="004563.html">[Linux-uvc-devel] QuickCam Orbit AF does not work (even with 2.6.28)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4561">[ date ]</a>
+              <a href="thread.html#4561">[ thread ]</a>
+              <a href="subject.html#4561">[ subject ]</a>
+              <a href="author.html#4561">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+
+I'm trying to make my new webcam work with uvcvideo. The model I use 
+should work fine according to the hardware compatibility list. 
+Unfortunately, this is not true in my case.
+
+This is what dmesg says after I plug in the camera:
+
+    usb 1-2: new high speed USB device using ehci_hcd and address 3
+    usb 1-2: configuration #1 chosen from 1 choice
+    v4l1_compat: module is already loaded
+    videodev: exports duplicate symbol video_unregister_device (owned by 
+kernel)
+    usbcore: registered new interface driver snd-usb-audio
+    v4l1_compat: module is already loaded
+    videodev: exports duplicate symbol video_unregister_device (owned by 
+kernel)
+    uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:0994)
+    videodev: &quot;&#65533;2&#65533;&quot; has no release callback. Please fix your driver for 
+proper sysfs support, see <A HREF="http://lwn.net/Articles/36850/">http://lwn.net/Articles/36850/</A>
+    input: UVC Camera (046d:0994) as /class/input/input9
+    usbcore: registered new interface driver uvcvideo
+
+I haven't found any program that would detect the camera. Tried Cheese, 
+Ekiga, Skype, Kopete and VLC... All of them either crash or freeze. This 
+is what I see in dmesg when I try to open the camera with VLC:
+
+    USB Video Class driver (v0.1.0)
+    BUG: unable to handle kernel paging request at 0c060b02
+    IP: [&lt;0c060b02&gt;]
+    *pde = 00000000
+    Oops: 0000 [#1] PREEMPT
+    Modules linked in: uvcvideo snd_usb_audio snd_usb_lib snd_rawmidi 
+snd_hwdep ipv6 aes_i586 aes_generic ieee80211_crypt_ccmp bnep sco l2cap 
+bluetooth rng_core video output ohci1394 ieee1394 tun ipw2200 ieee80211 
+ieee80211_crypt 8139too mii lp usbhid ppdev       parport_pc parport 
+uhci_hcd ohci_hcd evdev ehci_hcd usbcore i915 drm pcspkr snd_intel8x0m 
+snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss 
+snd_mixer_oss snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm 
+snd_page_alloc snd_rtctimer snd_timer snd soundcore rtc psmouse nsc_ircc 
+irda crc_ccitt cpufreq_ondemand pcmcia yenta_socket rsrc_nonstatic 
+pcmcia_core asus_laptop backlight speedstep_centrino freq_table lm90 
+hwmon i2c_i801
+
+    Pid: 11777, comm: vlc Not tainted (2.6.27.17-AP #2)
+    EIP: 0060:[&lt;0c060b02&gt;] EFLAGS: 00010202 CPU: 0
+    EIP is at 0xc060b02
+    EAX: c29fa180 EBX: 0c060b02 ECX: ae08dd14 EDX: 80685600
+    ESI: c29fa180 EDI: ae08dd14 EBP: 80685600 ESP: ed7a6f68
+     DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+    Process vlc (pid: 11777, ti=ed7a6000 task=c3418e00 task.ti=ed7a6000)
+    Stack: c018fccb d3e2459c c29fa180 fffffff7 0000001c ed7a6000 
+c018fd97 00000000
+           00000000 c29fa180 fffffff7 0000001c ed7a6000 c019006d 
+ae08dd14 00000001
+           0000001c 00000000 00000000 c010327d 0000001c 80685600 
+ae08dd14 00000000
+    Call Trace:
+     [&lt;c018fccb&gt;] vfs_ioctl+0x2b/0x90
+     [&lt;c018fd97&gt;] do_vfs_ioctl+0x67/0x300
+     [&lt;c019006d&gt;] sys_ioctl+0x3d/0x70
+     [&lt;c010327d&gt;] sysenter_do_call+0x12/0x25
+     =======================
+    Code:  Bad EIP value.
+    EIP: [&lt;0c060b02&gt;] 0xc060b02 SS:ESP 0068:ed7a6f68
+    ---[ end trace 94bdb257045f4ef3 ]---
+
+I use a vanilla kernel 2.6.27.17 with Reiser4 and Suspend2 patches. My 
+machine is a Asus M2400N laptop. This is modinfo uvcvideo with all the 
+version numbers and kernel details:
+
+    filename:       
+/lib/modules/2.6.27.17-AP/kernel/drivers/media/video/uvc/uvcvideo.ko
+    version:        v0.1.0
+    license:        GPL
+    description:    USB Video Class driver
+    author:         Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt;
+    srcversion:     28AC4F0572EC0186788A86D
+    alias:          usb:v*p*d*dc*dsc*dp*ic0Eisc01ip00*
+    alias:          usb:v1C4Fp3000d*dc*dsc*dp*ic0Eisc01ip00*
+    alias:          usb:v19ABp1000d00*dc*dsc*dp*ic0Eisc01ip00*
+    alias:          usb:v19ABp1000d01[0-1]*dc*dsc*dp*ic0Eisc01ip00*
+    alias:          usb:v19ABp1000d012[0-6]dc*dsc*dp*ic0Eisc01ip00*
+    alias:          usb:v18CDpCAFEd*dc*dsc*dp*ic0Eisc01ip00*
+    alias:          usb:v17EFp480Bd*dc*dsc*dp*ic0Eisc01ip00*
+    alias:          usb:v174Fp8A33d*dc*dsc*dp*ic0Eisc01ip00*
+    alias:          usb:v174Fp8A31d*dc*dsc*dp*ic0Eisc01ip00*
+    alias:          usb:v174Fp5931d*dc*dsc*dp*ic0Eisc01ip00*
+    alias:          usb:v174Fp5212d*dc*dsc*dp*ic0Eisc01ip00*
+    alias:          usb:v0E8Dp0004d*dc*dsc*dp*ic0Eisc01ip00*
+    alias:          usb:v0AC8p*d*dc*dsc*dp*ic0Eisc01ip00*
+    alias:          usb:v05E3p0505d*dc*dsc*dp*ic0Eisc01ip00*
+    alias:          usb:v05ACp8501d*dc*dsc*dp*ic0Eisc01ip00*
+    alias:          usb:v058Fp3820d*dc*dsc*dp*ic0Eisc01ip00*
+    alias:          usb:v046Dp08C7d*dc*dsc*dp*icFFisc01ip00*
+    alias:          usb:v046Dp08C6d*dc*dsc*dp*icFFisc01ip00*
+    alias:          usb:v046Dp08C5d*dc*dsc*dp*icFFisc01ip00*
+    alias:          usb:v046Dp08C3d*dc*dsc*dp*icFFisc01ip00*
+    alias:          usb:v046Dp08C2d*dc*dsc*dp*icFFisc01ip00*
+    alias:          usb:v046Dp08C1d*dc*dsc*dp*icFFisc01ip00*
+    alias:          usb:v045Ep0723d*dc*dsc*dp*ic0Eisc01ip00*
+    alias:          usb:v045Ep00F8d*dc*dsc*dp*ic0Eisc01ip00*
+    depends:        usbcore
+    vermagic:       2.6.27.17-AP preempt mod_unload PENTIUMM 4KSTACKS
+    parm:           nodrop:Don't drop incomplete frames (uint)
+    parm:           quirks:Forced device quirks (uint)
+    parm:           trace:Trace level bitmask (uint)
+
+According to the device list, this webcam should just work. So there 
+must be something I'm doing wrong. A piece of good advice would help me 
+a lot.
+
+Regards,
+
+Andrej Podzimek
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004568.html">[Linux-uvc-devel] [ANNOUNCE] Minoru3D camera supported by the Linux	UVC driver
+</A></li>
+	<LI>Next message: <A HREF="004563.html">[Linux-uvc-devel] QuickCam Orbit AF does not work (even with 2.6.28)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4561">[ date ]</a>
+              <a href="thread.html#4561">[ thread ]</a>
+              <a href="subject.html#4561">[ subject ]</a>
+              <a href="author.html#4561">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

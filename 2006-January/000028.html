@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] rev 4 test with kernel smp Intel x86_64
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20rev%204%20test%20with%20kernel%20smp%20Intel%20x86_64&In-Reply-To=%3C200601061159.52214.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000027.html">
+   <LINK REL="Next"  HREF="000029.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] rev 4 test with kernel smp Intel x86_64</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20rev%204%20test%20with%20kernel%20smp%20Intel%20x86_64&In-Reply-To=%3C200601061159.52214.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] rev 4 test with kernel smp Intel x86_64">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Fri Jan  6 11:59:52 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000027.html">[Linux-uvc-devel] rev 4 test with kernel smp Intel x86_64
+</A></li>
+        <LI>Next message: <A HREF="000029.html">[Linux-uvc-devel] rev 4 test with kernel smp Intel x86_64
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#28">[ date ]</a>
+              <a href="thread.html#28">[ thread ]</a>
+              <a href="subject.html#28">[ subject ]</a>
+              <a href="author.html#28">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> Laurent,
+</I>&gt;<i> I am still trying to figure out where the corruption come from on the SMP
+</I>&gt;<i> box. After some usefull uvc_printk() and moving some part of code from
+</I>&gt;<i> uvc_video_decode() to uvc_video_complete() i can make MJPEG working or not
+</I>&gt;<i> :( even if my code do nothing exept take the value in the iso desc buffer
+</I>&gt;<i> brr .
+</I>
+Mmmmm... Sounds like a timing issue... I don't like those.
+
+&gt;<i> On each usb packet desc (data[0]) the first field reffer to the packet
+</I>&gt;<i> header lenght ?
+</I>
+(from the UVC specs)
+
+&quot;Each Uncompressed frame is considered a single video sample. A video sample 
+is made up of one or more payload transfers (as defined in the USB Device 
+Class Specification for Video Devices).
+
+For an isochronous pipe, each (micro) frame will contain a single payload 
+transfer. Each payload transfer will consist of a payload header immediately 
+followed by payload data in one or more data transactions (up to 3 data 
+transactions for high speed high bandwidth endpoints).&quot;
+
+So each frame contains a header followed by data. The frame can span up to 3 
+data transactions, but that's handled by the USB layer and transparent for 
+the driver.
+
+&gt;<i> with yuyv palette the stream start with that field set to 0 
+</I>&gt;<i> then toggle to 12 in the stream and  for a short  times ( ~2 usb packet)
+</I>&gt;<i> goes to 0 when the packet length is full ? this feature only appear on yuyv
+</I>&gt;<i> palette.
+</I>
+That shouldn't happen. From my understanding of the spec, the header length 
+should always be at least 2 (the HLE and BFH fields seem to be required, the 
+PTS and SCR fields are optional).
+
+&gt;<i> On a UP box this field is constant and always egal to 12. 
+</I>
+That's how it should be.
+
+&gt;<i> I think we are not getting the right data from the urb buffer here :(
+</I>
+Might... I'd like you to run the same tests on the SMP box with SMP disabled. 
+I'd like to be sure it's not a USB controller issue. Which kernel version are 
+you running ?
+
+&gt;<i> In my experiment i have get some good kernel crash :)  I suspect on restart
+</I>&gt;<i> the last synchro bit in the queue is not reset or maybe my grabber is wrong
+</I>&gt;<i> and need to dequeue all buffers on stop ?
+</I>
+The synchro bit is reset on restart, but I had forgotten to mark the buffers 
+as idle. This is fixed in svn.
+
+If the last packet of a frame is lost (which can happen with isochronous 
+transfers), the EOF bit will not be seen and the FID bit will toggle on the 
+next frame. The driver currently doesn't handle that properly, but it 
+shouldn't result in a 0 header length. Try to print the second header byte as 
+well (data[1]) as an hexadecimal number, and see if it tells you anything 
+(have a look at USB_Video_Payload_Uncompressed_1.1.pdf to find the stream 
+header description).
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000027.html">[Linux-uvc-devel] rev 4 test with kernel smp Intel x86_64
+</A></li>
+	<LI>Next message: <A HREF="000029.html">[Linux-uvc-devel] rev 4 test with kernel smp Intel x86_64
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#28">[ date ]</a>
+              <a href="thread.html#28">[ thread ]</a>
+              <a href="subject.html#28">[ subject ]</a>
+              <a href="author.html#28">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

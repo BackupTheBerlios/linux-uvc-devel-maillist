@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] luvcview related issue
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20luvcview%20related%20issue&In-Reply-To=%3C2B1A94C4B9057A419C179AA9A2741E021E85E2%40MBX22.stu.nus.edu.sg%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000694.html">
+   <LINK REL="Next"  HREF="000707.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] luvcview related issue</H1>
+    <B>Ajay Kumar Mishra</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20luvcview%20related%20issue&In-Reply-To=%3C2B1A94C4B9057A419C179AA9A2741E021E85E2%40MBX22.stu.nus.edu.sg%3E"
+       TITLE="[Linux-uvc-devel] luvcview related issue">ajay.mishra at nus.edu.sg
+       </A><BR>
+    <I>Fri Aug 11 12:42:10 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000694.html">[Linux-uvc-devel] luvcview related issue
+</A></li>
+        <LI>Next message: <A HREF="000707.html">[Linux-uvc-devel] luvcview related issue
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#695">[ date ]</a>
+              <a href="thread.html#695">[ thread ]</a>
+              <a href="subject.html#695">[ subject ]</a>
+              <a href="author.html#695">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Gabriel,
+
+About error:
+Yes, you are right. They indeed are the same. It usually comes when I
+try to use -t&lt;k&gt; option to grab the frames after every &lt;k&gt; seconds, by
+the way this feature does not work. My guess is that after each grabbing
+it initializes the stream and available time of &lt;k&gt; seconds falls short
+of what is required for initialization. For any further attempt to read
+the device using &quot;uvccapture and luvcview&quot;, it outputs &quot;Init V4l2&quot;
+error. 
+
+The problem, however, is fixed when I log off and log in again.
+
+About simultaneous capture:
+As I said I am using 3 cameras. I have used three separate commands to
+capture the images from /dev/device0, /dev/device1, /dev/device2. But
+there is a problem. All three commands are executed one after another
+and hence, three different shots don't remain simultaneous shots. I need
+it for 3D reconstruction of the moving object in the scene. And posture
+of the object seems to vary a lot in all three views of it.
+
+To fix this, I have thought to do following. Let me know if they have
+got any merit and please suggest the best way to achieve it.
+1. uvccapture gives .jpg image as output. If it instead outputs raw
+data, I think it will execute faster. And hence overall time delay
+between first and third would not significant. I shall later convert RAW
+image into JPG.
+
+2. Can the stream capture be parallelized for the three devices such
+that they seem to capture the scene all at once? 
+
+Thanks,
+Ajay
+
+-----Original Message-----
+From: Gabriel A. Devenyi [mailto:<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">ace at staticwave.ca</A>] 
+Sent: Friday, August 11, 2006 6:19 PM
+To: Ajay Kumar Mishra
+Cc: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel at lists.berlios.de</A>
+Subject: Re: [Linux-uvc-devel] luvcview related issue
+
+Ajay Kumar Mishra wrote:
+&gt;<i> I did try to use uvccapture. It works well until something happens and
+</I>&gt;<i> it starts giving me the message &quot;Init V4l2 failed&quot;. I tried to debug
+</I>&gt;<i> V4l2uvc.c file. But no luck!!
+</I>&gt;<i> It is unable to process in the function init_v4l2().
+</I>&gt;<i>  if (init_v4l2 (vd) &lt; 0) {
+</I>&gt;<i>    fprintf (stderr, &quot; Init v4L2 failed !! exit fatal \n&quot;);
+</I>&gt;<i>    goto error;;
+</I>&gt;<i>  }
+</I>
+This looks suspiciously similar to the issue you were having with
+luvcview, are you trying to use the read switch which is not supported
+by the uvc driver? uvccapture is a derivative of luvcview, so the core
+error messages are mostly the same.
+
+&gt;<i> Moreover, I need to grab frames simultaneously from different cameras.
+</I>&gt;<i> there does not seem to be any option to read different devices at
+</I>once.
+&gt;<i> If I grab the frames one after another. I am sure there will be some
+</I>&gt;<i> delay. So, Do you know any way out of this problem?
+</I>
+You can just run two instances of uvccapture each with a different
+device option (-d /dev/video0 and another /dev/video1) This way you have
+independent control of each of the capture options, and filenames
+
+--
+Gabriel A. Devenyi
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">ace at staticwave.ca</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000694.html">[Linux-uvc-devel] luvcview related issue
+</A></li>
+	<LI>Next message: <A HREF="000707.html">[Linux-uvc-devel] luvcview related issue
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#695">[ date ]</a>
+              <a href="thread.html#695">[ thread ]</a>
+              <a href="subject.html#695">[ subject ]</a>
+              <a href="author.html#695">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

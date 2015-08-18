@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] QuickCam Orbit AF does not work (even with 2.6.28)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20QuickCam%20Orbit%20AF%20does%20not%20work%20%28even%20with%202.6.28%29&In-Reply-To=%3C499B7FD2.80901%40podzimek.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004561.html">
+   <LINK REL="Next"  HREF="004566.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] QuickCam Orbit AF does not work (even with 2.6.28)</H1>
+    <B>Andrej Podzimek</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20QuickCam%20Orbit%20AF%20does%20not%20work%20%28even%20with%202.6.28%29&In-Reply-To=%3C499B7FD2.80901%40podzimek.org%3E"
+       TITLE="[Linux-uvc-devel] QuickCam Orbit AF does not work (even with 2.6.28)">andrej at podzimek.org
+       </A><BR>
+    <I>Wed Feb 18 04:26:10 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004561.html">[Linux-uvc-devel] QuickCam Orbit AF does not work
+</A></li>
+        <LI>Next message: <A HREF="004566.html">[Linux-uvc-devel] QuickCam Orbit AF does not work (even with	2.6.28)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4563">[ date ]</a>
+              <a href="thread.html#4563">[ thread ]</a>
+              <a href="subject.html#4563">[ subject ]</a>
+              <a href="author.html#4563">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+
+I switched to kernel 2.6.28.6 (vanilla) hoping that my camera could work this time. This is what I got:
+
+usb 1-2.2: new high speed USB device using ehci_hcd and address 9
+usb 1-2.2: configuration #1 chosen from 1 choice
+v4l1_compat: module is already loaded
+videodev: exports duplicate symbol video_unregister_device (owned by kernel)
+usbcore: registered new interface driver snd-usb-audio
+v4l1_compat: module is already loaded
+videodev: exports duplicate symbol video_unregister_device (owned by kernel)
+uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:0994)
+------------[ cut here ]------------
+kernel BUG at drivers/media/video/v4l2-dev.c:229!
+invalid opcode: 0000 [#1] PREEMPT
+last sysfs file: /sys/devices/pci0000:00/0000:00:1d.7/usb1/1-2/1-2.2/1-2.2:1.2/bInterfaceProtocol
+Modules linked in: uvcvideo(+) snd_usb_audio snd_usb_lib snd_rawmidi snd_hwdep ipv6 aes_i586 aes_generic ieee80211_crypt_ccmp rfcomm bnep sco l2cap btusb bluetooth usbhid rng_core video output ohci1394 ieee1394 tun ipw2200 ieee80211 ieee80211_crypt 8139too mii lp ppdev parport_pc parport uhci_hcd ohci_hcd ehci_hcd usbcore i915 drm pcspkr snd_intel8x0m evdev snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_intel8x0 snd_ac97_codec snd_pcm_oss snd_mixer_oss ac97_bus snd_pcm snd_page_alloc snd_rtctimer snd_timer snd soundcore rtc psmouse nsc_ircc irda crc_ccitt cpufreq_ondemand pcmcia yenta_socket rsrc_nonstatic pcmcia_core asus_laptop backlight speedstep_centrino freq_table lm90 hwmon i2c_i801
+
+Pid: 12352, comm: modprobe Not tainted (2.6.28.6-AP #1) M2N
+EIP: 0060:[&lt;c02c3d9c&gt;] EFLAGS: 00010246 CPU: 0
+EIP is at video_register_device_index+0x42c/0x430
+EAX: 00000000 EBX: 00000000 ECX: ffffffff EDX: 00000000
+ESI: c1c52c00 EDI: ffffffff EBP: c9885a80 ESP: d6ba4c70
+ DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+Process modprobe (pid: 12352, ti=d6ba4000 task=db564000 task.ti=d6ba4000)
+Stack:
+ 810da8a0 00000001 ed805054 00000081 ed805000 c988552c ed805064 ed805054
+ ed805054 00000292 c1c52c00 ed805000 ed805054 c9885a80 c02c3daf ffffffff
+ f04f2a1d f04f9bb0 00000001 00000000 f04fb196 0000046d 00000994 ed805000
+Call Trace:
+ [&lt;c02c3daf&gt;] video_register_device+0xf/0x20
+ [&lt;f04f2a1d&gt;] uvc_probe+0xa2d/0xd60 [uvcvideo]
+ [&lt;f009babc&gt;] usb_probe_interface+0xac/0x160 [usbcore]
+ [&lt;c02be387&gt;] driver_probe_device+0x87/0x1b0
+ [&lt;f009ae69&gt;] usb_match_id+0x49/0x70 [usbcore]
+ [&lt;c02be539&gt;] __driver_attach+0x89/0x90
+ [&lt;c02bdc64&gt;] bus_for_each_dev+0x44/0x70
+ [&lt;c02be216&gt;] driver_attach+0x16/0x20
+ [&lt;c02be4b0&gt;] __driver_attach+0x0/0x90
+ [&lt;c02bd5ef&gt;] bus_add_driver+0x1bf/0x240
+ [&lt;c02be6cc&gt;] driver_register+0x5c/0x130
+ [&lt;f009bd9a&gt;] usb_register_driver+0x7a/0xf0 [usbcore]
+ [&lt;f0501000&gt;] uvc_init+0x0/0x86 [uvcvideo]
+ [&lt;f0501000&gt;] uvc_init+0x0/0x86 [uvcvideo]
+ [&lt;f050106d&gt;] uvc_init+0x6d/0x86 [uvcvideo]
+ [&lt;c023dae2&gt;] ida_get_new_above+0x82/0x210
+ [&lt;c0101126&gt;] do_one_initcall+0x36/0x1b0
+ [&lt;c01cf8b0&gt;] sysfs_ilookup_test+0x0/0x10
+ [&lt;c01cfcf1&gt;] __sysfs_add_one+0x11/0xa0
+ [&lt;c01d00b4&gt;] sysfs_addrm_finish+0x14/0x240
+ [&lt;c01775c0&gt;] __vunmap+0xb0/0xe0
+ [&lt;c0147fd2&gt;] load_module+0x12e2/0x1450
+ [&lt;c011b2b6&gt;] update_curr+0x136/0x1a0
+ [&lt;c011f5d5&gt;] finish_task_switch+0x95/0xc0
+ [&lt;c011f5d5&gt;] finish_task_switch+0x95/0xc0
+ [&lt;c011f5d5&gt;] finish_task_switch+0x95/0xc0
+ [&lt;c03aa3d9&gt;] schedule+0x1e9/0x390
+ [&lt;c014829b&gt;] sys_init_module+0x8b/0x1b0
+ [&lt;c01033cd&gt;] sysenter_do_call+0x12/0x25
+Code: 64 0e 00 e9 c5 fe ff ff bf 60 0f 3d c0 89 7c 24 04 c7 04 24 9c 48 44 c0 e8 1a 64 0e 00 8b 44 24 14 e8 89 66 ec ff e9 a2 fe ff ff &lt;0f&gt; 0b eb fe 83 ec 04 c7 04 24 ff ff ff ff e8 c1 fb ff ff 5a c3
+EIP: [&lt;c02c3d9c&gt;] video_register_device_index+0x42c/0x430 SS:ESP 0068:d6ba4c70
+---[ end trace ad37cc8929c6494c ]---
+
+Feel free to ask for more debug info.
+
+I guess snd-usb-audio needs some options or quirks here. KMix shows a new USB audio device, but the first attempt to change its volume blocks the mixer channel. Audacity recorded about half a second of weird noise from the webcam before the sound input got interrupted for some reason.
+
+Tried the old workaround that forces snd-usb-audio to be loaded before uvcvideo. The problem seems to persist and the error messages are similar.
+
+Plugging and unplugging the camera multiple times seems to crash the whole USB controller. Even my keyboard and mouse stopped working. Fortunately, my laptop's internal keyboard still works. ;-) Error -71 was reported. (Excessive electromagnetic noise in the cable...? That's weird.)
+
+Should I report this to the kernel bugzilla? If you want me to carry out more webcam experiments, I'm ready to help.
+
+Regards,
+
+Andrej Podzimek
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004561.html">[Linux-uvc-devel] QuickCam Orbit AF does not work
+</A></li>
+	<LI>Next message: <A HREF="004566.html">[Linux-uvc-devel] QuickCam Orbit AF does not work (even with	2.6.28)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4563">[ date ]</a>
+              <a href="thread.html#4563">[ thread ]</a>
+              <a href="subject.html#4563">[ subject ]</a>
+              <a href="author.html#4563">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

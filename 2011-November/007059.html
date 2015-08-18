@@ -1,0 +1,175 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Sweex WC061 HD Webcam Sliver
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Sweex%20WC061%20HD%20Webcam%20Sliver&In-Reply-To=%3CCAHGSkqiA8pk%2BETg7BmLYcM%3DdyKmZ3qxV7hzxSDrogQokHCnHOQ%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007017.html">
+   <LINK REL="Next"  HREF="007064.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Sweex WC061 HD Webcam Sliver</H1>
+    <B>Michael Tandy</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Sweex%20WC061%20HD%20Webcam%20Sliver&In-Reply-To=%3CCAHGSkqiA8pk%2BETg7BmLYcM%3DdyKmZ3qxV7hzxSDrogQokHCnHOQ%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Sweex WC061 HD Webcam Sliver">michaeltandy at gmail.com
+       </A><BR>
+    <I>Mon Nov 14 20:20:12 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007017.html">[Linux-uvc-devel] Sweex WC061 HD Webcam Sliver
+</A></li>
+        <LI>Next message: <A HREF="007064.html">[Linux-uvc-devel] Sweex WC061 HD Webcam Sliver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7059">[ date ]</a>
+              <a href="thread.html#7059">[ thread ]</a>
+              <a href="subject.html#7059">[ subject ]</a>
+              <a href="author.html#7059">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I did some more experiments with this webcam, and with a nasty hack
+got it working.
+
+Basically the problem seems to be the frame interval requested. If I
+replace line 175 of uvc_v4l2.c [1] with
+
+probe-&gt;dwFrameInterval = 2500000;
+
+the camera works fine in mjpeg mode.
+
+The frame interval behaves oddly in this camera, in that if you set
+the frame interval above a certain threshold the camera seems to
+ignore it and send frames at whatever rate it feels like, but if you
+set it below a certain threshold the camera exhibits the bug I've
+described above, sending back corrupted frames and error codes. Most
+likely a firmware bug, as I can't imagine anyone would design a camera
+to function that way.
+
+I assume we wouldn't be inclined to patch the kernel to deal with this
+one camera's weird behaviour?
+
+[1] <A HREF="http://lxr.free-electrons.com/source/drivers/media/video/uvc/uvc_v4l2.c?v=2.6.28#L175">http://lxr.free-electrons.com/source/drivers/media/video/uvc/uvc_v4l2.c?v=2.6.28#L175</A>
+
+
+On 3 November 2011 10:20, Laurent Pinchart
+&lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt; wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> On Wednesday 07 September 2011 08:11:48 Alexey Fisher wrote:
+</I>&gt;&gt;<i> Am 06.09.2011 12:53, schrieb Michael Tandy:
+</I>&gt;&gt;<i> &gt; [99317.553237] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMON)
+</I>&gt;&gt;<i> &gt; [99317.554747] uvcvideo: uvc_v4l2_poll
+</I>&gt;&gt;<i> &gt; [99333.472385] uvcvideo: Dropping payload (error bit set).
+</I>&gt;&gt;<i> &gt; [99333.472389] uvcvideo: Frame complete (EOF found).
+</I>&gt;&gt;<i> &gt; [99333.472391] uvcvideo: EOF in empty payload.
+</I>&gt;&gt;<i> &gt; [99333.472429] uvcvideo: uvc_v4l2_poll
+</I>&gt;&gt;<i> &gt; [99333.472438] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+</I>&gt;&gt;<i> &gt; [99333.472447] uvcvideo: Dequeuing buffer 0 (3, 2676 bytes).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> hmm... the camera notify us about with error bit set, but current driver
+</I>&gt;&gt;<i> will just drop it and mark the buffer as faulty.
+</I>&gt;<i>
+</I>&gt;<i> As the data can't be trusted, the uvcvideo driver decides to drop the packet.
+</I>&gt;<i> Alternatively the packet could be processed normally and the buffer market as
+</I>&gt;<i> bad. It would then be up to the application to decide what to do with such
+</I>&gt;<i> buffers (you will have to set the no_drop module parameter to 1, as the driver
+</I>&gt;<i> drops faulty buffers by default).
+</I>&gt;<i>
+</I>&gt;<i> The following patch should implement that behaviour, in case you want to test
+</I>&gt;<i> it.
+</I>&gt;<i>
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvc_video.c b/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> index ffd1158..baa5850 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> @@ -419,13 +419,6 @@ static int uvc_video_decode_start(struct uvc_streaming *stream,
+</I>&gt;<i> &#160; &#160; &#160; &#160;if (len &lt; 2 || data[0] &lt; 2 || data[0] &gt; len)
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;return -EINVAL;
+</I>&gt;<i>
+</I>&gt;<i> - &#160; &#160; &#160; /* Skip payloads marked with the error bit (&quot;error frames&quot;). */
+</I>&gt;<i> - &#160; &#160; &#160; if (data[1] &amp; UVC_STREAM_ERR) {
+</I>&gt;<i> - &#160; &#160; &#160; &#160; &#160; &#160; &#160; uvc_trace(UVC_TRACE_FRAME, &quot;Dropping payload (error bit &quot;
+</I>&gt;<i> - &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &quot;set).\n&quot;);
+</I>&gt;<i> - &#160; &#160; &#160; &#160; &#160; &#160; &#160; return -ENODATA;
+</I>&gt;<i> - &#160; &#160; &#160; }
+</I>&gt;<i> -
+</I>&gt;<i> &#160; &#160; &#160; &#160;fid = data[1] &amp; UVC_STREAM_FID;
+</I>&gt;<i>
+</I>&gt;<i> &#160; &#160; &#160; &#160;/* Increase the sequence number regardless of any buffer states, so
+</I>&gt;<i> @@ -442,6 +435,13 @@ static int uvc_video_decode_start(struct uvc_streaming *stream,
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;return -ENODATA;
+</I>&gt;<i> &#160; &#160; &#160; &#160;}
+</I>&gt;<i>
+</I>&gt;<i> + &#160; &#160; &#160; /* Mark the buffer as bad if the error bit is set. */
+</I>&gt;<i> + &#160; &#160; &#160; if (data[1] &amp; UVC_STREAM_ERR) {
+</I>&gt;<i> + &#160; &#160; &#160; &#160; &#160; &#160; &#160; uvc_trace(UVC_TRACE_FRAME, &quot;Marking buffer as bad (error bit &quot;
+</I>&gt;<i> + &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &quot;set).\n&quot;);
+</I>&gt;<i> + &#160; &#160; &#160; &#160; &#160; &#160; &#160; buf-&gt;error = 1;
+</I>&gt;<i> + &#160; &#160; &#160; }
+</I>&gt;<i> +
+</I>&gt;<i> &#160; &#160; &#160; &#160;/* Synchronize to the input stream by waiting for the FID bit to be
+</I>&gt;<i> &#160; &#160; &#160; &#160; * toggled when the the buffer state is not UVC_BUF_STATE_ACTIVE.
+</I>&gt;<i> &#160; &#160; &#160; &#160; * stream-&gt;last_fid is initialized to -1, so the first isochronous
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;&gt;<i> According to uvc specification v1.1 in &quot;4.3.1.7 Stream Error Code
+</I>&gt;&gt;<i> Control&quot; we can/should check the error reason:
+</I>&gt;&gt;<i> -------------------------------------------------------------------
+</I>&gt;&gt;<i> The host software should send a GET_CUR request to this control to
+</I>&gt;&gt;<i> determine the error when one of the following events occurs:
+</I>&gt;&gt;<i> - The Error bit in the video or still image payload header is set by the
+</I>&gt;&gt;<i> device
+</I>&gt;&gt;<i> ....
+</I>&gt;&gt;<i> For scenarios where the host is transmitting video data to the device,
+</I>&gt;&gt;<i> the host can not use the Error bit in the payload header to detect a
+</I>&gt;&gt;<i> device error. Therefore, in order to determine when a streaming error
+</I>&gt;&gt;<i> occurs, the host must rely on either a Control Change interrupt from the
+</I>&gt;&gt;<i> device or a bulk endpoint stall.
+</I>&gt;&gt;<i> --------------------------------------------------------------------
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I'm suddenly not so good to implement ne things without testing and
+</I>&gt;&gt;<i> probing. May be Laurent can do this? Or i need access to the webcam.
+</I>&gt;<i>
+</I>&gt;<i> Retrieving the cause of the error requires sending a control request, which
+</I>&gt;<i> can't be done in interrupt context. This could be implemented, but won't be
+</I>&gt;<i> trivial, and I'm not sure it will give any useful information anyway. Knowing
+</I>&gt;<i> whether the error comes from a buffer underrun, a buffer overrun or something
+</I>&gt;<i> else won't let the driver fix the error.
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Regards,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007017.html">[Linux-uvc-devel] Sweex WC061 HD Webcam Sliver
+</A></li>
+	<LI>Next message: <A HREF="007064.html">[Linux-uvc-devel] Sweex WC061 HD Webcam Sliver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7059">[ date ]</a>
+              <a href="thread.html#7059">[ thread ]</a>
+              <a href="subject.html#7059">[ subject ]</a>
+              <a href="author.html#7059">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

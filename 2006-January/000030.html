@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] rev 4 test with kernel smp Intel x86_64
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20rev%204%20test%20with%20kernel%20smp%20Intel%20x86_64&In-Reply-To=%3C200601061256.51088.mxhaard%40magic.fr%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000037.html">
+   <LINK REL="Next"  HREF="000010.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] rev 4 test with kernel smp Intel x86_64</H1>
+    <B>michel Xhaard</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20rev%204%20test%20with%20kernel%20smp%20Intel%20x86_64&In-Reply-To=%3C200601061256.51088.mxhaard%40magic.fr%3E"
+       TITLE="[Linux-uvc-devel] rev 4 test with kernel smp Intel x86_64">mxhaard at magic.fr
+       </A><BR>
+    <I>Fri Jan  6 12:56:50 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000037.html">[Linux-uvc-devel] rev 4 test with kernel smp Intel x86_64
+</A></li>
+        <LI>Next message: <A HREF="000010.html">[Linux-uvc-devel] Initial use of UVC driver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#30">[ date ]</a>
+              <a href="thread.html#30">[ thread ]</a>
+              <a href="subject.html#30">[ subject ]</a>
+              <a href="author.html#30">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Le Vendredi 6 Janvier 2006 11:59, Laurent Pinchart a &#233;crit&#160;:
+&gt;<i> &gt; Laurent,
+</I>&gt;<i> &gt; I am still trying to figure out where the corruption come from on the SMP
+</I>&gt;<i> &gt; box. After some usefull uvc_printk() and moving some part of code from
+</I>&gt;<i> &gt; uvc_video_decode() to uvc_video_complete() i can make MJPEG working or
+</I>&gt;<i> &gt; not
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; :( even if my code do nothing exept take the value in the iso desc buffer
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; brr .
+</I>&gt;<i>
+</I>&gt;<i> Mmmmm... Sounds like a timing issue... I don't like those.
+</I>&gt;<i>
+</I>&gt;<i> &gt; On each usb packet desc (data[0]) the first field reffer to the packet
+</I>&gt;<i> &gt; header lenght ?
+</I>&gt;<i>
+</I>&gt;<i> (from the UVC specs)
+</I>&gt;<i>
+</I>&gt;<i> &quot;Each Uncompressed frame is considered a single video sample. A video
+</I>&gt;<i> sample is made up of one or more payload transfers (as defined in the USB
+</I>&gt;<i> Device Class Specification for Video Devices).
+</I>&gt;<i>
+</I>&gt;<i> For an isochronous pipe, each (micro) frame will contain a single payload
+</I>&gt;<i> transfer. Each payload transfer will consist of a payload header
+</I>&gt;<i> immediately followed by payload data in one or more data transactions (up
+</I>&gt;<i> to 3 data transactions for high speed high bandwidth endpoints).&quot;
+</I>&gt;<i>
+</I>&gt;<i> So each frame contains a header followed by data. The frame can span up to
+</I>&gt;<i> 3 data transactions, but that's handled by the USB layer and transparent
+</I>&gt;<i> for the driver.
+</I>&gt;<i>
+</I>&gt;<i> &gt; with yuyv palette the stream start with that field set to 0
+</I>&gt;<i> &gt; then toggle to 12 in the stream and  for a short  times ( ~2 usb packet)
+</I>&gt;<i> &gt; goes to 0 when the packet length is full ? this feature only appear on
+</I>&gt;<i> &gt; yuyv palette.
+</I>&gt;<i>
+</I>&gt;<i> That shouldn't happen. From my understanding of the spec, the header length
+</I>&gt;<i> should always be at least 2 (the HLE and BFH fields seem to be required,
+</I>&gt;<i> the PTS and SCR fields are optional).
+</I>&gt;<i>
+</I>&gt;<i> &gt; On a UP box this field is constant and always egal to 12.
+</I>&gt;<i>
+</I>&gt;<i> That's how it should be.
+</I>&gt;<i>
+</I>&gt;<i> &gt; I think we are not getting the right data from the urb buffer here :(
+</I>&gt;<i>
+</I>&gt;<i> Might... I'd like you to run the same tests on the SMP box with SMP
+</I>&gt;<i> disabled. I'd like to be sure it's not a USB controller issue. Which kernel
+</I>&gt;<i> version are you running ?
+</I>&gt;<i>
+</I>&gt;<i> &gt; In my experiment i have get some good kernel crash :)  I suspect on
+</I>&gt;<i> &gt; restart the last synchro bit in the queue is not reset or maybe my
+</I>&gt;<i> &gt; grabber is wrong and need to dequeue all buffers on stop ?
+</I>&gt;<i>
+</I>&gt;<i> The synchro bit is reset on restart, but I had forgotten to mark the
+</I>&gt;<i> buffers as idle. This is fixed in svn.
+</I>&gt;<i>
+</I>&gt;<i> If the last packet of a frame is lost (which can happen with isochronous
+</I>&gt;<i> transfers), the EOF bit will not be seen and the FID bit will toggle on the
+</I>&gt;<i> next frame. The driver currently doesn't handle that properly, but it
+</I>&gt;<i> shouldn't result in a 0 header length. Try to print the second header byte
+</I>&gt;<i> as well (data[1]) as an hexadecimal number, and see if it tells you
+</I>&gt;<i> anything (have a look at USB_Video_Payload_Uncompressed_1.1.pdf to find the
+</I>&gt;<i> stream header description).
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>Laurent,
+<A HREF="http://mxhaard.free.fr/spca50x/Investigation/uvc/">http://mxhaard.free.fr/spca50x/Investigation/uvc/</A>
+messages.tar.gz from my /var/log/messages
+first part MJPEG stream working
+second part YUYV not working
+I have also set here the uvc_video_complete() used for this record 
+for a best understanding (without pass by indent sorry :))
+The only difference from the original is i bypass when len &lt;= data[0] as i did 
+not want to fill all my harddrive :)
+-- 
+Michel Xhaard
+<A HREF="http://mxhaard.free.fr">http://mxhaard.free.fr</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000037.html">[Linux-uvc-devel] rev 4 test with kernel smp Intel x86_64
+</A></li>
+	<LI>Next message: <A HREF="000010.html">[Linux-uvc-devel] Initial use of UVC driver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#30">[ date ]</a>
+              <a href="thread.html#30">[ thread ]</a>
+              <a href="subject.html#30">[ subject ]</a>
+              <a href="author.html#30">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

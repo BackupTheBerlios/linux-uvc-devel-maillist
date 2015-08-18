@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] RE : Re:  bug in uvc_status.c ? dev.parent
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20RE%20%3A%20Re%3A%20%20bug%20in%20uvc_status.c%20%3F%20dev.parent&In-Reply-To=%3C119604.69005.qm%40web28009.mail.ukl.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003328.html">
+   <LINK REL="Next"  HREF="003332.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] RE : Re:  bug in uvc_status.c ? dev.parent</H1>
+    <B>ds ds</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20RE%20%3A%20Re%3A%20%20bug%20in%20uvc_status.c%20%3F%20dev.parent&In-Reply-To=%3C119604.69005.qm%40web28009.mail.ukl.yahoo.com%3E"
+       TITLE="[Linux-uvc-devel] RE : Re:  bug in uvc_status.c ? dev.parent">dsant69 at yahoo.fr
+       </A><BR>
+    <I>Mon Apr  7 08:59:22 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003328.html">[Linux-uvc-devel] bug in uvc_status.c ? dev.parent
+</A></li>
+        <LI>Next message: <A HREF="003332.html">[Linux-uvc-devel] RE : Re:  bug in uvc_status.c ? dev.parent
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3331">[ date ]</a>
+              <a href="thread.html#3331">[ thread ]</a>
+              <a href="subject.html#3331">[ subject ]</a>
+              <a href="author.html#3331">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+--- Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; a
+&#233;crit&#160;:
+
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> On Saturday 05 April 2008, ds ds wrote:
+</I>&gt;<i> &gt; Hi, in uvc_status.c line 46, we have :
+</I>&gt;<i> &gt; input-&gt;dev.parent = something...
+</I>&gt;<i> &gt; &quot;dev&quot; is a pointer on &quot;struct uvc_device&quot; defined
+</I>&gt;<i> in
+</I>&gt;<i> &gt; file uvcvideo.h line 593
+</I>&gt;<i> &gt; but no &quot;parent&quot; here...
+</I>&gt;<i> &gt; I don't think &quot;parent&quot; is a C reserved word.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Here is my output :
+</I>&gt;<i> &gt; $ make
+</I>&gt;<i> &gt; Building USB Video Class driver...
+</I>&gt;<i> &gt; make[1]: Entering directory
+</I>&gt;<i> &gt; `/usr/src/linux-2.6.17-16mdv'
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; WARNING: Symbol version dump
+</I>&gt;<i> &gt; /usr/src/linux-2.6.17-16mdv/Module.symvers is
+</I>&gt;<i> missing;
+</I>&gt;<i> &gt; modules will have no dependencies and modversions.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;   CC [M]  /home/ds/tmp/uvc/trunk/uvc_driver.o
+</I>&gt;<i> &gt;   CC [M]  /home/ds/tmp/uvc/trunk/uvc_status.o
+</I>&gt;<i> &gt; /home/ds/tmp/uvc/trunk/uvc_status.c: In function
+</I>&gt;<i> &gt; &#8216;uvc_input_init&#8217;:
+</I>&gt;<i> &gt; /home/ds/tmp/uvc/trunk/uvc_status.c:46: error:
+</I>&gt;<i> request
+</I>&gt;<i> &gt; for member &#8216;parent&#8217; in something not a
+</I>&gt;<i> &gt; structure or union
+</I>&gt;<i> &gt; make[2]: *** [/home/ds/tmp/uvc/trunk/uvc_status.o]
+</I>&gt;<i> &gt; Error 1
+</I>&gt;<i> &gt; make[1]: *** [_module_/home/ds/tmp/uvc/trunk]
+</I>&gt;<i> Error 2
+</I>&gt;<i> &gt; make[1]: Leaving directory
+</I>&gt;<i> &gt; `/usr/src/linux-2.6.17-16mdv'
+</I>&gt;<i> &gt; make: *** [uvcvideo] Error 2
+</I>&gt;<i> 
+</I>&gt;<i> Could you please test the attached patch and tell me
+</I>&gt;<i> if it helps ?
+</I>&gt;<i> 
+</I>&gt;<i> Best regards,
+</I>&gt;<i> 
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i> &gt; Index: uvc_status.c
+</I>&gt;<i>
+</I>===================================================================
+&gt;<i> --- uvc_status.c	(revision 198)
+</I>&gt;<i> +++ uvc_status.c	(working copy)
+</I>&gt;<i> @@ -43,7 +43,11 @@
+</I>&gt;<i>  	input-&gt;name = dev-&gt;name;
+</I>&gt;<i>  	input-&gt;phys = phys;
+</I>&gt;<i>  	usb_to_input_id(udev, &amp;input-&gt;id);
+</I>&gt;<i> +#if LINUX_VERSION_CODE &gt;= KERNEL_VERSION(2,6,22)
+</I>&gt;<i>  	input-&gt;dev.parent = &amp;dev-&gt;intf-&gt;dev;
+</I>&gt;<i> +#else
+</I>&gt;<i> +	input-&gt;cdev.dev = &amp;dev-&gt;intf-&gt;dev;
+</I>&gt;<i> +#endif
+</I>&gt;<i>  
+</I>&gt;<i>  	set_bit(EV_KEY, input-&gt;evbit);
+</I>&gt;<i>  	set_bit(BTN_0, input-&gt;keybit);
+</I>&gt;<i> 
+</I>
+It seems to compile ok ! 
+just a warning on usb_to_input_id :
+In function 'uvc_input_init':
+uvc_status.c:47: warning: implicit declaration of
+function 'usb_to_input_id'
+Warning: &quot;usb_to_input_id&quot;
+[/mnt/sda2/temp/uvc1/trunk/uvcvideo.ko] undefined!
+
+The uvcvideo.ko is made. I still have no image, but it
+must be my fault now. I continue.
+Dsant
+
+
+      _____________________________________________________________________________ 
+Envoyez avec Yahoo! Mail. Une boite mail plus intelligente <A HREF="http://mail.yahoo.fr">http://mail.yahoo.fr</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003328.html">[Linux-uvc-devel] bug in uvc_status.c ? dev.parent
+</A></li>
+	<LI>Next message: <A HREF="003332.html">[Linux-uvc-devel] RE : Re:  bug in uvc_status.c ? dev.parent
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3331">[ date ]</a>
+              <a href="thread.html#3331">[ thread ]</a>
+              <a href="subject.html#3331">[ subject ]</a>
+              <a href="author.html#3331">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

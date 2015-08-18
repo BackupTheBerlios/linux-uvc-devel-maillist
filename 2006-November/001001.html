@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Trouble recording from two webcams
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Trouble%20recording%20from%20two%20webcams&In-Reply-To=%3C200611151244.31175.mxhaard%40magic.fr%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001003.html">
+   <LINK REL="Next"  HREF="001004.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Trouble recording from two webcams</H1>
+    <B>Michel Xhaard</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Trouble%20recording%20from%20two%20webcams&In-Reply-To=%3C200611151244.31175.mxhaard%40magic.fr%3E"
+       TITLE="[Linux-uvc-devel] Trouble recording from two webcams">mxhaard at magic.fr
+       </A><BR>
+    <I>Wed Nov 15 12:44:31 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001003.html">[Linux-uvc-devel] Trouble recording from two webcams
+</A></li>
+        <LI>Next message: <A HREF="001004.html">[Linux-uvc-devel] Trouble recording from two webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1001">[ date ]</a>
+              <a href="thread.html#1001">[ thread ]</a>
+              <a href="subject.html#1001">[ subject ]</a>
+              <a href="author.html#1001">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Le Mercredi 15 Novembre 2006 05:34, Vidar Normann a &#233;crit&#160;:
+&gt;<i> On 11/14/06, Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; The thing that I notice is the third last line, seems the
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; v4l2-driver
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; forces transfer in a 1024x576
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; resolution? Other than that, I have no idea and I don't know what
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; to
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; &gt; do.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; That looks weird, indeed. The UVC driver doesn't do that, however.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Except when asked for it :-) You're probably asking the webcam to
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; stream
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; &gt; in
+</I>&gt;<i> &gt; &gt; &gt; YUV format, and first generation hardware doesn't support low
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; resolutions
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; &gt; in
+</I>&gt;<i> &gt; &gt; &gt; YUV. You will have to set the format to MJPEG, or get a newer webcam
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; if
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; &gt; you
+</I>&gt;<i> &gt; &gt; &gt; absolutely need YUV at low resolutions.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I don't need YUV, I need it to work :)
+</I>&gt;<i> &gt; &gt; How do I set it to stream in MJPEG-format?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Ask the ffmpeg developers :-) Sorry, but I can't help you there, I have
+</I>&gt;<i> &gt; no experience with ffmpeg.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Best regards,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Laurent Pinchart
+</I>&gt;<i>
+</I>&gt;<i> Hi again :)
+</I>&gt;<i> As long as bandwidth is the only problem I should also be able to fix this
+</I>&gt;<i> problem by
+</I>&gt;<i> lowering the frames-per-second, right? When run in normal 24
+</I>&gt;<i> fps-mode,ffmpeg outputs
+</I>&gt;<i> this line (among others):
+</I>&gt;<i> Stream #0.0: Video: rawvideo, yuv422, 1024x576, 235929 kb/s, 25.00 fps(r)
+</I>&gt;<i>
+</I>&gt;<i> Yet if I run the recording with only 5 fps I get this:
+</I>&gt;<i> Stream #0.0: Video: rawvideo, yuv422, 1024x576, 47185 kb/s,  5.00 fps(r)
+</I>&gt;<i>
+</I>&gt;<i> If I am able to use 235929 in one go I should be able to record 2 times
+</I>&gt;<i> 47185 easily, right?
+</I>&gt;<i> I keep getting the same error as before:
+</I>&gt;<i> ioctl(VIDIOC_STREAMON): No space left on device
+</I>&gt;<i> Could not find video grab device
+</I>&gt;<i>
+</I>&gt;<i> Haven't been able to find a way of setting capture method to MJPEG instead
+</I>&gt;<i> of YUV, but
+</I>&gt;<i> I'll keep looking although right now I'm not sure it'll help at all, seems
+</I>&gt;<i> there is something
+</I>&gt;<i> else causing this problem.
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i> Vidar Normann
+</I>Vidar,
+Your error ENOSPC problem come from the alternate setting choice in the 
+driver. The best way is to used another Usb HCD (host controller device) from 
+the motherboard or set up a PCI to USB add on card. As rule i used one HCD 
+per webcam device to get the maximum performance :) 
+regards
+-- 
+Michel Xhaard
+<A HREF="http://mxhaard.free.fr">http://mxhaard.free.fr</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001003.html">[Linux-uvc-devel] Trouble recording from two webcams
+</A></li>
+	<LI>Next message: <A HREF="001004.html">[Linux-uvc-devel] Trouble recording from two webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1001">[ date ]</a>
+              <a href="thread.html#1001">[ thread ]</a>
+              <a href="subject.html#1001">[ subject ]</a>
+              <a href="author.html#1001">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

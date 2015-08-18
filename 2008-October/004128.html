@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [RFC] Video probe control refactoring
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Video%20probe%20control%20refactoring&In-Reply-To=%3C200810151659.13006.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004130.html">
+   <LINK REL="Next"  HREF="004154.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [RFC] Video probe control refactoring</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Video%20probe%20control%20refactoring&In-Reply-To=%3C200810151659.13006.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] [RFC] Video probe control refactoring">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Oct 15 16:59:12 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004130.html">[Linux-uvc-devel] Framegrabber USB for Linux
+</A></li>
+        <LI>Next message: <A HREF="004154.html">[Linux-uvc-devel] [RFC] Video probe control refactoring
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4128">[ date ]</a>
+              <a href="thread.html#4128">[ thread ]</a>
+              <a href="subject.html#4128">[ subject ]</a>
+              <a href="author.html#4128">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi everybody,
+
+I've been working on code refactoring to make the UVC driver more robust when 
+used with non-compliant UVC devices (we all know there are many of them). 
+Before you rejoice, this has nothing to do with the Logitech firmware bug. 
+Sorry.
+
+Anyway, the attached patch (against SVN head) modifies video control handling 
+to handle failed GET_MIN/GET_MAX/GET_DEF requests more gracefully. Failed 
+requests will now generate a one-time warning message instead of the 
+usual &quot;Failed to query...&quot; error, which should be more user-friendly. The 
+driver will also recover automatically from failed GET_MIN/GET_MAX requests 
+when the device is half-broken without requiring the MINMAX quirk (fully 
+broken devices still need the quirk).
+
+The patch is required to implement JPEG quality control which I will soon work 
+on. As it's quite intrusive, I'd like to make sure it doesn't break anything. 
+I'd appreciate if you could test it, especially if you got one of the 
+following cameras:
+
+ALi M5606 (Clevo M540SR)	(0402:5606)
+Creative Live! Optia		(041e:4057)
+Microsoft Lifecam NX-6000	(045e:00f8)
+Microsoft Lifecam VX-7000	(045e:0723)
+Apple Built-In iSight		(05ac:8501)
+Silicon Motion SM371		(090c:b371)
+Acer OEM Webcam			(5986:0100)
+Packard Bell OEM Webcam		(5986:0101)
+Acer Crystal Eye webcam		(5986:0102)
+Compaq Presario B1200		(5986:0104)
+Acer Travelmate 7720		(5986:0105)
+Medion Akoya Mini E1210		(5986:0141)
+Acer OrbiCam			(5986:0200)
+Fujitsu Amilo SI2636		(5986:0202)
+Advent 4211			(5986:0203)
+???				(5986:0300)
+Clevo M570TU			(5986:0303)
+
+Testing the patch means making sure the webcam is still detected properly by 
+the driver (it should be as I haven't changed anything there) and is still 
+able to stream video (use any software you like, pick one that you know is 
+working).
+
+Of course nothing should break, but bugs happen. That's not completely true, 
+as I don't have enough information about the two Microsoft cameras to make 
+sure they will still work. I'm thus especially interesting in hearing from 
+you if you got a supported Microsoft webcam.
+
+Cameras in the above list should print a few extra messages in the kernel log 
+when starting a video stream. Please include them in your report.
+
+Enough said, I wish you all happy testing :-)
+
+Best regards,
+
+Laurent Pinchart
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: minmax.diff
+Type: text/x-diff
+Size: 12418 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20081015/e2bb705c/attachment.diff">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20081015/e2bb705c/attachment.diff</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004130.html">[Linux-uvc-devel] Framegrabber USB for Linux
+</A></li>
+	<LI>Next message: <A HREF="004154.html">[Linux-uvc-devel] [RFC] Video probe control refactoring
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4128">[ date ]</a>
+              <a href="thread.html#4128">[ thread ]</a>
+              <a href="subject.html#4128">[ subject ]</a>
+              <a href="author.html#4128">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

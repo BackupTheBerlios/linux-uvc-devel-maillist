@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] libv4l2 error with 045e:00f8 cameras
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20libv4l2%20error%20with%20045e%3A00f8%20cameras&In-Reply-To=%3C201111021749.41935.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006994.html">
+   <LINK REL="Next"  HREF="007051.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] libv4l2 error with 045e:00f8 cameras</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20libv4l2%20error%20with%20045e%3A00f8%20cameras&In-Reply-To=%3C201111021749.41935.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] libv4l2 error with 045e:00f8 cameras">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Wed Nov  2 17:49:41 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006994.html">[Linux-uvc-devel] Mark Microsoft LifeCam Studio as having the	usb bandwidth bug
+</A></li>
+        <LI>Next message: <A HREF="007051.html">[Linux-uvc-devel] libv4l2 error with 045e:00f8 cameras
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6995">[ date ]</a>
+              <a href="thread.html#6995">[ thread ]</a>
+              <a href="subject.html#6995">[ subject ]</a>
+              <a href="author.html#6995">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Edwin,
+
+On Saturday 22 October 2011 00:36:14 Edwin Aponte wrote:
+&gt;<i> libv4l2 is giving having problems with a Microsoft LifeCam NX-6000
+</I>&gt;<i> webcam (045e:00f8). I have to run skype as below to get the webcam
+</I>&gt;<i> working well for a moment, though an error is generated, until the
+</I>&gt;<i> system freezes completely after some minutes and even SysRq doesn't
+</I>&gt;<i> work.
+</I>
+Those two problems are likely unrelated, and the second one is pretty bad. Is 
+your machine connected to a network ? Can you still ping it after it freezes ? 
+What about ssh ?
+
+&gt;<i> env LD_PRELOAD=/usr/lib/libv4l/v4l1compat.so skype
+</I>&gt;<i> libv4l2: error converting / decoding frame data: v4l-convert: error
+</I>&gt;<i> parsing
+</I>&gt;<i> JPEG header: Not a JPG file ?
+</I>
+Your camera seems to produce bad MJPEG frames. From the log you've attached it 
+seems that the first frame is bigger than the next ones. This might be 
+related. Could you try luvcview, which doesn't use libv4l ?
+
+&gt;<i> Sometimes, I get the same error with the program webcam:
+</I>&gt;<i> --------------------------
+</I>&gt;<i> ~&gt; webcam
+</I>&gt;<i> reading config file: /home/edwinh/.webcamrc
+</I>&gt;<i> video4linux webcam v1.5 - (c) 1998-2002 Gerd Knorr
+</I>&gt;<i> grabber config:
+</I>&gt;<i>   size 320x240 [none]
+</I>&gt;<i>   input (null), norm (null), jpeg quality 75
+</I>&gt;<i>   rotate=0, top=0, left=0, bottom=240, right=320
+</I>&gt;<i> libv4l2: error converting / decoding frame data: v4l-convert: error
+</I>&gt;<i> parsing
+</I>&gt;<i> JPEG header: Not a JPG file ?
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> v4l2: read: Input/output error
+</I>&gt;<i> capturing image failed
+</I>&gt;<i> -------------------------
+</I>&gt;<i> 
+</I>&gt;<i> and some times this other error:
+</I>&gt;<i> 
+</I>&gt;<i> -------------------------
+</I>&gt;<i> ~&gt; webcam
+</I>&gt;<i> reading config file: /home/edwinh/.webcamrc
+</I>&gt;<i> video4linux webcam v1.5 - (c) 1998-2002 Gerd Knorr
+</I>&gt;<i> grabber config:
+</I>&gt;<i>   size 320x240 [none]
+</I>&gt;<i>   input (null), norm (null), jpeg quality 75
+</I>&gt;<i>   rotate=0, top=0, left=0, bottom=240, right=320
+</I>&gt;<i> libv4lconvert: Error decompressing JPEG: fill_nbits error: need 1 more
+</I>&gt;<i> bits
+</I>&gt;<i> -------------------------
+</I>&gt;<i> 
+</I>&gt;<i> I have attached some information based on this thread
+</I>&gt;<i> <A HREF="../2008-November/004265.html">http://lists.berlios.de/pipermail/linux-uvc-devel/2008-November/004265.html</A>
+</I>&gt;<i> that seems to be a similar case of my problem.
+</I>&gt;<i> I set the trace level to 255:
+</I>&gt;<i> 
+</I>&gt;<i> # echo 255 &gt; /sys/module/uvcvideo/parameters/trace
+</I>&gt;<i> 
+</I>&gt;<i> and I record a frame using:
+</I>&gt;<i> ~&gt; luvcview -f mjpg -c
+</I>&gt;<i> 
+</I>&gt;<i> and after that I saved the output of dmesg.
+</I>&gt;<i> 
+</I>&gt;<i> Thanks.
+</I>
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006994.html">[Linux-uvc-devel] Mark Microsoft LifeCam Studio as having the	usb bandwidth bug
+</A></li>
+	<LI>Next message: <A HREF="007051.html">[Linux-uvc-devel] libv4l2 error with 045e:00f8 cameras
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6995">[ date ]</a>
+              <a href="thread.html#6995">[ thread ]</a>
+              <a href="subject.html#6995">[ subject ]</a>
+              <a href="author.html#6995">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

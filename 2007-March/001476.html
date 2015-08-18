@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech Orbit apply patch Howto
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20Orbit%20apply%20patch%20Howto&In-Reply-To=%3Cjwvfy8i6uhr.fsf-monnier%2Bgmane.linux.drivers.uvc.devel%40gnu.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001464.html">
+   <LINK REL="Next"  HREF="001483.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech Orbit apply patch Howto</H1>
+    <B>Stefan Monnier</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20Orbit%20apply%20patch%20Howto&In-Reply-To=%3Cjwvfy8i6uhr.fsf-monnier%2Bgmane.linux.drivers.uvc.devel%40gnu.org%3E"
+       TITLE="[Linux-uvc-devel] Logitech Orbit apply patch Howto">monnier at iro.umontreal.ca
+       </A><BR>
+    <I>Tue Mar  6 20:33:36 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001464.html">[Linux-uvc-devel] Logitech Orbit apply patch Howto
+</A></li>
+        <LI>Next message: <A HREF="001483.html">[Linux-uvc-devel] Logitech Orbit apply patch Howto
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1476">[ date ]</a>
+              <a href="thread.html#1476">[ thread ]</a>
+              <a href="subject.html#1476">[ subject ]</a>
+              <a href="author.html#1476">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> The patch appears to refer to a file called uvcvideo.c, but I cannot
+</I>&gt;<i> find such a file on my system.
+</I>
+The source code has been shuffled in the mean time, so it's indeed a bit
+less straightforward.  I currently use the patch below.  Note that I have no
+idea what I'm doing: I'm proficient in C but haven't spent any time trying
+to understand the code of linux-uvc.
+
+To apply the patch, just do 'patch &lt;thisemail' in the source directory of
+linux-uvc.
+
+I make no guarantee about this patch at all.  It does seem to improve the
+behavior of my Orbit MP camera, tho.
+
+
+        Stefan
+
+
+Index: uvc_video.c
+===================================================================
+--- uvc_video.c	(revision 89)
++++ uvc_video.c	(working copy)
+@@ -27,6 +27,29 @@
+  * UVC Controls
+  */
+ 
++int uvc_usb_reset(struct uvc_device *dev)
++{
++	int l, ret;
++
++	l = usb_lock_device_for_reset(dev-&gt;udev, dev-&gt;intf);
++
++	if (l &gt;= 0) {
++		ret = usb_reset_device(dev-&gt;udev);
++		if (l)
++			usb_unlock_device(dev-&gt;udev);
++	}
++	else
++		ret = -EBUSY;
++
++	if (ret)
++		uvc_printk(KERN_DEBUG, &quot;uvc_usb_reset: Unable to reset usb device&quot;
++			   &quot;(%d).\n&quot;, ret);
++	else
++		dev-&gt;state &amp;= ~UVC_DEV_IOERROR;
++
++	return ret;
++}
++
+ int uvc_query_ctrl(struct uvc_device *dev, __u8 query, __u8 unit,
+ 			__u8 intfnum, __u8 cs, void *data, __u16 size)
+ {
+@@ -45,6 +68,7 @@
+ 		uvc_printk(KERN_ERR, &quot;Failed to query (%u) UVC control %u &quot;
+ 			&quot;(unit %u) : %d (exp. %u).\n&quot;, query, cs, unit, ret,
+ 			size);
++		dev-&gt;state |= UVC_DEV_IOERROR;
+ 		return -EIO;
+ 	}
+ 
+@@ -656,6 +680,25 @@
+  * Video device
+  */
+ 
++/* 
++ * Reset and Re-Initialize video device
++ */
++int uvc_video_reinit(struct uvc_video_device *video)
++{
++	int ret;
++
++	if ((ret = uvc_usb_reset(video-&gt;dev)) &lt; 0)
++		return ret;
++
++	if ((ret = uvc_set_video_ctrl(video, &amp;video-&gt;streaming-&gt;ctrl, 0)) &lt; 0) {
++		uvc_printk(KERN_DEBUG, &quot;uvc_video_reinit: Unable to commit format &quot;
++			   &quot;(%d).\n&quot;, ret);
++		return ret;
++	}
++
++	return 0;
++}
++
+ /*
+  * Initialize the UVC video device.
+  *
+Index: uvc_v4l2.c
+===================================================================
+--- uvc_v4l2.c	(revision 89)
++++ uvc_v4l2.c	(working copy)
+@@ -435,6 +435,10 @@
+ 		mutex_unlock(&amp;video-&gt;queue.mutex);
+ 	}
+ 
++	/* leave usb device in a clean state */
++	if (video-&gt;dev-&gt;state &amp; UVC_DEV_IOERROR)
++		uvc_video_reinit(video);
++
+ 	/* Release the file handle. */
+ 	uvc_dismiss_privileges(handle);
+ 	kfree(handle);
+Index: uvc_driver.c
+===================================================================
+--- uvc_driver.c	(revision 89)
++++ uvc_driver.c	(working copy)
+@@ -1159,9 +1159,18 @@
+ 	 * parameters.
+ 	 */
+ 	if ((ret = uvc_video_init(&amp;dev-&gt;video)) &lt; 0) {
+-		uvc_printk(KERN_ERR, &quot;Failed to initialize the device &quot;
+-			&quot;(%d).\n&quot;, ret);
+-		return ret;
++
++		uvc_printk(KERN_ERR, &quot;Failed to initialize the device, &quot;
++			   &quot;(%d). trying to reset ...\n&quot;, ret);
++
++		if ((ret = uvc_usb_reset(dev)))
++			return ret;
++
++		if ((ret = uvc_video_init(&amp;dev-&gt;video)) &lt; 0) {
++			uvc_printk(KERN_ERR, &quot;Failed to initialize the device &quot;
++				   &quot;(%d).\n&quot;, ret);
++			return ret;
++		}
+ 	}
+ 
+ 	/* Register the device with V4L. */
+Index: uvcvideo.h
+===================================================================
+--- uvcvideo.h	(revision 89)
++++ uvcvideo.h	(working copy)
+@@ -515,6 +515,7 @@
+ 
+ enum uvc_device_state {
+ 	UVC_DEV_DISCONNECTED = 1,
++	UVC_DEV_IOERROR = 2,
+ };
+ 
+ struct uvc_device {
+@@ -625,6 +626,8 @@
+ extern struct file_operations uvc_fops;
+ 
+ /* Video */
++extern int uvc_usb_reset(struct uvc_device *dev);
++extern int uvc_video_reinit(struct uvc_video_device *video);
+ extern int uvc_video_init(struct uvc_video_device *video);
+ extern int uvc_video_enable(struct uvc_video_device *video, int enable);
+ extern int uvc_probe_video(struct uvc_video_device *video,
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001464.html">[Linux-uvc-devel] Logitech Orbit apply patch Howto
+</A></li>
+	<LI>Next message: <A HREF="001483.html">[Linux-uvc-devel] Logitech Orbit apply patch Howto
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1476">[ date ]</a>
+              <a href="thread.html#1476">[ thread ]</a>
+              <a href="subject.html#1476">[ subject ]</a>
+              <a href="author.html#1476">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

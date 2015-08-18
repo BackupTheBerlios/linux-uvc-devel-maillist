@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Quanta integrated webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quanta%20integrated%20webcam&In-Reply-To=%3C201106242007.00138.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006686.html">
+   <LINK REL="Next"  HREF="006599.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Quanta integrated webcam</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quanta%20integrated%20webcam&In-Reply-To=%3C201106242007.00138.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Quanta integrated webcam">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Fri Jun 24 20:06:59 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006686.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+        <LI>Next message: <A HREF="006599.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6676">[ date ]</a>
+              <a href="thread.html#6676">[ thread ]</a>
+              <a href="subject.html#6676">[ subject ]</a>
+              <a href="author.html#6676">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Carl,
+
+On Monday 13 June 2011 18:37:43 Carl Michal wrote:
+&gt;<i> On Mon, 13 Jun 2011, Alexey Fisher wrote:
+</I>&gt;<i> &gt; On So, 2011-06-12 at 21:05 -0700, Carl Michal wrote:
+</I>&gt;<i> &gt;&gt; On Sun, 12 Jun 2011, Alexey Fisher wrote:
+</I>&gt;<i> &gt;&gt;&gt; Am Samstag, den 11.06.2011, 23:33 -0700 schrieb Carl Michal:
+</I>&gt;<i> &gt;&gt;&gt;&gt; On Sun, 12 Jun 2011, Alexey Fisher wrote:
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; On Sa, 2011-06-11 at 21:55 -0700, Carl Michal wrote:
+</I>
+[snip]
+
+&gt;<i> &gt;&gt;&gt;&gt;&gt;&gt; Most frames are terminated with EOF, but occasionally an FID and EOF
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt;&gt; are found in the same packet. So two buffers are marked as
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt;&gt; completed, but the second one shouldn't be (I don't think).
+</I>
+[snip]
+
+&gt;<i> &gt; I just realized: NO_FID quirk, do not disables FID handling if there is
+</I>&gt;<i> &gt; some wrong FID bit appear. It assume webcam do not use FID bit at all.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Try attached patch and load module with NO_FID quirk - quirks=0x10
+</I>&gt;<i> 
+</I>&gt;<i> I think you nailed it.  Every frame looks perfect now.
+</I>
+I don't think that's the right solution. If FID toggling is completely ignored,
+loosing an EOF packet will cause the driver to loose a frame.
+
+Quoting one of your logs:
+
+&gt;<i> uvcvideo: Frame complete (FID bit toggled) buf: 3, bytes: 63504.
+</I>&gt;<i> uvcvideo: Frame complete (EOF found) buf: 0, bytes: 1072.
+</I>
+Your device either sets the EOF bit too late or toggles the FID bit too early.
+Given that the previous buffers are 64684 and 64728 bytes in size, my guess is
+that FID is toggled too early.
+
+We can try to ignore the FID bit being toggled if EOF is set. Could you please
+try this patch:
+
+diff --git a/drivers/media/video/uvc/uvc_video.c b/drivers/media/video/uvc/uvc_video.c
+index fc766b9..748ec99 100644
+--- a/drivers/media/video/uvc/uvc_video.c
++++ b/drivers/media/video/uvc/uvc_video.c
+@@ -426,7 +426,8 @@ static int uvc_video_decode_start(struct uvc_streaming *stream,
+ 		return -ENODATA;
+ 	}
+ 
+-	fid = data[1] &amp; UVC_STREAM_FID;
++	fid = data[1] &amp; UVC_STREAM_EOF
++	    ? stream-&gt;last_fid : data[1] &amp; UVC_STREAM_FID;
+ 
+ 	/* Increase the sequence number regardless of any buffer states, so
+ 	 * that discontinuous sequence numbers always indicate lost frames.
+
+&gt;<i> The trace shows a few of these:
+</I>&gt;<i> 
+</I>&gt;<i> Jun 13 09:24:24 uvcvideo: Dropping payload (error bit set)
+</I>&gt;<i> 
+</I>&gt;<i> but I don't see corrupt frames any more in either MJPG or YUYV (at 640x480
+</I>&gt;<i> anyway) - in MJPG all the frames have the right size.
+</I>
+If the error bit is set, the payload is dropped as the driver considers it to
+be corrupted. For uncompressed formats we can try processing the packet is if
+it were correct. This will produce frame corruption, but should avoid part of
+the image from being shifted. We can additionally mark the V4L2 buffer as
+being faulty. For compressed data this will likely not help.
+
+&gt;<i> There is a some weirdness with frame rates depending on the exposure
+</I>&gt;<i> setting: 1) Exposure, auto gives 4 options: auto priority mode,
+</I>&gt;<i> manual mode, shutter priority mode, and aperture priority mode.  Auto and
+</I>&gt;<i> shutter don't seem to be settable (errors from guvcview when chosen).
+</I>
+This will be fixed in kernel 3.0.
+
+&gt;<i> There is also an &quot;Exposure, auto priority&quot; checkbox.
+</I>&gt;<i> 
+</I>&gt;<i> Frame rates drop dramatically in manual mode (to 10-15fps from 30).
+</I>&gt;<i> 
+</I>&gt;<i> But I can't really complain at this point - the corrupt frames are gone.
+</I>&gt;<i> Will that quirk be added to the driver (usb id is: 0408:2fb1)?
+</I>
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006686.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+	<LI>Next message: <A HREF="006599.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6676">[ date ]</a>
+              <a href="thread.html#6676">[ thread ]</a>
+              <a href="subject.html#6676">[ subject ]</a>
+              <a href="author.html#6676">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Little questions about uvcvideos... And	possible solutions to my problem.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Little%20questions%20about%20uvcvideos...%20And%0A%09possible%20solutions%20to%20my%20problem.&In-Reply-To=%3CE8324B33-8ABC-4B46-829C-57CF972D77B7%40GMail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002852.html">
+   <LINK REL="Next"  HREF="002854.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Little questions about uvcvideos... And	possible solutions to my problem.</H1>
+    <B>Pierre MARTIN</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Little%20questions%20about%20uvcvideos...%20And%0A%09possible%20solutions%20to%20my%20problem.&In-Reply-To=%3CE8324B33-8ABC-4B46-829C-57CF972D77B7%40GMail.com%3E"
+       TITLE="[Linux-uvc-devel] Little questions about uvcvideos... And	possible solutions to my problem.">hickscorp at gmail.com
+       </A><BR>
+    <I>Mon Jan 28 13:57:34 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002852.html">[Linux-uvc-devel] Little questions about uvcvideos... And possible solutions to my problem.
+</A></li>
+        <LI>Next message: <A HREF="002854.html">[Linux-uvc-devel] Little questions about uvcvideos... And possible solutions to my problem.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2853">[ date ]</a>
+              <a href="thread.html#2853">[ thread ]</a>
+              <a href="subject.html#2853">[ subject ]</a>
+              <a href="author.html#2853">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks a lot!
+
+This is exactly what i was looking for, so i guess my prevous emails  
+were clear enough :)
+i have also contacted Michel who maintains luvcview, and who gave me  
+the advice to use his source code to directly talk with v4l2 in my  
+application... The problem is that i have to be done by tonight, so  
+maybe i'll do that another time.
+Additionnaly, his code is based around SDL, and i never had used it.
+
+So i'm going to try your advice right now, and will give feedback to  
+the list whatever happends.
+
+Thanks again!
+Pierre.
+
+On 28 janv. 08, at 13:51, Tom St wrote:
+
+&gt;<i> Hello Pierre,
+</I>&gt;<i> If you want to you can implement such an idea using mjpg-streamer. It
+</I>&gt;<i> continuously takes snapshots at the given framerate (5 fps is lowest,
+</I>&gt;<i> gives best light sensitivity, least noise/disturbance) and forward the
+</I>&gt;<i> frames to an output plugin. In your case you can simply start an
+</I>&gt;<i> instance of mjpg-streamer per webcam:
+</I>&gt;<i>
+</I>&gt;<i> # mjpg-streamer --input &quot;input_uvc.so -d /dev/video0 --fps 5 -r
+</I>&gt;<i> 1600x1200 -y -q 100&quot; -output &quot;output_http.so --port 8080&quot;
+</I>&gt;<i> # mjpg-streamer --input &quot;input_uvc.so -d /dev/video1 --fps 5 -r
+</I>&gt;<i> 1600x1200 -y -q 100&quot; -output &quot;output_http.so --port 8081&quot;
+</I>&gt;<i> # mjpg-streamer --input &quot;input_uvc.so -d /dev/video2 --fps 5 -r
+</I>&gt;<i> 1600x1200 -y -q 100&quot; -output &quot;output_http.so --port 8082&quot;
+</I>&gt;<i> # mjpg-streamer --input &quot;input_uvc.so -d /dev/video3 --fps 5 -r
+</I>&gt;<i> 1600x1200 -y -q 100&quot; -output &quot;output_http.so --port 8083&quot;
+</I>&gt;<i> # mjpg-streamer --input &quot;input_uvc.so -d /dev/video4 --fps 5 -r
+</I>&gt;<i> 1600x1200 -y -q 100&quot; -output &quot;output_http.so --port 8084&quot;
+</I>&gt;<i>
+</I>&gt;<i> Then you can retrieve single images using the command line tools  
+</I>&gt;<i> &quot;curl&quot;
+</I>&gt;<i> or &quot;wget&quot;:
+</I>&gt;<i>
+</I>&gt;<i> # curl <A HREF="http://localhost:8080/?action=snapshot">http://localhost:8080/?action=snapshot</A> &gt; snapshot.jpg
+</I>&gt;<i> ...
+</I>&gt;<i> # curl <A HREF="http://localhost:8084/?action=snapshot">http://localhost:8084/?action=snapshot</A> &gt; snapshot.jpg
+</I>&gt;<i>
+</I>&gt;<i> Or you may just want to hack the mjpg-streamer sources to suit your
+</I>&gt;<i> needs. Most likely you want to grab in YUYV mode, this allows to  
+</I>&gt;<i> grab up
+</I>&gt;<i> to a resolution of 1600x1200 (tested with QC Sphere AF, but this  
+</I>&gt;<i> should
+</I>&gt;<i> also be valid for QC 9000). All grabbing relevant stuff is located in
+</I>&gt;<i> the subfolder &quot;plugins/input_uvc&quot;, just a few source files to read.
+</I>&gt;<i>
+</I>&gt;<i> If you experience problems in understanding of the plugin-concept, you
+</I>&gt;<i> can reference to the &quot;input_testpicture&quot; plugin. That is as simple as
+</I>&gt;<i> possible and just serves two linked in JPG files (JPG-data converted  
+</I>&gt;<i> to
+</I>&gt;<i> an array).
+</I>&gt;<i>
+</I>&gt;<i> However, feel free to modify. Perhaps you also want to write your own
+</I>&gt;<i> output plugin, serving the files on request in an format you like  
+</I>&gt;<i> more.
+</I>&gt;<i> This way you can avoid to worry about the Linux-UVC/V4L2 specific
+</I>&gt;<i> commands, on the other hand your application would have a dependency  
+</I>&gt;<i> to
+</I>&gt;<i> that tool. Of course you can also use other tools like w3cam or motion
+</I>&gt;<i> for example (more projects mentioned at
+</I>&gt;<i> <A HREF="http://www.quickcamteam.net/software/linux/v4l2-software/">http://www.quickcamteam.net/software/linux/v4l2-software/</A>) or have a
+</I>&gt;<i> look at libunicap and libwebcam.
+</I>&gt;<i>
+</I>&gt;<i> Kind regards and HTH,
+</I>&gt;<i> Tom
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002852.html">[Linux-uvc-devel] Little questions about uvcvideos... And possible solutions to my problem.
+</A></li>
+	<LI>Next message: <A HREF="002854.html">[Linux-uvc-devel] Little questions about uvcvideos... And possible solutions to my problem.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2853">[ date ]</a>
+              <a href="thread.html#2853">[ thread ]</a>
+              <a href="subject.html#2853">[ subject ]</a>
+              <a href="author.html#2853">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

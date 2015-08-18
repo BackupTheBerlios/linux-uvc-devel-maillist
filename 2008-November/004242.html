@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Quickam E 3500 plus and auto exposure
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quickam%20E%203500%20plus%20and%20auto%20exposure&In-Reply-To=%3C200811161507.47643.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004238.html">
+   <LINK REL="Next"  HREF="004243.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Quickam E 3500 plus and auto exposure</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quickam%20E%203500%20plus%20and%20auto%20exposure&In-Reply-To=%3C200811161507.47643.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Quickam E 3500 plus and auto exposure">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sun Nov 16 15:07:47 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004238.html">[Linux-uvc-devel] Quickam E 3500 plus and auto exposure
+</A></li>
+        <LI>Next message: <A HREF="004243.html">[Linux-uvc-devel] Quickam E 3500 plus and auto exposure
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4242">[ date ]</a>
+              <a href="thread.html#4242">[ thread ]</a>
+              <a href="subject.html#4242">[ subject ]</a>
+              <a href="author.html#4242">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Mauro,
+
+On Sunday 16 November 2008, Mauro Grauso wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> I've just got a Logitech QuickCam E 3500 Plus (046d:09a4) that is an
+</I>&gt;<i> UVC device and is supported by the UVC kernel module. I'm under
+</I>&gt;<i> Kubuntu 8.10, kernel 2.6.27-8-generic #1 SMP.
+</I>&gt;<i>
+</I>&gt;<i> The problem is about the framerate, and specifically with the auto
+</I>&gt;<i> exposure feature of the camera. Basically when there's not enough
+</I>&gt;<i> light the camera is compensating (very well actually) and the
+</I>&gt;<i> framerate drops to 3fps, when there's daylight it still compensate and
+</I>&gt;<i> the framerate is about 15/20fps (@640x480).
+</I>
+That's quite usual with webcams. Cheap mass market CMOS sensors are not very 
+light sensitive and perform quite bad under low light conditions. Increasing 
+the exposure time automatically helps but at the cost of image quality (more 
+noise, blurry images, ...).
+
+&gt;<i> The odd thing is that sometimes (but I haven't been able to reproduce
+</I>&gt;<i> it) the camera just doesn't use the auto exposure feature when I plug
+</I>&gt;<i> it in and, even if the image is darker, I get constant 30fps.
+</I>
+That's indeed weird. Auto-exposure should be enabled. How many times have you 
+encountered the issue ?
+
+&gt;<i> Now I would really like to know how to turn off and on the auto
+</I>&gt;<i> exposure and white balance feature of the camera from the driver. If I
+</I>&gt;<i> try to turn off the auto exposure from the luvcview interface, I get
+</I>&gt;<i> &quot;Set Auto Exposure off error&quot; in the standard error.
+</I>
+Your luvcview version might be outdated. Could you try the latest one 
+(available from quickcamteam.net) or the uvcdynctrl command line tool (from 
+the libwebcam package available on the same website) ?
+
+&gt;<i> For the record, when I plug the camera, syslog says:
+</I>&gt;<i> Nov 15 14:28:27 greywolf kernel: [11314.937051] usb 1-2: new high
+</I>&gt;<i> speed USB device using ehci_hcd and address 7
+</I>&gt;<i> Nov 15 14:28:28 greywolf kernel: [11315.178592] usb 1-2: configuration
+</I>&gt;<i> #1 chosen from 1 choice
+</I>&gt;<i> Nov 15 14:28:28 greywolf kernel: [11315.178862] uvcvideo: Found UVC
+</I>&gt;<i> 1.00 device &lt;unnamed&gt; (046d:09a4)
+</I>&gt;<i> Nov 15 14:28:28 greywolf kernel: [11315.209087] input: UVC Camera
+</I>&gt;<i> (046d:09a4) as
+</I>&gt;<i> /devices/pci0000:00/0000:00:02.1/usb1/1-2/1-2:1.0/input/input9 Nov 15
+</I>&gt;<i> 14:28:29 greywolf kernel: [11316.213276] 7:3:1: cannot get freq at ep 0x86
+</I>&gt;<i>
+</I>&gt;<i> Notice the last line!
+</I>&gt;<i>
+</I>&gt;<i> Sometimes the last line is slightly different, as follows:
+</I>&gt;<i> Nov 15 14:39:34 greywolf kernel: [11981.793172] 9:3:1: cannot set freq
+</I>&gt;<i> 16000 to ep 0x86
+</I>
+That's a usbaudio issue. Although not directly related to the video part, a 
+problem in the webcam audio implementation can of course influence video. I 
+wouldn't worry about it too much for now.
+
+&gt;<i> And sometimes (often, but not always!) I also get the following in
+</I>&gt;<i> syslog when I plug the cam, but the error doesn't stop the cam from
+</I>&gt;<i> working:
+</I>&gt;<i> Nov 15 14:39:34 greywolf kernel: [11981.960176] uvcvideo: Failed to
+</I>&gt;<i> query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+</I>
+I don't like that one, it reminds me of the Logitech firmware bug that is not 
+supposed to happen with that camera :-/
+
+&gt;<i> Maybe the last line is about the snapshot button that is on the
+</I>&gt;<i> camera?
+</I>
+No, they are unrelated.
+
+&gt;<i> Anyways the camera works even if I get these &quot;soft&quot; errors in syslog.
+</I>
+I would have thought the last error (&quot;Failed to query...&quot;) would prevent the 
+driver from initialising the camera properly. Could you please show me all 
+messages printed by the driver to the kernel log when the problem occurs ?
+
+&gt;<i> Help would be really appreciated. Thanks a lot to everybody.
+</I>
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004238.html">[Linux-uvc-devel] Quickam E 3500 plus and auto exposure
+</A></li>
+	<LI>Next message: <A HREF="004243.html">[Linux-uvc-devel] Quickam E 3500 plus and auto exposure
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4242">[ date ]</a>
+              <a href="thread.html#4242">[ thread ]</a>
+              <a href="subject.html#4242">[ subject ]</a>
+              <a href="author.html#4242">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

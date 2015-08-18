@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo: Failed to submit URB 0 (-28) on ARM	target.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%3A%20Failed%20to%20submit%20URB%200%20%28-28%29%20on%20ARM%0A%09target.&In-Reply-To=%3Cm2i59cf47a81004060804laa696d97m10687629a2a20e62%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005655.html">
+   <LINK REL="Next"  HREF="005657.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo: Failed to submit URB 0 (-28) on ARM	target.</H1>
+    <B>Paulo Assis</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%3A%20Failed%20to%20submit%20URB%200%20%28-28%29%20on%20ARM%0A%09target.&In-Reply-To=%3Cm2i59cf47a81004060804laa696d97m10687629a2a20e62%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo: Failed to submit URB 0 (-28) on ARM	target.">pj.assis at gmail.com
+       </A><BR>
+    <I>Tue Apr  6 17:04:43 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005655.html">[Linux-uvc-devel] uvcvideo: Failed to submit URB 0 (-28) on ARM	target.
+</A></li>
+        <LI>Next message: <A HREF="005657.html">[Linux-uvc-devel] uvcvideo: Failed to submit URB 0 (-28) on ARM	target.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5656">[ date ]</a>
+              <a href="thread.html#5656">[ thread ]</a>
+              <a href="subject.html#5656">[ subject ]</a>
+              <a href="author.html#5656">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+2010/4/6 Franz TRIERWEILER &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">franz.trierweiler.ingenieur at gmail.com</A>&gt;:
+&gt;<i> Hi Paulo,
+</I>&gt;<i>
+</I>&gt;<i> First many thanks for your answer.
+</I>&gt;<i>
+</I>&gt;<i> I have doubts about using Usb1 ou Usb2 port... I asked Freescal in order to
+</I>&gt;<i> make sure but according to the IMX datasheet, it is a USB 2.0 port.
+</I>&gt;<i>
+</I>&gt;<i> What annoys me is that I read: &quot;usb 1-1: not running at top speed; connect
+</I>&gt;<i> to a high speed hub&quot; and I do not know how to understand this.
+</I>&gt;<i>
+</I>&gt;<i> usb 1-1: not running at top speed; connect to a high speed hub
+</I>&gt;<i> usb 1-1: New USB device found, idVendor=0c45, idProduct=62c0
+</I>&gt;<i> usb 1-1: New USB device strings: Mfr=2, Product=1, SerialNumber=0
+</I>&gt;<i> usb 1-1: Product: USB 2.0 Camera
+</I>&gt;<i> usb 1-1: Manufacturer: Sonix Technology Co., Ltd.
+</I>&gt;<i> usb 1-1: configuration #1 chosen from 1 choice
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device USB 2.0 Camera (0c45:62c0)
+</I>&gt;<i> input: USB 2.0 Camera as /class/input/input2
+</I>&gt;<i>
+</I>
+That's definitely a usb1.1 connection (full speed) since the camera
+device is usb2 (high speed) you get that type of message.
+
+
+&gt;<i> If it is not a USB 2.0 port, is there a way through gst-launch to reduce the
+</I>&gt;<i> image resolution ?
+</I>&gt;<i>
+</I>
+I don't think resolution is the only issue here.
+Usually uvc devices support two types of video stream, compressed MJPG
+or/and uncompressed YUYV, when connected to a slower usb port they
+just drop the uncompressed format and support MJPG only and at lower
+fps/resolutions.
+I've actually never tried a YUYV camera only on a usb1 port so I'm not
+sure how this is handled in that case, but most likely it will drop
+support for higher resolutions.
+
+GStreamer I think defaults to yuv so you should also try setting the
+input format to MJPG, e.g.:
+
+gst-launch v4l2src ! image/jpeg,width=320,framerate=15/1,rate=15
+
+You can use guvcview or luvcview to check out available formats and
+resolutions for the camera in the ARM platform.
+
+Best regards,
+Paulo
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005655.html">[Linux-uvc-devel] uvcvideo: Failed to submit URB 0 (-28) on ARM	target.
+</A></li>
+	<LI>Next message: <A HREF="005657.html">[Linux-uvc-devel] uvcvideo: Failed to submit URB 0 (-28) on ARM	target.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5656">[ date ]</a>
+              <a href="thread.html#5656">[ thread ]</a>
+              <a href="subject.html#5656">[ subject ]</a>
+              <a href="author.html#5656">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

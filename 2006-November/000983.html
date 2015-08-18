@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Experimental%20patch%20for%20USB%20problem%20with%0A%09Logitech%20webcams&In-Reply-To=%3C200611120258.30196.evgeny%40indent.ru%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000981.html">
+   <LINK REL="Next"  HREF="000984.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams</H1>
+    <B>Evgeny</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Experimental%20patch%20for%20USB%20problem%20with%0A%09Logitech%20webcams&In-Reply-To=%3C200611120258.30196.evgeny%40indent.ru%3E"
+       TITLE="[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams">evgeny at indent.ru
+       </A><BR>
+    <I>Sun Nov 12 00:58:29 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000981.html">[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+</A></li>
+        <LI>Next message: <A HREF="000984.html">[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#983">[ date ]</a>
+              <a href="thread.html#983">[ thread ]</a>
+              <a href="subject.html#983">[ subject ]</a>
+              <a href="author.html#983">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi, all
+
+Patch definitely is not a solution. I performed a deep investigation of this 
+problem. I tested driver on x86 and amd64 architectures with &quot;reply&quot; 
+and &quot;reset&quot; patches and without them. As a result I found, that replying 
+control message almost doesn't help. At some point camera doesn't acknowledge 
+the message and goes to &quot;broken&quot; state. Replying in most cases returns -32 
+(-EPIPE) error. Sometimes it can be -75(-EOVERFLOW)  error, which indicates 
+a &quot;bubble&quot; situation - in my understanding, camera sends us data, which we 
+don't request and don't expect. After -32 or -75 error we will always 
+receive -110 (ETIMEDOUT). Hardware not understand us, the only way is to 
+reset camera, either by calling usb_reset_device() or by unplugging the cord.
+
+I performed this investigation, using small program, that changes camera 
+controls in loop with random values. The -32 error code usually is returned 
+after I try to change any control immediately after gamma, white balance or 
+exposure controls. Camera need more time to physically apply this controls to 
+hardware. So, I think, that we send controls to quickly. Yes, camera must 
+acknowledge control packet only after it applied it to hardware. But who 
+knows does it do so or not.
+
+The solution may be in a delay between to calls of usb_control_msg(). I'm 
+performing this tests now and almost ready to post the patch. Martin and 
+Laurent, I need your opinion about this.
+
+Again and again, sorry for my English.  I really hope, that this message is  
+readable at least partly 
+
+Regards, Evgeny
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000981.html">[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+</A></li>
+	<LI>Next message: <A HREF="000984.html">[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#983">[ date ]</a>
+              <a href="thread.html#983">[ thread ]</a>
+              <a href="subject.html#983">[ subject ]</a>
+              <a href="author.html#983">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

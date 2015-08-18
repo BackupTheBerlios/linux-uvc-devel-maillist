@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Re: backporting to the 2.6.8 kernel
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Re%3A%20backporting%20to%20the%202.6.8%20kernel&In-Reply-To=%3C1143859357.31135.21.camel%40pisces.mit.edu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000404.html">
+   <LINK REL="Next"  HREF="000406.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Re: backporting to the 2.6.8 kernel</H1>
+    <B>David Moore</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Re%3A%20backporting%20to%20the%202.6.8%20kernel&In-Reply-To=%3C1143859357.31135.21.camel%40pisces.mit.edu%3E"
+       TITLE="[Linux-uvc-devel] Re: backporting to the 2.6.8 kernel">dcm at MIT.EDU
+       </A><BR>
+    <I>Sat Apr  1 04:42:37 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000404.html">[Linux-uvc-devel] Connecting multiple cameras
+</A></li>
+        <LI>Next message: <A HREF="000406.html">[Linux-uvc-devel] v4l compatibility layer missing VIDIOCGMBUF
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#405">[ date ]</a>
+              <a href="thread.html#405">[ thread ]</a>
+              <a href="subject.html#405">[ subject ]</a>
+              <a href="author.html#405">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I didn't really do anything fancy and I've since deleted that code.  I
+just added some printk output and simple modifications to the function
+uvc_video_decode().  I did the following things for debugging:
+
+1. I used uvc_trace() to print the first 4 bytes (in hex) of each
+packet, data[0] through data[3].  Looking at that output is what
+convinced me some packets were getting zeroed.
+
+2. Instead of using data[0] as the header length, I hard coded it as
+0xc.  This worked for my Quickcam Pro 5000, which always had a header
+length of 0xc (except when the packet was incorrectly zero'ed).
+
+3. Whenever len == maxlen, set buf-&gt;state = UVC_BUF_STATE_DONE.  This
+makes sure the packet boundaries are properly detected even with a
+malformed header (Note: only applies to uncompressed YUV mode -- mjpeg
+mode will have variable sized frames).
+
+-David
+
+On Thu, 2006-03-30 at 17:24 -0500, Matthias Heuk&#228;ufer wrote:
+&gt;<i> This seems to be more difficult than I expected. Did you keep the code to look 
+</I>&gt;<i> at single packets?
+</I>&gt;<i> 
+</I>&gt;<i> Matthias
+</I>&gt;<i> 
+</I>&gt;<i> On Monday 27 March 2006 01:59 pm, David Moore wrote:
+</I>&gt;<i> &gt; Even on 2.6.12, I had stability problems with my Quickcam Pro 5000.
+</I>&gt;<i> &gt; After poking around, I discovered that many of the USB isochronous
+</I>&gt;<i> &gt; packets were filled with zeros after being passed from kernel to uvc
+</I>&gt;<i> &gt; driver.  About 1 in 8 packets had this problem.  Since the packet header
+</I>&gt;<i> &gt; would also be zeroed, parsing of the stream would loose sync and cause
+</I>&gt;<i> &gt; the whole thing to fail.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Upgrading to 2.6.15 solved it for me.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; So it may be a lost cause to try to get it working under 2.6.8.  If
+</I>&gt;<i> &gt; anything, the fact that you have only USB 1.1 might help you, because I
+</I>&gt;<i> &gt; suspect most of the bugs are in the ehci_hcd driver since that has been
+</I>&gt;<i> &gt; tested less than uhci (especially with hi speed iso transfers -- uvc
+</I>&gt;<i> &gt; might be the only driver to ever exercise that functionality).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; -David
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Mon, 2006-03-27 at 13:25 -0500, Matthias Heuk&#228;ufer wrote:
+</I>&gt;<i> &gt; &gt; Hi!
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; So far I did not find a solution. I will keep trying, though. Part of the
+</I>&gt;<i> &gt; &gt; problem might be that my computer has only USB 1.1.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Thanks for the reply.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Matthias
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Have you been able to solve your problem ? I don't know what could go
+</I>&gt;<i> &gt; &gt; &gt; wrong with 2.6.8, except maybe some USB issues. I can put that in my
+</I>&gt;<i> &gt; &gt; &gt; todo list,
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; but
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; I won't have time to tackle the issue before at least a month.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Laurent Pinchart
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;&gt; I am trying to port the driver to the 2.6.8 kernel. This would be
+</I>&gt;<i> &gt; &gt; &gt;&gt; interesting e. g. for people running Debian stable.
+</I>&gt;<i> &gt; &gt; &gt;&gt; With the attached patch I can cleanly compile and insert the module.
+</I>&gt;<i> &gt; &gt; &gt;&gt; Furthermore, the green light on the Quickcam 5000 Pro comes on as soon
+</I>&gt;<i> &gt; &gt; &gt;&gt; as I start uvcview. Unfortunately all I can see is a solid green
+</I>&gt;<i> &gt; &gt; &gt;&gt; image. I have to admit that my experience in C is only slightly better
+</I>&gt;<i> &gt; &gt; &gt;&gt; than my knowledge of the kernel internals which is almost zero. Maybe
+</I>&gt;<i> &gt; &gt; &gt;&gt; somebody will be able to give me a few hints as to where the problem
+</I>&gt;<i> &gt; &gt; &gt;&gt; might be.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; Linux-uvc-devel mailing list
+</I>&gt;<i> &gt; &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> &gt; &gt; <A HREF="http://lists.berlios.de/mailman/listinfo/linux-uvc-devel">http://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="http://lists.berlios.de/mailman/listinfo/linux-uvc-devel">http://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000404.html">[Linux-uvc-devel] Connecting multiple cameras
+</A></li>
+	<LI>Next message: <A HREF="000406.html">[Linux-uvc-devel] v4l compatibility layer missing VIDIOCGMBUF
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#405">[ date ]</a>
+              <a href="thread.html#405">[ thread ]</a>
+              <a href="subject.html#405">[ subject ]</a>
+              <a href="author.html#405">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

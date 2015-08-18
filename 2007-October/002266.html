@@ -1,0 +1,235 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] sample code? &quot;hello world&quot; for linux video?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20sample%20code%3F%20%22hello%20world%22%20for%20linux%20video%3F&In-Reply-To=%3C21f71af10710081828g5bf9fab9q1369f5866cdc6ed0%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002265.html">
+   <LINK REL="Next"  HREF="002267.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] sample code? &quot;hello world&quot; for linux video?</H1>
+    <B>Geoffrey Plitt</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20sample%20code%3F%20%22hello%20world%22%20for%20linux%20video%3F&In-Reply-To=%3C21f71af10710081828g5bf9fab9q1369f5866cdc6ed0%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] sample code? &quot;hello world&quot; for linux video?">geoff at gweb.org
+       </A><BR>
+    <I>Tue Oct  9 03:28:53 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002265.html">[Linux-uvc-devel] sample code? &quot;hello world&quot; for linux video?
+</A></li>
+        <LI>Next message: <A HREF="002267.html">[Linux-uvc-devel] sample code? &quot;hello world&quot; for linux video?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2266">[ date ]</a>
+              <a href="thread.html#2266">[ thread ]</a>
+              <a href="subject.html#2266">[ subject ]</a>
+              <a href="author.html#2266">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>update: i fixed it myself with a couple of hours of trial and error; i think
+you guys might be interested in the result. i would warrant this is the
+simplest possible way to access the camera and save an image. it uses PGM
+format, which is probably the simplest widespread image format.
+
+// WORKS
+// w/ WIDTH=960, HEIGHT=720
+// or WIDTH=640, HEIGHT=480
+// or WIDTH=320, HEIGHT=240
+
+// WORKS
+// w/ WIDTH=960, HEIGHT=720
+// or WIDTH=640, HEIGHT=480
+// or WIDTH=320, HEIGHT=240
+
+static void
+process_image                   (const void *           p)
+{
+  FILE *out = fopen(&quot;out.pgm&quot;, &quot;w&quot;);
+  fprintf(out,&quot;P2\n&quot;);
+  fprintf(out,&quot;#CREATOR: ggp\n&quot;);
+  fprintf(out,&quot;%u %u\n&quot;,WIDTH,HEIGHT);
+  fprintf(out,&quot;255\n&quot;);
+
+  int x;
+  int y;
+  unsigned char * pixel = p;
+  for(y=0; y&lt;HEIGHT; y++)
+  {
+    for(x=0; x&lt;WIDTH; x++)
+    {
+      fprintf(out,&quot;%u &quot;,pixel[(y*WIDTH+x)*2]);
+    }
+    fprintf(out,&quot;\n&quot;);
+  }
+  fclose(out);
+  exit(0);
+}
+
+On 10/8/07, Geoffrey Plitt &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">geoff at gweb.org</A>&gt; wrote:
+&gt;<i>
+</I>&gt;<i> can anyone help?
+</I>&gt;<i>
+</I>&gt;<i> i'm using the standard example of capture.c; i replaced the process_image
+</I>&gt;<i> function, but i can't figure out the format for this buffer. i've gone
+</I>&gt;<i> through the docs again
+</I>&gt;<i> my code below assumes it's just greyscale values, single-pixel-255. do you
+</I>&gt;<i> know what the format is?
+</I>&gt;<i>
+</I>&gt;<i> On 10/5/07, Geoffrey Plitt &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">geoff at gweb.org</A>&gt; wrote:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Nate,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thanks again for your help. I've got some progress. I modified the
+</I>&gt;<i> &gt; process_image function to write out a PGM file:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; static void
+</I>&gt;<i> &gt;  process_image                   (const void *           p)
+</I>&gt;<i> &gt; {
+</I>&gt;<i> &gt;   FILE *out = fopen(&quot; out.pgm &quot;, &quot;w&quot;);
+</I>&gt;<i> &gt;   fprintf(out,&quot;P2\n&quot;);
+</I>&gt;<i> &gt;   fprintf(out,&quot;#CREATOR: ggp\n&quot;);
+</I>&gt;<i> &gt;   fprintf(out,&quot;640 480\n&quot;);
+</I>&gt;<i> &gt;   fprintf(out,&quot;255\n&quot;);
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;   int x;
+</I>&gt;<i> &gt;   int y;
+</I>&gt;<i> &gt;   unsigned char * pixel = p+1;
+</I>&gt;<i> &gt;   for(x=0; x&lt;WIDTH; x++)
+</I>&gt;<i> &gt;   {
+</I>&gt;<i> &gt;     for(y=0; y&lt;HEIGHT; y++)
+</I>&gt;<i> &gt;     {
+</I>&gt;<i> &gt;       fprintf(out,&quot;%u &quot;,*pixel);
+</I>&gt;<i> &gt;       pixel++;
+</I>&gt;<i> &gt;     }
+</I>&gt;<i> &gt;     fprintf(out,&quot;\n&quot;);
+</I>&gt;<i> &gt;   }
+</I>&gt;<i> &gt;   fclose(out);
+</I>&gt;<i> &gt;   exit(0);
+</I>&gt;<i> &gt; }
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; but I don't think I understand the contents of the buf completely.
+</I>&gt;<i> &gt; Attached is the resulting image - I can see the flourescent light in there,
+</I>&gt;<i> &gt; but there are error patterns all over.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Any ideas?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; -Geoff
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On 10/5/07, Nathanael Galpin &lt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">NathanaelGalpin at smarttech.com</A>&gt; wrote:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;  Hey Geoff,
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; This is a great file to start with. In fact it's what I used first.
+</I>&gt;<i> &gt; &gt; Couple things make it a bit tricky. One is that he's using switch statements
+</I>&gt;<i> &gt; &gt; to separate different ways to read from the cameras, so you'll want to note
+</I>&gt;<i> &gt; &gt; which method you're using, (should be MMAP).
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; The line where he actually captures a frame is in the read_frame
+</I>&gt;<i> &gt; &gt; function.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; (-1 == xioctl (fd, VIDIOC_DQBUF, &amp;buf))
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; This blocks until it's able to deque a frame from the camera (unless
+</I>&gt;<i> &gt; &gt; you specify non-blocking when you open the cam file, in which case it
+</I>&gt;<i> &gt; &gt; returns -1 when it can't immediately deque a frame). You can get at the raw
+</I>&gt;<i> &gt; &gt; frame data through the buf struct.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; A little farther down, he re-enques the buffer after he's finished
+</I>&gt;<i> &gt; &gt; with with this line:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; (-1 == xioctl (fd, VIDIOC_QBUF, &amp;buf))
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; You can read through the V4L2 spec a bit at bytesex.org to check out
+</I>&gt;<i> &gt; &gt; the parameters of the buf struct.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; If you want to display this data, a quick way to do it would be to
+</I>&gt;<i> &gt; &gt; pull the Y values from the buffer and use these to write a grayscale image
+</I>&gt;<i> &gt; &gt; to the screen. I used a Qt picture object when I first started doing this,
+</I>&gt;<i> &gt; &gt; and that actually worked quite well.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Hope that helps, and good luck!
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;   -- Nathanael
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;  ------------------------------
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; *From:* <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel-bounces at lists.berlios.de</A> [mailto:
+</I>&gt;<i> &gt; &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel-bounces at lists</A>&lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel-bounces at lists.berlios.de</A>&gt;.berlios.de&lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel-bounces at lists.berlios.de</A>&gt;]
+</I>&gt;<i> &gt; &gt; *On Behalf Of *Geoffrey Plitt
+</I>&gt;<i> &gt; &gt; *Sent:* Thursday, October 04, 2007 9:18 PM
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;  hey christopher. this file looks promising, but it doesn't do
+</I>&gt;<i> &gt; &gt; anything with the frames. i compiled/ran and it just prints dots, you have
+</I>&gt;<i> &gt; &gt; to take as faith that it's capturing - it doesn't output or save the frames.
+</I>&gt;<i> &gt; &gt; in fact, i can't tell exactly where in the code it actually grabs a frame
+</I>&gt;<i> &gt; &gt; and has access to the frame's pixel buffer. any clues?
+</I>&gt;<i> &gt; &gt; -geoff
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; On 10/4/07, *Christopher HORLER* &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">chris.horler at clara.co.uk</A>&gt; wrote:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; <A HREF="http://v4l2spec.bytesex.org">http://v4l2spec.bytesex.org</A> /v4l2spec/capture.c&lt;<A HREF="http://v4l2spec.bytesex.org/v4l2spec/capture.c">http://v4l2spec.bytesex.org/v4l2spec/capture.c</A>&gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20071008/ef3603a4/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20071008/ef3603a4/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002265.html">[Linux-uvc-devel] sample code? &quot;hello world&quot; for linux video?
+</A></li>
+	<LI>Next message: <A HREF="002267.html">[Linux-uvc-devel] sample code? &quot;hello world&quot; for linux video?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2266">[ date ]</a>
+              <a href="thread.html#2266">[ thread ]</a>
+              <a href="subject.html#2266">[ subject ]</a>
+              <a href="author.html#2266">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Exposure setting problems with Creative Live! Cam Socialize HD
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Exposure%20setting%20problems%20with%20Creative%20Live%21%0A%20Cam%20Socialize%20HD&In-Reply-To=%3C4E3644CA.3050306%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="006755.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Exposure setting problems with Creative Live! Cam Socialize HD</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Exposure%20setting%20problems%20with%20Creative%20Live%21%0A%20Cam%20Socialize%20HD&In-Reply-To=%3C4E3644CA.3050306%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] Exposure setting problems with Creative Live! Cam Socialize HD">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Mon Aug  1 08:16:42 CEST 2011</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="006755.html">[Linux-uvc-devel] Exposure setting problems with Creative Live!	Cam Socialize HD
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6752">[ date ]</a>
+              <a href="thread.html#6752">[ thread ]</a>
+              <a href="subject.html#6752">[ subject ]</a>
+              <a href="author.html#6752">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Am 31.07.2011 18:28, schrieb Laurent Pinchart:
+&gt;<i> Hi Michael,
+</I>&gt;<i> 
+</I>&gt;<i> On Saturday 30 July 2011 15:08:14 Michael Stapelberg wrote:
+</I>&gt;&gt;<i> Hi,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I recently bought a Creative Live! Cam Socialize HD (ID 041e:4080) after
+</I>&gt;&gt;<i> verifying that it is a device supported by the uvcvideo driver.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> The device basically works, but to get 30 fps (at 640x480, but also with
+</I>&gt;&gt;<i> higher resolutions), I need to set the 'Exposure, Auto' setting to 1
+</I>&gt;&gt;<i> (Manual Mode). Afterwards, I can set the 'Exposure (Absolute)' setting to
+</I>&gt;&gt;<i> one of the values 39, 78, 156, 312, 625, 1250, 2500, &#8230;. All other values
+</I>&gt;&gt;<i> lead to a heavily over-exposed picture. This effect was already mentioned
+</I>&gt;&gt;<i> on this list for a different cam [1]. I wonder what we can do about it, as
+</I>&gt;&gt;<i> the step size for this setting is reported as '1' while in reality it
+</I>&gt;&gt;<i> seems logarithmic &#8211; with the exception of the step 312 to 625.
+</I>&gt;<i> 
+</I>&gt;<i> Those values are 2500 / 64, 32, 16, 8, 4, 2 and 1. There's unfortunately no 
+</I>&gt;<i> way for the driver to know that other values will lead to bad results. I've 
+</I>&gt;<i> seen bad firmware bugs, but this one is high on the list.
+</I>&gt;<i> 
+</I>&gt;&gt;<i> So, I can live with changing the configuration after plugging in the cam,
+</I>&gt;&gt;<i> which I would automate with udev.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> However, I have noticed that I need to have an active video capture
+</I>&gt;&gt;<i> running, otherwise setting these values with uvcdynctrl has no effect. I
+</I>&gt;&gt;<i> tested it like this:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> 1) Plug in the camera, wait until the white LED (which indicates capturing)
+</I>&gt;&gt;<i>    goes off. This takes about 5 seconds.
+</I>&gt;&gt;<i> 2) Use uvcdynctrl -s 'Exposure, Auto' 1
+</I>&gt;&gt;<i> 3) Verify the result with uvcdynctrl -g 'Exposure, Auto', which also
+</I>&gt;&gt;<i> returns 1 4) Use uvcdynctrl -s 'Exposure (Absolute)' 312, verify it
+</I>&gt;&gt;<i> 5) Use gst-launch v4l2src ! xvimagesink
+</I>&gt;&gt;<i> &#8594;  The video is at 5 fps instead of 30 fps
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> If I do it like this, it works:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> 1) Plug in the camera, wait until the white LED (which indicates capturing)
+</I>&gt;&gt;<i>    goes off. This takes about 5 seconds.
+</I>&gt;&gt;<i> 2) Use gst-launch v4l2src ! xvimagesink, leave it open
+</I>&gt;&gt;<i> 3) Use uvcdynctrl -s 'Exposure, Auto' 1, verify it
+</I>&gt;&gt;<i> 4) Use uvcdynctrl -s 'Exposure (Absolute)' 312, verify it
+</I>&gt;&gt;<i> &#8594;  The video works correctly
+</I>&gt;<i> 
+</I>&gt;<i> That's weird. I'm wondering if the camera doesn't just reset all controls when 
+</I>&gt;<i> the video stream is started. What happens in the second case if you stop the 
+</I>&gt;<i> video stream and restart it ? Are exposure settings correct, or do they go 
+</I>&gt;<i> back to bad values ?
+</I>
+How about usbautosuspend? Will it store the settings if you disables
+usbautosuspend?
+
+Regards,
+Alexey
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="006755.html">[Linux-uvc-devel] Exposure setting problems with Creative Live!	Cam Socialize HD
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6752">[ date ]</a>
+              <a href="thread.html#6752">[ thread ]</a>
+              <a href="subject.html#6752">[ subject ]</a>
+              <a href="author.html#6752">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

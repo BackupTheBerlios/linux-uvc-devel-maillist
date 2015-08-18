@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo driver for x86_64
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20driver%20for%20x86_64&In-Reply-To=%3C32209efe0705311245n1f181ef5xc6320e0808105d3f%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001757.html">
+   <LINK REL="Next"  HREF="001758.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo driver for x86_64</H1>
+    <B>Natalie Protasevich</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20driver%20for%20x86_64&In-Reply-To=%3C32209efe0705311245n1f181ef5xc6320e0808105d3f%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo driver for x86_64">protasnb at gmail.com
+       </A><BR>
+    <I>Thu May 31 21:45:45 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001757.html">[Linux-uvc-devel] uvcvideo driver for x86_64
+</A></li>
+        <LI>Next message: <A HREF="001758.html">[Linux-uvc-devel] Logitech Fusion (2007)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1768">[ date ]</a>
+              <a href="thread.html#1768">[ thread ]</a>
+              <a href="subject.html#1768">[ subject ]</a>
+              <a href="author.html#1768">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 5/25/07, Natalie Protasevich &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">protasnb at gmail.com</A>&gt; wrote:
+&gt;<i>
+</I>&gt;<i> Hi Laurent,
+</I>&gt;<i>
+</I>&gt;<i>  &gt; V4l: device has no mmap support
+</I>&gt;<i> &gt; &gt; ioctl VIDIOCSWIN: Input/output error
+</I>&gt;<i> &gt; &gt; ioctl VIDIOCGWIN: Invalid argument
+</I>&gt;<i> &gt; &gt; ioctl VIDIOCGCHAN: Invalid argument
+</I>&gt;<i> &gt; &gt; ioctl VIDIOCGWIN: Invalid argument
+</I>&gt;<i> &gt; &gt; yuvgrab, read failed!
+</I>&gt;<i> &gt; &gt; yuvgrab, read failed!
+</I>&gt;<i> &gt; &gt; yuvgrab, read failed!
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Those ioctls are from the V4L1 API, which the Linux UVC driver doesn't
+</I>&gt;<i> &gt; support. It might be possible to use the V4L1 compatibility layer, and
+</I>&gt;<i> &gt; that's
+</I>&gt;<i> &gt; probably what you're doing already (maybe without even being aware) if
+</I>&gt;<i> &gt; Marratech works on a 32 bits machine. In that case, there might be some
+</I>&gt;<i> &gt; issues with the V4L1 compatibility layer on 64 bit architectures.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> That is exactly what I am suspecting...
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> &gt; uvccapture and luvcview:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">nataliep at 4300-test</A>:/tmp$ ./uvccapture
+</I>&gt;<i> &gt; &gt; sending ioctl VIDIOC_QUERYCAP
+</I>&gt;<i> &gt; &gt; sending ioctl VIDIOC_S_FMT
+</I>&gt;<i> &gt; &gt; Unable to set format: 22.
+</I>&gt;<i> &gt; &gt;  Init v4L2 failed !! exit fatal
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Those are definitely V4L2 calls. -22 means invalid argument. There might
+</I>&gt;<i> &gt; again
+</I>&gt;<i> &gt; be some issue with 64 bit architectures, either in the driver or in
+</I>&gt;<i> &gt; luvcview.
+</I>&gt;<i> &gt; I can't help you much as I have no 64 bit machine to test this on.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Actually, I am happy to report that the latest  kernel patches have
+</I>&gt;<i> resolved this issue.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> &gt; I also have a kernel trace with my debug, this is a part of it that
+</I>&gt;<i> &gt; shows
+</I>&gt;<i> &gt; &gt; that the driver calls into the l1 compat layer, which seems odd to me
+</I>&gt;<i> &gt; since
+</I>&gt;<i> &gt; &gt; everything from application to kernel is all l2:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; compat_ioctl32 is the 32bit/64bit compatibility layer, not the V4L1
+</I>&gt;<i> &gt; compatibility layer.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> With new updates to the kernel videodev and compat_ioctl32 layer we can
+</I>&gt;<i> run UVC cameras very nicely, using applications like luvcview, it works just
+</I>&gt;<i> great.
+</I>&gt;<i>
+</I>&gt;<i> However, the problem is that we would like to use conferencing software
+</I>&gt;<i> that is written to support old v4L1 mechanism, and the rewrite is going
+</I>&gt;<i> on...slowly :)  But the V4L1 compat layer it it was working could be a
+</I>&gt;<i> solution for the time being. I tracked couple first ioctl's that fail
+</I>&gt;<i> without proper support/translation in the v4l_compat_ioctl32 - those are
+</I>&gt;<i> VIDIOCGMBUF and VIDIOCGCHAN. I am not sure if it is feasible/easy to
+</I>&gt;<i> implement those, the latter one seems to be just a matter of filling out a
+</I>&gt;<i> structure according to the camera's features, but the memory mapped buffer
+</I>&gt;<i> looks a bit challenging. Although looking at the way it is implemented in
+</I>&gt;<i> videodev - it seems possible to do something similar. I would really
+</I>&gt;<i> appreciate your opinion on this problem.
+</I>&gt;<i>
+</I>
+Laurent,
+I'm taking this back. With a closer look the software seems to assume that
+device is capable of read and mmap, whereas the new Logitech cams are
+streaming devices, so they can't really do read from the user mmaped
+buffer...(am I right?) So since the software doesn't implement streaming (it
+turns it off in fact), and doesn't call QBUF, DQBUF etc. instead it's just
+sending reads that fail of course. So there is no really a point to
+implement VIDOCGMBUF as I think I understand now.
+Thanks,
+--Natalie
+
+&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070531/21b3c684/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070531/21b3c684/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001757.html">[Linux-uvc-devel] uvcvideo driver for x86_64
+</A></li>
+	<LI>Next message: <A HREF="001758.html">[Linux-uvc-devel] Logitech Fusion (2007)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1768">[ date ]</a>
+              <a href="thread.html#1768">[ thread ]</a>
+              <a href="subject.html#1768">[ subject ]</a>
+              <a href="author.html#1768">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

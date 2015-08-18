@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Exposure setting problems with Creative Live!	Cam Socialize HD
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Exposure%20setting%20problems%20with%20Creative%20Live%21%0A%09Cam%20Socialize%20HD&In-Reply-To=%3C201107311828.27977.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006743.html">
+   <LINK REL="Next"  HREF="006749.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Exposure setting problems with Creative Live!	Cam Socialize HD</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Exposure%20setting%20problems%20with%20Creative%20Live%21%0A%09Cam%20Socialize%20HD&In-Reply-To=%3C201107311828.27977.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Exposure setting problems with Creative Live!	Cam Socialize HD">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Sun Jul 31 18:28:27 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006743.html">[Linux-uvc-devel] Exposure setting problems with Creative Live! Cam	Socialize HD
+</A></li>
+        <LI>Next message: <A HREF="006749.html">[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6751">[ date ]</a>
+              <a href="thread.html#6751">[ thread ]</a>
+              <a href="subject.html#6751">[ subject ]</a>
+              <a href="author.html#6751">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Michael,
+
+On Saturday 30 July 2011 15:08:14 Michael Stapelberg wrote:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> I recently bought a Creative Live! Cam Socialize HD (ID 041e:4080) after
+</I>&gt;<i> verifying that it is a device supported by the uvcvideo driver.
+</I>&gt;<i> 
+</I>&gt;<i> The device basically works, but to get 30 fps (at 640x480, but also with
+</I>&gt;<i> higher resolutions), I need to set the 'Exposure, Auto' setting to 1
+</I>&gt;<i> (Manual Mode). Afterwards, I can set the 'Exposure (Absolute)' setting to
+</I>&gt;<i> one of the values 39, 78, 156, 312, 625, 1250, 2500, &#8230;. All other values
+</I>&gt;<i> lead to a heavily over-exposed picture. This effect was already mentioned
+</I>&gt;<i> on this list for a different cam [1]. I wonder what we can do about it, as
+</I>&gt;<i> the step size for this setting is reported as '1' while in reality it
+</I>&gt;<i> seems logarithmic &#8211; with the exception of the step 312 to 625.
+</I>
+Those values are 2500 / 64, 32, 16, 8, 4, 2 and 1. There's unfortunately no 
+way for the driver to know that other values will lead to bad results. I've 
+seen bad firmware bugs, but this one is high on the list.
+
+&gt;<i> So, I can live with changing the configuration after plugging in the cam,
+</I>&gt;<i> which I would automate with udev.
+</I>&gt;<i> 
+</I>&gt;<i> However, I have noticed that I need to have an active video capture
+</I>&gt;<i> running, otherwise setting these values with uvcdynctrl has no effect. I
+</I>&gt;<i> tested it like this:
+</I>&gt;<i> 
+</I>&gt;<i> 1) Plug in the camera, wait until the white LED (which indicates capturing)
+</I>&gt;<i>    goes off. This takes about 5 seconds.
+</I>&gt;<i> 2) Use uvcdynctrl -s 'Exposure, Auto' 1
+</I>&gt;<i> 3) Verify the result with uvcdynctrl -g 'Exposure, Auto', which also
+</I>&gt;<i> returns 1 4) Use uvcdynctrl -s 'Exposure (Absolute)' 312, verify it
+</I>&gt;<i> 5) Use gst-launch v4l2src ! xvimagesink
+</I>&gt;<i> &#8594;  The video is at 5 fps instead of 30 fps
+</I>&gt;<i> 
+</I>&gt;<i> If I do it like this, it works:
+</I>&gt;<i> 
+</I>&gt;<i> 1) Plug in the camera, wait until the white LED (which indicates capturing)
+</I>&gt;<i>    goes off. This takes about 5 seconds.
+</I>&gt;<i> 2) Use gst-launch v4l2src ! xvimagesink, leave it open
+</I>&gt;<i> 3) Use uvcdynctrl -s 'Exposure, Auto' 1, verify it
+</I>&gt;<i> 4) Use uvcdynctrl -s 'Exposure (Absolute)' 312, verify it
+</I>&gt;<i> &#8594;  The video works correctly
+</I>
+That's weird. I'm wondering if the camera doesn't just reset all controls when 
+the video stream is started. What happens in the second case if you stop the 
+video stream and restart it ? Are exposure settings correct, or do they go 
+back to bad values ?
+
+&gt;<i> What I also do not understand is why the control has a reported default
+</I>&gt;<i> value of 1 while uvcdynctrl -g 'Exposure, Auto' returns 3.
+</I>&gt;<i> 
+</I>&gt;<i> Is this a bug in the uvcvideo driver? Or in the camera firmware?
+</I>
+Probably in the camera firmware. The device queries the camera for default and 
+current values, and I wouldn't be surprised if the camera reported a default 
+value that it doesn't use as a default.
+
+&gt;<i> What is the recommended way to deal with the Exposure setting?
+</I>
+How do you mean ? On non-broken cameras you can just set the control to any 
+legal value and things will work :-)
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006743.html">[Linux-uvc-devel] Exposure setting problems with Creative Live! Cam	Socialize HD
+</A></li>
+	<LI>Next message: <A HREF="006749.html">[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6751">[ date ]</a>
+              <a href="thread.html#6751">[ thread ]</a>
+              <a href="subject.html#6751">[ subject ]</a>
+              <a href="author.html#6751">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] App hangs driver
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20App%20hangs%20driver&In-Reply-To=%3C46439CD2.3080103%40dfg.homedns.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001732.html">
+   <LINK REL="Next"  HREF="001734.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] App hangs driver</H1>
+    <B>David Girault</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20App%20hangs%20driver&In-Reply-To=%3C46439CD2.3080103%40dfg.homedns.org%3E"
+       TITLE="[Linux-uvc-devel] App hangs driver">dfgweb at dfg.homedns.org
+       </A><BR>
+    <I>Fri May 11 00:29:38 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001732.html">[Linux-uvc-devel] App hangs driver
+</A></li>
+        <LI>Next message: <A HREF="001734.html">[Linux-uvc-devel] App hangs driver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1733">[ date ]</a>
+              <a href="thread.html#1733">[ thread ]</a>
+              <a href="subject.html#1733">[ subject ]</a>
+              <a href="author.html#1733">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+According to the first line of dmesg log, you seem to have the Logitech
+Fusion.
+
+I also have this cam (I have the same VID:PID) and I need the reset
+patch because my webcam is buggy!
+
+I think this is not a driver problem! Laurent, tell me if I'm wrong!
+
+Search in the archive for this patch and apply it to last driver source.
+
+This work great for me!
+
+Regards,
+David
+
+PS: Laurent, could this patch be added in SVN with just a define to
+activate it?
+
+
+Greg Bell a &#233;crit :
+&gt;<i> This works for awhile:
+</I>&gt;<i>
+</I>&gt;<i> $ while true ; do uvccapture -d/dev/video1  ; sleep 10 ; done
+</I>&gt;<i>
+</I>&gt;<i> But errors eventually happen:
+</I>&gt;<i>
+</I>&gt;<i> width 320
+</I>&gt;<i> height 240
+</I>&gt;<i> format 1196444237
+</I>&gt;<i> width 320
+</I>&gt;<i> height 240
+</I>&gt;<i> format 1196444237
+</I>&gt;<i> width 320
+</I>&gt;<i> height 240
+</I>&gt;<i> format 1196444237
+</I>&gt;<i> width 320
+</I>&gt;<i> height 240
+</I>&gt;<i> format 1196444237
+</I>&gt;<i> Unable to set format: 5.
+</I>&gt;<i>  Init v4L2 failed !! exit fatal
+</I>&gt;<i> width 320
+</I>&gt;<i> height 240
+</I>&gt;<i> format 1196444237
+</I>&gt;<i> Unable to set format: 5.
+</I>&gt;<i>  Init v4L2 failed !! exit fatal
+</I>&gt;<i>
+</I>&gt;<i> After this, luvcvideo doesn't work either:
+</I>&gt;<i>
+</I>&gt;<i> $ luvcview -d /dev/video1
+</I>&gt;<i> luvcview version 0.2.0
+</I>&gt;<i> Video driver: x11
+</I>&gt;<i> A window manager is available
+</I>&gt;<i> video /dev/video1
+</I>&gt;<i> Unable to set format: 5.
+</I>&gt;<i>  Init v4L2 failed !! exit fatal
+</I>&gt;<i>
+</I>&gt;<i> dmesg shows:
+</I>&gt;<i>
+</I>&gt;<i> May 10 06:39:33 server kernel: uvcvideo: Found UVC 1.00 device
+</I>&gt;<i> &lt;unnamed&gt; (046d:08c1)
+</I>&gt;<i> May 10 06:39:33 server kernel: uvcvideo: Found a valid video chain (1
+</I>&gt;<i> -&gt; 5).
+</I>&gt;<i> May 10 06:39:33 server kernel: usbcore: registered new driver uvcvideo
+</I>&gt;<i> May 10 06:39:33 server kernel: USB Video Class driver (v0.1.0)
+</I>&gt;<i> May 10 06:40:16 server kernel: uvcvideo: Failed to query (1) UVC
+</I>&gt;<i> control 2 (unit 0) : -32 (exp. 26).
+</I>&gt;<i> May 10 06:40:26 server kernel: uvcvideo: Failed to query (1) UVC
+</I>&gt;<i> control 1 (unit 0) : -32 (exp. 26).
+</I>&gt;<i> May 10 06:40:36 server kernel: uvcvideo: Failed to query (1) UVC
+</I>&gt;<i> control 1 (unit 0) : -110 (exp. 26).
+</I>&gt;<i> May 10 06:41:07 server last message repeated 3 times
+</I>&gt;<i>
+</I>&gt;<i> rmmod and modprobing uvcvideo restores it to working order.
+</I>&gt;<i>
+</I>&gt;<i> Send instant messages to your online friends
+</I>&gt;<i> <A HREF="http://au.messenger.yahoo.com">http://au.messenger.yahoo.com</A>
+</I>&gt;<i>
+</I>&gt;<i> ------------------------------------------------------------------------
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>   
+</I>
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001732.html">[Linux-uvc-devel] App hangs driver
+</A></li>
+	<LI>Next message: <A HREF="001734.html">[Linux-uvc-devel] App hangs driver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1733">[ date ]</a>
+              <a href="thread.html#1733">[ thread ]</a>
+              <a href="subject.html#1733">[ subject ]</a>
+              <a href="author.html#1733">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

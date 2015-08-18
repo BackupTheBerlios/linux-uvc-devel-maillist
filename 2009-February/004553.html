@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Minoru stereo webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Minoru%20stereo%20webcam&In-Reply-To=%3C200902161822.00177.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004552.html">
+   <LINK REL="Next"  HREF="004555.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Minoru stereo webcam</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Minoru%20stereo%20webcam&In-Reply-To=%3C200902161822.00177.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Minoru stereo webcam">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Feb 16 18:21:59 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004552.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+        <LI>Next message: <A HREF="004555.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4553">[ date ]</a>
+              <a href="thread.html#4553">[ thread ]</a>
+              <a href="subject.html#4553">[ subject ]</a>
+              <a href="author.html#4553">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Jan,
+
+On Monday 16 February 2009 17:47:01 Jan Ciger wrote:
+&gt;<i> Hello Laurent,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart wrote:
+</I>&gt;<i> &gt; You're right. I've attached an updated version of the patch to this
+</I>&gt;<i> &gt; e-mail. Could you please test it ?
+</I>&gt;<i>
+</I>&gt;<i> I have tested your new patch and now I am able to stream from both
+</I>&gt;<i> cameras at 640x480 and 15fps. 30fps is still giving the &quot;no space on
+</I>&gt;<i> device&quot; message when I try to open the second camera. The payload sizes
+</I>&gt;<i> reported are 1152 bytes for 15 fps case and 2380 bytes for 30 fps.
+</I>&gt;<i>
+</I>&gt;<i> Is it actually possible to have two cameras on USB 2.0 bus streaming at
+</I>&gt;<i> 30 fps and VGA resolution? It certainly does work on FireWire 400 - that
+</I>&gt;<i> should have comparable bandwidth in YUV411 mode (have two such Unibrain
+</I>&gt;<i> cams on my desk right now).
+</I>
+Short answer, I don't know.
+
+The cameras need to transfer 2380 bytes of video data per microframe. The 12 
+bytes headers are currently not taken into account by the driver, adding them 
+would raise the total to 2392 bytes per microframe per camera.
+
+The smallest bandwidth alternate setting that would still allow us to stream 
+2380+12 bytes per microframe has an endpoint maximum packed size of 2688 
+bytes. This would lead to 5376 bytes per microframe for both devices.
+
+Periodic transfers can't take more than 80% of the available bandwidth. If we 
+neglect overhead, the maximum periodic transfer length is
+
+480e6 / 8 / 8000 * 0.8 = 6000 bytes per microframe.
+
+5376 bytes seem to fit in the available bandwidth, but we need to take 
+overhead into account, as well as other periodic transfers (interrupt). As the 
+USB core rejects our request for twice 2380 bytes per microframe, I'm inclined 
+to believe 2x <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">640x480 at 30fps</A> YUYV can't be streamed on high-speed USB.
+
+&gt;<i> Other than this, the camera seems to start being usable, good job!
+</I>
+Thanks.
+
+Unless you believe 30 fps should be supported, I'll take the header size into 
+account and I'll commit the patch.
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004552.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+	<LI>Next message: <A HREF="004555.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4553">[ date ]</a>
+              <a href="thread.html#4553">[ thread ]</a>
+              <a href="subject.html#4553">[ subject ]</a>
+              <a href="author.html#4553">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

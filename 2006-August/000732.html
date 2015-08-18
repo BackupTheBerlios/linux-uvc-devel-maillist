@@ -1,0 +1,233 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech QC Orbit MP not working - uvccapture	andluvcview fail [solved]
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QC%20Orbit%20MP%20not%20working%20-%20uvccapture%0A%09andluvcview%20fail%20%5Bsolved%5D&In-Reply-To=%3Ce5fbb9f70608240901p6f1f9088jb665a4d2e4e076c7%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000731.html">
+   <LINK REL="Next"  HREF="000734.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech QC Orbit MP not working - uvccapture	andluvcview fail [solved]</H1>
+    <B>Henricus Spaaij</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QC%20Orbit%20MP%20not%20working%20-%20uvccapture%0A%09andluvcview%20fail%20%5Bsolved%5D&In-Reply-To=%3Ce5fbb9f70608240901p6f1f9088jb665a4d2e4e076c7%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Logitech QC Orbit MP not working - uvccapture	andluvcview fail [solved]">hspaaij at gmail.com
+       </A><BR>
+    <I>Thu Aug 24 18:01:16 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000731.html">[Linux-uvc-devel] Logitech QC Orbit MP not working - uvccapture	andluvcview fail [solved]
+</A></li>
+        <LI>Next message: <A HREF="000734.html">[Linux-uvc-devel] Logitech QC Orbit MP not working - uvccapture	andluvcview fail [solved]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#732">[ date ]</a>
+              <a href="thread.html#732">[ thread ]</a>
+              <a href="subject.html#732">[ subject ]</a>
+              <a href="author.html#732">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>To keep the mailing list informed...
+
+'uvcvideo' works now on my Gentoo Linux box. There were 2 issues:
+1. Gentoo includes a patch for iSight, which breaks the driver (this
+is mentioned in the July mailing list). There is a bug report for this
+so hopefully they will make this patch optional.
+Is it possible to build-in proper support for the Apple iSight, rather
+than have a half working patch?
+
+2. Taking the svn sources and apply the 'usb-reset' patch by Alexandre Becoulet
+(<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/2006-February/000210.html">https://lists.berlios.de/pipermail/linux-uvc-devel/2006-February/000210.html</A>)
+This patch is a life saver. Without it the USB subsystem can become unstable.
+Is it possible to include this patch into the main codebase, or
+otherwise add them to the berilios project page under section patches?
+
+Last, maybe it helps, Logitech has support for 3rd party developers (I
+emailed them reminding them about Linux customers).  Information can
+be found here: <A HREF="http://www.logitech.com/index.cfm/partners/select/US/EN,crid=932,categoryid=218">http://www.logitech.com/index.cfm/partners/select/US/EN,crid=932,categoryid=218</A>
+
+Thanks very much for developing this driver.
+Henk
+
+
+On 8/22/06, Henk Spaaij &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">hspaaij at gmail.com</A>&gt; wrote:
+&gt;<i> Thanks Ajay,
+</I>&gt;<i>
+</I>&gt;<i> On Tuesday 22 August 2006 00:15, Ajay wrote:
+</I>&gt;<i> &gt; use -d and /dev/video2 together. it should appear as follows on the
+</I>&gt;<i> &gt; command prompt:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; /$uvccapture -d/dev/video2 -v /
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; hope it helps!! I had the same problem and got solved using what I just
+</I>&gt;<i> &gt; said.
+</I>&gt;<i>
+</I>&gt;<i> I tried it and the good news is that it does make a difference.
+</I>&gt;<i>
+</I>&gt;<i> The bad news is that uvccapture hangs forever and the USB system becomes
+</I>&gt;<i> unstable.
+</I>&gt;<i> My guess is that the 'uvcvideo' kernel module gets into a bad state.
+</I>&gt;<i>
+</I>&gt;<i> More detailed information:
+</I>&gt;<i> The LED light on the camera comes on, but uvccapture hangs.
+</I>&gt;<i> ---
+</I>&gt;<i> $uvccapture -d/dev/video2 -v
+</I>&gt;<i> Using videodevice: /dev/video2
+</I>&gt;<i> Saving images to: snap.jpg
+</I>&gt;<i> Image size: 320x240
+</I>&gt;<i> Taking snapshot every 0 seconds
+</I>&gt;<i> Taking images using mmap
+</I>&gt;<i> Resetting camera settings
+</I>&gt;<i> Camera brightness level is 127
+</I>&gt;<i> Camera contrast level is 32
+</I>&gt;<i> Camera saturation level is 32
+</I>&gt;<i> Camera gain level is 0
+</I>&gt;<i> ---
+</I>&gt;<i> After a minute or so I hit Ctrl-C:
+</I>&gt;<i> ---
+</I>&gt;<i> Exiting...
+</I>&gt;<i> ---
+</I>&gt;<i> Needed to run kill -9 to stop the process.
+</I>&gt;<i>
+</I>&gt;<i> 'lsof |grep uvccapture' gives an idea what it is doing:
+</I>&gt;<i> ---
+</I>&gt;<i> bash      10230       henk  cwd       DIR      253,0      4096     215518
+</I>&gt;<i> /home/henk/tmp/uvccapture-0.4
+</I>&gt;<i> bash      10233       henk  cwd       DIR      253,0      4096     215518
+</I>&gt;<i> /home/henk/tmp/uvccapture-0.4
+</I>&gt;<i> uvccaptur 10664       henk  cwd       DIR      253,0      4096     215518
+</I>&gt;<i> /home/henk/tmp/uvccapture-0.4
+</I>&gt;<i> uvccaptur 10664       henk  rtd       DIR        3,4      4096          2 /
+</I>&gt;<i> uvccaptur 10664       henk  txt       REG      253,0     22066     215568
+</I>&gt;<i> /home/henk/tmp/uvccapture-0.4/uvccapture
+</I>&gt;<i> uvccaptur 10664       henk  mem       REG        0,0                    0
+</I>&gt;<i> [heap] (stat: No such file or directory)
+</I>&gt;<i> uvccaptur 10664       henk  mem       CHR       81,2                 8981
+</I>&gt;<i> /dev/v4l/video2
+</I>&gt;<i> uvccaptur 10664       henk  mem       REG        3,4   1206808    4573692
+</I>&gt;<i> /lib/tls/libc.so
+</I>&gt;<i> uvccaptur 10664       henk  mem       REG        3,4    124204    3835866
+</I>&gt;<i> /usr/lib/libjpeg.so.62.0.0
+</I>&gt;<i> uvccaptur 10664       henk  mem       REG        3,4    104100    4573691
+</I>&gt;<i> /lib/ld-2.3.6.so
+</I>&gt;<i> uvccaptur 10664       henk    0u      CHR      136,1                    3
+</I>&gt;<i> /dev/pts/1
+</I>&gt;<i> uvccaptur 10664       henk    1u      CHR      136,1                    3
+</I>&gt;<i> /dev/pts/1
+</I>&gt;<i> uvccaptur 10664       henk    2u      CHR      136,1                    3
+</I>&gt;<i> /dev/pts/1
+</I>&gt;<i> uvccaptur 10664       henk    3u      CHR       81,2                 8981
+</I>&gt;<i> /dev/v4l/video2
+</I>&gt;<i> uvccaptur 10664       henk    4r      REG        3,4     20411     967972
+</I>&gt;<i> /usr/share/X11/locale/iso8859-1/Compose
+</I>&gt;<i> uvccaptur 10664       henk    5r      REG        3,4     20411     967972
+</I>&gt;<i> /usr/share/X11/locale/iso8859-1/Compose
+</I>&gt;<i> uvccaptur 10664       henk   10r      REG        3,4     20411     967972
+</I>&gt;<i> /usr/share/X11/locale/iso8859-1/Compose
+</I>&gt;<i> ---
+</I>&gt;<i>
+</I>&gt;<i> dmesg gives the dreaded &quot;uvcvideo: Failed to query:&quot;, followed by
+</I>&gt;<i> errors of the USB card reader which is plugged in another USB slot.
+</I>&gt;<i> ---
+</I>&gt;<i> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32 (exp: 26).
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 2 (unit 2) : -110 (exp: 2).
+</I>&gt;<i> uvcvideo: Failed to query (129) UVC control 2 (unit 2) : -32 (exp: 2).
+</I>&gt;<i> uvcvideo: Failed to query (130) UVC control 3 (unit 2) : -32 (exp: 2).
+</I>&gt;<i> uvcvideo: Failed to query (129) UVC control 2 (unit 2) : -32 (exp: 2).
+</I>&gt;<i> uvcvideo: Failed to query (132) UVC control 2 (unit 2) : -32 (exp: 2).
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 7 (unit 2) : -32 (exp: 2).
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 3 (unit 2) : -32 (exp: 2).
+</I>&gt;<i> uvcvideo: Failed to query (130) UVC control 9 (unit 2) : -32 (exp: 2).
+</I>&gt;<i> usb 3-2: reset high speed USB device using ehci_hcd and address 3
+</I>&gt;<i> usb 3-2: reset high speed USB device using ehci_hcd and address 3
+</I>&gt;<i> usb 3-2: reset high speed USB device using ehci_hcd and address 3
+</I>&gt;<i> usb 3-2: reset high speed USB device using ehci_hcd and address 3
+</I>&gt;<i> usb 3-2: reset high speed USB device using ehci_hcd and address 3
+</I>&gt;<i> sd 2:0:0:2: scsi: Device offlined - not ready after error recovery
+</I>&gt;<i> sd 2:0:0:2: rejecting I/O to offline device
+</I>&gt;<i> sd 2:0:0:2: rejecting I/O to offline device
+</I>&gt;<i> sd 2:0:0:2: rejecting I/O to offline device
+</I>&gt;<i> sd 2:0:0:2: rejecting I/O to offline device
+</I>&gt;<i> sdd : READ CAPACITY failed.
+</I>&gt;<i> sdd : status=0, message=00, host=1, driver=00
+</I>&gt;<i> sdd : sense not available.
+</I>&gt;<i> sd 2:0:0:2: rejecting I/O to offline device
+</I>&gt;<i> sdd: Write Protect is off
+</I>&gt;<i> sdd: Mode Sense: 00 00 00 00
+</I>&gt;<i> sdd: assuming drive cache: write through
+</I>&gt;<i> usb 3-2: reset high speed USB device using ehci_hcd and address 3
+</I>&gt;<i> ---
+</I>&gt;<i>
+</I>&gt;<i> lspci:
+</I>&gt;<i> ---
+</I>&gt;<i> 00:00.0 Host bridge: nVidia Corporation nForce3 250Gb Host Bridge (rev a1)
+</I>&gt;<i> 00:01.0 ISA bridge: nVidia Corporation nForce3 250Gb LPC Bridge (rev a2)
+</I>&gt;<i> 00:01.1 SMBus: nVidia Corporation nForce 250Gb PCI System Management (rev
+</I>&gt;<i> a1)
+</I>&gt;<i> 00:02.0 USB Controller: nVidia Corporation CK8S USB Controller (rev a1)
+</I>&gt;<i> 00:02.1 USB Controller: nVidia Corporation CK8S USB Controller (rev a1)
+</I>&gt;<i> 00:02.2 USB Controller: nVidia Corporation nForce3 EHCI USB 2.0 Controller
+</I>&gt;<i> (rev a2)
+</I>&gt;<i> 00:05.0 Bridge: nVidia Corporation CK8S Ethernet Controller (rev a2)
+</I>&gt;<i> 00:06.0 Multimedia audio controller: nVidia Corporation nForce3 250Gb AC'97
+</I>&gt;<i> Audio Controller (rev a1)
+</I>&gt;<i> 00:08.0 IDE interface: nVidia Corporation CK8S Parallel ATA Controller
+</I>&gt;<i> (v2.5) (rev a2)
+</I>&gt;<i> 00:0a.0 IDE interface: nVidia Corporation CK8S Serial ATA Controller (v2.5)
+</I>&gt;<i> (rev a2)
+</I>&gt;<i> 00:0b.0 PCI bridge: nVidia Corporation nForce3 250Gb AGP Host to PCI Bridge
+</I>&gt;<i> (rev a2)
+</I>&gt;<i> 00:0e.0 PCI bridge: nVidia Corporation nForce3 250Gb PCI-to-PCI Bridge (rev
+</I>&gt;<i> a2)
+</I>&gt;<i> 00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
+</I>&gt;<i> HyperTransport Technology Configuration
+</I>&gt;<i> 00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
+</I>&gt;<i> Address Map
+</I>&gt;<i> 00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRAM
+</I>&gt;<i> Controller
+</I>&gt;<i> 00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
+</I>&gt;<i> Miscellaneous Control
+</I>&gt;<i> 01:00.0 VGA compatible controller: nVidia Corporation NV25 [GeForce4 Ti
+</I>&gt;<i> 4200] (rev a3)
+</I>&gt;<i> 02:08.0 Multimedia video controller: Internext Compression Inc iTVC16
+</I>&gt;<i> (CX23416) MPEG-2 Encoder (rev 01)
+</I>&gt;<i> 02:09.0 Multimedia video controller: Brooktree Corporation Bt878 Video
+</I>&gt;<i> Capture (rev 11)
+</I>&gt;<i> 02:09.1 Multimedia controller: Brooktree Corporation Bt878 Audio Capture
+</I>&gt;<i> (rev 11)
+</I>&gt;<i> 02:0d.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8169
+</I>&gt;<i> Gigabit Ethernet (rev 10)
+</I>&gt;<i> ---
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000731.html">[Linux-uvc-devel] Logitech QC Orbit MP not working - uvccapture	andluvcview fail [solved]
+</A></li>
+	<LI>Next message: <A HREF="000734.html">[Linux-uvc-devel] Logitech QC Orbit MP not working - uvccapture	andluvcview fail [solved]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#732">[ date ]</a>
+              <a href="thread.html#732">[ thread ]</a>
+              <a href="subject.html#732">[ subject ]</a>
+              <a href="author.html#732">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

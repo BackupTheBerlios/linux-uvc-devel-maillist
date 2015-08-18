@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20LifeCam%20Cinema%20%28045e%3A075d%29%0A%09bandwidth%20reservation%20issues%3F&In-Reply-To=%3C201001110230.44910.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005474.html">
+   <LINK REL="Next"  HREF="005482.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20LifeCam%20Cinema%20%28045e%3A075d%29%0A%09bandwidth%20reservation%20issues%3F&In-Reply-To=%3C201001110230.44910.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Mon Jan 11 02:30:44 CET 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005474.html">[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?
+</A></li>
+        <LI>Next message: <A HREF="005482.html">[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5481">[ date ]</a>
+              <a href="thread.html#5481">[ thread ]</a>
+              <a href="subject.html#5481">[ subject ]</a>
+              <a href="author.html#5481">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Seth,
+
+On Wednesday 06 January 2010 03:54:11 Seth W wrote:
+&gt;<i> Here you are. Thanks  in advance for your assistance. (PS - Please note
+</I>&gt;<i> there are two cameras, both same make/model therefore share the same ID)
+</I>
+Thanks for the information. The device supports the following bandwidths 
+(unrelated information removed for the sake of clarity):
+
+&gt;<i>         wMaxPacketSize     0x0080  1x 128 bytes
+</I>&gt;<i>         wMaxPacketSize     0x0100  1x 256 bytes
+</I>&gt;<i>         wMaxPacketSize     0x0200  1x 512 bytes
+</I>&gt;<i>         wMaxPacketSize     0x0400  1x 1024 bytes
+</I>&gt;<i>         wMaxPacketSize     0x0c00  2x 1024 bytes
+</I>&gt;<i>         wMaxPas.cketSize     0x1400  3x 1024 bytes
+</I>
+Your previous e-mail included an excerpt from the kernel log clearly showing 
+that the device asked for 3x 1024 bytes per microframe in both 640x480 and 
+1280x800.
+
+The default frame rate at those resolutions is 30fps and 10fps respectively. 
+As every pixel takes 2 bytes in uncompressed YUV, this leads to
+
+640*480*2*30 = 18000 KiB/s
+1280*800*2*10 = 20000 KiB/s
+
+Divided by 8000 microframes per second, we get
+
+640x480 -&gt; 2304 bytes / microframe
+1280x800 -&gt; 2560 bytes / microframe
+
+The lowest bandwidth compatible with those values is 3x 1024 bytes per 
+microframe, which is too high to stream from both cameras at the same time.
+
+You could try lowering the frame rate. The average required bandwidth will be 
+lower, but the device might not have enough internal memory to store a 
+complete frame and smooth bandwidth usage. In that case it will still ask for 
+a high bandwidth, and streaming from two devices simultaneously will fail.
+
+The other option is to use MJPEG instead of YUV. That will reduce the 
+bandwidth requirements drastically, but you will have to decompress the MJPEG 
+stream
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005474.html">[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?
+</A></li>
+	<LI>Next message: <A HREF="005482.html">[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5481">[ date ]</a>
+              <a href="thread.html#5481">[ thread ]</a>
+              <a href="subject.html#5481">[ subject ]</a>
+              <a href="author.html#5481">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

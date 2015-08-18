@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] soft lockup
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20soft%20lockup&In-Reply-To=%3C1178528700.5601.5.camel%40cass-wks%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001701.html">
+   <LINK REL="Next"  HREF="001713.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] soft lockup</H1>
+    <B>Guillaume Desmottes</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20soft%20lockup&In-Reply-To=%3C1178528700.5601.5.camel%40cass-wks%3E"
+       TITLE="[Linux-uvc-devel] soft lockup">cass at skynet.be
+       </A><BR>
+    <I>Mon May  7 11:05:00 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001701.html">[Linux-uvc-devel] [SVN] Limited support for multiple inputs	selector units &amp; other features
+</A></li>
+        <LI>Next message: <A HREF="001713.html">[Linux-uvc-devel] soft lockup
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1702">[ date ]</a>
+              <a href="thread.html#1702">[ thread ]</a>
+              <a href="subject.html#1702">[ subject ]</a>
+              <a href="author.html#1702">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey,
+
+I'm using the latest uvc driver from SVN (patched with the well know
+&quot;reset patch&quot;) on Ubuntu Feisty (2.6.20-15-generic) and got this error
+after the boot:
+
+[   49.853285] usbcore: registered new interface driver snd-usb-audio
+[   49.861202] uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:08ce)
+[   59.384003] BUG: soft lockup detected on CPU#0!
+[   59.384013]  [&lt;c015353c&gt;] softlockup_tick+0x9c/0xf0
+[   59.384029]  [&lt;c0130633&gt;] update_process_times+0x33/0x80
+[   59.384037]  [&lt;c01154b0&gt;] smp_apic_timer_interrupt+0x70/0x80
+[   59.384043]  [&lt;c01042f8&gt;] apic_timer_interrupt+0x28/0x30
+[   59.384062]  [&lt;c011c110&gt;] native_read_tsc+0x0/0x10
+[   59.384069]  [&lt;c01f17d8&gt;] delay_tsc+0x18/0x30
+[   59.384075]  [&lt;c01f1836&gt;] __delay+0x6/0x10
+[   59.384078]  [&lt;f8b7977f&gt;] uvc_query_ctrl+0x5f/0x170 [uvcvideo]
+[   59.384089]  [&lt;c01f1084&gt;] vsnprintf+0x2f4/0x5f0
+[   59.384111]  [&lt;f8b79a11&gt;] uvc_get_video_ctrl+0x61/0x170 [uvcvideo]
+[   59.384142]  [&lt;f8b79b43&gt;] uvc_video_init+0x23/0xe0 [uvcvideo]
+[   59.384151]  [&lt;f8b75754&gt;] uvc_register_video+0x524/0x640 [uvcvideo]
+[   59.384179]  [&lt;f8b75bcb&gt;] uvc_probe+0x2ab/0x1720 [uvcvideo]
+[   59.384260]  [&lt;f8884c86&gt;] usb_probe_interface+0x96/0xe0 [usbcore]
+[   59.384284]  [&lt;c0257a66&gt;] really_probe+0x66/0x190
+[   59.384290]  [&lt;c0257bd9&gt;] driver_probe_device+0x49/0xc0
+[   59.384302]  [&lt;c0257dae&gt;] __driver_attach+0x9e/0xa0
+[   59.384310]  [&lt;c0256f3b&gt;] bus_for_each_dev+0x3b/0x60
+[   59.384322]  [&lt;c0257904&gt;] driver_attach+0x24/0x30
+[   59.384325]  [&lt;c0257d10&gt;] __driver_attach+0x0/0xa0
+[   59.384328]  [&lt;c02572cb&gt;] bus_add_driver+0x7b/0x1a0
+[   59.384342]  [&lt;f888472b&gt;] usb_register_driver+0x7b/0x100 [usbcore]
+[   59.384366]  [&lt;f8a85068&gt;] uvc_init+0x68/0x81 [uvcvideo]
+[   59.384373]  [&lt;c014421d&gt;] sys_init_module+0x15d/0x1ba0
+[   59.384436]  [&lt;c0107a5d&gt;] sys_mmap2+0xcd/0xd0
+[   59.384450]  [&lt;c01031f0&gt;] sysenter_past_esp+0x69/0xa9
+[   59.384475]  =======================
+
+
+Is it a known bug?
+
+	G.
+
+-- 
+Guillaume Desmottes &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">cass at skynet.be</A>&gt;
+Jabber &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">cassidy at jabber.belnet.be</A>&gt;
+GPG 1024D/711E31B1 | 1B5A 1BA8 11AA F0F1 2169  E28A AC55 8671 711E 31B1
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001701.html">[Linux-uvc-devel] [SVN] Limited support for multiple inputs	selector units &amp; other features
+</A></li>
+	<LI>Next message: <A HREF="001713.html">[Linux-uvc-devel] soft lockup
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1702">[ date ]</a>
+              <a href="thread.html#1702">[ thread ]</a>
+              <a href="subject.html#1702">[ subject ]</a>
+              <a href="author.html#1702">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,468 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] Apple Built-in iSight
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Apple%20Built-in%20iSight&In-Reply-To=%3C200712092153.41674.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002562.html">
+   <LINK REL="Next"  HREF="002568.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] Apple Built-in iSight</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Apple%20Built-in%20iSight&In-Reply-To=%3C200712092153.41674.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] Apple Built-in iSight">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sun Dec  9 21:53:41 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002562.html">[Linux-uvc-devel] [PATCH] Apple Built-in iSight
+</A></li>
+        <LI>Next message: <A HREF="002568.html">[Linux-uvc-devel] [PATCH] Apple Built-in iSight
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2563">[ date ]</a>
+              <a href="thread.html#2563">[ thread ]</a>
+              <a href="subject.html#2563">[ subject ]</a>
+              <a href="author.html#2563">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi &#201;tienne,
+
+On Sunday 09 December 2007, &#201;tienne Bersac wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> Follows an updated patch based on Ivan work. It's half weighted, mainly
+</I>&gt;<i> because it does not extract and load the AppleUSBVideoSupport OS X
+</I>&gt;<i> driver. This is done in userspace using isight-firmware-tools availables
+</I>&gt;<i> at <A HREF="http://bersace03.free.fr/ift/">http://bersace03.free.fr/ift/</A> and udev.  No SHA1 computation, No
+</I>&gt;<i> twice probe, No double device entry, No kernel space firmware loading,
+</I>&gt;<i> No is_isight(), etc. isight.h has been merged into uvcvideo.h and
+</I>&gt;<i> isight.c has been renamed to uvc_isight.c.
+</I>
+First of all, thanks for your work. Comments inlined.
+
+&gt;<i> Many thanks to Laurent for helping cleaning the patch and properly
+</I>&gt;<i> implement the quirk workaround.
+</I>&gt;<i>
+</I>&gt;<i> Kind regards,
+</I>&gt;<i> &#201;tienne.
+</I>&gt;<i>
+</I>&gt;<i> Signed-off-by: &#201;tienne Bersac &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bersace at gmail.com</A>&gt;
+</I>&gt;<i> ---
+</I>&gt;<i> Add built-in isight support to uvcvieo driver. Add a decode function
+</I>&gt;<i> member to struct uvc_video_queue. The decode function has three
+</I>&gt;<i> implementation : isoc, bulk and isight. uvc_isight.c implement the
+</I>&gt;<i> isight decode function.
+</I>&gt;<i>
+</I>&gt;<i> A BUILTIN_ISIGHT quirk is added allowing to determine wether to use
+</I>&gt;<i> isight decode function or not.
+</I>&gt;<i>
+</I>&gt;<i> Index: uvc_video.c
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvc_video.c	(r&#233;vision 149)
+</I>&gt;<i> +++ uvc_video.c	(copie de travail)
+</I>&gt;<i> @@ -452,8 +452,9 @@
+</I>&gt;<i>  /*
+</I>&gt;<i>   * Completion handler for video URBs.
+</I>&gt;<i>   */
+</I>&gt;<i> -static void uvc_video_complete_isoc(struct urb *urb,
+</I>&gt;<i> -	struct uvc_video_queue *queue, struct uvc_buffer *buf)
+</I>&gt;<i> +static void uvc_video_decode_isoc(struct urb *urb,
+</I>&gt;<i> +				  struct uvc_video_queue *queue,
+</I>&gt;<i> +				  struct uvc_buffer *buf)
+</I>&gt;<i>  {
+</I>&gt;<i>  	u8 *mem;
+</I>&gt;<i>  	int ret, i;
+</I>
+Please don't cleanup formatting unrelated to iSight support.
+
+&gt;<i> @@ -490,8 +491,9 @@
+</I>&gt;<i>  	}
+</I>&gt;<i>  }
+</I>&gt;<i>
+</I>&gt;<i> -static void uvc_video_complete_bulk(struct urb *urb,
+</I>&gt;<i> -	struct uvc_video_queue *queue, struct uvc_buffer *buf)
+</I>&gt;<i> +static void uvc_video_decode_bulk(struct urb *urb,
+</I>&gt;<i> +				  struct uvc_video_queue *queue,
+</I>&gt;<i> +				  struct uvc_buffer *buf)
+</I>&gt;<i>  {
+</I>&gt;<i>  	u8 *mem;
+</I>&gt;<i>  	int len, ret;
+</I>
+Ditto.
+
+&gt;<i> @@ -585,10 +587,7 @@
+</I>&gt;<i>  		buf = list_entry(queue-&gt;irqqueue.next, struct uvc_buffer, queue);
+</I>&gt;<i>  	spin_unlock_irqrestore(&amp;queue-&gt;irqlock, flags);
+</I>&gt;<i>
+</I>&gt;<i> -	if (urb-&gt;number_of_packets)
+</I>&gt;<i> -		uvc_video_complete_isoc(urb, queue, buf);
+</I>&gt;<i> -	else
+</I>&gt;<i> -		uvc_video_complete_bulk(urb, queue, buf);
+</I>&gt;<i> +	queue-&gt;decode(urb, queue, buf);
+</I>&gt;<i>
+</I>&gt;<i>  	if ((ret = usb_submit_urb(urb, GFP_ATOMIC)) &lt; 0) {
+</I>&gt;<i>  		uvc_printk(KERN_ERR, &quot;Failed to resubmit video URB (%d).\n&quot;,
+</I>&gt;<i> @@ -628,7 +627,8 @@
+</I>&gt;<i>   * Initialize isochronous URBs and allocate transfer buffers. The packet
+</I>&gt;<i> size * is given by the endpoint.
+</I>&gt;<i>   */
+</I>&gt;<i> -static int uvc_init_video_isoc(struct uvc_video_device *video, struct
+</I>&gt;<i> usb_host_endpoint *ep) +static int uvc_init_video_isoc(struct
+</I>&gt;<i> uvc_video_device *video,
+</I>&gt;<i> +			       struct usb_host_endpoint *ep)
+</I>&gt;<i>  {
+</I>&gt;<i>  	struct urb *urb;
+</I>&gt;<i>  	unsigned int npackets, i, j;
+</I>
+Ditto.
+
+&gt;<i> @@ -693,7 +693,8 @@
+</I>&gt;<i>   * Initialize bulk URBs and allocate transfer buffers. The packet size is
+</I>&gt;<i>   * given by the endpoint.
+</I>&gt;<i>   */
+</I>&gt;<i> -static int uvc_init_video_bulk(struct uvc_video_device *video, struct
+</I>&gt;<i> usb_host_endpoint *ep) +static int uvc_init_video_bulk(struct
+</I>&gt;<i> uvc_video_device *video,
+</I>&gt;<i> +			       struct usb_host_endpoint *ep)
+</I>&gt;<i>  {
+</I>&gt;<i>  	struct urb *urb;
+</I>&gt;<i>  	unsigned int pipe, i;
+</I>
+Ditto.
+
+&gt;<i> @@ -747,7 +748,7 @@
+</I>&gt;<i>  {
+</I>&gt;<i>  	struct usb_interface *intf = video-&gt;streaming-&gt;intf;
+</I>&gt;<i>  	struct usb_host_interface *alts;
+</I>&gt;<i> -	struct usb_host_endpoint *ep;
+</I>&gt;<i> +	struct usb_host_endpoint *ep = NULL;
+</I>&gt;<i>  	int intfnum = video-&gt;streaming-&gt;intfnum;
+</I>&gt;<i>  	unsigned int bandwidth, psize, i;
+</I>&gt;<i>  	int ret;
+</I>
+This fixes a gcc4 warning. I'll commit it as a separate patch.
+
+&gt;<i> @@ -937,6 +938,16 @@
+</I>&gt;<i>  	video-&gt;streaming-&gt;cur_frame = frame;
+</I>&gt;<i>  	atomic_set(&amp;video-&gt;active, 1);
+</I>&gt;<i>
+</I>&gt;<i> +
+</I>&gt;<i> +	/* determine the decode function */
+</I>&gt;<i> +	if (video-&gt;dev-&gt;quirks &amp; UVC_QUIRK_BUILTIN_ISIGHT)
+</I>&gt;<i> +		video-&gt;queue.decode = uvc_video_decode_isight;
+</I>&gt;<i> +	else if (video-&gt;streaming-&gt;intf-&gt;num_altsetting &gt; 1)
+</I>&gt;<i> +		video-&gt;queue.decode = uvc_video_decode_isoc;
+</I>&gt;<i> +	else
+</I>&gt;<i> +		video-&gt;queue.decode = uvc_video_decode_bulk;
+</I>&gt;<i> +
+</I>&gt;<i> +
+</I>
+Please remove extra blank lines.
+
+&gt;<i>  	return 0;
+</I>&gt;<i>  }
+</I>&gt;<i>
+</I>&gt;<i> Index: uvc_isight.c
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvc_isight.c	(r&#233;vision 0)
+</I>&gt;<i> +++ uvc_isight.c	(r&#233;vision 0)
+</I>&gt;<i> @@ -0,0 +1,154 @@
+</I>&gt;<i> +/*
+</I>&gt;<i> + * Copyright (C) 2006-2007 Ivan N. Zlatev &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">contact at i-nz.net</A>&gt;
+</I>&gt;<i> + * Copyright &#169; 2007 &#201;tienne Bersac &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bersace03 at laposte.net</A>&gt;
+</I>
+Are non ascii characters allowed in Linux sources ?
+
+&gt;<i> + *
+</I>&gt;<i> + * Based on extract.c by Ronald S. Bultje &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">rbultje at ronald.bitfreak.net</A>&gt;
+</I>&gt;<i> + * Firmware loading specifics by Johannes Berg &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">johannes at sipsolutions.net</A>&gt;
+</I>&gt;<i> + * at <A HREF="http://johannes.sipsolutions.net/MacBook/iSight">http://johannes.sipsolutions.net/MacBook/iSight</A>
+</I>
+There is no firmware loading anymore.
+
+&gt;<i> + *
+</I>&gt;<i> + * This program is free software; you can redistribute it and/or modify
+</I>&gt;<i> + * it under the terms of the GNU General Public License as published by
+</I>&gt;<i> + * the Free Software Foundation; either version 2 of the License, or
+</I>&gt;<i> + * (at your option) any later version.
+</I>&gt;<i> + *
+</I>&gt;<i> + * This program is distributed in the hope that it will be useful,
+</I>&gt;<i> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+</I>&gt;<i> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+</I>&gt;<i> + * GNU General Public License for more details.
+</I>&gt;<i> + *
+</I>&gt;<i> + * You should have received a copy of the GNU General Public License
+</I>&gt;<i> + * along with this program; if not, write to the Free Software
+</I>&gt;<i> + * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+</I>&gt;<i> + * MA 02110-1301, USA
+</I>&gt;<i> + */
+</I>&gt;<i> +
+</I>&gt;<i> +#include &lt;linux/usb.h&gt;
+</I>&gt;<i> +#include &lt;linux/kernel.h&gt;
+</I>&gt;<i> +#include &lt;linux/mm.h&gt;
+</I>&gt;<i> +
+</I>&gt;<i> +#include &quot;uvcvideo.h&quot;
+</I>&gt;<i> +
+</I>&gt;<i> +#define isight_printk(msg...)				\
+</I>&gt;<i> +	printk(KERN_DEBUG &quot;uvcvideo: iSight: &quot; msg)
+</I>&gt;<i> +
+</I>
+Unused, please remove.
+
+&gt;<i> +/* Built-in iSight webcams are completely broken. They implement most
+</I>&gt;<i> + * of UVC 1.0, but the Apple engineers decided to use a completely
+</I>&gt;<i> + * different packet format, although the video data is in YUV. Were
+</I>&gt;<i> + * they on crack or just lazy ? As the hardware is 8051-based, it
+</I>&gt;<i> + * might be interesting to write an open-source firmware.
+</I>
+I think I'm the author of that message. Now that I know more about the 
+hardware, I understand the 8051-based controller they used doesn't have the 
+required hardware to generate UVC-compatible isochronous packets. The comment 
+should be made a bit less aggressive :-)
+
+&gt;<i> + *
+</I>&gt;<i> + * Instead of sending a header at the beginning of each isochronous
+</I>&gt;<i> + * transfer payload, the webcam sends a single header per image (on
+</I>&gt;<i> + * its own in a packet), followed by packets containing data only.
+</I>&gt;<i> + *
+</I>&gt;<i> + * Offset   Size (bytes)	Description
+</I>&gt;<i> + * ------------------------------------------------------------------
+</I>&gt;<i> + * 0x00 	1   	Header length
+</I>&gt;<i> + * 0x01 	1   	Flags (UVC-compliant)
+</I>&gt;<i> + * 0x02 	4   	Always equal to '11223344'
+</I>&gt;<i> + * 0x06 	8   	Always equal to 'deadbeefdeadface'
+</I>&gt;<i> + * 0x0e 	16  	Unknown
+</I>&gt;<i> + *
+</I>&gt;<i> + * The header can be prefixed by an optional, unknown-purpose byte.
+</I>&gt;<i> + */
+</I>&gt;<i> +
+</I>&gt;<i> +static int isight_decode (struct uvc_video_queue *queue,
+</I>&gt;<i> +			  struct uvc_buffer *buf,
+</I>&gt;<i> +			  const __u8 *data, unsigned int len)
+</I>
+Please use two tabs to indent function arguments, don't try to align them on 
+the opening parenthesis.
+
+&gt;<i> +{
+</I>&gt;<i> +	static const __u8 hdr[] = {
+</I>&gt;<i> +		0x11, 0x22, 0x33, 0x44, 0xde, 0xad, 0xbe, 0xef,
+</I>&gt;<i> +		0xde, 0xad, 0xfa, 0xce
+</I>&gt;<i> +	};
+</I>&gt;<i> +
+</I>&gt;<i> +	unsigned int maxlen, nbytes;
+</I>&gt;<i> +	__u8 *mem;
+</I>&gt;<i> +	int is_header = 0;
+</I>&gt;<i> +
+</I>&gt;<i> +	if (buf == NULL)
+</I>&gt;<i> +		return 0;
+</I>&gt;<i> +
+</I>&gt;<i> +	if ((len &gt;= 14 &amp;&amp; memcmp (&amp;data[2], hdr, 12) == 0) ||
+</I>&gt;<i> +	    (len &gt;= 15 &amp;&amp; memcmp (&amp;data[3], hdr, 12) == 0)) {
+</I>&gt;<i> +		uvc_trace(UVC_TRACE_FRAME, &quot;iSight header found\n&quot;);
+</I>&gt;<i> +		is_header = 1;
+</I>&gt;<i> +	}
+</I>&gt;<i> +
+</I>&gt;<i> +	/* Synchronize to the input stream by waiting for a header packet. */
+</I>&gt;<i> +	if (buf-&gt;state != UVC_BUF_STATE_ACTIVE) {
+</I>&gt;<i> +		if (!is_header) {
+</I>&gt;<i> +			uvc_trace(UVC_TRACE_FRAME, &quot;Dropping packet (out of &quot;
+</I>&gt;<i> +				  &quot;sync).\n&quot;);
+</I>&gt;<i> +			return 0;
+</I>&gt;<i> +		}
+</I>&gt;<i> +
+</I>&gt;<i> +		buf-&gt;state = UVC_BUF_STATE_ACTIVE;
+</I>&gt;<i> +	}
+</I>&gt;<i> +
+</I>&gt;<i> +	/* Mark the buffer as done if we're at the beginning of a new frame.
+</I>&gt;<i> +	 *
+</I>&gt;<i> +	 * Empty buffers (bytesused == 0) don't trigger end of frame detection
+</I>&gt;<i> +	 * as it doesn't make sense to return an empty buffer.
+</I>&gt;<i> +	 */
+</I>&gt;<i> +	if (is_header &amp;&amp; buf-&gt;buf.bytesused != 0) {
+</I>&gt;<i> +		buf-&gt;state = UVC_BUF_STATE_DONE;
+</I>&gt;<i> +		return -EAGAIN;
+</I>&gt;<i> +	}
+</I>&gt;<i> +
+</I>&gt;<i> +	/* Copy the video data to the buffer. Skip header packets, as they
+</I>&gt;<i> +	 * contain no data.
+</I>&gt;<i> +	 */
+</I>&gt;<i> +	if (!is_header) {
+</I>&gt;<i> +		maxlen = buf-&gt;buf.length - buf-&gt;buf.bytesused;
+</I>&gt;<i> +		mem = queue-&gt;mem + buf-&gt;buf.m.offset + buf-&gt;buf.bytesused;
+</I>&gt;<i> +		nbytes = min(len, maxlen);
+</I>&gt;<i> +		memcpy(mem, data, nbytes);
+</I>&gt;<i> +		buf-&gt;buf.bytesused += nbytes;
+</I>&gt;<i> +
+</I>&gt;<i> +		/* Drop the current frame if the buffer size was exceeded. */
+</I>
+The frame isn't dropped, the comment is incorrect.
+
+&gt;<i> +		if (len &gt; maxlen || buf-&gt;buf.bytesused == buf-&gt;buf.length) {
+</I>&gt;<i> +			uvc_trace(UVC_TRACE_FRAME, &quot;Frame complete (overflow).\n&quot;);
+</I>&gt;<i> +			buf-&gt;state = UVC_BUF_STATE_DONE;
+</I>&gt;<i> +		}
+</I>&gt;<i> +	}
+</I>&gt;<i> +
+</I>&gt;<i> +	return 0;
+</I>&gt;<i> +}
+</I>&gt;<i> +
+</I>&gt;<i> +void uvc_video_decode_isight (struct urb *urb,
+</I>&gt;<i> +			      struct uvc_video_queue *queue,
+</I>&gt;<i> +			      struct uvc_buffer *buf)
+</I>
+Two tabs please.
+
+&gt;<i> +{
+</I>&gt;<i> +	int ret, i;
+</I>&gt;<i> +
+</I>&gt;<i> +	for (i = 0; i &lt; urb-&gt;number_of_packets; ++i) {
+</I>&gt;<i> +		if (urb-&gt;iso_frame_desc[i].status &lt; 0) {
+</I>&gt;<i> +			uvc_trace(UVC_TRACE_FRAME, &quot;USB isochronous frame &quot;
+</I>&gt;<i> +				  &quot;lost (%d).\n&quot;, urb-&gt;iso_frame_desc[i].status);
+</I>&gt;<i> +			/* Breaks 640x480
+</I>&gt;<i> +			   continue;
+</I>&gt;<i> +			*/
+</I>
+Please remove commented code.
+
+&gt;<i> +		}
+</I>&gt;<i> +
+</I>&gt;<i> +		/* Decode the payload packet.
+</I>&gt;<i> +		 * uvc_video_decode is entered twice when a frame transition
+</I>&gt;<i> +		 * has been detected because the end of frame can only be
+</I>&gt;<i> +		 * reliably detected when the first packet of the new frame
+</I>&gt;<i> +		 * is processed. The first pass detects the transition and
+</I>&gt;<i> +		 * closes the previous frame's buffer, the second pass
+</I>&gt;<i> +		 * processes the data of the first payload of the new frame.
+</I>&gt;<i> +		 */
+</I>&gt;<i> +		do {
+</I>&gt;<i> +			ret = isight_decode(queue, buf,
+</I>&gt;<i> +					    urb-&gt;transfer_buffer + urb-&gt;iso_frame_desc[i].offset,
+</I>&gt;<i> +					    urb-&gt;iso_frame_desc[i].actual_length);
+</I>&gt;<i> +
+</I>&gt;<i> +			if (buf == NULL)
+</I>&gt;<i> +				break;
+</I>&gt;<i> +
+</I>&gt;<i> +			if (buf-&gt;state == UVC_BUF_STATE_DONE ||
+</I>&gt;<i> +			    buf-&gt;state == UVC_BUF_STATE_ERROR)
+</I>&gt;<i> +				buf = uvc_queue_next_buffer(queue, buf);
+</I>&gt;<i> +		} while (ret == -EAGAIN);
+</I>&gt;<i> +	}
+</I>&gt;<i> +}
+</I>&gt;<i> Index: uvc_driver.c
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvc_driver.c	(r&#233;vision 149)
+</I>&gt;<i> +++ uvc_driver.c	(copie de travail)
+</I>&gt;<i> @@ -1667,6 +1667,13 @@
+</I>&gt;<i>  	  .bInterfaceProtocol	= 0,
+</I>&gt;<i>  	  .driver_info		= UVC_QUIRK_PROBE_MINMAX
+</I>&gt;<i>  	},
+</I>&gt;<i> +	/* Apple Built-In iSight */
+</I>&gt;<i> +	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE,
+</I>&gt;<i> +	  .idVendor		= 0x05ac,
+</I>&gt;<i> +	  .idProduct		= 0x8501,
+</I>&gt;<i> +	  .driver_info 		= UVC_QUIRK_PROBE_MINMAX
+</I>&gt;<i> +	                        | UVC_QUIRK_BUILTIN_ISIGHT
+</I>&gt;<i> +	},
+</I>&gt;<i>  	/* Microsoft Lifecam NX-6000 */
+</I>&gt;<i>  	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE
+</I>&gt;<i>
+</I>&gt;<i>  				| USB_DEVICE_ID_MATCH_INT_INFO,
+</I>&gt;<i>
+</I>&gt;<i> Index: uvcvideo.h
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvcvideo.h	(r&#233;vision 149)
+</I>&gt;<i> +++ uvcvideo.h	(copie de travail)
+</I>&gt;<i> @@ -311,6 +311,7 @@
+</I>&gt;<i>  #define UVC_QUIRK_STATUS_INTERVAL	0x00000001
+</I>&gt;<i>  #define UVC_QUIRK_PROBE_MINMAX		0x00000002
+</I>&gt;<i>  #define UVC_QUIRK_PROBE_EXTRAFIELDS	0x00000004
+</I>&gt;<i> +#define UVC_QUIRK_BUILTIN_ISIGHT	0x00000008
+</I>&gt;<i>
+</I>&gt;<i>  /* Format flags */
+</I>&gt;<i>  #define UVC_FMT_FLAG_COMPRESSED		0x00000001
+</I>&gt;<i> @@ -576,6 +577,9 @@
+</I>&gt;<i>
+</I>&gt;<i>  	struct list_head mainqueue;
+</I>&gt;<i>  	struct list_head irqqueue;
+</I>&gt;<i> +
+</I>&gt;<i> +	void (*decode) (struct urb *urb, struct uvc_video_queue *queue,
+</I>&gt;<i> +			struct uvc_buffer *buf);
+</I>&gt;<i>  };
+</I>&gt;<i>
+</I>&gt;<i>  struct uvc_video_device {
+</I>&gt;<i> @@ -764,6 +768,11 @@
+</I>&gt;<i>  extern struct usb_host_endpoint *uvc_find_endpoint(
+</I>&gt;<i>  		struct usb_host_interface *alts, __u8 epaddr);
+</I>&gt;<i>
+</I>&gt;<i> +/* quirks functions */
+</I>
+Could you rename that to 'Quirks support' ?
+
+&gt;<i> +void uvc_video_decode_isight (struct urb *urb, struct uvc_video_queue
+</I>&gt;<i> *queue, +			      struct uvc_buffer *buf);
+</I>
+Two tabs please.
+
+&gt;<i> +
+</I>&gt;<i> +
+</I>&gt;<i>  #endif /* __KERNEL__ */
+</I>&gt;<i>
+</I>&gt;<i>  #endif
+</I>&gt;<i> Index: Makefile
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- Makefile	(r&#233;vision 149)
+</I>&gt;<i> +++ Makefile	(copie de travail)
+</I>&gt;<i> @@ -5,7 +5,7 @@
+</I>&gt;<i>  PWD		:= $(shell pwd)
+</I>&gt;<i>
+</I>&gt;<i>  obj-m		:= uvcvideo.o
+</I>&gt;<i> -uvcvideo-objs   := uvc_driver.o uvc_queue.o uvc_v4l2.o uvc_video.o
+</I>&gt;<i> uvc_ctrl.o +uvcvideo-objs   := uvc_driver.o uvc_queue.o uvc_v4l2.o
+</I>&gt;<i> uvc_video.o uvc_ctrl.o uvc_isight.o
+</I>&gt;<i>
+</I>&gt;<i>  all: uvcvideo
+</I>
+Other than for those cosmetic fixes, the patch looks fine to me. Please 
+resubmit it, and I'll then wait a few days to see if other people have 
+comments before committing it.
+
+Thanks a lot for your work.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002562.html">[Linux-uvc-devel] [PATCH] Apple Built-in iSight
+</A></li>
+	<LI>Next message: <A HREF="002568.html">[Linux-uvc-devel] [PATCH] Apple Built-in iSight
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2563">[ date ]</a>
+              <a href="thread.html#2563">[ thread ]</a>
+              <a href="subject.html#2563">[ subject ]</a>
+              <a href="author.html#2563">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

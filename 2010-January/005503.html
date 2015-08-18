@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Minoru Webcam with python-opencv:	VIDIOC_STREAMON error 28, No space left on device
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Minoru%20Webcam%20with%20python-opencv%3A%0A%09VIDIOC_STREAMON%20error%2028%2C%20No%20space%20left%20on%20device&In-Reply-To=%3C1c62ab981001151920t7595a84aq79a1a83652f52b3a%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005501.html">
+   <LINK REL="Next"  HREF="005504.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Minoru Webcam with python-opencv:	VIDIOC_STREAMON error 28, No space left on device</H1>
+    <B>Javier Candeira</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Minoru%20Webcam%20with%20python-opencv%3A%0A%09VIDIOC_STREAMON%20error%2028%2C%20No%20space%20left%20on%20device&In-Reply-To=%3C1c62ab981001151920t7595a84aq79a1a83652f52b3a%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Minoru Webcam with python-opencv:	VIDIOC_STREAMON error 28, No space left on device">javier at candeira.com
+       </A><BR>
+    <I>Sat Jan 16 04:20:12 CET 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005501.html">[Linux-uvc-devel] Minoru Webcam with python-opencv:	VIDIOC_STREAMON error 28, No space left on device
+</A></li>
+        <LI>Next message: <A HREF="005504.html">[Linux-uvc-devel] Minoru Webcam with python-opencv:	VIDIOC_STREAMON error 28, No space left on device
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5503">[ date ]</a>
+              <a href="thread.html#5503">[ thread ]</a>
+              <a href="subject.html#5503">[ subject ]</a>
+              <a href="author.html#5503">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Sat, Jan 16, 2010 at 2:21 AM, Javier Candeira &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">javier at candeira.com</A>&gt; wrote:
+&gt;<i> On Sat, Jan 16, 2010 at 1:53 AM, Laurent Pinchart
+</I>&gt;<i> &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt; wrote:
+</I>&gt;&gt;<i> Hi Javier,
+</I>&gt;<i>
+</I>&gt;&gt;<i> Could you please set the trace parameter to 0x400 and check the kernel log to
+</I>&gt;&gt;<i> see how much bandwidth the driver requests ? You will need to use the latest
+</I>&gt;&gt;<i> driver version from linuxtv.org for that.
+</I>
+First of all, thanks to Paulo for explaining to me this process step-by-step.
+
+After installing the driver from the linuxtv.org hg repo, I ran my
+original python program, wich failed with the same message as before:
+
+&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">kandinski at derive</A>:~/data/work/hack/pyralax$ python dualcam.py
+</I>&gt;<i> VIDIOC_STREAMON error 28, No space left on device
+</I>
+Trying to run two concurrent instances of luvcview results in the
+second one failing like before as well.
+
+First instance:
+
+&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">kandinski at derive</A>:~/data/work/hack/pyralax$ luvcview -d /dev/video0
+</I>&gt;<i> luvcview 0.2.4
+</I>&gt;<i>
+</I>&gt;<i> SDL information:
+</I>&gt;<i>   Video driver: x11
+</I>&gt;<i>   A window manager is available
+</I>&gt;<i>   Device information:
+</I>&gt;<i>   Device path:  /dev/video0
+</I>&gt;<i> Stream settings:
+</I>&gt;<i>   Frame format: YUYV (MJPG is not supported by device)
+</I>&gt;<i>   Frame size:   640x480
+</I>&gt;<i>   Frame rate:   30 fps
+</I>
+Second instance:
+
+&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">kandinski at derive</A>:~/data/work/hack/pyralax$ luvcview -d /dev/video1
+</I>&gt;<i> luvcview 0.2.4
+</I>&gt;<i>
+</I>&gt;<i> SDL information:
+</I>&gt;<i>   Video driver: x11
+</I>&gt;<i>   A window manager is available
+</I>&gt;<i>   Device information:
+</I>&gt;<i>   Device path:  /dev/video1
+</I>&gt;<i> Stream settings:
+</I>&gt;<i>   Frame format: YUYV (MJPG is not supported by device)
+</I>&gt;<i>   Frame size:   640x480
+</I>&gt;<i>   Frame rate:   30 fps
+</I>
+&gt;<i> Unable to start capture: No space left on device
+</I>&gt;<i> Error grabbing
+</I>&gt;<i> Cleanup done. Exiting ...
+</I>
+This is what the mesages from uvcvideo look like:
+
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">kandinski at derive</A>:~/data/work/hack/pyralax$ dmesg | grep uvcvideo
+[ 9991.627425] uvcvideo: Found UVC 1.00 device Vimicro USB2.0 PC
+Camera (0ac8:3420)
+[ 9991.633086] uvcvideo: Found UVC 1.00 device Vimicro USB2.0 PC
+Camera (0ac8:3410)
+[ 9991.635317] usbcore: registered new interface driver uvcvideo
+[17672.423723] uvcvideo: Failed to submit URB 0 (-28).
+[17785.433643] uvcvideo: Failed to submit URB 0 (-28).
+[17810.411517] uvcvideo: Failed to submit URB 0 (-28).
+[18868.166622] uvcvideo: Failed to submit URB 0 (-28).
+[25447.685380] uvcvideo: Failed to submit URB 0 (-28).
+[28978.598598] uvcvideo: Found UVC 1.00 device Vimicro USB2.0 PC
+Camera (0ac8:3420)
+[28978.848173] uvcvideo: Found UVC 1.00 device Vimicro USB2.0 PC
+Camera (0ac8:3410)
+[28990.870555] uvcvideo: Failed to submit URB 0 (-28).
+[29014.852066] uvcvideo: Failed to submit URB 0 (-28).
+[29499.300886] uvcvideo: Failed to submit URB 0 (-28).
+[31311.344253] uvcvideo: Failed to submit URB 0 (-28).
+[31518.620630] uvcvideo: Failed to submit URB 0 (-28).
+[48679.556337] uvcvideo: Failed to submit URB 0 (-28).
+[61661.423977] uvcvideo: Failed to submit URB 0 (-28).
+[64564.673552] uvcvideo: Failed to submit URB 0 (-28).
+[64668.729047] uvcvideo: Failed to submit URB 0 (-28).
+
+Cheers,
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005501.html">[Linux-uvc-devel] Minoru Webcam with python-opencv:	VIDIOC_STREAMON error 28, No space left on device
+</A></li>
+	<LI>Next message: <A HREF="005504.html">[Linux-uvc-devel] Minoru Webcam with python-opencv:	VIDIOC_STREAMON error 28, No space left on device
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5503">[ date ]</a>
+              <a href="thread.html#5503">[ thread ]</a>
+              <a href="subject.html#5503">[ subject ]</a>
+              <a href="author.html#5503">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

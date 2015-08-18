@@ -1,0 +1,256 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Fwd: Re: ehci-hcd issue with webcam / uvcvideo	driver
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Fwd%3A%20Re%3A%20ehci-hcd%20issue%20with%20webcam%20/%20uvcvideo%0A%09driver&In-Reply-To=%3C200804212314.53053.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003396.html">
+   <LINK REL="Next"  HREF="003401.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Fwd: Re: ehci-hcd issue with webcam / uvcvideo	driver</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Fwd%3A%20Re%3A%20ehci-hcd%20issue%20with%20webcam%20/%20uvcvideo%0A%09driver&In-Reply-To=%3C200804212314.53053.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Fwd: Re: ehci-hcd issue with webcam / uvcvideo	driver">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Apr 21 23:14:52 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003396.html">[Linux-uvc-devel] make problem:implicit declaration of function	'v4l_printk_ioctl'
+</A></li>
+        <LI>Next message: <A HREF="003401.html">[Linux-uvc-devel] Fwd: Re: ehci-hcd issue with webcam /	uvcvideo driver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3398">[ date ]</a>
+              <a href="thread.html#3398">[ thread ]</a>
+              <a href="subject.html#3398">[ subject ]</a>
+              <a href="author.html#3398">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi everybody,
+
+Alan Stern was kind enough to write a fix a few weeks ago for a video 
+streaming issue that some of you encountered.
+
+In order to get the fix included in 2.6.26, David Brownell would like to know 
+if the Linux UVC driver still suffers from the problem when used with 2.6.25 
+*without* the patch.
+
+Could you please be kind enough to test 2.6.25 and report results ?
+
+Best regards,
+
+Laurent Pinchart
+
+----------  Forwarded Message  ----------
+
+Subject: Re: ehci-hcd issue with webcam / uvcvideo driver
+Date: Monday 21 April 2008
+From: Alan Stern &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">stern at rowland.harvard.edu</A>&gt;
+To: Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt;
+
+On Mon, 21 Apr 2008, Laurent Pinchart wrote:
+
+&gt;<i> &gt; Below is an updated version of the patch.  If you can, replace the
+</I>&gt;<i> &gt; earlier version with this one and give it some good stress testing.
+</I>&gt;<i> &gt; If everything works okay, I'll submit it for inclusion in the official
+</I>&gt;<i> &gt; kernel.
+</I>&gt;<i> 
+</I>&gt;<i> I've received several reports from people who tested your patch with the
+</I>&gt;<i> Linux UVC driver. They were all positive, the patch fixed their problem and 
+</I>&gt;<i> introduced no regression they noticed. Could the patch be scheduled for 
+</I>&gt;<i> 2.6.26 ?
+</I>
+Dave had some questions, in particular, whether your testers still 
+encounter problems when running 2.6.25 without the patch.  It would be 
+nice to know the answer, either way.
+
+(IMO the patch ought to be merged even if the problems are no longer
+present, because what it does is basically correct.  There may be a
+detail or two I missed -- it always helps to have someone else review
+changes like this -- but on the whole the idea is right.)
+
+For reference, the current version of the patch is below.
+
+Alan Stern
+
+
+No Changelog comment yet...  The ideas are:
+
+    (1) Never return -EL2NSYNC if URB_ISO_ASAP is set -- there's
+	no reason to do so.  And ehci-hcd always assumes ISO_ASAP.
+
+    (2) If the CPU is delayed by IRQ latency, advance to the next
+	available schedule slot.
+
+    (3) Return the correct status (-EXDEV) for Iso slots which were 
+	submitted too late to get used.
+
+    (4) Don't check for liveness of Iso slots whose frames are already
+	over.
+
+
+Index: usb-2.6/drivers/usb/host/ehci-sched.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/host/ehci-sched.c
++++ usb-2.6/drivers/usb/host/ehci-sched.c
+@@ -1349,18 +1349,27 @@ iso_stream_schedule (
+ 	/* when's the last uframe this urb could start? */
+ 	max = now + mod;
+ 
+-	/* typical case: reuse current schedule. stream is still active,
+-	 * and no gaps from host falling behind (irq delays etc)
++	/* Typical case: reuse current schedule, stream is still active.
++	 * Hopefully there are no gaps from the host falling behind
++	 * (irq delays etc), but if there are we'll take the next
++	 * slot in the schedule, implicitly assuming URB_ISO_ASAP.
+ 	 */
+ 	if (likely (!list_empty (&amp;stream-&gt;td_list))) {
+ 		start = stream-&gt;next_uframe;
+ 		if (start &lt; now)
+ 			start += mod;
+-		if (likely ((start + sched-&gt;span) &lt; max))
+-			goto ready;
+-		/* else fell behind; someday, try to reschedule */
+-		status = -EL2NSYNC;
+-		goto fail;
++
++		/* Fell behind (by up to twice the slop amount)? */
++		if (start &gt;= max - 2 * 8 * SCHEDULE_SLOP)
++			start += stream-&gt;interval * DIV_ROUND_UP(
++					max - start, stream-&gt;interval) - mod;
++
++		/* Tried to schedule too far into the future? */
++		if (unlikely((start + sched-&gt;span) &gt;= max)) {
++			status = -EFBIG;
++			goto fail;
++		}
++		goto ready;
+ 	}
+ 
+ 	/* need to schedule; when's the next (u)frame we could start?
+@@ -1613,6 +1622,9 @@ itd_complete (
+ 		} else if (likely ((t &amp; EHCI_ISOC_ACTIVE) == 0)) {
+ 			desc-&gt;status = 0;
+ 			desc-&gt;actual_length = EHCI_ITD_LENGTH (t);
++		} else {
++			/* URB was too late */
++			desc-&gt;status = -EXDEV;
+ 		}
+ 	}
+ 
+@@ -2095,7 +2107,7 @@ done:
+ static void
+ scan_periodic (struct ehci_hcd *ehci)
+ {
+-	unsigned	frame, clock, now_uframe, mod;
++	unsigned	now_uframe, frame, clock, clock_frame, mod;
+ 	unsigned	modified;
+ 
+ 	mod = ehci-&gt;periodic_size &lt;&lt; 3;
+@@ -2111,6 +2123,7 @@ scan_periodic (struct ehci_hcd *ehci)
+ 	else
+ 		clock = now_uframe + mod - 1;
+ 	clock %= mod;
++	clock_frame = clock &gt;&gt; 3;
+ 
+ 	for (;;) {
+ 		union ehci_shadow	q, *q_p;
+@@ -2157,22 +2170,26 @@ restart:
+ 			case Q_TYPE_ITD:
+ 				/* If this ITD is still active, leave it for
+ 				 * later processing ... check the next entry.
++				 * No need to check for activity unless the
++				 * frame is current.
+ 				 */
+-				rmb ();
+-				for (uf = 0; uf &lt; 8 &amp;&amp; live; uf++) {
+-					if (0 == (q.itd-&gt;hw_transaction [uf]
+-							&amp; ITD_ACTIVE(ehci)))
+-						continue;
+-					incomplete = true;
+-					q_p = &amp;q.itd-&gt;itd_next;
+-					hw_p = &amp;q.itd-&gt;hw_next;
+-					type = Q_NEXT_TYPE(ehci,
++				if (frame == clock_frame &amp;&amp; live) {
++					rmb();
++					for (uf = 0; uf &lt; 8; uf++) {
++						if (q.itd-&gt;hw_transaction[uf] &amp;
++							    ITD_ACTIVE(ehci))
++							break;
++					}
++					if (uf &lt; 8) {
++						incomplete = true;
++						q_p = &amp;q.itd-&gt;itd_next;
++						hw_p = &amp;q.itd-&gt;hw_next;
++						type = Q_NEXT_TYPE(ehci,
+ 							q.itd-&gt;hw_next);
+-					q = *q_p;
+-					break;
++						q = *q_p;
++						break;
++					}
+ 				}
+-				if (uf &lt; 8 &amp;&amp; live)
+-					break;
+ 
+ 				/* Take finished ITDs out of the schedule
+ 				 * and process them:  recycle, maybe report
+@@ -2189,9 +2206,12 @@ restart:
+ 			case Q_TYPE_SITD:
+ 				/* If this SITD is still active, leave it for
+ 				 * later processing ... check the next entry.
++				 * No need to check for activity unless the
++				 * frame is current.
+ 				 */
+-				if ((q.sitd-&gt;hw_results &amp; SITD_ACTIVE(ehci))
+-						&amp;&amp; live) {
++				if (frame == clock_frame &amp;&amp; live &amp;&amp;
++						(q.sitd-&gt;hw_results &amp;
++							SITD_ACTIVE(ehci))) {
+ 					incomplete = true;
+ 					q_p = &amp;q.sitd-&gt;sitd_next;
+ 					hw_p = &amp;q.sitd-&gt;hw_next;
+@@ -2260,6 +2280,7 @@ restart:
+ 
+ 			/* rescan the rest of this frame, then ... */
+ 			clock = now;
++			clock_frame = clock &gt;&gt; 3;
+ 		} else {
+ 			now_uframe++;
+ 			now_uframe %= mod;
+
+
+-------------------------------------------------------
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003396.html">[Linux-uvc-devel] make problem:implicit declaration of function	'v4l_printk_ioctl'
+</A></li>
+	<LI>Next message: <A HREF="003401.html">[Linux-uvc-devel] Fwd: Re: ehci-hcd issue with webcam /	uvcvideo driver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3398">[ date ]</a>
+              <a href="thread.html#3398">[ thread ]</a>
+              <a href="subject.html#3398">[ subject ]</a>
+              <a href="author.html#3398">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

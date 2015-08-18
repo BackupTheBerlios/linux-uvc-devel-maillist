@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] frame rate dropping when capturing from webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20frame%20rate%20dropping%20when%20capturing%20from%20webcam&In-Reply-To=%3C201003041134.13595.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005567.html">
+   <LINK REL="Next"  HREF="005566.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] frame rate dropping when capturing from webcam</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20frame%20rate%20dropping%20when%20capturing%20from%20webcam&In-Reply-To=%3C201003041134.13595.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] frame rate dropping when capturing from webcam">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu Mar  4 11:34:11 CET 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005567.html">[Linux-uvc-devel] Model: LPC-UC35
+</A></li>
+        <LI>Next message: <A HREF="005566.html">[Linux-uvc-devel] Model: LPC-UC35
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5565">[ date ]</a>
+              <a href="thread.html#5565">[ thread ]</a>
+              <a href="subject.html#5565">[ subject ]</a>
+              <a href="author.html#5565">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Cesar,
+
+On Tuesday 23 February 2010 01:48:10 Cesar Maciel wrote:
+&gt;<i> Hello,
+</I>&gt;<i> 
+</I>&gt;<i> I am trying to capture from a webcam with a fixed frame rate. I am using
+</I>&gt;<i> ffmpeg (svn revision 21498) with the following options:
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> ./ffmpeg -y -t 00:01:00 -f video4linux2  -r 30 -s 352x288   -i
+</I>&gt;<i> /dev/video0 -vcodec msmpeg4v2 -f avi -r 30 video.avi
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> I used two webcams where uvcvideo shows being capable of 352x288 at
+</I>&gt;<i> 30fps. For some reason, ffmpeg cannot keep the input frame rate, and it
+</I>&gt;<i> starts to go down. There are processing resources available in the
+</I>&gt;<i> system (Ubuntu Karmic 9.10, and also Voyage Linux 0.62 (Debian-based). I
+</I>&gt;<i> have tried specifying the qscale option, but it did not make any
+</I>&gt;<i> difference. Also, both cameras can output raw and mjpeg, but it also did
+</I>&gt;<i> not make a difference.
+</I>
+Have you tried disabling auto-exposure ? Most cameras adjust the frame rate 
+based on lightning conditions.
+
+&gt;<i> I have updated uvc on Karmic to the version available as a gzip file on
+</I>&gt;<i> the official website. dmesg shows tons of
+</I>&gt;<i> 
+</I>&gt;<i> uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> 
+</I>&gt;<i> and every now and then:
+</I>&gt;<i> 
+</I>&gt;<i> [28339.492016] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+</I>&gt;<i> [28339.492022] uvcvideo: Queuing buffer 30.
+</I>&gt;<i> [28339.492030] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> for both cameras. On Voyage Linux (kernel 2.6.30), it shows several msgs
+</I>&gt;<i> like the following ones
+</I>&gt;<i> 
+</I>&gt;<i> [26440.191029] uvcvideo: Queuing buffer 3.
+</I>&gt;<i> [26440.191405] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+</I>&gt;<i> [26440.201496] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+</I>&gt;<i> [26440.211579] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+</I>&gt;<i> [26440.221661] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+</I>&gt;<i> [26440.230034] uvcvideo: Frame complete (EOF found).
+</I>&gt;<i> [26440.231743] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+</I>&gt;<i> [26440.231753] uvcvideo: Dequeuing buffer 4 (3, 14800 bytes).
+</I>&gt;<i> [26440.249905] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+</I>&gt;<i> [26440.249921] uvcvideo: Queuing buffer 4.
+</I>&gt;<i> [26440.249950] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+</I>&gt;<i> 
+</I>&gt;<i> Cameras are Microsoft NX-3000 and Genius eFace 1325R
+</I>&gt;<i> 
+</I>&gt;<i> Does anyone have an idea, or need more info?
+</I>
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005567.html">[Linux-uvc-devel] Model: LPC-UC35
+</A></li>
+	<LI>Next message: <A HREF="005566.html">[Linux-uvc-devel] Model: LPC-UC35
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5565">[ date ]</a>
+              <a href="thread.html#5565">[ thread ]</a>
+              <a href="subject.html#5565">[ subject ]</a>
+              <a href="author.html#5565">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Comments about the driver
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Comments%20about%20the%20driver&In-Reply-To=%3C200601041313.16533.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000000.html">
+   <LINK REL="Next"  HREF="000002.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Comments about the driver</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Comments%20about%20the%20driver&In-Reply-To=%3C200601041313.16533.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Comments about the driver">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Jan  4 13:13:16 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000000.html">[Linux-uvc-devel] Comments about the driver
+</A></li>
+        <LI>Next message: <A HREF="000002.html">[Linux-uvc-devel] Test of the driver on GNU/Debian amd64
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1">[ date ]</a>
+              <a href="thread.html#1">[ thread ]</a>
+              <a href="subject.html#1">[ subject ]</a>
+              <a href="author.html#1">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Luc,
+
+Thanks for your comments. I fixed the locking issue, added the missing static 
+keywords and will add a counter to open() to temporarly fix the multiple open 
+issue (I should implement multiple open support though).
+
+As for your other comments, I answered inline.
+
+&gt;<i> &gt; /*
+</I>&gt;<i> &gt;  *      usbvideo.c  --  USB Video Class driver
+</I>&gt;<i> &gt;  *
+</I>&gt;<i> &gt;  *      Copyright (C) 2005
+</I>&gt;<i>
+</I>&gt;<i> Now you can update the year :-)
+</I>
+Done. Happy New Year :-)
+
+&gt;<i> union without name can't be build with gcc2.95 is it ok ?
+</I>
+As long as I don't receive complains about it, yes :-)
+
+&gt;<i> &gt; static int uvc_alloc_buffers(struct uvc_video_queue *queue, unsigned int
+</I>&gt;<i> &gt; nbuffers, unsigned int buflength)
+</I>&gt;<i> &gt; {
+</I>&gt;<i> &gt; 	unsigned int bufsize = PAGE_ALIGN(buflength);
+</I>&gt;<i> &gt; 	unsigned int i;
+</I>&gt;<i> &gt; 	void *mem = NULL;
+</I>&gt;<i> &gt; 	int ret;
+</I>&gt;<i> &gt;
+</I>[...]
+&gt;<i> &gt; 	for (i = 0; i &lt; nbuffers; ++i) {
+</I>&gt;<i> &gt; 		memset(&amp;queue-&gt;buffer[i], 0, sizeof queue-&gt;buffer[i]);
+</I>&gt;<i> &gt; 		queue-&gt;buffer[i].size = bufsize;
+</I>&gt;<i> &gt; 		queue-&gt;buffer[i].buf.index = i;
+</I>&gt;<i> &gt; 		queue-&gt;buffer[i].buf.m.offset = i * bufsize;
+</I>&gt;<i>
+</I>&gt;<i> Is any buffersize aligned on a page boudary ?
+</I>
+Not sure to understand what you mean. bufsize is always page aligned as I 
+initialized it to PAGE_ALIGN(buflength).
+
+&gt;<i> &gt; static int uvc_dequeue_buffer(struct uvc_video_queue *queue,
+</I>&gt;<i> &gt; 		struct v4l2_buffer *v4l2_buf, int nonblocking)
+</I>&gt;<i> &gt; {
+</I>&gt;<i> &gt; 	struct uvc_buffer *buf;
+</I>&gt;<i> &gt; 	int ret = 0;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; 	if (v4l2_buf-&gt;type != V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+</I>&gt;<i> &gt; 	    v4l2_buf-&gt;memory != V4L2_MEMORY_MMAP)
+</I>&gt;<i> &gt; 		return -EINVAL;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; 	down(&amp;queue-&gt;lock);
+</I>&gt;<i> &gt; 	if (list_empty(&amp;queue-&gt;mainqueue)) {
+</I>&gt;<i> &gt; 		ret = -EINVAL;
+</I>&gt;<i> &gt; 		goto done;
+</I>&gt;<i> &gt; 	}
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; 	buf = list_entry(queue-&gt;mainqueue.next, struct uvc_buffer, stream);
+</I>&gt;<i> &gt; 	if ((ret = uvc_queue_waiton(buf, nonblocking)) &lt; 0)
+</I>&gt;<i> &gt; 		goto done;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; 	switch (buf-&gt;state) {
+</I>&gt;<i> &gt; 	case UVC_BUF_STATE_ERROR:
+</I>&gt;<i> &gt; 		ret = -EIO;
+</I>&gt;<i>
+</I>&gt;<i>                 ^^^^ ? need a goto done or is it wanted ?
+</I>
+It's wanted. A buffer marked as erroneous by the driver must still be removed 
+from the list, otherwise it will always stay there and no buffer will ever be 
+dequeued anymore.
+
+&gt;<i> &gt; static int uvc_set_video_ctrl(struct uvc_video_device *video,
+</I>&gt;<i> &gt; 	struct uvc_streaming_control *ctrl, int probe)
+</I>&gt;<i> &gt; {
+</I>&gt;<i> &gt; 	__u8 data[34];
+</I>&gt;<i>
+</I>&gt;<i>         is it not posible to create a structure and access it ?
+</I>&gt;<i>         i think it will more readable than data[2] ?
+</I>
+Yes, I can do that. I wasn't sure it was worth it, as data is just a block of 
+bytes to be passed to the device.
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000000.html">[Linux-uvc-devel] Comments about the driver
+</A></li>
+	<LI>Next message: <A HREF="000002.html">[Linux-uvc-devel] Test of the driver on GNU/Debian amd64
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1">[ date ]</a>
+              <a href="thread.html#1">[ thread ]</a>
+              <a href="subject.html#1">[ subject ]</a>
+              <a href="author.html#1">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

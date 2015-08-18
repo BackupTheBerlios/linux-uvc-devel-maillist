@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] RE : Re: RE : Re: bug in uvc_status.c ?	dev.parent
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20RE%20%3A%20Re%3A%20RE%20%3A%20Re%3A%20bug%20in%20uvc_status.c%20%3F%0A%09dev.parent&In-Reply-To=%3C200804081203.08768.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003335.html">
+   <LINK REL="Next"  HREF="003338.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] RE : Re: RE : Re: bug in uvc_status.c ?	dev.parent</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20RE%20%3A%20Re%3A%20RE%20%3A%20Re%3A%20bug%20in%20uvc_status.c%20%3F%0A%09dev.parent&In-Reply-To=%3C200804081203.08768.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] RE : Re: RE : Re: bug in uvc_status.c ?	dev.parent">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Apr  8 12:03:08 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003335.html">[Linux-uvc-devel] RE : Re: RE : Re: bug in uvc_status.c ? dev.parent
+</A></li>
+        <LI>Next message: <A HREF="003338.html">[Linux-uvc-devel] RE : Re: RE : Re: RE : Re: bug in uvc_status.c ?	dev.parent
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3336">[ date ]</a>
+              <a href="thread.html#3336">[ thread ]</a>
+              <a href="subject.html#3336">[ subject ]</a>
+              <a href="author.html#3336">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Tuesday 08 April 2008 11:50, ds ds wrote:
+&gt;<i> 
+</I>&gt;<i> --- Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; a
+</I>&gt;<i> &#233;crit&#160;:
+</I>&gt;<i> 
+</I>&gt;<i> &gt; Hi,
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; &gt; It seems to compile ok ! 
+</I>&gt;<i> &gt; &gt; just a warning on usb_to_input_id :
+</I>&gt;<i> &gt; &gt; In function 'uvc_input_init':
+</I>&gt;<i> &gt; &gt; uvc_status.c:47: warning: implicit declaration of
+</I>&gt;<i> &gt; &gt; function 'usb_to_input_id'
+</I>&gt;<i> &gt; &gt; Warning: &quot;usb_to_input_id&quot;
+</I>&gt;<i> &gt; &gt; [/mnt/sda2/temp/uvc1/trunk/uvcvideo.ko] undefined!
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; The uvcvideo.ko is made. I still have no image,
+</I>&gt;<i> &gt; but it
+</I>&gt;<i> &gt; &gt; must be my fault now. I continue.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Here's an updated patch. Could you please try it ?
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Best regards,
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Laurent Pinchart
+</I>&gt;<i> &gt; &gt; Index: uvc_status.c
+</I>&gt;<i> &gt;
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> &gt; --- uvc_status.c	(revision 199)
+</I>&gt;<i> &gt; +++ uvc_status.c	(working copy)
+</I>&gt;<i> &gt; @@ -14,7 +14,11 @@
+</I>&gt;<i> &gt;  #include &lt;linux/kernel.h&gt;
+</I>&gt;<i> &gt;  #include &lt;linux/input.h&gt;
+</I>&gt;<i> &gt;  #include &lt;linux/usb.h&gt;
+</I>&gt;<i> &gt; +#if LINUX_VERSION_CODE &lt; KERNEL_VERSION(2,6,18)
+</I>&gt;<i> &gt; +#include &lt;linux/usb_input.h&gt;
+</I>&gt;<i> &gt; +#else
+</I>&gt;<i> &gt;  #include &lt;linux/usb/input.h&gt;
+</I>&gt;<i> &gt; +#endif
+</I>&gt;<i> &gt;  
+</I>&gt;<i> &gt;  #include &quot;uvcvideo.h&quot;
+</I>&gt;<i> &gt;  
+</I>&gt;<i> &gt; @@ -43,7 +47,11 @@
+</I>&gt;<i> &gt;  	input-&gt;name = dev-&gt;name;
+</I>&gt;<i> &gt;  	input-&gt;phys = phys;
+</I>&gt;<i> &gt;  	usb_to_input_id(udev, &amp;input-&gt;id);
+</I>&gt;<i> &gt; +#if LINUX_VERSION_CODE &gt;= KERNEL_VERSION(2,6,22)
+</I>&gt;<i> &gt;  	input-&gt;dev.parent = &amp;dev-&gt;intf-&gt;dev;
+</I>&gt;<i> &gt; +#else
+</I>&gt;<i> &gt; +	input-&gt;cdev.dev = &amp;dev-&gt;intf-&gt;dev;
+</I>&gt;<i> &gt; +#endif
+</I>&gt;<i> &gt;  
+</I>&gt;<i> &gt;  	set_bit(EV_KEY, input-&gt;evbit);
+</I>&gt;<i> &gt;  	set_bit(BTN_0, input-&gt;keybit);
+</I>&gt;<i> &gt; 
+</I>&gt;<i> 
+</I>&gt;<i> There is a problem : it compile if I don't use the 2
+</I>&gt;<i> macros (that is, put the lines you gave directly) :
+</I>&gt;<i> uvc_status.c:18:5: warning: &quot;LINUX_VERSION_CODE&quot; is
+</I>&gt;<i> not defined
+</I>&gt;<i> uvc_status.c:18:26: warning: &quot;KERNEL_VERSION&quot; is not
+</I>&gt;<i> defined
+</I>&gt;<i> then compilation fails of course.
+</I>&gt;<i> Are they supposed to be known in bash ?
+</I>&gt;<i> echo $KERNEL_VERSION
+</I>&gt;<i> -&gt; gives nothing
+</I>&gt;<i> I use Mandriva 2007.0
+</I>
+My bad. Here's an updated patch.
+
+Best regards,
+
+Laurent Pinchart
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: input.diff
+Type: text/x-diff
+Size: 748 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080408/0c0eb99e/attachment.diff">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080408/0c0eb99e/attachment.diff</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003335.html">[Linux-uvc-devel] RE : Re: RE : Re: bug in uvc_status.c ? dev.parent
+</A></li>
+	<LI>Next message: <A HREF="003338.html">[Linux-uvc-devel] RE : Re: RE : Re: RE : Re: bug in uvc_status.c ?	dev.parent
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3336">[ date ]</a>
+              <a href="thread.html#3336">[ thread ]</a>
+              <a href="subject.html#3336">[ subject ]</a>
+              <a href="author.html#3336">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

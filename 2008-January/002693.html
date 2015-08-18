@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Possible bug in while enumerating private controls
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Possible%20bug%20in%20while%20enumerating%20private%20controls&In-Reply-To=%3C20080103203214.GB23938%40via.ecp.fr%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="002694.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Possible bug in while enumerating private controls</H1>
+    <B>Antoine Cellerier</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Possible%20bug%20in%20while%20enumerating%20private%20controls&In-Reply-To=%3C20080103203214.GB23938%40via.ecp.fr%3E"
+       TITLE="[Linux-uvc-devel] Possible bug in while enumerating private controls">dionoea at videolan.org
+       </A><BR>
+    <I>Thu Jan  3 21:32:14 CET 2008</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="002694.html">[Linux-uvc-devel] Possible bug in while enumerating private	controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2693">[ date ]</a>
+              <a href="thread.html#2693">[ thread ]</a>
+              <a href="subject.html#2693">[ subject ]</a>
+              <a href="author.html#2693">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+
+I've stumbled upon a problem when hacking the VLC v4l2 driver:
+
+I want to enumerate all the private controls to make them available in
+the interface. The code used to enumerate the controls uses the same
+logic as Example 1-8 in the spec:
+<A HREF="http://v4l2spec.bytesex.org/spec-single/v4l2.html#AEN732">http://v4l2spec.bytesex.org/spec-single/v4l2.html#AEN732</A>
+
+Unfortunately it doesn't work as expected. My webcam provides the
+following private controls:
+Backlight Compensation -&gt; V4L2_CID_PRIVATE_BASE+0
+Power Line Frequency -&gt; V4L2_CID_PRIVATE_BASE+1
+Sharpness -&gt; V4L2_CID_PRIVATE_BASE+2
+White Balance Temperature Auto -&gt; V4L2_CID_PRIVATE_BASE+12
+White Balance Temperature -&gt; V4L2_CID_PRIVATE_BASE+13
+Unfortunately, ioctl( fd, VIDIOC_QUERYCTRL, &amp;queryctrl ) on
+V4L2_CID_PRIVATE_BASE+3 returns -1, which exits the private controls
+enumartion code.
+
+According to footnote [24] in the spec,
+&quot;V4L2_CTRL_FLAG_DISABLED was intended for two purposes: Drivers can skip
+predefined controls not supported by the hardware (although returning
+EINVAL would do as well), or disable predefined and private controls
+after hardware detection without the trouble of reordering control
+arrays and indices (EINVAL cannot be used to skip private controls
+because it would prematurely end the enumeration).&quot;
+
+If I understand that correctly, the ioctl (at least for private
+controls), should be succesfull for all the private controls supported
+by the uvcvideo drive and set the V4L2_CTRL_FLAG_DISABLED flag if that
+control isn't handled by the hardware. This would fix private control
+enumartion.
+
+Since I don't know the uvcvideo control code really well I haven't
+started patching it yet and would like a confirmation from the gurus
+that I'm reading the spec correctly.
+
+Thanks,
+
+-- 
+Antoine Cellerier
+dionoea
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="002694.html">[Linux-uvc-devel] Possible bug in while enumerating private	controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2693">[ date ]</a>
+              <a href="thread.html#2693">[ thread ]</a>
+              <a href="subject.html#2693">[ subject ]</a>
+              <a href="author.html#2693">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

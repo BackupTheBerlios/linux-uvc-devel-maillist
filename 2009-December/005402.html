@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Is Logitech Webcam Model C250 Supported?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Is%20Logitech%20Webcam%20Model%20C250%20Supported%3F&In-Reply-To=%3C200912110212.27327.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005403.html">
+   <LINK REL="Next"  HREF="005405.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Is Logitech Webcam Model C250 Supported?</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Is%20Logitech%20Webcam%20Model%20C250%20Supported%3F&In-Reply-To=%3C200912110212.27327.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Is Logitech Webcam Model C250 Supported?">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Fri Dec 11 02:12:27 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005403.html">[Linux-uvc-devel] Philips NC610: UVC Video Cam to Add to	Support List
+</A></li>
+        <LI>Next message: <A HREF="005405.html">[Linux-uvc-devel] Fwd: laptop with an upside down webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5402">[ date ]</a>
+              <a href="thread.html#5402">[ thread ]</a>
+              <a href="subject.html#5402">[ subject ]</a>
+              <a href="author.html#5402">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Steve,
+
+(CC'ing the linux-uvc-devel mailing list, as the information you wrote can be 
+helpful for many people).
+
+On Thursday 10 December 2009 16:21:21 <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">sazeile at aol.com</A> wrote:
+&gt;<i>  Laurent,
+</I>&gt;<i> 
+</I>&gt;<i> Thanks for the reply.  I sent the output of dmesg to Paulo and he observed
+</I>&gt;<i>  the camera was connected via a hub. Paulo suspected that the problem may
+</I>&gt;<i>  be caused by a defect in the way that Linux handles hubs. It turns out
+</I>&gt;<i>  that all of the USB ports on my laptop go through a hub. I switched to a
+</I>&gt;<i>  desktop and it worked!
+</I>&gt;<i> I am using Puppy Linux and I relayed the problem to the Puppy forum.
+</I>&gt;<i> One of the members off this advice on changing the uvcvideo driver to get
+</I>&gt;<i>  around the hub problem:
+</I>&gt;<i> 
+</I>&gt;<i> While compiling the 2.6.31.6 kernel, I noticedthis: in order to get true
+</I>&gt;<i>  usb2 speed through my (Intel ICH7) usbports, I must compile the usb2
+</I>&gt;<i>  driver ehci_hcd into the kernel, not asa module. Otherwise the usb1 driver
+</I>&gt;<i>  (uhci_hcd) grabs the hub'sinterrupts first and doesn't relinquish them to
+</I>&gt;<i>  ehci_hcd. Result:slooooww usb-port operation. I would speculate, too slow
+</I>&gt;<i>  for a webcam.
+</I>&gt;<i> 
+</I>&gt;<i> I would therefore suggest to the writers of Linux usb webcamdrivers that,
+</I>&gt;<i>  in order to obtain a meaningful probe for a usb2 hub, thewebcam driver
+</I>&gt;<i>  loader should look first at the output of lspci -k,before looking at
+</I>&gt;<i>  lsmod. If the webcam driver loader looks only atlsmod, it will miss the
+</I>&gt;<i>  case where the 2.6.31.6 (and, presumably, allearlier) kernel(s)
+</I>&gt;<i>  is/are/were compiled correctly for usb2 (i.e., withehci_hcd compiled
+</I>&gt;<i>  directly into the kernel, and uhci_hcd and ohci_hcdas modules).
+</I>&gt;<i> 
+</I>&gt;<i> If the kernel.org team ever makes the kernel do its ehci_hcd probebefore
+</I>&gt;<i>  its uhci_hcd probe, then a mere lsmod probe will suffice. Untilthat happy
+</I>&gt;<i>  day, I would venture to predict there will be muchfrustration in webcam
+</I>&gt;<i>  Linuxland, except among those who are savvyenough to add the necessary
+</I>&gt;<i>  lspci -k probing logic to the webcam driverloader ourselves
+</I>&gt;<i> 
+</I>&gt;<i> If your camera's driver loader *is* already written to look first atlspci
+</I>&gt;<i>  -k, then all you need in order for the webcam to work is torecompile the
+</I>&gt;<i>  kernel with ehci_hcd compiled directly into the kernel,the other two as
+</I>&gt;<i>  modules. Wuh-laww, now your ICH7 usb2 hub runs at itsintended speed and
+</I>&gt;<i>  your usb webcam (knock on wood) works.
+</I>&gt;<i> 
+</I>&gt;<i> Don't get carried away and compile usbhid into the kernel as well,though.
+</I>&gt;<i>  It works OK, but it confuses the Puppy shutdown script.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Not sure how difficult it is to use lspci -k before lsmod but it might be
+</I>&gt;<i>  worth trying so that users with only hub terminated USB ports can use
+</I>&gt;<i>  uvcvideo.
+</I>
+Thanks a lot for the information. You forgot the &quot;lsusb -v -d 046d:0804&quot; 
+output though ;-)
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005403.html">[Linux-uvc-devel] Philips NC610: UVC Video Cam to Add to	Support List
+</A></li>
+	<LI>Next message: <A HREF="005405.html">[Linux-uvc-devel] Fwd: laptop with an upside down webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5402">[ date ]</a>
+              <a href="thread.html#5402">[ thread ]</a>
+              <a href="subject.html#5402">[ subject ]</a>
+              <a href="author.html#5402">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

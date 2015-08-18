@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] more questions
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20more%20questions&In-Reply-To=%3C200711052000.02222.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002390.html">
+   <LINK REL="Next"  HREF="002393.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] more questions</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20more%20questions&In-Reply-To=%3C200711052000.02222.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] more questions">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Nov  5 20:00:02 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002390.html">[Linux-uvc-devel] more questions
+</A></li>
+        <LI>Next message: <A HREF="002393.html">[Linux-uvc-devel] [PATCH] Apple iSight
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2399">[ date ]</a>
+              <a href="thread.html#2399">[ thread ]</a>
+              <a href="subject.html#2399">[ subject ]</a>
+              <a href="author.html#2399">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Andres,
+
+On Saturday 03 November 2007, Andres Gonzalez wrote:
+&gt;<i> Sorry Laurent, I originally posted this incorrectly. This is what I
+</I>&gt;<i> meant to post:
+</I>
+No worries.
+
+&gt;<i> Laurent,
+</I>&gt;<i>
+</I>&gt;<i> Thank you to you and Nathanael for your responses. A couple of other
+</I>&gt;<i> questions.
+</I>&gt;<i>
+</I>&gt;<i> So then, it is the select mechanism that enforces the frame rate?  By
+</I>&gt;<i> that I mean, in my application, if I use select/read, select will
+</I>&gt;<i> block until the video frame is completely captured by the driver. So,
+</I>&gt;<i> as long as my frame-by-frame processing latency is small enough,
+</I>&gt;<i> select will unblock according to the frame rate, thus it is the
+</I>&gt;<i> enforcer of the frame rate?
+</I>
+In a nutshell, yes. V4L2 provides a buffer-based mechanism to prevent frame 
+loss. Applications enqueue several buffers and use select() to wait for frame 
+ready events. They then dequeue a buffer, process the data and requeue the 
+buffer. As long as the average processing time is smaller than the frame 
+interval, no frame loss will occur.
+
+&gt;<i> I guess then, my Quickcam Pro 4000 must be based on a different
+</I>&gt;<i> chipset than the cameras the UVC driver supports. The reason I
+</I>&gt;<i> purchased the Quickcam Pro 4000 was that I thought there was a driver
+</I>&gt;<i> available for it, the PWC driver. I thought that was my only
+</I>&gt;<i> alternative under linux. However, my understand was that the
+</I>&gt;<i> developers had stopped moving forward on it so I suspected it was not
+</I>&gt;<i> fully supported. Consequently, I was not too surprised (although
+</I>&gt;<i> disappointed) to experience that some ioctls are not working
+</I>&gt;<i> correctly.
+</I>
+You should try contacting Luc Sailard, the driver's maintainer. Adding support 
+for the enumeration ioctls isn't difficult.
+
+&gt;<i> It appears that there is another alternative. What is the general
+</I>&gt;<i> state of development of the UVC driver? Is it safe to assume that it
+</I>&gt;<i> is further along than the PWC driver? If that is the case, then I need
+</I>&gt;<i> to get a different camera, one that is supported by the UVC driver.
+</I>
+I don't follow the pwc driver's development so I can't tell if one of the 
+projects is &quot;further along&quot; than the other. The frame size and frame interval 
+enumeration ioctl have been introduced by the UVC driver so it should be 
+expected that other drivers don't implement them yet. There are other 
+features implemented in the pwc driver that are not available in the UVC 
+driver yet (read() support for instance). If you only miss the enumeration 
+ioctls, I'd suggest keeping your QC Pro 4000 and getting the required 
+functions implemented in the pwc driver.
+
+&gt;<i> If so, what UVC supported camera would you recommend? Which supports
+</I>&gt;<i> the widest frame sizes, frame rates, best quality, etc.
+</I>
+Have a look at the hardware compatibility list at 
+<A HREF="http://linux-uvc.berlios.de/#devices">http://linux-uvc.berlios.de/#devices</A>
+
+Avoid the first and second generation Logitech webcams (marked with a warning 
+sign). The third generation is a safe bet (046d:0990, 046d:0991 and 
+046d:0994). That's the ones I mostly use.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002390.html">[Linux-uvc-devel] more questions
+</A></li>
+	<LI>Next message: <A HREF="002393.html">[Linux-uvc-devel] [PATCH] Apple iSight
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2399">[ date ]</a>
+              <a href="thread.html#2399">[ thread ]</a>
+              <a href="subject.html#2399">[ subject ]</a>
+              <a href="author.html#2399">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Discard%20overrun%20%28corrupted%29%20RX%20images&In-Reply-To=%3C840026.42085.qm%40web120002.mail.ne1.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005843.html">
+   <LINK REL="Next"  HREF="005845.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images</H1>
+    <B>P F</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Discard%20overrun%20%28corrupted%29%20RX%20images&In-Reply-To=%3C840026.42085.qm%40web120002.mail.ne1.yahoo.com%3E"
+       TITLE="[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images">public_filter at yahoo.com
+       </A><BR>
+    <I>Fri Jul 23 22:34:46 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005843.html">[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+</A></li>
+        <LI>Next message: <A HREF="005845.html">[Linux-uvc-devel] asus laptop U52F
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5844">[ date ]</a>
+              <a href="thread.html#5844">[ thread ]</a>
+              <a href="subject.html#5844">[ subject ]</a>
+              <a href="author.html#5844">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+--- On Thu, 7/22/10, P F &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">public_filter at yahoo.com</A>&gt; wrote:
+&gt;<i> 
+</I>&gt;<i> Also, without this workaround in place, I was able to
+</I>&gt;<i> extract two copies
+</I>&gt;<i> of a JPEG via two methods:
+</I>&gt;<i> 1. Through my application
+</I>&gt;<i> 2. Through an in-line hardware USB analyzer
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> I've attached the two JPEGs mentioned above.
+</I>&gt;<i> 
+</I>While debugging further, I realized that the 32-byte chunks might not be
+random data at all.  I extracted the previous JPEG in the test stream, and
+lo and behold, the two corrupt 32-byte chunks were in fact duplicated from
+this previous frame.
+
+I thought that this duplication implied a dirty cache in the frame buffer,
+so I tried a few changes before finally landing on this:
+
+Adding:
+vma-&gt;vm_page_prot = pgprot_noncached(vma-&gt;vm_page_prot);
+to uvc_v4l2_mmap.  This resolved the corruption.  gspca_zc3xx has the same
+issue, and this patch worked there as well.
+
+I don't know if this is The Right Way to fix it, but hopefully it gives you
+a good clue.
+
+Best Regards
+
+
+      
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: previous.jpg
+Type: image/jpeg
+Size: 10109 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100723/e68ee437/attachment.jpg">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100723/e68ee437/attachment.jpg</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005843.html">[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+</A></li>
+	<LI>Next message: <A HREF="005845.html">[Linux-uvc-devel] asus laptop U52F
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5844">[ date ]</a>
+              <a href="thread.html#5844">[ thread ]</a>
+              <a href="subject.html#5844">[ subject ]</a>
+              <a href="author.html#5844">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

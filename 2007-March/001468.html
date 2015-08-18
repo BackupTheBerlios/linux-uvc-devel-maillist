@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] control query fails
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20control%20query%20fails&In-Reply-To=%3C1173107227.3483.36.camel%40localhost.localdomain%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001467.html">
+   <LINK REL="Next"  HREF="001469.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] control query fails</H1>
+    <B>richard</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20control%20query%20fails&In-Reply-To=%3C1173107227.3483.36.camel%40localhost.localdomain%3E"
+       TITLE="[Linux-uvc-devel] control query fails">richard at rsk.demon.co.uk
+       </A><BR>
+    <I>Mon Mar  5 16:07:07 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001467.html">[Linux-uvc-devel] control query fails
+</A></li>
+        <LI>Next message: <A HREF="001469.html">[Linux-uvc-devel] control query fails
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1468">[ date ]</a>
+              <a href="thread.html#1468">[ thread ]</a>
+              <a href="subject.html#1468">[ subject ]</a>
+              <a href="author.html#1468">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Mon, 2007-03-05 at 15:28 +0100, Laurent Pinchart wrote:
+&gt;<i> Hi Richard,
+</I>&gt;<i> 
+</I>&gt;<i> &gt; I've got a logitech pro 5000 working with ekiga on fedora fc6 64 on an
+</I>&gt;<i> &gt; AMD 64X2.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; This driver loads ok :-
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:08c5)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; and will work ok for a while but if I close a call or stop then
+</I>&gt;<i> &gt; (quickly) restart displaying the video it fails with usb errors
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt;uvcvideo: Failed to query (129) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>&gt;<i> &gt; &gt;uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>&gt;<i> &gt; &gt;uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>&gt;<i> &gt; &gt;uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -75 (exp. 26).
+</I>&gt;<i> &gt; &gt;uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; and then it gets stuck in this state, even reloading the uvcvideo module
+</I>&gt;<i> &gt; does not clear this error, I have to unplug the camera.
+</I>&gt;<i> 
+</I>&gt;<i> You are experiencing the dreadful Logitech hardware bug.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; I think that there is race between uvc_v4l2_open &amp; uvc_v4l2_release, so
+</I>&gt;<i> &gt; I've patched release to take the same mutex as open.
+</I>&gt;<i> &gt; It seems to be working as I've not seen any problems since adding in
+</I>&gt;<i> &gt; this extra locking.
+</I>&gt;<i> 
+</I>&gt;<i> Could you please test the changes a bit more ? It really shouldn't matter. 
+</I>&gt;<i> AFAIK, Ekiga doesn't open and close the webcam in different threads, so any 
+</I>&gt;<i> close() call will return before the next open() call is issued.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; I'm not sure if this is really a ekiga problem rather than a driver
+</I>&gt;<i> &gt; problem, but the patch is pretty simple and isn't going to be called
+</I>&gt;<i> &gt; very often so won't affect performance.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Should uvc_v4l2_do_ioctl also take the lock to stop close removing the
+</I>&gt;<i> &gt; structures while an ioctl is in progress ?
+</I>&gt;<i> 
+</I>&gt;<i> If I'm not mistaken, the kernel guarantees that an ioctl() call completes 
+</I>&gt;<i> before any close() call is performed.
+</I>&gt;<i> 
+</I>&gt;<i> Best regards,
+</I>&gt;<i> 
+</I>&gt;<i> Laurent Pinchart
+</I>Hi Laurent,
+
+thanks for the info and sorry for the noise.
+Hiding/showing images from the camera sometimes triggers the bug so I
+was just guessing and it seemed to help :)
+
+cheers
+Richard
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001467.html">[Linux-uvc-devel] control query fails
+</A></li>
+	<LI>Next message: <A HREF="001469.html">[Linux-uvc-devel] control query fails
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1468">[ date ]</a>
+              <a href="thread.html#1468">[ thread ]</a>
+              <a href="subject.html#1468">[ subject ]</a>
+              <a href="author.html#1468">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

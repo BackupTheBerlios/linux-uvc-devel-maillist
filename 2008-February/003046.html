@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Camera Restart Error
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Camera%20Restart%20Error&In-Reply-To=%3C8FF3AEDFC5ABAE42A50A92DBBFD702EF02C1E5AA%40calmail1.smarttech.inc%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003045.html">
+   <LINK REL="Next"  HREF="003014.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Camera Restart Error</H1>
+    <B>Nathanael Galpin</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Camera%20Restart%20Error&In-Reply-To=%3C8FF3AEDFC5ABAE42A50A92DBBFD702EF02C1E5AA%40calmail1.smarttech.inc%3E"
+       TITLE="[Linux-uvc-devel] Camera Restart Error">NathanaelGalpin at smarttech.com
+       </A><BR>
+    <I>Thu Feb 14 22:06:54 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003045.html">[Linux-uvc-devel] Camera Restart Error
+</A></li>
+        <LI>Next message: <A HREF="003014.html">[Linux-uvc-devel] Please add support for Logitech Orbicam	camera in Acer Aspire laptops
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3046">[ date ]</a>
+              <a href="thread.html#3046">[ thread ]</a>
+              <a href="subject.html#3046">[ subject ]</a>
+              <a href="author.html#3046">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+&gt;<i> &gt; &gt; On a related note, whenever an errenous request is made to the camera,
+</I>&gt;<i> &gt; &gt; it goes into an error state and won't accept any other commands. Is
+</I>&gt;<i> &gt; &gt; there a way to clear this error state, or should I just close and
+</I>&gt;<i> &gt; &gt; reopen the device file?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Which camera are you talking about ? What kind of erroneous request ?
+</I>&gt;<i> &gt; Please provide more details along with kernel log messages if available.
+</I>&gt;<i>
+</I>&gt;<i> I wasn't able to get kernel logging enabled last night for the uvc driver
+</I>&gt;<i> (but I was pretty tired). I'll spend some more time debugging this and post
+</I>&gt;<i> more details when I have them. I figured I would ask in case there was a
+</I>&gt;<i> generic way to clear error states in a webcam I wasn't familiar with.
+</I>
+I spent some more time looking into this. The error occurs when I try to access
+one of the extension unit controls I've added.
+
+When the control adds fine and does not report any errors. I can also read from
+the control without any errors. Any attempt to write to the control however returns
+an I/O Error (5). I did some more digging and I found the errors the kernel is seeing.
+
+It seems like the error originates in the function usb_start_wait_urb (message.c in the usb core section).
+I get back both a -32 and a -110, Broken Pipe and Time out respectively. Here's the kernel log...
+
+Feb 13 16:32:53 localhost kernel: unknown ioctl 'U', dir=-w, #4 (0x40085504)
+Feb 13 16:32:53 localhost kernel: uvcvideo: Failed to query (1) UVC control 5 (unit 5) : -110 (exp. 2).
+Feb 13 16:32:55 localhost kernel: unknown ioctl 'U', dir=-w, #4 (0x40085504)
+Feb 13 16:32:55 localhost kernel: uvcvideo: Failed to query (1) UVC control 5 (unit 5) : -32 (exp. 2).
+Feb 13 16:33:56 localhost kernel: unknown ioctl 'U', dir=-w, #4 (0x40085504)
+Feb 13 16:33:56 localhost kernel: uvcvideo: Failed to query (1) UVC control 5 (unit 5) : -110 (exp. 2).
+
+Again, I'm in Fedora 8, kernel 2.6.23.14-115.fc8
+
+I'll be looking into the firmware on my end (since it's custom), but has anyone encountered this kind of error before?
+
+Thanks,
+
+Nathanael
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080214/1f7b98fb/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080214/1f7b98fb/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003045.html">[Linux-uvc-devel] Camera Restart Error
+</A></li>
+	<LI>Next message: <A HREF="003014.html">[Linux-uvc-devel] Please add support for Logitech Orbicam	camera in Acer Aspire laptops
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3046">[ date ]</a>
+              <a href="thread.html#3046">[ thread ]</a>
+              <a href="subject.html#3046">[ subject ]</a>
+              <a href="author.html#3046">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

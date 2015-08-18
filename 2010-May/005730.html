@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Multiple camera framerate.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multiple%20camera%20framerate.&In-Reply-To=%3C4BE46394.7020807%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005728.html">
+   <LINK REL="Next"  HREF="005722.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Multiple camera framerate.</H1>
+    <B>Dennis Muhlestein</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multiple%20camera%20framerate.&In-Reply-To=%3C4BE46394.7020807%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Multiple camera framerate.">djmuhlestein at gmail.com
+       </A><BR>
+    <I>Fri May  7 21:01:40 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005728.html">[Linux-uvc-devel] Multiple camera framerate.
+</A></li>
+        <LI>Next message: <A HREF="005722.html">[Linux-uvc-devel] Philips SPC530NC (0471:2034) fails
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5730">[ date ]</a>
+              <a href="thread.html#5730">[ thread ]</a>
+              <a href="subject.html#5730">[ subject ]</a>
+              <a href="author.html#5730">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 05/07/2010 09:10 AM, Laurent Pinchart wrote:
+
+&gt;&gt;<i>
+</I>&gt;&gt;<i> I'm attaching the patch in case anyone wants to play with this or
+</I>&gt;&gt;<i> suggest ways to improve it.
+</I>&gt;<i>
+</I>&gt;<i> Interesting approach, but definitely a hack. I'm not sure if it has a chance
+</I>&gt;<i> to make it to the driver.
+</I>
+Most definitely a hack.  I just included it because someone had 
+expressed interest in the solution.  If there was a way to do it faster, 
+it might be a good thing to pursue but I can't think of a good way to 
+synchronize the frames in such a way to not lose a lot of each frame 
+(like you mentioned in your other response) after continuing urb 
+submission and waste a lot of transfer bandwidth.
+
+&gt;<i>
+</I>&gt;&gt;<i> One thing I had a problem with is that it seems some of the capture images
+</I>&gt;&gt;<i> are corrupted. This patch was against 2.6.27.2. A little old I know but I'm
+</I>&gt;&gt;<i> working on an embedded device.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> 2) I modified ehci-sched.c to not raise the ENOSPC error.  That solution
+</I>&gt;&gt;<i> actually lets me capture on all 8 cameras at 15 FPS.  This has other
+</I>&gt;&gt;<i> implications though and I'm not sure it is a very good solution.  It
+</I>&gt;&gt;<i> does tell me that perhaps the Linux ISO scheduler could perhaps use look
+</I>&gt;&gt;<i> through.  One major discrepancy is that bandwidth is allocated based on
+</I>&gt;&gt;<i> the max packet size I think but for my compressed images (MJPG) each
+</I>&gt;&gt;<i> frame is only a fraction of the max allocated bandwidth.
+</I>&gt;<i>
+</I>&gt;<i> That might be the real culprit. Maybe the camera is simply requesting too much
+</I>&gt;<i> bandwidth compared to its real requirements.
+</I>&gt;<i>
+</I>&gt;<i> Can you check whether the video streaming interface has multiple alternate
+</I>&gt;<i> settings ? If so, which one does the uvcvideo driver chose ? You can get the
+</I>&gt;<i> information from the kernel log if you set the UVC_TRACE_VIDEO flag.
+</I>
+
+The camera is definitely selecting more bandwidth than it needs.  The 
+size of each image does vary when I'm streaming MJPG images.  It is 
+usually somewhere along the lines of 110-150K at maximum resolution 
+(1280x1024 for these cameras).
+Perhaps this is the problem with these cameras:
+Here is the information from the Uncompressed video format descriptor 
+for the 1280x1024 YUYV data:
+dwMaxVideoFrameBufferSize 2621440
+And here is the information returned from the MJPG descriptor for the 
+same sized compressed image:
+dwMaxVideoFrameBufferSize 2621440
+
+Logitech C500 by the way.
+
+&gt;<i> If the camera request an alternate setting that isn't the smallest, you might
+</I>&gt;<i> try to experiment with hardcoding a lower bandwidth in uvc_video_init.
+</I>&gt;<i>
+</I>
+I think I actually tried that a while back when I first started playing 
+with this issue.  If I recall, selecting a lower bandwidth interface 
+caused a mismatch between the information in each packets and the 
+placement of the frame headers in the UVC protocol.  Result was it never 
+dequeued a buffer.  I'm not sure that isn't worth investigating further 
+though.  I may have done something wrong.
+
+Thank for your analysis of this.  Helps to have more than just my eyes 
+look over the issue.
+
+In the mean time, I'm having quite good luck with my EHCI hack.  I just 
+let all the ISO frames through and I get all the images from all 8 
+cameras back at 15 FPS.  I may come back to this problem before I'm all 
+the way finished and see if there is a way to button this up cleaner but 
+temporarily the solution is working for me.
+
+-Dennis
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005728.html">[Linux-uvc-devel] Multiple camera framerate.
+</A></li>
+	<LI>Next message: <A HREF="005722.html">[Linux-uvc-devel] Philips SPC530NC (0471:2034) fails
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5730">[ date ]</a>
+              <a href="thread.html#5730">[ thread ]</a>
+              <a href="subject.html#5730">[ subject ]</a>
+              <a href="author.html#5730">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

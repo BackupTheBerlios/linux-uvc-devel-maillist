@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] CLI software to record video
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20CLI%20software%20to%20record%20video&In-Reply-To=%3C200907021351.15056.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004948.html">
+   <LINK REL="Next"  HREF="004954.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] CLI software to record video</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20CLI%20software%20to%20record%20video&In-Reply-To=%3C200907021351.15056.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] CLI software to record video">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Thu Jul  2 13:51:14 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004948.html">[Linux-uvc-devel] Setting camera priority
+</A></li>
+        <LI>Next message: <A HREF="004954.html">[Linux-uvc-devel] No working microphone with usb webcam,	possible solution
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4949">[ date ]</a>
+              <a href="thread.html#4949">[ thread ]</a>
+              <a href="subject.html#4949">[ subject ]</a>
+              <a href="author.html#4949">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Luca,
+
+On Monday 29 June 2009 23:18:05 Luca Lesinigo wrote:
+&gt;<i> Hello there.
+</I>&gt;<i>
+</I>&gt;<i> I spent some time googling around and looking at the list archives,
+</I>&gt;<i> but I cannot find a (non-X11) software that would let me do a 'simple'
+</I>&gt;<i> video recording without any fancy stuff or reencoding.
+</I>&gt;<i>
+</I>&gt;<i> I'm using a logitech S7500 for my tests, it's an UVC cam with support
+</I>&gt;<i> for MJPEG. I could use mencoder to record the 'raw' mjpeg stream
+</I>&gt;<i> without any re-encoding but that also means without audio: it
+</I>&gt;<i> segfaults if I try to record audio too (either from the cam usb audio
+</I>&gt;<i> source or from the alsa soundcard in the pc).
+</I>&gt;<i>
+</I>&gt;<i> I can still record audio in another process and mix everything
+</I>&gt;<i> afterwards, no big problem. The _real_ problem is that video is never
+</I>&gt;<i> recorded at constant speed. It probably depends on the camera varying
+</I>&gt;<i> the framerate (autoexposure or stuff like that, probably) and/or usb
+</I>&gt;<i> or the hci loosing some data here and there. But this is also not a
+</I>&gt;<i> problem (loosing frames) as long as I get a playable video. Too bad
+</I>&gt;<i> this is not the case: the actual speed will vary and some parts will
+</I>&gt;<i> be faster than others.
+</I>&gt;<i>
+</I>&gt;<i> I'm not an expert but I suspect this is due to the &quot;timestamps not
+</I>&gt;<i> implemented&quot; that I read on UVC homepage.
+</I>
+Implementing timestamps support shouldn't be extremely difficult, do you want 
+to give it a try ? Many users will be thankful :-)
+
+To be honest, I'm not sure if this would be enough to avoid all audio/video 
+sync issues.
+
+Both the audio and the video devices can suffer from data loss. Video frames 
+can be corrupted or completely lost, and audio samples can be missed as well. 
+To resynchronize the two streams in such a case, you need
+
+1. to timestamp each video and audio sample (or groups of samples), and 
+2. to use the timestamps during plyaback
+
+The uvcvideo driver currently uses the system time to timestamp video frames. 
+This is not a perfect solution but is probably accurate enough for most 
+applications. Implementing timestamps support would provide a better accuracy 
+in the timestamp value.
+
+The usbaudio driver doesn't, as far as I know, timestamp audio data. If 
+samples are lost, I don't think the driver will notice. You should ask the 
+usbaudio developer(s) for confirmation.
+
+As mentioned already in an answer to your mail, you will need to use a 
+container that supports timestamps, otherwise the player will not be able to 
+resynchronize audio and video.
+
+&gt;<i> I'm working on a more-or-less embedded platform (the prototype
+</I>&gt;<i> actually is a notebook without any human operator and also without
+</I>&gt;<i> X11) and I'm looking for a software (or a combination of) that would
+</I>&gt;<i> let me:
+</I>&gt;<i> - set the cam to turn off fancy stuff and run as constant fps as it
+</I>&gt;<i> can - don't need ultrafast, <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">640x480 at 25fps</A> would be enough
+</I>&gt;<i> - record the video with the lowest possible cpu usage - I think a
+</I>&gt;<i> direct MJPEG recording from the cam to file should be the best option
+</I>&gt;<i> - playback / reencode the video afterwards and get a 'constant wall
+</I>&gt;<i> clock speed' video (no problems if it looses frames as long as this is
+</I>&gt;<i> accounted for)
+</I>&gt;<i> - audio recording in the same file would be a bonus but not needed,
+</I>&gt;<i> alsarec is already doing its job
+</I>&gt;<i>
+</I>&gt;<i> I don't really need anything else, the system will start recording
+</I>&gt;<i> right after boot and keep on until power off. Right now I'm using the
+</I>&gt;<i> latest stable kernels from kernel.org, but applying any patch and
+</I>&gt;<i> recompiling is not a problem. If possible, I plan to stick to UVC
+</I>&gt;<i> cameras with MJPEG support, probably logitech ones.
+</I>&gt;<i> Any help would be really appreciated, thanks.
+</I>
+Best regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004948.html">[Linux-uvc-devel] Setting camera priority
+</A></li>
+	<LI>Next message: <A HREF="004954.html">[Linux-uvc-devel] No working microphone with usb webcam,	possible solution
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4949">[ date ]</a>
+              <a href="thread.html#4949">[ thread ]</a>
+              <a href="subject.html#4949">[ subject ]</a>
+              <a href="author.html#4949">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] A little patch to make the driver work in the kernel 2.6.27-rc1 continued
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20A%20little%20patch%20to%20make%20the%20driver%20work%20in%20the%0A%20kernel%202.6.27-rc1%20continued&In-Reply-To=%3C20080804231118.470ef242%40KNIGHT%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003955.html">
+   <LINK REL="Next"  HREF="003958.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] A little patch to make the driver work in the kernel 2.6.27-rc1 continued</H1>
+    <B>Wei-Tsun Sun</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20A%20little%20patch%20to%20make%20the%20driver%20work%20in%20the%0A%20kernel%202.6.27-rc1%20continued&In-Reply-To=%3C20080804231118.470ef242%40KNIGHT%3E"
+       TITLE="[Linux-uvc-devel] A little patch to make the driver work in the kernel 2.6.27-rc1 continued">wsun013 at gmail.com
+       </A><BR>
+    <I>Mon Aug  4 13:11:18 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003955.html">[Linux-uvc-devel] A little patch to make the driver work in the	kernel 2.6.27-rc1
+</A></li>
+        <LI>Next message: <A HREF="003958.html">[Linux-uvc-devel] A little patch to make the driver work in the	kernel 2.6.27-rc1 continued
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3956">[ date ]</a>
+              <a href="thread.html#3956">[ thread ]</a>
+              <a href="subject.html#3956">[ subject ]</a>
+              <a href="author.html#3956">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Better to put them in text form:
+
+
+diff -Naur trunk/uvc_driver.c trunk.new/uvc_driver.c
+--- trunk/uvc_driver.c	2008-08-04 10:50:30.000000000 +0000
++++ trunk.new/uvc_driver.c	2008-08-04 11:02:57.000000000 +0000
+@@ -1466,8 +1466,8 @@
+ #else
+ 	vdev-&gt;parent = &amp;dev-&gt;intf-&gt;dev;
+ #endif
+-	vdev-&gt;type = 0;
+-	vdev-&gt;type2 = 0;
++//	vdev-&gt;type = 0;
++//	vdev-&gt;type2 = 0;
+ 	vdev-&gt;minor = -1;
+ 	vdev-&gt;fops = &amp;uvc_fops;
+ 	vdev-&gt;release = video_device_release;
+diff -Naur trunk/uvc_queue.c trunk.new/uvc_queue.c
+--- trunk/uvc_queue.c	2008-08-04 10:50:30.000000000 +0000
++++ trunk.new/uvc_queue.c	2008-08-04 11:02:57.000000000 +0000
+@@ -20,7 +20,7 @@
+ #include &lt;linux/vmalloc.h&gt;
+ #include &lt;linux/wait.h&gt;
+ #include &lt;asm/atomic.h&gt;
+-
++#include &lt;linux/mm.h&gt;
+ #include &quot;uvcvideo.h&quot;
+ 
+ /* ------------------------------------------------------------------------
+@@ -98,6 +98,7 @@
+ 		unsigned int buflength)
+ {
+ 	unsigned int bufsize = PAGE_ALIGN(buflength);
++//      unsigned int bufsize = buflength;
+ 	unsigned int i;
+ 	void *mem = NULL;
+ 	int ret;
+
+
+
+==================================================
+Wei-Tsun Sun
+Department of Electrical and Computer Engineering
+University of Auckland, New Zealand
+Private Bag 92019
+38 Princess Street
+Science Centre (Building 301, level 3, room 235)
+Auckland
+New Zealand
+Phone: +64 9 3737599 ext. 87060
+<A HREF="http://www.ece.auckland.ac.nz/~wsun013/">http://www.ece.auckland.ac.nz/~wsun013/</A>
+==================================================
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003955.html">[Linux-uvc-devel] A little patch to make the driver work in the	kernel 2.6.27-rc1
+</A></li>
+	<LI>Next message: <A HREF="003958.html">[Linux-uvc-devel] A little patch to make the driver work in the	kernel 2.6.27-rc1 continued
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3956">[ date ]</a>
+              <a href="thread.html#3956">[ thread ]</a>
+              <a href="subject.html#3956">[ subject ]</a>
+              <a href="author.html#3956">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

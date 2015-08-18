@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Version.h?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Version.h%3F&In-Reply-To=%3C48066216.1010707%40pdi.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003379.html">
+   <LINK REL="Next"  HREF="003411.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Version.h?</H1>
+    <B>Charlie Wyse</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Version.h%3F&In-Reply-To=%3C48066216.1010707%40pdi.com%3E"
+       TITLE="[Linux-uvc-devel] Version.h?">Charlie.Wyse at pdi.dreamworks.com
+       </A><BR>
+    <I>Wed Apr 16 22:31:18 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003379.html">[Linux-uvc-devel] Version.h?
+</A></li>
+        <LI>Next message: <A HREF="003411.html">[Linux-uvc-devel] Version.h?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3381">[ date ]</a>
+              <a href="thread.html#3381">[ thread ]</a>
+              <a href="subject.html#3381">[ subject ]</a>
+              <a href="author.html#3381">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Laurent Pinchart wrote:
+&gt;<i> Hi Charlie,
+</I>&gt;<i>
+</I>&gt;<i> On Tuesday 15 April 2008, Charlie Wyse wrote:
+</I>&gt;<i>   
+</I>&gt;&gt;<i> Brandon Philips wrote:
+</I>&gt;&gt;<i>     
+</I>&gt;&gt;&gt;<i> On 12:33 Tue 15 Apr 2008, Charlie Wyse wrote:
+</I>&gt;&gt;&gt;<i>       
+</I>&gt;&gt;&gt;&gt;<i> Whenever I run a make on the uvcvideo directory I get an error about
+</I>&gt;&gt;&gt;&gt;<i> the version.h file.  If I look at the file itself it is a 0 length
+</I>&gt;&gt;&gt;&gt;<i> file.  This file is removed with a make clean, so it looks like
+</I>&gt;&gt;&gt;&gt;<i> something in the make process isn't working.
+</I>&gt;&gt;&gt;&gt;<i>         
+</I>&gt;&gt;&gt;<i> If you aren't using a SVN checkout or don't have svn installed the
+</I>&gt;&gt;&gt;<i> version.h generation won't work.  The driver will still build however.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Relevant source entries.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Makefile:
+</I>&gt;&gt;&gt;<i> &lt;snip&gt;
+</I>&gt;&gt;&gt;<i>         @sh svn-version.sh &gt; version.h 2&gt;/dev/null
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> uvc_driver.c:
+</I>&gt;&gt;&gt;<i> &lt;snip&gt;
+</I>&gt;&gt;&gt;<i> #ifndef DRIVER_VERSION
+</I>&gt;&gt;&gt;<i> #define DRIVER_VERSION          &quot;v0.1.0&quot;
+</I>&gt;&gt;&gt;<i> #endif
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>       
+</I>&gt;&gt;&gt;&gt;<i> My QC 9000 works most of the time, but I figure this might be why all
+</I>&gt;&gt;&gt;&gt;<i> my devices come up as &lt;unnamed&gt;, even if I put the vender/product id
+</I>&gt;&gt;&gt;&gt;<i> into the uvc_driver.c file before running a make.  Any one know what
+</I>&gt;&gt;&gt;&gt;<i> is going on with that file?
+</I>&gt;&gt;&gt;&gt;<i>         
+</I>&gt;&gt;&gt;<i> Your device comes up as &lt;unnamed&gt; because the device vendor didn't
+</I>&gt;&gt;&gt;<i> include the optional string descriptor for it.  It shouldn't effect the
+</I>&gt;&gt;&gt;<i> device functioning.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> What functional problems are you having with the device?
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Cheers,
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> 	Brandon
+</I>&gt;&gt;&gt;<i>       
+</I>&gt;&gt;<i> Good to know about the version.h thing, I was afraid that was the
+</I>&gt;&gt;<i> problem as the 08ce was no in the uvc_driver.c file until I added it.
+</I>&gt;&gt;<i> We are having problems with some of our Logitech QC 5000's.  When we
+</I>&gt;&gt;<i> create the module on the same kernel we keep getting things in dmesg
+</I>&gt;&gt;<i> like the following:
+</I>&gt;&gt;<i> uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:08ce)
+</I>&gt;&gt;<i> uvcvideo: Failed to query (1) UVC control 2 (unit 0) : -71 (exp. 26).
+</I>&gt;&gt;<i> uvcvideo: Failed to initialize the device (-5).
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> -71 is -EPROTO. This is a low level error that can be caused either by 
+</I>&gt;<i> electrical issues (noisy environment, bad cables, bad USB ports, ...) or a 
+</I>&gt;<i> buggy device (firmware and/or hardware).
+</I>&gt;<i>
+</I>&gt;<i> The Logitech QC 5000 is known to be buggy. Sad but true. There are lots of 
+</I>&gt;<i> timing issues that are usually not triggered when using the webcam under 
+</I>&gt;<i> Windows. Linux has different timings, and things sometimes break depending on 
+</I>&gt;<i> your kernel version, on the USB controller, on the CPU speed, ...
+</I>&gt;<i>
+</I>&gt;<i> Plugging the camera into another USB port might help. If it doesn't I'm afraid 
+</I>&gt;<i> there's not much I can do.
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>&gt;&gt;<i> This prevents us from seeing any video and causes ekiga to crash with
+</I>&gt;&gt;<i> the following error in dmesg logs:
+</I>&gt;&gt;<i> Apr 15 10:51:39 duel kernel: uvcvideo: Failed to query (132) UVC control
+</I>&gt;&gt;<i> 4 (unit 2) : -32 (exp. 2).
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> That's a non-fatal error that you will see quite often when you run into 
+</I>&gt;<i> timing issues. It basically means Ekiga tried to modify a control (probably 
+</I>&gt;<i> brightness in this case) and the device didn't answer the request because of 
+</I>&gt;<i> timings issues caused by a firmware bug.
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>&gt;&gt;<i> On my other machine  I am getting past the dmesg part with both the QC
+</I>&gt;&gt;<i> 5000 and 9000, ekiga still doesn't want to switch video with whomever I
+</I>&gt;&gt;<i> call, but I believe that might be an ekiga problem.  I can still look at
+</I>&gt;&gt;<i> gstreamer-properties and see video without errors.  I was afraid this
+</I>&gt;&gt;<i> was just due to vendor ids not being listed, but it looks like I was
+</I>&gt;&gt;<i> troubleshooting down the wrong path.  Any ideas what could case those
+</I>&gt;&gt;<i> issues?
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> Webcam bugs unfortunately :-( There might be a way to work around them in 
+</I>&gt;<i> software, but that would require in-depth analysis with a USB 2.0 analyser, 
+</I>&gt;<i> comparing traces captured using Windows and Linux, ...
+</I>&gt;<i>
+</I>&gt;<i> Best regards,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i>   
+</I>Taht is unfortunate.  Laurent, do you have a recommended UVC camera?  We 
+bought a bunch of 5000's and are pretty much getting what you said, most 
+of them work, some just simply don't.  We are looking at the Quickcam 
+9000 and so far our tests are positive, do you think that might be a 
+better option?
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003379.html">[Linux-uvc-devel] Version.h?
+</A></li>
+	<LI>Next message: <A HREF="003411.html">[Linux-uvc-devel] Version.h?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3381">[ date ]</a>
+              <a href="thread.html#3381">[ thread ]</a>
+              <a href="subject.html#3381">[ subject ]</a>
+              <a href="author.html#3381">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

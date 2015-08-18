@@ -1,0 +1,204 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] luvcview does not record video in avi
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20luvcview%20does%20not%20record%20video%20in%20avi&In-Reply-To=%3CBANLkTi%3DPpnuqtEm7LNGD9Dibo6h0fxJkbQ%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006572.html">
+   <LINK REL="Next"  HREF="006576.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] luvcview does not record video in avi</H1>
+    <B>Paulo Assis</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20luvcview%20does%20not%20record%20video%20in%20avi&In-Reply-To=%3CBANLkTi%3DPpnuqtEm7LNGD9Dibo6h0fxJkbQ%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] luvcview does not record video in avi">pj.assis at gmail.com
+       </A><BR>
+    <I>Fri Jun 10 11:12:40 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006572.html">[Linux-uvc-devel] luvcview does not record video in avi
+</A></li>
+        <LI>Next message: <A HREF="006576.html">[Linux-uvc-devel] Request to help us in using UVC driver for linux	kernel-2.6.18
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6575">[ date ]</a>
+              <a href="thread.html#6575">[ thread ]</a>
+              <a href="subject.html#6575">[ subject ]</a>
+              <a href="author.html#6575">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+2011/6/10 JITENDRA SINGH &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">narukajsingh at gmail.com</A>&gt;:
+&gt;<i> Hi Paulo,
+</I>&gt;<i>
+</I>&gt;<i> Thanks a lot, I tried using IYUV 4cc before your reply, now using YUY2 4cc
+</I>&gt;<i> code luvcview is recording the yuv file but its quite large as compared to
+</I>&gt;<i> one recorded by ffmpeg. I understand that ffmpeg encodes yuyv frames
+</I>&gt;<i> resulting in smaller mpg file.
+</I>
+YUYV is a uncompressed format (16 bit per pixel), it will always
+produce much larger files if compared with any compressed.
+
+&gt;<i>
+</I>&gt;<i> I just need litle advice, I want a survillance app on arm arch, but would
+</I>&gt;<i> like to use luvcview to record and not ffmpeg as luvcview is gud small pkg,
+</I>&gt;<i> in that case should I go for a mjpg based webcam such as C905?
+</I>&gt;<i> Just can't find performance comparison of yuyv vs mjpg based webcams and
+</I>&gt;<i> apps(considering mjpg/yuyv encoding is done in webcam only)...hope you put
+</I>&gt;<i> some valuable words !!
+</I>
+in terms of performance, streaming in yuyv or mjpg on a usb2
+connection makes no big difference although you should be able achieve
+better fps with mjpg at higher resolutions.
+YUYV is more limited due the higher usb bandwidth needed.
+
+Regards,
+Paulo
+
+&gt;<i>
+</I>&gt;<i> Many thanks,
+</I>&gt;<i> Naruka
+</I>&gt;<i>
+</I>&gt;<i> On Thu, Jun 9, 2011 at 8:52 PM, Paulo Assis &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">pj.assis at gmail.com</A>&gt; wrote:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Hi,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> The 4cc code for YUYV is YUY2, at least this is what I use for
+</I>&gt;&gt;<i> guvcview and it works with most video players.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> So just use the same luvcview code but replace the 4cc code from MJPG
+</I>&gt;&gt;<i> to YUY2 in the case of a YUYV stream format.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Regards,
+</I>&gt;&gt;<i> Paulo
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> just use that when streaming in yuyv and the file should be ok
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> 2011/6/9 JITENDRA SINGH &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">narukajsingh at gmail.com</A>&gt;:
+</I>&gt;&gt;<i> &gt; I think I see the problem in luvcview code, avi file is not initialized
+</I>&gt;&gt;<i> &gt; for
+</I>&gt;&gt;<i> &gt; V4L2_PIX_FMT_YUYV, its is initialized only for MJPG fmt.
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt; ./v4l2uvc.c:650:&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; vd-&gt;avifile =
+</I>&gt;&gt;<i> &gt; AVI_open_output_file(vd-&gt;avifilename);
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt; Now all I want to know is, does luvcview doesnt support recording of avi
+</I>&gt;&gt;<i> &gt; file from YUV frames ?
+</I>&gt;&gt;<i> &gt; Any suggestions, what I can do for that support ?
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt; Any help will be gr8!!
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt; Thanks,
+</I>&gt;&gt;<i> &gt; Naruka
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt; On Thu, Jun 9, 2011 at 6:15 PM, JITENDRA SINGH &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">narukajsingh at gmail.com</A>&gt;
+</I>&gt;&gt;<i> &gt; wrote:
+</I>&gt;&gt;<i> &gt;&gt;
+</I>&gt;&gt;<i> &gt;&gt; Hi all,
+</I>&gt;&gt;<i> &gt;&gt;
+</I>&gt;&gt;<i> &gt;&gt; I am trying to save video(its ok without audio) via luvcvideo, but I
+</I>&gt;&gt;<i> &gt;&gt; cant
+</I>&gt;&gt;<i> &gt;&gt; see any .avi file generated, though it shows &quot;avi recording
+</I>&gt;&gt;<i> &gt;&gt; started/stopped&quot;.
+</I>&gt;&gt;<i> &gt;&gt; I am pressing p/clicking record button to record:
+</I>&gt;&gt;<i> &gt;&gt;
+</I>&gt;&gt;<i> &gt;&gt; $sudo luvcview -d /dev/video0 -f yuv -s 176x144 -i 3 -o ./vid.avi
+</I>&gt;&gt;<i> &gt;&gt; luvcview 0.2.6
+</I>&gt;&gt;<i> &gt;&gt;
+</I>&gt;&gt;<i> &gt;&gt; SDL information:
+</I>&gt;&gt;<i> &gt;&gt; Video driver: x11
+</I>&gt;&gt;<i> &gt;&gt; A window manager is available
+</I>&gt;&gt;<i> &gt;&gt; Device information:
+</I>&gt;&gt;<i> &gt;&gt; Device path: /dev/video0
+</I>&gt;&gt;<i> &gt;&gt; Stream settings:
+</I>&gt;&gt;<i> &gt;&gt; Frame format: YUYV
+</I>&gt;&gt;<i> &gt;&gt; Frame size: 176x144
+</I>&gt;&gt;<i> &gt;&gt; Frame rate: 5 fps (requested frame rate 3 fps is not supported by
+</I>&gt;&gt;<i> &gt;&gt; device)
+</I>&gt;&gt;<i> &gt;&gt; avi recording started
+</I>&gt;&gt;<i> &gt;&gt; frame rate: 5.01253
+</I>&gt;&gt;<i> &gt;&gt; avi recording stopped (4s)
+</I>&gt;&gt;<i> &gt;&gt; avi recording started
+</I>&gt;&gt;<i> &gt;&gt; frame rate: 4.98753
+</I>&gt;&gt;<i> &gt;&gt; avi recording stopped (4s)
+</I>&gt;&gt;<i> &gt;&gt; Cleanup done. Exiting ...
+</I>&gt;&gt;<i> &gt;&gt;
+</I>&gt;&gt;<i> &gt;&gt; Does anybody has a clue, I found no info anywhere about such problem.
+</I>&gt;&gt;<i> &gt;&gt; PS: luvcview is able to capture still image, raw frames as well.
+</I>&gt;&gt;<i> &gt;&gt;
+</I>&gt;&gt;<i> &gt;&gt; $luvcview -L
+</I>&gt;&gt;<i> &gt;&gt; luvcview 0.2.6
+</I>&gt;&gt;<i> &gt;&gt;
+</I>&gt;&gt;<i> &gt;&gt; SDL information:
+</I>&gt;&gt;<i> &gt;&gt; &#160; Video driver: x11
+</I>&gt;&gt;<i> &gt;&gt; &#160; A window manager is available
+</I>&gt;&gt;<i> &gt;&gt; Device information:
+</I>&gt;&gt;<i> &gt;&gt; &#160; Device path:&#160; /dev/video0
+</I>&gt;&gt;<i> &gt;&gt; /dev/video0 does not support read i/o
+</I>&gt;&gt;<i> &gt;&gt; { pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+</I>&gt;&gt;<i> &gt;&gt; { discrete: width = 640, height = 480 }
+</I>&gt;&gt;<i> &gt;&gt; &#160;&#160;&#160; Time interval between frame: 1/60, 1/50, 1/40, 1/30, 1/20, 1/15,
+</I>&gt;&gt;<i> &gt;&gt; 1/10,
+</I>&gt;&gt;<i> &gt;&gt; 1/5,
+</I>&gt;&gt;<i> &gt;&gt; { discrete: width = 352, height = 288 }
+</I>&gt;&gt;<i> &gt;&gt; &#160;&#160;&#160; Time interval between frame: 1/60, 1/50, 1/40, 1/30, 1/20, 1/15,
+</I>&gt;&gt;<i> &gt;&gt; 1/10,
+</I>&gt;&gt;<i> &gt;&gt; 1/5,
+</I>&gt;&gt;<i> &gt;&gt; { discrete: width = 320, height = 240 }
+</I>&gt;&gt;<i> &gt;&gt; &#160;&#160;&#160; Time interval between frame: 1/60, 1/50, 1/40, 1/30, 1/20, 1/15,
+</I>&gt;&gt;<i> &gt;&gt; 1/10,
+</I>&gt;&gt;<i> &gt;&gt; 1/5,
+</I>&gt;&gt;<i> &gt;&gt; { discrete: width = 176, height = 144 }
+</I>&gt;&gt;<i> &gt;&gt; &#160;&#160;&#160; Time interval between frame: 1/60, 1/50, 1/40, 1/30, 1/20, 1/15,
+</I>&gt;&gt;<i> &gt;&gt; 1/10,
+</I>&gt;&gt;<i> &gt;&gt; 1/5,
+</I>&gt;&gt;<i> &gt;&gt; { discrete: width = 160, height = 120 }
+</I>&gt;&gt;<i> &gt;&gt; &#160;&#160;&#160; Time interval between frame: 1/60, 1/50, 1/40, 1/30, 1/20, 1/15,
+</I>&gt;&gt;<i> &gt;&gt; 1/10,
+</I>&gt;&gt;<i> &gt;&gt; 1/5,
+</I>&gt;&gt;<i> &gt;&gt;
+</I>&gt;&gt;<i> &gt;&gt;
+</I>&gt;&gt;<i> &gt;&gt; Thanks in adv,
+</I>&gt;&gt;<i> &gt;&gt; Naruka
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt; _______________________________________________
+</I>&gt;&gt;<i> &gt; Linux-uvc-devel mailing list
+</I>&gt;&gt;<i> &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;&gt;<i> &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt;
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006572.html">[Linux-uvc-devel] luvcview does not record video in avi
+</A></li>
+	<LI>Next message: <A HREF="006576.html">[Linux-uvc-devel] Request to help us in using UVC driver for linux	kernel-2.6.18
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6575">[ date ]</a>
+              <a href="thread.html#6575">[ thread ]</a>
+              <a href="subject.html#6575">[ subject ]</a>
+              <a href="author.html#6575">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

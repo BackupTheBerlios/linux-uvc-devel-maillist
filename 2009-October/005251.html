@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks	046d:0991&quot;
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20again%20%22Logitech%20QuickCam%20Pro%20for%20Notebooks%0A%09046d%3A0991%22&In-Reply-To=%3C200910280029.48436.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005250.html">
+   <LINK REL="Next"  HREF="005233.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks	046d:0991&quot;</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20again%20%22Logitech%20QuickCam%20Pro%20for%20Notebooks%0A%09046d%3A0991%22&In-Reply-To=%3C200910280029.48436.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks	046d:0991&quot;">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Wed Oct 28 00:29:48 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005250.html">[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks	046d:0991&quot;
+</A></li>
+        <LI>Next message: <A HREF="005233.html">[Linux-uvc-devel] Problem with MSI StarCam 370i
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5251">[ date ]</a>
+              <a href="thread.html#5251">[ thread ]</a>
+              <a href="subject.html#5251">[ subject ]</a>
+              <a href="author.html#5251">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Alexey,
+
+On Thursday 22 October 2009 09:40:27 Alexey Fisher wrote:
+&gt;<i> Hi Laurent,
+</I>&gt;<i> thank you for the answer, i thought - no body care. :)
+</I>&gt;<i> 
+</I>&gt;<i> Am Donnerstag, den 22.10.2009, 01:55 +0200 schrieb Laurent Pinchart:
+</I>&gt;<i> &gt; Hi Alexey,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Thursday 15 October 2009 21:00:59 Alexey Fisher wrote:
+</I>&gt;<i> &gt; &gt; I did some simple dirty hack, it prevent webcam from being killed by
+</I>&gt;<i> &gt; &gt; cheese. On other site it make cheese work too.
+</I>&gt;<i> &gt; &gt; Like Paulo said,  the camera is slow and it need more time to make
+</I>&gt;<i> &gt; &gt; thirst start, some time it need 8 seconds on second start it need about
+</I>&gt;<i> &gt; &gt; 2 seconds. If we call STREAMOFF before we get EOF, the camera will die.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Which EOF are you talking about here ? The UVC bit in the video packets
+</I>&gt;<i> &gt; header ? How have you tested that ?
+</I>&gt;<i> 
+</I>&gt;<i> I used &quot;uvcvideo trace=255&quot; and cheese.
+</I>&gt;<i> I talking about &quot;uvc_v4l2_ioctl(VIDIOC_STREAMON)&quot;, &quot;Frame complete (EOF
+</I>&gt;<i> found)&quot; and &quot;uvc_v4l2_ioctl(VIDIOC_STREAMOFF)&quot;.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; &gt; IMHO, the driver should decide if camera ready or not. The easiest way
+</I>&gt;<i> &gt; &gt; is, to add SLOWSTART quirk. Correct way probobly will be to check if
+</I>&gt;<i> &gt; &gt; camera ready or not.
+</I>&gt;<i> &gt; &gt; Any ideas how to make it? Or any other ideas?
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I know, cheese use some bruteforce way to get settings, but the bug in
+</I>&gt;<i> &gt; &gt; cheese make the bug in uvcvideo easy to reproduce.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; It's not a bug in uvcvideo but a bug in the camera. Have you been to
+</I>&gt;<i> &gt; isolate exactly which sequence of ioctls issued by Cheese make the camera
+</I>&gt;<i> &gt; crash ? I'd like more information about that.
+</I>&gt;<i> 
+</I>&gt;<i> I made dmesg of two situations, webcam work and don't work.
+</I>&gt;<i> cheese celling two times &quot;uvc_v4l2_ioctl(VIDIOC_STREAMON)&quot;, thirst one
+</I>&gt;<i> to get the settings and second time to start the record. Between thirst
+</I>&gt;<i> and second pass the time out seems to be too short (even it is 10
+</I>&gt;<i> seconds).
+</I>&gt;<i> 
+</I>&gt;<i> This is working example:
+</I>&gt;<i> [ 2715.842503] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMON)
+</I>&gt;<i> [ 2715.852318] uvcvideo: uvc_v4l2_poll
+</I>&gt;<i> [ 2724.689677] uvcvideo: Frame complete (EOF found).
+</I>&gt;<i> [ 2724.689698] uvcvideo: uvc_v4l2_poll
+</I>&gt;<i> [ 2724.689708] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+</I>&gt;<i> [ 2724.689713] uvcvideo: Dequeuing buffer 0 (3, 3840000 bytes).
+</I>&gt;<i> [ 2724.693157] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+</I>&gt;<i> [ 2724.693164] uvcvideo: Queuing buffer 0.
+</I>&gt;<i> [ 2724.693551] uvcvideo: uvc_v4l2_poll
+</I>&gt;<i> [ 2724.694064] uvcvideo: uvc_v4l2_poll
+</I>&gt;<i> [ 2724.744145] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMOFF)
+</I>&gt;<i> 
+</I>&gt;<i> This is broken:
+</I>&gt;<i> [ 2874.576741] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMON)
+</I>&gt;<i> [ 2874.586236] uvcvideo: uvc_v4l2_poll
+</I>&gt;<i> [ 2884.601319] uvcvideo: uvc_v4l2_poll
+</I>&gt;<i> [ 2884.601412] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMOFF)
+</I>&gt;<i> 
+</I>&gt;<i> I think, if you call VIDIOC_STREAMOFF befor you get &quot;Frame complete (EOF
+</I>&gt;<i> found)&quot; on this camera it will kill it.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; &gt; here is this hack:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; diff --git a/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> &gt; &gt; b/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> &gt; &gt; index f960e8e..fdc7007 100644
+</I>&gt;<i> &gt; &gt; --- a/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> &gt; &gt; +++ b/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> &gt; &gt; @@ -794,7 +794,7 @@ static void uvc_uninit_video(struct uvc_streaming
+</I>&gt;<i> &gt; &gt; *stream, int free_buffers)
+</I>&gt;<i> &gt; &gt; {
+</I>&gt;<i> &gt; &gt; 	struct urb *urb;
+</I>&gt;<i> &gt; &gt; 	unsigned int i;
+</I>&gt;<i> &gt; &gt; -
+</I>&gt;<i> &gt; &gt; +	msleep(5000);
+</I>&gt;<i> &gt; &gt; 	for (i = 0; i &lt; UVC_URBS; ++i) {
+</I>&gt;<i> &gt; &gt; 	urb = stream-&gt;urb[i];
+</I>&gt;<i> &gt; &gt; 	if (urb == NULL)
+</I>&gt;<i> &gt; &gt; @@ -985,7 +985,7 @@ static int uvc_init_video(struct uvc_streaming
+</I>&gt;<i> &gt; &gt; *stream, gfp_t gfp_flags)
+</I>&gt;<i> &gt; &gt; 			return ret;
+</I>&gt;<i> &gt; &gt; 		}
+</I>&gt;<i> &gt; &gt; 	}
+</I>&gt;<i> &gt; &gt; -
+</I>&gt;<i> &gt; &gt; +	msleep(5000);
+</I>&gt;<i> &gt; &gt; 	return 0;
+</I>&gt;<i> &gt; &gt; }
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I hate random sleeps. Really. I'll need more information about the bug,
+</I>&gt;<i> &gt; as well as a simple userspace test application, before making any such
+</I>&gt;<i> &gt; change to the driver.
+</I>&gt;<i> 
+</I>&gt;<i> I made this suggestion to show how to reproduce this bug and how i
+</I>&gt;<i> workaround it. I hope it help. I can't make any program to reproduce it.
+</I>
+Thanks a lot for taking time to investigate the issue. I'll report this to 
+Logitech and try to create a workaround in the uvcvideo driver.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005250.html">[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks	046d:0991&quot;
+</A></li>
+	<LI>Next message: <A HREF="005233.html">[Linux-uvc-devel] Problem with MSI StarCam 370i
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5251">[ date ]</a>
+              <a href="thread.html#5251">[ thread ]</a>
+              <a href="subject.html#5251">[ subject ]</a>
+              <a href="author.html#5251">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

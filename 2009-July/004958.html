@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH 2/2] uvcvideo: Multiple streaming interfaces support
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%202/2%5D%20uvcvideo%3A%20Multiple%20streaming%0A%20interfaces%20support&In-Reply-To=%3C40537.194.3.40.246.1246611920.squirrel%40mail2.esiee.fr%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004956.html">
+   <LINK REL="Next"  HREF="004959.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH 2/2] uvcvideo: Multiple streaming interfaces support</H1>
+    <B>lescopc at esiee.fr</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%202/2%5D%20uvcvideo%3A%20Multiple%20streaming%0A%20interfaces%20support&In-Reply-To=%3C40537.194.3.40.246.1246611920.squirrel%40mail2.esiee.fr%3E"
+       TITLE="[Linux-uvc-devel] [PATCH 2/2] uvcvideo: Multiple streaming interfaces support">lescopc at esiee.fr
+       </A><BR>
+    <I>Fri Jul  3 11:05:20 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004956.html">[Linux-uvc-devel] [PATCH 2/2] uvcvideo: Multiple streaming interfaces support
+</A></li>
+        <LI>Next message: <A HREF="004959.html">[Linux-uvc-devel] [PATCH 2/2] uvcvideo: Multiple streaming interfaces support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4958">[ date ]</a>
+              <a href="thread.html#4958">[ thread ]</a>
+              <a href="subject.html#4958">[ subject ]</a>
+              <a href="author.html#4958">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Ok, I know I know I reply to myself but it might helps someone :)
+I kept looking for an answer and I found one:
+
+<A HREF="http://osdir.com/ml/linux.drivers.uvc.devel/2007-03/msg00005.html">http://osdir.com/ml/linux.drivers.uvc.devel/2007-03/msg00005.html</A>
+
+Basically, I started the streaming with my first webcam. Then, I started
+luvcview with my second webcam, which use MJPG:640:480:30fps and it
+worked.
+So, as Laurent says in the link, it exceeds the bandwidth.
+
+I'll try to change my mencoder command to make it use MJPG (if someone
+know let me know).
+Thank you and Best regards,
+
+
+LESCOP C&#233;dric
+
+
+On Fri, July 3, 2009 10:00, <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">lescopc at esiee.fr</A> wrote:
+&gt;<i> Hi Laurent,
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> The thing is, I am using 2 webcams on 2 different USB ports. I start
+</I>&gt;<i> streaming with the first one at 800x600 at 20fps. Everything works ok.
+</I>&gt;<i>
+</I>&gt;<i> During this, I try to stream from the second one with &quot;mencoder&quot;. I got
+</I>&gt;<i> this error: v4l2: ioctl streamon failed: No space left on device
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> mencoder still runs but skips every single frame. Here what I get from a
+</I>&gt;<i> dmesg:
+</I>&gt;<i> uvcvideo: Failed to query (1) UVC control 10 (unit 2) : -32 (exp. 2).
+</I>&gt;<i> uvcvideo: Failed to submit URB 0 (-28).
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> I must admit I edited one line in your driver, I changed the max URB from
+</I>&gt;<i>  5 to 2 (I know you told me not to :p). But then, I changed it back, I
+</I>&gt;<i> even tried with more URBs and less PACKETs (from 32 to 16), still same
+</I>&gt;<i> error.
+</I>&gt;<i>
+</I>&gt;<i> Do you know how I could solve this space problem?
+</I>&gt;<i> Best regards,
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> LESCOP C&#233;dric
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> On Thu, July 2, 2009 17:41, Laurent Pinchart wrote:
+</I>&gt;<i>
+</I>&gt;&gt;<i> Hi C&#233;dric,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> On Thursday 02 July 2009 17:34:04 <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">lescopc at esiee.fr</A> wrote:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Hello everyone,
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> I am trying to stream with 2 webcams simultaneously so I tried your
+</I>&gt;&gt;&gt;<i> patch. The thing is I am not that good with Linux so.... didn't work.
+</I>&gt;&gt;&gt;<i> Here what I
+</I>&gt;&gt;&gt;<i> did:
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Don't use that patch when streaming from two separate webcams. The
+</I>&gt;&gt;<i> patch is only meant to support cameras that have multiple streaming
+</I>&gt;&gt;<i> interfaces.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Best regards,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Laurent Pinchart
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004956.html">[Linux-uvc-devel] [PATCH 2/2] uvcvideo: Multiple streaming interfaces support
+</A></li>
+	<LI>Next message: <A HREF="004959.html">[Linux-uvc-devel] [PATCH 2/2] uvcvideo: Multiple streaming interfaces support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4958">[ date ]</a>
+              <a href="thread.html#4958">[ thread ]</a>
+              <a href="subject.html#4958">[ subject ]</a>
+              <a href="author.html#4958">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Raw Bayer RGB data from QuickCam Pro 5000?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Raw%20Bayer%20RGB%20data%20from%20QuickCam%20Pro%205000%3F&In-Reply-To=%3C20060524232634.GA11990%40suse.cz%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000516.html">
+   <LINK REL="Next"  HREF="000520.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Raw Bayer RGB data from QuickCam Pro 5000?</H1>
+    <B>Vojtech Pavlik</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Raw%20Bayer%20RGB%20data%20from%20QuickCam%20Pro%205000%3F&In-Reply-To=%3C20060524232634.GA11990%40suse.cz%3E"
+       TITLE="[Linux-uvc-devel] Raw Bayer RGB data from QuickCam Pro 5000?">vojtech at suse.cz
+       </A><BR>
+    <I>Thu May 25 01:26:34 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000516.html">[Linux-uvc-devel] Raw Bayer RGB data from QuickCam Pro 5000?
+</A></li>
+        <LI>Next message: <A HREF="000520.html">[Linux-uvc-devel] Raw Bayer RGB data from QuickCam Pro 5000?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#518">[ date ]</a>
+              <a href="thread.html#518">[ thread ]</a>
+              <a href="subject.html#518">[ subject ]</a>
+              <a href="author.html#518">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed, May 24, 2006 at 07:09:52PM -0400, David Moore wrote:
+
+&gt;<i> &gt; Still, it's hard to call it an undocumented feature, because the
+</I>&gt;<i> &gt; firmware in the iBot uP only can shuffle data from the video bus to USB,
+</I>&gt;<i> &gt; and do I2C reads/writes to the sensor chip, nothing else.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; From there it's just setting up the sensor to any mode the sensor
+</I>&gt;<i> &gt; documentation allows, and that includes the Bayer raw RGB mode.
+</I>&gt;<i> 
+</I>&gt;<i> That's neat.  I didn't realize there was a webcam out there with such
+</I>&gt;<i> low-level access to the hardware.
+</I>
+Anything based on the reference OmniVision USB2 design is like that.
+That includes Trust <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">SpaceC at m</A> 380, for example. But even that one is
+rather hard to find nowadays.
+
+The problem with this design was that it was released too early - in the
+days USB2 was not widely available. And since the design can't do
+compression, it's results on USB1.1 are rather pathetic.
+
+For that reason, both the iBot2 and the Trust 380 are out of production
+now, replaced by designs based on the Ali M5603c (for which a Linux
+driver is still missing).
+
+&gt;<i> &gt; Linux enforces bandwidth allocation only optionally, and even when it
+</I>&gt;<i> &gt; does, bulk and interrupt transfers will fill all unused bandwidth even
+</I>&gt;<i> &gt; if it was pre-allocated.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> 
+</I>&gt;<i> That's true.  I was mostly thinking of the case where you might want to
+</I>&gt;<i> have two identical cameras running on the same USB bus.  The Quickcam
+</I>&gt;<i> Pro 5000 unfortunately takes more than 50% of the isochronous bandwidth
+</I>&gt;<i> when it's running in uncompressed mode, so you're limited to one camera
+</I>&gt;<i> at a time.
+</I> 
+That's bad. More than one EHCI controller is still an exception on
+modern mainboards. Maybe I'll be able to cheat a little and allocate
+less for the camera. 
+
+If it can do just 640x480 YUYV, two streams should fit on one USB2 bus.
+(that's 2*18=36 MB/sec, that should still fit into the 480 Mbit/sec,
+even with bitstuffing).
+
+-- 
+Vojtech Pavlik
+Director SuSE Labs
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000516.html">[Linux-uvc-devel] Raw Bayer RGB data from QuickCam Pro 5000?
+</A></li>
+	<LI>Next message: <A HREF="000520.html">[Linux-uvc-devel] Raw Bayer RGB data from QuickCam Pro 5000?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#518">[ date ]</a>
+              <a href="thread.html#518">[ thread ]</a>
+              <a href="subject.html#518">[ subject ]</a>
+              <a href="author.html#518">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

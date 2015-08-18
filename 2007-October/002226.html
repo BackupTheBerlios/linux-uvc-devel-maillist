@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] driver installation in Debian
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20driver%20installation%20in%20Debian&In-Reply-To=%3C20071004091527.GB4112%40fluff.lan%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002234.html">
+   <LINK REL="Next"  HREF="002231.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] driver installation in Debian</H1>
+    <B>Richard Atterer</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20driver%20installation%20in%20Debian&In-Reply-To=%3C20071004091527.GB4112%40fluff.lan%3E"
+       TITLE="[Linux-uvc-devel] driver installation in Debian">richard at 2007.atterer.net
+       </A><BR>
+    <I>Thu Oct  4 11:15:27 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002234.html">[Linux-uvc-devel] driver installation in Debian
+</A></li>
+        <LI>Next message: <A HREF="002231.html">[Linux-uvc-devel] Fwd: Re:  kopete
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2226">[ date ]</a>
+              <a href="thread.html#2226">[ thread ]</a>
+              <a href="subject.html#2226">[ subject ]</a>
+              <a href="author.html#2226">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+
+On Thu, Oct 04, 2007 at 03:29:55AM -0500, Russell L. Harris wrote:
+&gt;<i> I am confused.  I am running Debian testing (&quot;Lenny&quot;), and, if
+</I>&gt;<i> possible, I would like to install the linux-uvc drivers in accordance
+</I>&gt;<i> with Debian protocol.
+</I>&gt;<i> 
+</I>&gt;<i> %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+</I>&gt;<i> 
+</I>&gt;<i> I used aptitude to install the Debian package linux-uvc-source.  The
+</I>&gt;<i> installation provided the file /usr/src/linux-uvc.tar.bz2 , which is
+</I>&gt;<i> expanded with bunzip2 and tar, providing the following files:
+</I>&gt;<i> 
+</I>&gt;<i>     /usr/src/modules/linux-uvc/debian/rules
+</I>&gt;<i>     /usr/src/modules/linux-uvc/Makefile
+</I>&gt;<i>     /usr/src/modules/linux-uvc/uvcvideo.h
+</I>[...]
+
+&gt;<i> It appears to me that, once I discover the proper Debian approach to
+</I>&gt;<i> installation of linux-uvc, I can update the drivers simply by copying
+</I>&gt;<i> into /usr/src/modules/linux-uvc/ the latest source files obtained via:
+</I>&gt;<i> 
+</I>&gt;<i>     # svn checkout <A HREF="svn://svn.berlios.de/linux-uvc/linux-uvc/trunk">svn://svn.berlios.de/linux-uvc/linux-uvc/trunk</A> linux-uvc
+</I>
+Hm, this might indeed work, but it's not really supported, so if upstream 
+makes fundamental changes, things could break. First try to get things 
+working with the Debian-supplied source - at the moment, the one in 
+testing/unstable is based on SVN revision 120, which is pretty recent.
+
+Basically, there are two ways of having the driver compiled and turned into 
+a .deb for installation. Myself, I hardly ever use module-assistant, as I 
+compile my own kernels. I create the driver packages together with the 
+kernel package:
+
+$ cd /usr/src/linux-2.6.22
+$ make-kpkg --revision foobar.071004 kernel_image modules_image
+(you may need to add an --initrd switch if you want an initrd kernel.)
+
+The second way is module-assistant. It is important to note that in neither 
+case, a manual &quot;make&quot;/&quot;make install&quot; is needed by you, the tools do this 
+themselves.
+
+&gt;<i> Second, the module uvcvideo.ko is to be removed from /lib/modules/ , so 
+</I>&gt;<i> that the module is not loaded automatically.  (This may be a problem with 
+</I>&gt;<i> Debian, because /lib/modules/ has several subdirectories, and the 
+</I>&gt;<i> structure of /lib/modules/ is not immediately apparent to me.)
+</I>
+If you choose to go with Debian packages, never do anything manually in 
+those directories (same goes for /etc/modprobe.conf)! When it is installed, 
+the package will take care of setting everything up, so that the driver is 
+loaded automatically when you plug in the camera.
+
+&gt;<i> Adding to my confusion is the instruction given in the file
+</I>&gt;<i> /usr/src/modules/linux-uvc/debian/README.Debian , which states that
+</I>&gt;<i> the module-assistant tool should be used to install linux-uvc, using
+</I>&gt;<i> the commands:
+</I>&gt;<i> 
+</I>&gt;<i>     # module-assistant prepare
+</I>&gt;<i> 
+</I>&gt;<i>     # module-assistant auto-install linux-uvc
+</I>
+The idea with module-assistant is: You have installed a Debian kernel 
+package, but a particular driver is not available in pre-compiled form. 
+AFAIK, the two module-assistant commands above take care of *all* steps to 
+get this driver compiled and installed: Downloading and installing the 
+source code (in the form of the linux-uvc-source package), unpacking, 
+configuring, compiling, creating a .deb, installing that .deb.
+
+Cheers,
+
+  Richard
+
+-- 
+  __   _
+  |_) /|  Richard Atterer     |  GnuPG key: 888354F7
+  | \/&#175;|  <A HREF="http://atterer.net">http://atterer.net</A>  |  08A9 7B7D 3D13 3EF2 3D25  D157 79E6 F6DC 8883 54F7
+  &#175; '` &#175;
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002234.html">[Linux-uvc-devel] driver installation in Debian
+</A></li>
+	<LI>Next message: <A HREF="002231.html">[Linux-uvc-devel] Fwd: Re:  kopete
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2226">[ date ]</a>
+              <a href="thread.html#2226">[ thread ]</a>
+              <a href="subject.html#2226">[ subject ]</a>
+              <a href="author.html#2226">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

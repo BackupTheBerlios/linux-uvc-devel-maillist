@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Control the status LED?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Control%20the%20status%20LED%3F&In-Reply-To=%3C200710081319.08032.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002256.html">
+   <LINK REL="Next"  HREF="002258.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Control the status LED?</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Control%20the%20status%20LED%3F&In-Reply-To=%3C200710081319.08032.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Control the status LED?">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Oct  8 13:19:07 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002256.html">[Linux-uvc-devel] Control the status LED?
+</A></li>
+        <LI>Next message: <A HREF="002258.html">[Linux-uvc-devel] Control the status LED?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2257">[ date ]</a>
+              <a href="thread.html#2257">[ thread ]</a>
+              <a href="subject.html#2257">[ subject ]</a>
+              <a href="author.html#2257">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi J&#246;rg,
+
+On Monday 08 October 2007 13:08, J&#246;rg Hermsdorf wrote:
+&gt;<i> &gt; &gt; &gt; does the uvcvideo module export some controls that can be set via the
+</I>&gt;<i> &gt; &gt; &gt; sysfs filesystem? I'm looking for a way to toggle the status LED on
+</I>&gt;<i> &gt; &gt; &gt; and offf. Or is this directly controlled my the hardware?
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; My cam is the Logitech QuickCam Sphere MP.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; The LED is directly controlled by the hardware. There is no way to turn
+</I>&gt;<i> &gt; &gt; it on or off from the computer.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; What Laurent said is partially true, the LED is by default controlled by
+</I>&gt;<i> &gt; the hardware. However, there is a way of influencing the behavior of the
+</I>&gt;<i> &gt; LED. There is an extension unit control that allows to set the LED to
+</I>&gt;<i> &gt; states like On, Off, Blinking, and Auto. The latter one is just the
+</I>&gt;<i> &gt; default.
+</I>&gt;<i>
+</I>&gt;<i> If I understand correctly, things like controlling the LED are vendor
+</I>&gt;<i> specific and should be implemented via the dynamic controls API now!?
+</I>
+That's right.
+
+&gt;<i> So the goal is that the uvcvideo module just implements the UVC standard and
+</I>&gt;<i> does not contain the code to control certain vendor specific extension
+</I>&gt;<i> units?
+</I>
+Yep.
+
+&gt;<i> So in the end, there's no more need to patch and recompile uvcvideo 
+</I>&gt;<i> if someone adds some vendor specific functionality (e.g. like controlling
+</I>&gt;<i> the LED)?
+</I>
+Exactly. Hardcoding all vendor-specific controls in the driver would soon 
+become a maintenance nightmare. As most controls are quite simple, I decided 
+to go for a userspace API that allows vendors to register new controls are 
+runtime.
+
+&gt;<i> I'm not sure if I understand the concept of the dynctl api correctly. Is it
+</I>&gt;<i> correct, that the dynctl API allows 3rd parties to register additional
+</I>&gt;<i> ioctls with the uvcvideo module which are then available to applications?
+</I>
+That's right. 3rd parties can register new UVC controls and optionally map 
+them to V4L2 controls. The new V4L2 controls are then available to all V4L2 
+applications.
+
+The V4L2 mapping is optional. The API allows applications to access UVC 
+controls directly. Mappings are used when the controls make sense at the V4L2 
+level (pan/tilt for instance). There is no point in mapping a vendor-specific 
+UVC firmware update control to V4L2.
+
+&gt;<i> Does the dynctl api allows this additional functionality to be exported via
+</I>&gt;<i> the sysfs filesystem, too? Or would this require an additional sub-module
+</I>&gt;<i> e.g. uvcvideo-logitech.ko which exports this (and only this) additional
+</I>&gt;<i> functionality via sysfs?
+</I>
+No sysfs exports exists yet. What exactly do you want to export ? V4L2 
+controls ? UVC controls ? How do you handle permissions on those ?
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002256.html">[Linux-uvc-devel] Control the status LED?
+</A></li>
+	<LI>Next message: <A HREF="002258.html">[Linux-uvc-devel] Control the status LED?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2257">[ date ]</a>
+              <a href="thread.html#2257">[ thread ]</a>
+              <a href="subject.html#2257">[ subject ]</a>
+              <a href="author.html#2257">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

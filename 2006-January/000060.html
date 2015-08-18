@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcview videograbber with preview available for testing
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcview%20videograbber%20with%20preview%20available%20for%20testing&In-Reply-To=%3C20060109101354.GN15519%40sd291.sivit.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000058.html">
+   <LINK REL="Next"  HREF="000061.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcview videograbber with preview available for testing</H1>
+    <B>Luc Saillard</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcview%20videograbber%20with%20preview%20available%20for%20testing&In-Reply-To=%3C20060109101354.GN15519%40sd291.sivit.org%3E"
+       TITLE="[Linux-uvc-devel] uvcview videograbber with preview available for testing">luc at saillard.org
+       </A><BR>
+    <I>Mon Jan  9 11:13:54 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000058.html">[Linux-uvc-devel] uvcview videograbber with preview available for testing
+</A></li>
+        <LI>Next message: <A HREF="000061.html">[Linux-uvc-devel] uvcview videograbber with preview available for testing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#60">[ date ]</a>
+              <a href="thread.html#60">[ thread ]</a>
+              <a href="subject.html#60">[ subject ]</a>
+              <a href="author.html#60">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Mon, Jan 09, 2006 at 11:04:59AM +0100, Laurent Pinchart wrote:
+&gt;<i> Hi Luc,
+</I>&gt;<i> 
+</I>&gt;<i> &gt; I hope that gnomemeeting is link to the jpeg library or something like that.
+</I>&gt;<i> 
+</I>&gt;<i> I don't think it will be a problem to link to libjpeg (even if Damien would 
+</I>&gt;<i> rather avoid it if possible). Remember that the MJPEG data doesn't contain 
+</I>&gt;<i> the Huffman tables, so you need to add them manually (see the Qt patch I 
+</I>&gt;<i> posted on this list).
+</I>
+Yes, I've made it to uncompress mjpeg data from an avi, and mov file for my
+gallery program (photon) written in python. I known it's not the best langage
+to play with bitstream, but it's working i recreate a full jpeg header from
+the stream. Else, i dont' known how to decode jpeg data + huffman table
+without the libjpeg. I'll look Qt. For now, i only do conversion for the YVY2
+format.
+ 
+&gt;<i> Why did you need to modify the driver ?
+</I>
+To support ENUM_STD. Only to not return -EINVAL. But it failed somewhere
+after that ... This is why i don't send the patch. Here the patch use:
+
+/mnt/linux/srcs/usb/uvc/linux-uvc&gt;LC_ALL=C svn diff
+Index: uvcvideo.c
+===================================================================
+--- uvcvideo.c  (revision 8)
++++ uvcvideo.c  (working copy)
+@@ -2071,12 +2071,34 @@
+                return uvc_video_enable(video, 0);
+        }
+ 
+-       /* Analog video standards make no sense for digital cameras. */
+-       case VIDIOC_ENUMSTD:
+-       case VIDIOC_QUERYSTD:
++       /* Analog video standards make no sense for digital cameras, but some
++         * application need it (mplayer for example) */
+        case VIDIOC_G_STD:
++       {
++         v4l2_std_id *std = arg;
++         *std = V4L2_STD_UNKNOWN;
++         return 0;
++       }
++
+        case VIDIOC_S_STD:
++       {
++         v4l2_std_id *std = arg;
++         if (*std != V4L2_STD_UNKNOWN)
++           return -EINVAL;
++         return 0;
++       }
+ 
++       case VIDIOC_ENUMSTD:
++       {
++         struct v4l2_standard *std = arg;
++         if (std-&gt;index != 0)
++           return -EINVAL;
++         std-&gt;id = V4L2_STD_UNKNOWN;
++         strncpy(std-&gt;name, &quot;webcam&quot;, sizeof(std-&gt;name));
++         return 0;
++       }
++       case VIDIOC_QUERYSTD:
++
+        case VIDIOC_OVERLAY:
+ 
+        case VIDIOC_ENUMAUDIO:
+
+Wait ... i just receved a patch for pwc, to add these lines after the
+strncpy.
+                                                                                                                  
+                std-&gt;frameperiod.numerator = 1;                 // NEW                                            
+                std-&gt;frameperiod.denominator = pdev-&gt;vframes;   // NEW  
+
+Luc
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000058.html">[Linux-uvc-devel] uvcview videograbber with preview available for testing
+</A></li>
+	<LI>Next message: <A HREF="000061.html">[Linux-uvc-devel] uvcview videograbber with preview available for testing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#60">[ date ]</a>
+              <a href="thread.html#60">[ thread ]</a>
+              <a href="subject.html#60">[ subject ]</a>
+              <a href="author.html#60">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

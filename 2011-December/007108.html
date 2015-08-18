@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Webcam stops other USB devices (ehci_hcd: HC died; cleaning up)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20stops%20other%20USB%20devices%20%28ehci_hcd%3A%20HC%0A%20died%3B%20cleaning%20up%29&In-Reply-To=%3C4ED88ABD.9060307%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007107.html">
+   <LINK REL="Next"  HREF="007109.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Webcam stops other USB devices (ehci_hcd: HC died; cleaning up)</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20stops%20other%20USB%20devices%20%28ehci_hcd%3A%20HC%0A%20died%3B%20cleaning%20up%29&In-Reply-To=%3C4ED88ABD.9060307%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] Webcam stops other USB devices (ehci_hcd: HC died; cleaning up)">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Fri Dec  2 09:22:21 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007107.html">[Linux-uvc-devel] Webcam stops other USB devices (ehci_hcd: HC died;	cleaning up)
+</A></li>
+        <LI>Next message: <A HREF="007109.html">[Linux-uvc-devel] Webcam stops other USB devices (ehci_hcd: HC died; cleaning up)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7108">[ date ]</a>
+              <a href="thread.html#7108">[ thread ]</a>
+              <a href="subject.html#7108">[ subject ]</a>
+              <a href="author.html#7108">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Hi,
+
+becouse of this part i assume it is most likely controller driver issue:
+
+&gt;<i> Dec  1 15:55:24 ossietzky kernel: [  355.610354] ehci_hcd
+</I>0000:00:12.2: force halt; handshake ffffc90000326424 00004000 00000000
+- -&gt; -110
+&gt;<i> Dec  1 15:55:24 ossietzky kernel: [  355.610366] ehci_hcd
+</I>0000:00:12.2: HC died; cleaning up
+
+there is nothing we can do about it. But before you go to maeling list
+of usb developers, try to do fallowing:
+- - check if it is regression, try older kernel. i do not know how about
+you distribution but for example here you will find some precompiled
+kernels:
+<A HREF="http://kernel.ubuntu.com/~kernel-ppa/mainline/">http://kernel.ubuntu.com/~kernel-ppa/mainline/</A>
+
+- - if it is regression should learn how to compile  kernel by your self
+and do &quot;git bisect&quot;. So if you will be able to provide exact patch of
+regression, you bug will be fixed really soon.
+
+- - you need to know, devs are not magics, no body can make better
+diagnostic of your computer then you.
+
+- - and try to disable usb aoutosuspend, may be the problem is not
+really hard :)
+
+sudo sh -c &quot;echo  -1 &gt; /sys/module/usbcore/parameters/autosuspend&quot;
+
+or may be this:
+
+sudo sh -c &quot;echo  -1 &gt; /sys/module/usbcore/parameters/old_scheme_first&quot;
+
+
+if some thing of this will help, then you should inform usb devs. and
+after this i personally will love to know if it works and how you
+fixed it.
+
+On 01.12.2011 19:21, Michael Below wrote:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> today I decided to get a webcam and got the above mentioned error
+</I>&gt;<i> with two different uvc-supported models (Logitech C270, MS HD
+</I>&gt;<i> 5000).
+</I>&gt;<i> 
+</I>&gt;<i> I have a HP dc5850 microtower, it has an AMD Phenom II with AMD780 
+</I>&gt;<i> chipset (Radeon 3100 integrated graphics). I am running Debian
+</I>&gt;<i> testing, kernel 3.1. Each time I plugged the Logitech C270 into the
+</I>&gt;<i> system, two other USB devices (Samsung Printer, DLink wireless)
+</I>&gt;<i> stopped working. I only got the other devices working again through
+</I>&gt;<i> a reboot, simple unloading/reloading of the modules wouldn't help.
+</I>&gt;<i> Most of the times also the USB mouse (MS Wireless 5000) would quit
+</I>&gt;<i> (the keyboard is PS/2). I installed the webcam successfully on
+</I>&gt;<i> Windows 7, but when booting into Linux the USB devices stopped
+</I>&gt;<i> working.
+</I>&gt;<i> 
+</I>&gt;<i> I returned the Logitech and got a Microsoft HD-5000 webcam instead.
+</I>&gt;<i> I installed it in Windows 7 and rebooted to Linux. I was able to
+</I>&gt;<i> make a test call with Skype on Linux and see my test image there,
+</I>&gt;<i> but when I quit Skype the USB devices stopped working, and
+</I>&gt;<i> rebooting with the webcam attached didn't help, i had to reboot
+</I>&gt;<i> again without the webcam.
+</I>&gt;<i> 
+</I>&gt;<i> There is a similar problem described here, but without a solution: 
+</I>&gt;<i> <A HREF="http://lkml.org/lkml/2011/4/25/22">http://lkml.org/lkml/2011/4/25/22</A>
+</I>&gt;<i> 
+</I>&gt;<i> Looking at the logs I suspect this might be some kind of
+</I>&gt;<i> interaction between my wireless adapter (D-Link DWL-G122, Ralink
+</I>&gt;<i> RT73-based) and the webcams, maybe involving the EHCI platform? Is
+</I>&gt;<i> there somebody else I should tell about this?
+</I>&gt;<i> 
+</I>&gt;<i> I am attaching parts of my kern.log. If you need more info, I am
+</I>&gt;<i> glad to give it...
+</I>&gt;<i> 
+</I>&gt;<i> Cheers
+</I>&gt;<i> 
+</I>&gt;<i> Michael
+</I>
+
+- -- 
+Regards,
+Alexey
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - <A HREF="http://enigmail.mozdev.org/">http://enigmail.mozdev.org/</A>
+
+iEYEARECAAYFAk7YirkACgkQw8E0jNwoJm+UkwCeKl6bYIr+GlF4rLe0qTalinzZ
+3v0Anic1Kwgxalfjfo2ir66Vo9qTP8Ex
+=t/iR
+-----END PGP SIGNATURE-----
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007107.html">[Linux-uvc-devel] Webcam stops other USB devices (ehci_hcd: HC died;	cleaning up)
+</A></li>
+	<LI>Next message: <A HREF="007109.html">[Linux-uvc-devel] Webcam stops other USB devices (ehci_hcd: HC died; cleaning up)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7108">[ date ]</a>
+              <a href="thread.html#7108">[ thread ]</a>
+              <a href="subject.html#7108">[ subject ]</a>
+              <a href="author.html#7108">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

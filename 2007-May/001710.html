@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Issues with the Linux UVC driver (Was &quot;Where	is V4L headed ?&quot;)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Issues%20with%20the%20Linux%20UVC%20driver%20%28Was%20%22Where%0A%09is%20V4L%20headed%20%3F%22%29&In-Reply-To=%3Cd9def9db0705080207v6d4b05bfn7c18da1df9850884%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001709.html">
+   <LINK REL="Next"  HREF="001711.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Issues with the Linux UVC driver (Was &quot;Where	is V4L headed ?&quot;)</H1>
+    <B>Markus Rechberger</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Issues%20with%20the%20Linux%20UVC%20driver%20%28Was%20%22Where%0A%09is%20V4L%20headed%20%3F%22%29&In-Reply-To=%3Cd9def9db0705080207v6d4b05bfn7c18da1df9850884%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Issues with the Linux UVC driver (Was &quot;Where	is V4L headed ?&quot;)">mrechberger at gmail.com
+       </A><BR>
+    <I>Tue May  8 11:07:43 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001709.html">[Linux-uvc-devel] Issues with the Linux UVC driver (Was &quot;Where	is V4L headed ?&quot;)
+</A></li>
+        <LI>Next message: <A HREF="001711.html">[Linux-uvc-devel] Issues with the Linux UVC driver (Was &quot;Where	is V4L headed ?&quot;)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1710">[ date ]</a>
+              <a href="thread.html#1710">[ thread ]</a>
+              <a href="subject.html#1710">[ subject ]</a>
+              <a href="author.html#1710">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 5/8/07, Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+&gt;<i> Hi Greg,
+</I>&gt;<i>
+</I>&gt;<i> On Tuesday 08 May 2007, Greg KH wrote:
+</I>&gt;<i> &gt; On Mon, May 07, 2007 at 09:53:18AM +0200, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; &gt; On Sunday 06 May 2007, Markus Rechberger wrote:
+</I>&gt;<i> &gt; &gt; &gt; I defined the boundaries by looking at the packet size, there was no
+</I>&gt;<i> &gt; &gt; &gt; packet which had the length 0, since I had to do a fast solution I
+</I>&gt;<i> &gt; &gt; &gt; just looked at the packet size which was smaller than the average
+</I>&gt;<i> &gt; &gt; &gt; packets, this indicated a new frame for me.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I don't like heuristics. This is certainly not a proper solution. Either
+</I>&gt;<i> &gt; &gt; all URBs except the last one are full (with possibly a zero sized URB if
+</I>&gt;<i> &gt; &gt; the payload size is a multiple of the URB size), or they are not.
+</I>&gt;<i> &gt; &gt; According to the USB 2.0 specification this should be the case. I'll test
+</I>&gt;<i> &gt; &gt; this on the only bulk device I own.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; However this doesn't work well with 176x144 the driver cuts around 20
+</I>&gt;<i> &gt; &gt; &gt; lines ontop of the video.
+</I>&gt;<i> &gt; &gt; &gt; I'll also have a closer look at it tomorrow.
+</I>&gt;<i> &gt; &gt; &gt; Regarding the specs every frame should start with some frameheaders.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Every payload starts with a payload header. This is why I need a reliable
+</I>&gt;<i> &gt; &gt; way to detect payload boundaries.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I don't understand why you need to know this.  The USB host controller
+</I>&gt;<i> &gt; will handle the zero length packets for you, if needed, and it will also
+</I>&gt;<i> &gt; divide up your bulk urb into the proper sizes for you, depending on the
+</I>&gt;<i> &gt; hardware size of the endpoint.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; And you also already know the size of the bulk endpoint in your driver,
+</I>&gt;<i> &gt; if you want to restrict your urb size to that, however, for decent
+</I>&gt;<i> &gt; speeds, I would not recommend doing this, but instead, letting the
+</I>&gt;<i> &gt; hardware divide up the urb for you into smaller pieces, filling the
+</I>&gt;<i> &gt; hardware pipeline up properly.
+</I>&gt;<i>
+</I>&gt;<i> The issue here is memory usage. The device which triggered all this discussion
+</I>&gt;<i> is a webcam using bulk payloads of 2.7MB, which is quite a lot for memory
+</I>&gt;<i> constrained hosts. Instead of submitting a 2.7MB URB which would then be
+</I>&gt;<i> divided in 512 bytes packets by the USB host controller, Markus adviced to
+</I>&gt;<i> use smaller URBs (a few tens or hundreds of kilobytes). Those URBs would also
+</I>&gt;<i> be divided in 512 bytes packets by the USB host controller.
+</I>&gt;<i>
+</I>&gt;<i> When submitting URBs smaller than the maximum payload size, the problem that
+</I>&gt;<i> arises is that I need a way to detect payload boundaries. This was easy with
+</I>&gt;<i> payload-sized URBs, as a complete payload would be containted in a single
+</I>&gt;<i> URB, but becomes a bit more complex for smaller URBs. If the payload actual
+</I>&gt;<i> size (which can be smaller than the payload maximum size reported by the
+</I>&gt;<i> device for variable size payloads) is not a multiple of the URB size, the
+</I>&gt;<i> last URB of a payload will have a smaller size. In the other case, I was
+</I>&gt;<i> wondering if the driver we would receive an empty URB at the end of the
+</I>&gt;<i> payload.
+</I>&gt;<i>
+</I>&gt;<i> I know that drivers usually submit URBs big enough to contain a single
+</I>&gt;<i> payload. However, with this buggy device, the payload size is too big for
+</I>&gt;<i> some memory constrained hosts.
+</I>&gt;<i>
+</I>&gt;<i> Do you think the device should be considered broken in that it does require
+</I>&gt;<i> lots of memory, or is the &quot;split bulk URB&quot; approach viable ?
+</I>&gt;<i>
+</I>
+Hi Laurent,
+
+I wouldn't consider it as broken since that device works with vmware
+in windows, any time.
+As far as I captured the usbbus in windows the Urbs are also smaller in windows.
+The 2.7 MB constraint is a result of 1280x1024x2 (YUY2), so the
+payload would be 2.7 MB according to how it was done initially.
+Even though, the requested videosize in any case was 176x144x2, so
+only 50688 bytes would effectivly be used.
+The 2.7 mb constraint was read from the uvc config space, so there's
+very likely a way to do it right by allocating NR packets * max packet
+size for each urb. MS uvc driver works with that device in USB 1.1 and
+USB 2.0 mode, where USB 1.1 introduces mjpeg interfaces.
+
+(beside that I haven't tested the latest patch yet, but will do today)
+
+thanks,
+Markus
+
+
+&gt;<i> Best regards,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i>
+</I>
+
+-- 
+Markus Rechberger
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001709.html">[Linux-uvc-devel] Issues with the Linux UVC driver (Was &quot;Where	is V4L headed ?&quot;)
+</A></li>
+	<LI>Next message: <A HREF="001711.html">[Linux-uvc-devel] Issues with the Linux UVC driver (Was &quot;Where	is V4L headed ?&quot;)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1710">[ date ]</a>
+              <a href="thread.html#1710">[ thread ]</a>
+              <a href="subject.html#1710">[ subject ]</a>
+              <a href="author.html#1710">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

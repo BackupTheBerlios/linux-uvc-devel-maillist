@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20suyin%20crystal%20eye%20webcam%20064e%3Aa103%20not%20working&In-Reply-To=%3C200906100155.05881.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004868.html">
+   <LINK REL="Next"  HREF="004873.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20suyin%20crystal%20eye%20webcam%20064e%3Aa103%20not%20working&In-Reply-To=%3C200906100155.05881.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Jun 10 01:55:05 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004868.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+        <LI>Next message: <A HREF="004873.html">[Linux-uvc-devel] suyin 1.3 mp not listed
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4870">[ date ]</a>
+              <a href="thread.html#4870">[ thread ]</a>
+              <a href="subject.html#4870">[ subject ]</a>
+              <a href="author.html#4870">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Bruce,
+
+On Tuesday 09 June 2009 19:12:28 bruce m beach wrote:
+&gt;<i>
+</I>&gt;<i> &gt; If the camera doesn't set the EOF bit and doesn't toggle the FID bit
+</I>&gt;<i> &gt; there's very little I can do. Without any frame boundary information
+</I>&gt;<i> &gt; the driver can't synchronize itself to the video stream. I'm really
+</I>&gt;<i> &gt; puzzled by how this camera can work at all. Your last e-mail showed
+</I>&gt;<i> &gt; that it toggled the FID bit once from 0 to 1 and left it at 1 forever
+</I>&gt;<i> &gt; after. Is my understanding correct ?
+</I>&gt;<i>
+</I>&gt;<i> 100% correct. But don't despair of the republic just yet. Right now
+</I>&gt;<i> the best you can do is just give me your insights and suggestions. I'm
+</I>&gt;<i> going to continue working on this thing. I currently believe that it
+</I>&gt;<i> is a UVC-compliant device (complete with working FID and EOF bits) but
+</I>&gt;<i> that it is not being set up correctly and is streaming in a mode that
+</I>&gt;<i> is for diagnostics or some undocumented mode.
+</I>
+I've learnt with time that all kinds of weird behaviours are possible. Vendors 
+tend to be very imaginative when it comes to implementing bugs :-)
+
+&gt;<i> I spent a couple of days documenting the lsusb listing and everything points
+</I>&gt;<i> to it being UVC-compliant. Now what I would really like to know is if I'm
+</I>&gt;<i> right about the following:
+</I>&gt;<i>
+</I>&gt;<i>   If there is a stream of mjpeg payloads coming in, whether or not
+</I>&gt;<i> we can sync them, we still should be able to detect things like
+</I>&gt;<i>
+</I>&gt;<i>             M_SOF0, M_SOI, M_EOI ...
+</I>&gt;<i>
+</I>&gt;<i> in the stream, yet  when I scan the packets I get messages like
+</I>&gt;<i>
+</I>&gt;<i>                 lapsystemx kernel: uvcvideo: doing scan
+</I>&gt;<i>                 lapsystemx last message repeated 4360 times
+</I>&gt;<i>
+</I>&gt;<i> &quot;scan&quot; just searches any packet greater than the header size
+</I>&gt;<i> (typically 12) and if it finds 0xff it prints out the preceding
+</I>&gt;<i> and following byte. (in case there is some endianess lurking about)
+</I>&gt;<i> I can't believe that 4360 payloads come in whithout any jpeg
+</I>&gt;<i> information at all. If this is the case what are these packets?
+</I>
+Good question. Could you dump them ? You could give usbmon a try to dump USB 
+traffic.
+
+&gt;<i> Are there other quick tests that I could try in case the device is saying
+</I>&gt;<i> that it is putting out mjpeg packets but is really putting out another
+</I>&gt;<i> format?
+</I>
+If the device outputs YUYV instead of MJPEG we'll really need a way to 
+synchronize on frame boundaries. I'm not sure it's worth it trying to analyze 
+the data format before getting proper synchronization information.
+
+&gt;<i> The other thing I am wondering is what is the format of the *.raw files that
+</I>&gt;<i> luvcview creates. Are they more or less jpeg files (assuming this particular
+</I>&gt;<i> case of a webcam doing mjepg streaming)
+</I>
+I suppose they're just raw frames of data as received from the driver without 
+any header.
+
+&gt;<i> If I toggle the video-&gt;last_fid every time a packet comes in it gives me a
+</I>&gt;<i> convenient way of sending this data to user-land and luvcview then can write
+</I>&gt;<i> the *.raw files which I can the examine so currently information on these
+</I>&gt;<i> files is helpful.
+</I>
+Be careful that the &quot;frame&quot; rate could get quite high, and luvcview could then 
+loose frames.
+
+Best regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004868.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+	<LI>Next message: <A HREF="004873.html">[Linux-uvc-devel] suyin 1.3 mp not listed
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4870">[ date ]</a>
+              <a href="thread.html#4870">[ thread ]</a>
+              <a href="subject.html#4870">[ subject ]</a>
+              <a href="author.html#4870">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

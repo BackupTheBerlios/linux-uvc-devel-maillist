@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Pan and Tilt controls
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Pan%20and%20Tilt%20controls&In-Reply-To=%3C78877a450902072006q7ffc2f73o8381e70411873b4f%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004536.html">
+   <LINK REL="Next"  HREF="004534.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Pan and Tilt controls</H1>
+    <B>Gilles GIGAN</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Pan%20and%20Tilt%20controls&In-Reply-To=%3C78877a450902072006q7ffc2f73o8381e70411873b4f%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Pan and Tilt controls">gilles.gigan at gmail.com
+       </A><BR>
+    <I>Sun Feb  8 05:06:25 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004536.html">[Linux-uvc-devel] How to tell the difference of single/multiple	bulk transfer?
+</A></li>
+        <LI>Next message: <A HREF="004534.html">[Linux-uvc-devel] Pan and Tilt controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4533">[ date ]</a>
+              <a href="thread.html#4533">[ thread ]</a>
+              <a href="subject.html#4533">[ subject ]</a>
+              <a href="author.html#4533">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+I have checked out the latest v4l code from the mercurial repository on
+linuxtv.org, and successfully compiled and loaded the uvcvideo module, which
+I tested with a logitech quickcam sphere af (046d:0994). I have comments and
+questions regarding the V4L2 controls to pilot the pan and tilt motors:
+After mapping the dynamic controls (with uvcdynctrl), the following controls
+become available:
+- Pan Reset: min: 0, max: 1, step: 1, type: integer
+- Tilt Reset: min 0, max: 1, step: 0, type: integer (note the step value of
+0 which should really be 1 here)
+- Pan (Relative): min: 4480, max: 4480, step: 1, type: integer
+- Tilt (Relative): min: 1920, max: 1920, step: 1, type: integer
+- Pan/tilt Reset: min: 0, max: 3, step: 1, type: integer
+Creating a user interface based on these controls is quite hard because of
+their types and step values:
+Trying to set a value of 0 on any of the Reset controls fails, even though 0
+is reported as an acceptable value.
+Setting a value of 1 on either Pan (Relative) or Tilt (Relative) succeeds
+but results in no movement.
+Keeping the GUI up-to-date is not possible because calling
+ioctl(VIDIOC_G_CTRL) on any of these controls fails (which makes sense when
+you know what the controls are). But from a programming point of view, if
+you try to create an interface that will work with any controls, the way
+these are reported (integers) makes it almost impossible to keep track of.
+I have a couple of suggestions to improve this, and would appreciate
+comments on them:
+- Reporting the Pan/Tilt Reset control as a menu and Pan Reset and Tilt
+Reset as buttons instead of integers, will solve the previously mentioned
+issues.
+- Change the Pan (Relative) and Tilt (relative) step value to one that
+actually results in a slight movement of the camera.
+Is there a way to make these changes when mapping the controls, or do they
+have to be coded in the driver itself ?
+Thanks
+Gilles
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090208/a22a9237/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090208/a22a9237/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004536.html">[Linux-uvc-devel] How to tell the difference of single/multiple	bulk transfer?
+</A></li>
+	<LI>Next message: <A HREF="004534.html">[Linux-uvc-devel] Pan and Tilt controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4533">[ date ]</a>
+              <a href="thread.html#4533">[ thread ]</a>
+              <a href="subject.html#4533">[ subject ]</a>
+              <a href="author.html#4533">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

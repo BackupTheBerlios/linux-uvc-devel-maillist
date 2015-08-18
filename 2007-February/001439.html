@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Divide by 0 in uvcvideo module with 2 webcams	plugged
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Divide%20by%200%20in%20uvcvideo%20module%20with%202%20webcams%0A%09plugged&In-Reply-To=%3C1172154855.45dda9e781e3c%40imp.free.fr%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001444.html">
+   <LINK REL="Next"  HREF="001445.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Divide by 0 in uvcvideo module with 2 webcams	plugged</H1>
+    <B>christophe.gisquet at free.fr</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Divide%20by%200%20in%20uvcvideo%20module%20with%202%20webcams%0A%09plugged&In-Reply-To=%3C1172154855.45dda9e781e3c%40imp.free.fr%3E"
+       TITLE="[Linux-uvc-devel] Divide by 0 in uvcvideo module with 2 webcams	plugged">christophe.gisquet at free.fr
+       </A><BR>
+    <I>Thu Feb 22 15:34:15 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001444.html">[Linux-uvc-devel] system bootup pain
+</A></li>
+        <LI>Next message: <A HREF="001445.html">[Linux-uvc-devel] Divide by 0 in uvcvideo module with 2 webcams	plugged
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1439">[ date ]</a>
+              <a href="thread.html#1439">[ thread ]</a>
+              <a href="subject.html#1439">[ subject ]</a>
+              <a href="author.html#1439">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The setup:
+- 2 uvcvideo webcams (in my case Logitech Pro 5000 and Fusion)
+- A proprietary display software (can't start capture with mplayer
+SVN-r21861 to validate)
+- uvcvideo r88
+- stock Debian Etch kernel (but tainted by nvidia proprietary module):
+Linux tobago 2.6.18-3-686 #1 SMP Mon Dec 4 16:41:14 UTC 2006 i686 GNU/Linux
+
+How to reproduce:
+- open and initialize first device (any of /dev/video[0-1])
+- then do the same for second device
+
+What happens:
+- first device continues streaming seamlessly
+- second device causes a divide by zero in uvcvideo module:
+=== Start message ===
+divide error: 0000 [#3]
+SMP
+Modules linked in: uvcvideo snd_usb_audio snd_usb_lib snd_hwdep tsdev
+binfmt_misc ppdev lp autofs4 button ac battery ipv6 nfs lockd nfs_acl sunrpc
+fuse dm_crypt dm_snapshot dm_mirror dm_mod ovcamchip ov511 pwc usbmouse usbhid
+sermouse oprofile nvidia sr_mod sbp2 snd_intel8x0 snd_ac97_codec snd_ac97_bus
+snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss snd_seq_midi
+snd_rawmidi snd_seq_midi_event snd_seq snd_timer compat_ioctl32 i2c_algo_bit
+snd_seq_device videocodec videodev intel_agp v4l1_compat agpgart v4l2_common snd
+i82875p_edac parport_pc i2c_i801 edac_mc psmouse serio_raw parport pcspkr
+i2c_core soundcore shpchp pci_hotplug eth1394 floppy evdev snd_page_alloc rtc
+ext3 jbd mbcache ide_generic ide_cd cdrom ide_disk ata_piix libata scsi_mod piix
+ohci1394 e1000 ieee1394 generic ide_core ehci_hcd uhci_hcd usbcore thermal
+processor fan
+CPU:    1
+EIP:    0060:[&lt;f8e35048&gt;]    Tainted: P      VLI
+EFLAGS: 00210246   (2.6.18-3-686 #1)
+EIP is at uvc_fraction_to_interval+0x9/0x42 [uvcvideo]
+eax: 00000000   ebx: 00000000   ecx: 00000000   edx: 00000000
+esi: f75a6a0c   edi: d14d3e78   ebp: d6961030   esp: d14d3e18
+ds: 007b   es: 007b   ss: 0068
+Process gtkplay (pid: 14110, ti=d14d2000 task=f655faa0 task.ti=d14d2000)
+Stack: f75305c0 f75a6a0c d14d3e78 f8e37b68 d14d3e54 00000003 e323d600 d9a07ea0
+       ec5ddf18 00000000 00000000 d14d3e68 c011669e e88a39a8 00000000 02020001
+       00051615 00000000 00000004 00000000 00096000 00000bd0 02dc6c00 00000000
+Call Trace:
+ [&lt;f8e37b68&gt;] uvc_v4l2_do_ioctl+0x81a/0xaca [uvcvideo]
+ [&lt;c011669e&gt;] __wake_up+0x2a/0x3d
+ [&lt;c0130a26&gt;] futex_requeue+0x214/0x220
+ [&lt;f8a7e649&gt;] video_usercopy+0x175/0x23b [videodev]
+ [&lt;c0102819&gt;] do_notify_resume+0x4e4/0x5d7
+ [&lt;c0158e33&gt;] do_filp_open+0x2b/0x31
+ [&lt;f8e36f7d&gt;] uvc_v4l2_ioctl+0x31/0x37 [uvcvideo]
+ [&lt;f8e3734e&gt;] uvc_v4l2_do_ioctl+0x0/0xaca [uvcvideo]
+ [&lt;c016937b&gt;] do_ioctl+0x47/0x5d
+ [&lt;c01695db&gt;] vfs_ioctl+0x24a/0x25c
+ [&lt;c0132030&gt;] sys_futex+0xdc/0xf1
+ [&lt;c0169635&gt;] sys_ioctl+0x48/0x5f
+ [&lt;c0102c11&gt;] sysenter_past_esp+0x56/0x79
+Code: 89 d5 8a 44 24 03 03 6b 0c 38 01 74 0d 46 83 c2 24 83 c1 24 39 fe 75 e8 31
+ed 5a 89 e8 5b 5e 5f 5d c3 57 89 d1 56 31 d2 53 89 c3 &lt;f7&gt; f1 83 cf ff be 80 96
+98 00 3d ac 01 00 00 76 06 eb 20 d1 ee
+EIP: [&lt;f8e35048&gt;] uvc_fraction_to_interval+0x9/0x42 [uvcvideo] SS:ESP
+0068:d14d3e18
+=== End message ===
+- the associated device is not cleaned, and is seen by the system as still in
+use (modprobe -r uvcvideo fails)
+- whatever the order of initialization, the second device
+
+This corresponds to a divide by 0 in uvc_fraction_to_interval at uvc_drive:203 :
+if (numerator/denominator &gt;= ((uint32_t)-1)/10000000)
+
+While 0 could be returned when denominator is 0, I didn't try that for 2
+reasons:
+- I can't unload the module (rmmod -f leaves the /dev/video* entries), probably
+unless I reboot
+- This is a symptom, not a cause
+
+I have another uvcvideo device (Microsoft LifeCam NX-6000) to test with, once
+I'll have figured whether it really works or not.
+
+Best regards,
+Christophe Gisquet
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001444.html">[Linux-uvc-devel] system bootup pain
+</A></li>
+	<LI>Next message: <A HREF="001445.html">[Linux-uvc-devel] Divide by 0 in uvcvideo module with 2 webcams	plugged
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1439">[ date ]</a>
+              <a href="thread.html#1439">[ thread ]</a>
+              <a href="subject.html#1439">[ subject ]</a>
+              <a href="author.html#1439">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

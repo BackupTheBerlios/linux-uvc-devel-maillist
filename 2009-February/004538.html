@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Pan and Tilt controls
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Pan%20and%20Tilt%20controls&In-Reply-To=%3C59cf47a80902081642n4efdaff5x7d3634284b5a2b10%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004565.html">
+   <LINK REL="Next"  HREF="004539.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Pan and Tilt controls</H1>
+    <B>Paulo Assis</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Pan%20and%20Tilt%20controls&In-Reply-To=%3C59cf47a80902081642n4efdaff5x7d3634284b5a2b10%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Pan and Tilt controls">pj.assis at gmail.com
+       </A><BR>
+    <I>Mon Feb  9 01:42:18 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004565.html">[Linux-uvc-devel] Pan and Tilt controls
+</A></li>
+        <LI>Next message: <A HREF="004539.html">[Linux-uvc-devel] Pan and Tilt controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4538">[ date ]</a>
+              <a href="thread.html#4538">[ thread ]</a>
+              <a href="subject.html#4538">[ subject ]</a>
+              <a href="author.html#4538">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Gilles,
+
+2009/2/9 Gilles GIGAN &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">gilles.gigan at gmail.com</A>&gt;:
+&gt;<i> Hi Paulo,
+</I>&gt;<i> I had a look at guvcview. I think it s a great app, full of features beyond
+</I>&gt;<i> a simple frame view/capturing. Great work.
+</I>&gt;<i> I am trying to write an application that properly displays V4L controls from
+</I>&gt;<i> any driver, and I have tested with pwc and uvcvideo so far. Digging into
+</I>&gt;<i> guvcview's source code confirmed what the point I made in my previous post:
+</I>&gt;<i> img_controls.c, which draws controls on the screen, is full of if..else if
+</I>&gt;<i> statements which do a lot more than just checking the control type. There
+</I>&gt;<i> are also some hardcoded menu values for the raw pixel order. This is
+</I>&gt;<i> precisely what I think should be done differently:
+</I>&gt;<i> In my opinion, when enumerating V4L controls, user applications should NOT
+</I>&gt;<i> have to check what a control DOES, ie trying to make sense of either the
+</I>&gt;<i> v4l2_queryctrl.name or v4l2_queryctrl.id field (which is what guvcview
+</I>&gt;<i> does), in order to draw this control on the screen. Doing this ties your
+</I>&gt;<i> application to a specific driver/implementation/version/... and will require
+</I>&gt;<i> more coding when any of these changes. An application should only have to
+</I>&gt;<i> check what TYPE the control is (v4l2_queryctrl.type field, and possibly
+</I>&gt;<i> enumerate over the different menu values if it is a menu), to decide how to
+</I>&gt;<i> best draw it in a GUI. The driver shoud be responsible for filling in the
+</I>&gt;<i> struct v4l2_queryctrl correctly with meaningful &amp; sensible values, and
+</I>&gt;<i> provide a menu for controls that require one. Let me know if my
+</I>&gt;<i> understanding is flawed somewhere in here.
+</I>&gt;<i>
+</I>&gt;<i> The V4L2 spec lists the Pan Reset and Tilt Reset as Booleans, which is
+</I>&gt;<i> already a bit better than Integer (what uvcvideo does so far), although I
+</I>&gt;<i> stick to my comment in my previous post: I really think these should be
+</I>&gt;<i> reported as Buttons for the obvious reason that resetting the pan or tilt is
+</I>&gt;<i> a one-shot action, not a continuous one which holds a value over time (this
+</I>&gt;<i> fits the definition of V4L2_CTRLTYPE_BUTTON in the specs). Using a button
+</I>&gt;<i> type makes it clear that trying to get its value is pointless, and it also
+</I>&gt;<i> makes sense when drawing this control on a GUI. I will bring this up on the
+</I>&gt;<i> V4L mailing list but I thought I d throw this one here first and see what
+</I>&gt;<i> people think.
+</I>&gt;<i> The V4L2 spec says the step value &quot;gives the smallest change of an integer
+</I>&gt;<i> control actually affecting hardware&quot;. Calling ioctl(VIDIOC_G_CTRL) on the
+</I>&gt;<i> Pan or Tilt Relative control with a value of 1, as per reported step value,
+</I>&gt;<i> does not do anything. Both guvcview and luvcview get around that by defining
+</I>&gt;<i> a macro set to 64. Do applications really have to guess/do that, or can the
+</I>&gt;<i> driver simply report 64 as a step value ?
+</I>&gt;<i> The Pan/Tilt Reset control is a bit of a tricky one, because it is  a
+</I>&gt;<i> collection of buttons (Pan reset, Tilt reset or both). Since we already have
+</I>&gt;<i> dedicated controls for both Pan Reset and Tilt Reset, is it a good idea
+</I>&gt;<i> change this one to &quot;Pan &amp; Tilt Reset&quot; only, so it can be presented as a
+</I>&gt;<i> button ? If not, can this control have a menu explaining the different
+</I>&gt;<i> acceptable values ?
+</I>&gt;<i>
+</I>
+You are absolutely right on every point, except for one thing:
+Pan/Tilt controls are  extension controls, the driver just loads the
+values passed by applications, in this case logitech defines these has
+integers, unless the hardware accepts them as buttons or menu values
+then there is not much it can be done, I think. The good (maybe bad)
+thing is that so far only logitech cameras seem to support these
+extension controls, so not much code changes have been needed until
+now).
+
+PS: since today (10 minutes ago) svn head version of guvcview also
+allows for a control only window (just committed the changes), I've
+tested controlling the image in cheese and ekiga and it worked great,
+just start with:
+guvcview --control_only
+
+Best regards,
+Paulo
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004565.html">[Linux-uvc-devel] Pan and Tilt controls
+</A></li>
+	<LI>Next message: <A HREF="004539.html">[Linux-uvc-devel] Pan and Tilt controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4538">[ date ]</a>
+              <a href="thread.html#4538">[ thread ]</a>
+              <a href="subject.html#4538">[ subject ]</a>
+              <a href="author.html#4538">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,1468 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks 046d:0991&quot;
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20again%20%22Logitech%20QuickCam%20Pro%20for%20Notebooks%0A%20046d%3A0991%22&In-Reply-To=%3C1256197227.3257.23.camel%40zwerg%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005239.html">
+   <LINK REL="Next"  HREF="005246.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks 046d:0991&quot;</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20again%20%22Logitech%20QuickCam%20Pro%20for%20Notebooks%0A%20046d%3A0991%22&In-Reply-To=%3C1256197227.3257.23.camel%40zwerg%3E"
+       TITLE="[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks 046d:0991&quot;">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Thu Oct 22 09:40:27 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005239.html">[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks	046d:0991&quot;
+</A></li>
+        <LI>Next message: <A HREF="005246.html">[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks 046d:0991&quot;
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5241">[ date ]</a>
+              <a href="thread.html#5241">[ thread ]</a>
+              <a href="subject.html#5241">[ subject ]</a>
+              <a href="author.html#5241">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+thank you for the answer, i thought - no body care. :) 
+
+Am Donnerstag, den 22.10.2009, 01:55 +0200 schrieb Laurent Pinchart:
+&gt;<i> Hi Alexey,
+</I>&gt;<i> 
+</I>&gt;<i> On Thursday 15 October 2009 21:00:59 Alexey Fisher wrote:
+</I>&gt;<i> &gt; I did some simple dirty hack, it prevent webcam from being killed by cheese.
+</I>&gt;<i> &gt; On other site it make cheese work too.
+</I>&gt;<i> &gt; Like Paulo said,  the camera is slow and it need more time to make thirst
+</I>&gt;<i> &gt; start, some time it need 8 seconds on second start it need about 2 seconds. 
+</I>&gt;<i> &gt; If we call STREAMOFF before we get EOF, the camera will die.
+</I>&gt;<i> 
+</I>&gt;<i> Which EOF are you talking about here ? The UVC bit in the video packets header 
+</I>&gt;<i> ? How have you tested that ?
+</I>
+I used &quot;uvcvideo trace=255&quot; and cheese.
+I talking about &quot;uvc_v4l2_ioctl(VIDIOC_STREAMON)&quot;, &quot;Frame complete (EOF
+found)&quot; and &quot;uvc_v4l2_ioctl(VIDIOC_STREAMOFF)&quot;.
+
+&gt;<i> &gt; IMHO, the driver should decide if camera ready or not. The easiest way
+</I>&gt;<i> &gt; is, to add SLOWSTART quirk. Correct way probobly will be to check if camera
+</I>&gt;<i> &gt; ready or not.
+</I>&gt;<i> &gt; Any ideas how to make it? Or any other ideas?
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I know, cheese use some bruteforce way to get settings, but the bug in
+</I>&gt;<i> &gt; cheese make the bug in uvcvideo easy to reproduce.
+</I>&gt;<i> 
+</I>&gt;<i> It's not a bug in uvcvideo but a bug in the camera. Have you been to isolate 
+</I>&gt;<i> exactly which sequence of ioctls issued by Cheese make the camera crash ? I'd 
+</I>&gt;<i> like more information about that.
+</I>
+I made dmesg of two situations, webcam work and don't work.
+cheese celling two times &quot;uvc_v4l2_ioctl(VIDIOC_STREAMON)&quot;, thirst one
+to get the settings and second time to start the record. Between thirst
+and second pass the time out seems to be too short (even it is 10
+seconds). 
+
+This is working example: 
+[ 2715.842503] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMON)
+[ 2715.852318] uvcvideo: uvc_v4l2_poll
+[ 2724.689677] uvcvideo: Frame complete (EOF found).
+[ 2724.689698] uvcvideo: uvc_v4l2_poll
+[ 2724.689708] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[ 2724.689713] uvcvideo: Dequeuing buffer 0 (3, 3840000 bytes).
+[ 2724.693157] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2724.693164] uvcvideo: Queuing buffer 0.
+[ 2724.693551] uvcvideo: uvc_v4l2_poll
+[ 2724.694064] uvcvideo: uvc_v4l2_poll
+[ 2724.744145] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMOFF)
+
+This is broken:
+[ 2874.576741] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMON)
+[ 2874.586236] uvcvideo: uvc_v4l2_poll
+[ 2884.601319] uvcvideo: uvc_v4l2_poll
+[ 2884.601412] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMOFF)
+
+I think, if you call VIDIOC_STREAMOFF befor you get &quot;Frame complete (EOF
+found)&quot; on this camera it will kill it.
+
+&gt;<i> &gt; here is this hack:
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; diff --git a/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> &gt; b/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> &gt; index f960e8e..fdc7007 100644
+</I>&gt;<i> &gt; --- a/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> &gt; +++ b/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> &gt; @@ -794,7 +794,7 @@ static void uvc_uninit_video(struct uvc_streaming
+</I>&gt;<i> &gt; *stream, int free_buffers)
+</I>&gt;<i> &gt; {
+</I>&gt;<i> &gt; 	struct urb *urb;
+</I>&gt;<i> &gt; 	unsigned int i;
+</I>&gt;<i> &gt; -
+</I>&gt;<i> &gt; +	msleep(5000);
+</I>&gt;<i> &gt; 	for (i = 0; i &lt; UVC_URBS; ++i) {
+</I>&gt;<i> &gt; 	urb = stream-&gt;urb[i];
+</I>&gt;<i> &gt; 	if (urb == NULL)
+</I>&gt;<i> &gt; @@ -985,7 +985,7 @@ static int uvc_init_video(struct uvc_streaming
+</I>&gt;<i> &gt; *stream, gfp_t gfp_flags)
+</I>&gt;<i> &gt; 			return ret;
+</I>&gt;<i> &gt; 		}
+</I>&gt;<i> &gt; 	}
+</I>&gt;<i> &gt; -
+</I>&gt;<i> &gt; +	msleep(5000);
+</I>&gt;<i> &gt; 	return 0;
+</I>&gt;<i> &gt; }
+</I>&gt;<i> 
+</I>&gt;<i> I hate random sleeps. Really. I'll need more information about the bug, as 
+</I>&gt;<i> well as a simple userspace test application, before making any such change to 
+</I>&gt;<i> the driver.
+</I>
+I made this suggestion to show how to reproduce this bug and how i
+workaround it. I hope it help. I can't make any program to reproduce it.
+
+Regards,
+Alexey
+
+PS. In attachment are two traces, working and not working.
+-------------- next part --------------
+[ 2874.435592] uvcvideo: uvc_v4l2_open
+[ 2874.435636] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCAP)
+[ 2874.436369] uvcvideo: uvc_v4l2_release
+[ 2874.439887] uvcvideo: uvc_v4l2_open
+[ 2874.439899] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCAP)
+[ 2874.439903] uvcvideo: uvc_v4l2_ioctl(VIDIOC_G_FMT)
+[ 2874.439910] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FMT)
+[ 2874.439912] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.439914] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.439916] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.439918] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.439920] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.439922] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.439925] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.439927] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.439929] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FMT)
+[ 2874.439930] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.439932] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.439934] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.439936] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.439939] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.439941] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.439943] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.439945] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.439947] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.439949] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FMT)
+[ 2874.439951] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCAP)
+[ 2874.439955] uvcvideo: uvc_v4l2_ioctl(VIDIOC_G_INPUT)
+[ 2874.439957] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUMINPUT)
+[ 2874.440106] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.449571] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCAP)
+[ 2874.449577] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUMINPUT)
+[ 2874.449648] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUMINPUT)
+[ 2874.449651] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUMSTD)
+[ 2874.449653] uvcvideo: Unsupported ioctl 0xc0485619
+[ 2874.449656] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.464454] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.473344] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.482190] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.482198] uvcvideo: Control 0x00980903 not found.
+[ 2874.482201] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.482204] uvcvideo: Control 0x00980904 not found.
+[ 2874.482207] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.482210] uvcvideo: Control 0x00980905 not found.
+[ 2874.482212] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.482215] uvcvideo: Control 0x00980906 not found.
+[ 2874.482217] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.482220] uvcvideo: Control 0x00980907 not found.
+[ 2874.482222] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.482225] uvcvideo: Control 0x00980908 not found.
+[ 2874.482227] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.482230] uvcvideo: Control 0x00980909 not found.
+[ 2874.482232] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.482235] uvcvideo: Control 0x0098090a not found.
+[ 2874.482237] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.482240] uvcvideo: Control 0x0098090b not found.
+[ 2874.482242] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.484685] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.484689] uvcvideo: Control 0x0098090d not found.
+[ 2874.484691] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.484694] uvcvideo: Control 0x0098090e not found.
+[ 2874.484696] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.484699] uvcvideo: Control 0x0098090f not found.
+[ 2874.484701] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.484704] uvcvideo: Control 0x00980910 not found.
+[ 2874.484706] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.484709] uvcvideo: Control 0x00980911 not found.
+[ 2874.484711] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.484714] uvcvideo: Control 0x00980912 not found.
+[ 2874.484716] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.493935] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.493941] uvcvideo: Control 0x00980914 not found.
+[ 2874.493943] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.493947] uvcvideo: Control 0x00980915 not found.
+[ 2874.493949] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.493952] uvcvideo: Control 0x00980916 not found.
+[ 2874.493954] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.493957] uvcvideo: Control 0x00980917 not found.
+[ 2874.493959] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.496932] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.496936] uvcvideo: Control 0x00980919 not found.
+[ 2874.496938] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.506305] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.514938] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.524182] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.524187] uvcvideo: Control 0x0098091d not found.
+[ 2874.524190] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.524193] uvcvideo: Control 0x0098091e not found.
+[ 2874.524195] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.524198] uvcvideo: Control 0x0098091f not found.
+[ 2874.524200] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2874.524203] uvcvideo: Control 0x00980920 not found.
+[ 2874.524226] uvcvideo: uvc_v4l2_ioctl(VIDIOC_G_STD)
+[ 2874.524230] uvcvideo: Unsupported ioctl 0x80085617
+[ 2874.524234] uvcvideo: uvc_v4l2_ioctl(VIDIOC_G_INPUT)
+[ 2874.524333] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FMT)
+[ 2874.524338] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FMT)
+[ 2874.524353] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.524359] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524366] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524370] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524374] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524378] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524381] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524385] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524410] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.524414] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524419] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524423] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524426] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524430] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524433] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524437] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524449] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.524452] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524457] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524461] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524465] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524468] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524472] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524475] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524486] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.524490] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524494] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524498] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524502] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524505] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524509] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524513] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524523] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.524526] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524531] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524535] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524538] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524542] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524546] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524549] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524560] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.524563] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524568] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524572] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524575] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524579] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524582] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524592] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.524596] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524600] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524604] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524614] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.524617] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524622] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524631] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.524654] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524660] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524665] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524669] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524673] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524677] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524681] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524695] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524700] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524704] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524709] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524713] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524716] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524721] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524733] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524738] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524742] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524747] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524751] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524754] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524758] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524770] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524775] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524779] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524784] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524788] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524792] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524796] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524807] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524812] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524816] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524821] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524824] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524828] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524832] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524844] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524849] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524853] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524857] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524861] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524865] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524869] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524881] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524886] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524890] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524894] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524905] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524910] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524932] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524938] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524942] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524946] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524950] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524954] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524958] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524970] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524975] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524980] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524984] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524988] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524992] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.524996] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525008] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525013] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525017] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525021] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525025] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525029] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525033] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525045] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525049] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525054] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525058] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525062] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525066] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525070] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525081] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525086] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525090] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525095] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525099] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525102] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525106] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525118] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525123] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525127] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525131] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525135] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525139] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525143] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525155] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525160] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525164] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525169] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525180] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525185] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525206] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.525210] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525214] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525218] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525222] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525226] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525229] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525233] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525243] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.525246] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525251] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525255] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525259] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525262] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525266] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525269] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525279] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.525282] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525287] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525291] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525294] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525298] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525301] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525305] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525315] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.525318] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525322] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525326] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525330] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525334] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525337] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525341] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525350] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.525354] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525358] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525362] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525366] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525369] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525373] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525376] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525386] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.525389] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525393] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525397] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525401] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525405] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525408] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525412] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525421] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.525425] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525429] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525433] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525437] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525446] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2874.525462] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525467] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525471] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525476] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525480] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525483] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525488] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525501] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525506] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525510] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525515] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525519] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525523] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525527] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525540] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525545] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525549] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525553] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525557] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525561] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525565] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525577] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525582] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525587] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525591] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525595] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525599] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525603] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525615] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525620] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525624] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525628] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525632] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525636] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525641] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525658] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525664] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525668] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525672] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525676] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525680] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525685] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525697] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525702] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525707] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525711] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525723] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525728] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525753] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525759] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525763] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525767] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525771] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525775] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525779] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525792] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525797] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525802] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525806] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525810] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525813] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525818] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525830] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525835] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525839] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525843] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525847] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525851] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525855] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525867] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525872] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525877] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525881] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525885] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525889] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525893] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525905] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525910] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525914] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525918] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525922] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525926] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525931] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525943] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525948] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525952] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525957] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525961] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525965] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525969] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525981] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525986] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525990] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.525994] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.526006] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.526011] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2874.527525] uvcvideo: uvc_v4l2_ioctl(VIDIOC_TRY_FMT)
+[ 2874.527531] uvcvideo: Trying format 0x56595559 (YUYV): 1600x1200.
+[ 2874.527534] uvcvideo: Using default frame interval 200000.0 us (5.0 fps).
+[ 2874.552077] uvcvideo: uvc_v4l2_ioctl(VIDIOC_S_FMT)
+[ 2874.552083] uvcvideo: Trying format 0x56595559 (YUYV): 1600x1200.
+[ 2874.552085] uvcvideo: Using default frame interval 200000.0 us (5.0 fps).
+[ 2874.575932] uvcvideo: uvc_v4l2_ioctl(VIDIOC_G_PARM)
+[ 2874.575954] uvcvideo: uvc_v4l2_ioctl(VIDIOC_REQBUFS)
+[ 2874.576361] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYBUF)
+[ 2874.576378] uvcvideo: uvc_v4l2_mmap
+[ 2874.576557] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYBUF)
+[ 2874.576561] uvcvideo: uvc_v4l2_mmap
+[ 2874.576731] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2874.576734] uvcvideo: Queuing buffer 0.
+[ 2874.576736] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2874.576739] uvcvideo: Queuing buffer 1.
+[ 2874.576741] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMON)
+[ 2874.586236] uvcvideo: uvc_v4l2_poll
+[ 2884.601319] uvcvideo: uvc_v4l2_poll
+[ 2884.601412] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMOFF)
+[ 2884.636229] uvcvideo: uvc_v4l2_release
+-------------- next part --------------
+[ 2715.698235] uvcvideo: uvc_v4l2_open
+[ 2715.698255] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCAP)
+[ 2715.699301] uvcvideo: uvc_v4l2_release
+[ 2715.711659] uvcvideo: uvc_v4l2_open
+[ 2715.711680] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCAP)
+[ 2715.711693] uvcvideo: uvc_v4l2_ioctl(VIDIOC_G_FMT)
+[ 2715.711713] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FMT)
+[ 2715.711717] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.711720] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.711724] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.711727] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.711730] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.711742] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.711746] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.711749] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.711752] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FMT)
+[ 2715.711755] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.711758] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.711761] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.711774] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.711777] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.711780] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.711783] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.711788] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.711791] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.711794] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FMT)
+[ 2715.711797] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCAP)
+[ 2715.711803] uvcvideo: uvc_v4l2_ioctl(VIDIOC_G_INPUT)
+[ 2715.711806] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUMINPUT)
+[ 2715.712069] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.720162] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCAP)
+[ 2715.720167] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUMINPUT)
+[ 2715.720206] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUMINPUT)
+[ 2715.720209] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUMSTD)
+[ 2715.720211] uvcvideo: Unsupported ioctl 0xc0485619
+[ 2715.720213] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.730511] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.739656] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.748791] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.748797] uvcvideo: Control 0x00980903 not found.
+[ 2715.748799] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.748803] uvcvideo: Control 0x00980904 not found.
+[ 2715.748805] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.748808] uvcvideo: Control 0x00980905 not found.
+[ 2715.748810] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.748813] uvcvideo: Control 0x00980906 not found.
+[ 2715.748815] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.748818] uvcvideo: Control 0x00980907 not found.
+[ 2715.748820] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.748823] uvcvideo: Control 0x00980908 not found.
+[ 2715.748825] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.748828] uvcvideo: Control 0x00980909 not found.
+[ 2715.748830] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.748833] uvcvideo: Control 0x0098090a not found.
+[ 2715.748835] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.748838] uvcvideo: Control 0x0098090b not found.
+[ 2715.748840] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.750661] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.750665] uvcvideo: Control 0x0098090d not found.
+[ 2715.750667] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.750670] uvcvideo: Control 0x0098090e not found.
+[ 2715.750672] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.750675] uvcvideo: Control 0x0098090f not found.
+[ 2715.750677] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.750680] uvcvideo: Control 0x00980910 not found.
+[ 2715.750682] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.750685] uvcvideo: Control 0x00980911 not found.
+[ 2715.750687] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.750690] uvcvideo: Control 0x00980912 not found.
+[ 2715.750692] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.760041] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.760046] uvcvideo: Control 0x00980914 not found.
+[ 2715.760048] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.760051] uvcvideo: Control 0x00980915 not found.
+[ 2715.760053] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.760056] uvcvideo: Control 0x00980916 not found.
+[ 2715.760058] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.760061] uvcvideo: Control 0x00980917 not found.
+[ 2715.760063] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.761924] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.761928] uvcvideo: Control 0x00980919 not found.
+[ 2715.761930] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.769538] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.779286] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.788662] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.788667] uvcvideo: Control 0x0098091d not found.
+[ 2715.788670] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.788673] uvcvideo: Control 0x0098091e not found.
+[ 2715.788675] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.788678] uvcvideo: Control 0x0098091f not found.
+[ 2715.788680] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2715.788683] uvcvideo: Control 0x00980920 not found.
+[ 2715.788700] uvcvideo: uvc_v4l2_ioctl(VIDIOC_G_STD)
+[ 2715.788703] uvcvideo: Unsupported ioctl 0x80085617
+[ 2715.788708] uvcvideo: uvc_v4l2_ioctl(VIDIOC_G_INPUT)
+[ 2715.788797] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FMT)
+[ 2715.788802] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FMT)
+[ 2715.788815] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.788820] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788827] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788831] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788835] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788838] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788842] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788845] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788869] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.788873] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788877] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788881] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788884] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788888] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788891] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788895] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788907] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.788910] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788914] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788918] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788922] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788925] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788929] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788933] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788943] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.788946] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788950] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788954] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788958] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788961] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788965] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788968] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788978] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.788982] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788986] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788990] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788993] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.788997] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789000] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789004] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789014] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.789017] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789022] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789025] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789029] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789033] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789036] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789045] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.789049] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789053] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789057] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789066] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.789070] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789074] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789083] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.789107] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789112] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789117] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789121] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789125] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789128] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789132] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789146] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789151] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789156] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789160] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789166] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789170] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789174] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789186] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789191] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789195] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789199] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789203] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789207] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789211] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789223] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789228] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789232] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789237] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789241] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789244] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789249] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789260] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789265] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789269] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789273] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789278] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789282] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789286] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789297] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789302] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789306] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789311] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789315] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789318] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789322] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789334] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789339] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789343] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789347] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789358] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789363] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789385] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789391] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789395] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789399] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789403] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789407] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789411] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789423] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789428] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789432] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789436] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789440] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789444] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789448] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789460] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789465] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789469] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789473] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789477] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789481] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789485] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789497] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789501] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789506] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789510] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789514] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789518] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789521] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789533] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789538] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789542] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789547] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789551] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789583] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789587] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789598] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789603] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789608] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789612] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789616] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789620] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789623] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789635] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789640] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789644] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789648] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789659] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789664] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789685] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.789688] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789693] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789697] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789700] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789704] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789707] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789712] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789721] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.789725] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789729] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789733] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789736] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789740] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789743] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789747] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789757] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.789760] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789765] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789768] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789772] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789776] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789779] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789783] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789792] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.789796] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789800] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789804] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789808] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789811] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789815] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789818] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789828] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.789831] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789835] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789839] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789843] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789846] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789850] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789853] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789863] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.789866] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789870] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789874] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789878] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789882] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789885] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789888] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789898] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.789901] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789905] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789909] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789913] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789922] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2715.789938] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789943] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789947] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789951] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789955] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789959] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789963] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789976] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789981] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789985] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789990] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789994] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.789997] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790004] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790017] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790022] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790026] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790031] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790035] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790038] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790042] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790054] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790059] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790064] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790068] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790072] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790076] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790079] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790092] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790097] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790101] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790105] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790109] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790113] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790117] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790138] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790143] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790148] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790152] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790156] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790160] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790164] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790177] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790182] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790186] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790190] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790202] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790207] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790233] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790238] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790243] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790247] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790251] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790255] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790258] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790271] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790276] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790280] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790284] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790288] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790292] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790296] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790311] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790316] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790321] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790325] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790329] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790333] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790337] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790349] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790354] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790358] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790362] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790366] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790370] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790374] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790386] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790391] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790395] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790399] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790403] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790407] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790411] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790423] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790428] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790433] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790437] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790441] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790444] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790448] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790460] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790465] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790469] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790473] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790488] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.790493] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2715.792035] uvcvideo: uvc_v4l2_ioctl(VIDIOC_TRY_FMT)
+[ 2715.792041] uvcvideo: Trying format 0x56595559 (YUYV): 1600x1200.
+[ 2715.792043] uvcvideo: Using default frame interval 200000.0 us (5.0 fps).
+[ 2715.816413] uvcvideo: uvc_v4l2_ioctl(VIDIOC_S_FMT)
+[ 2715.816417] uvcvideo: Trying format 0x56595559 (YUYV): 1600x1200.
+[ 2715.816419] uvcvideo: Using default frame interval 200000.0 us (5.0 fps).
+[ 2715.841910] uvcvideo: uvc_v4l2_ioctl(VIDIOC_G_PARM)
+[ 2715.841925] uvcvideo: uvc_v4l2_ioctl(VIDIOC_REQBUFS)
+[ 2715.842245] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYBUF)
+[ 2715.842259] uvcvideo: uvc_v4l2_mmap
+[ 2715.842377] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYBUF)
+[ 2715.842380] uvcvideo: uvc_v4l2_mmap
+[ 2715.842496] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2715.842498] uvcvideo: Queuing buffer 0.
+[ 2715.842500] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2715.842501] uvcvideo: Queuing buffer 1.
+[ 2715.842503] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMON)
+[ 2715.852318] uvcvideo: uvc_v4l2_poll
+[ 2724.689677] uvcvideo: Frame complete (EOF found).
+[ 2724.689698] uvcvideo: uvc_v4l2_poll
+[ 2724.689708] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[ 2724.689713] uvcvideo: Dequeuing buffer 0 (3, 3840000 bytes).
+[ 2724.693157] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2724.693164] uvcvideo: Queuing buffer 0.
+[ 2724.693551] uvcvideo: uvc_v4l2_poll
+[ 2724.694064] uvcvideo: uvc_v4l2_poll
+[ 2724.744145] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMOFF)
+[ 2724.762190] uvcvideo: uvc_v4l2_release
+[ 2725.147578] uvcvideo: uvc_v4l2_open
+[ 2725.147592] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCAP)
+[ 2725.147596] uvcvideo: uvc_v4l2_ioctl(VIDIOC_G_FMT)
+[ 2725.147600] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FMT)
+[ 2725.147603] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.147605] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.147607] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.147609] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.147611] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.147613] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.147615] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.147617] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.147619] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FMT)
+[ 2725.147621] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.147623] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.147625] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.147627] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.147629] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.147631] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.147633] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.147635] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.147637] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.147639] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FMT)
+[ 2725.147641] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCAP)
+[ 2725.147643] uvcvideo: uvc_v4l2_ioctl(VIDIOC_G_INPUT)
+[ 2725.147646] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUMINPUT)
+[ 2725.147745] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.156911] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCAP)
+[ 2725.156915] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUMINPUT)
+[ 2725.156921] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUMINPUT)
+[ 2725.156923] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUMSTD)
+[ 2725.156925] uvcvideo: Unsupported ioctl 0xc0485619
+[ 2725.156927] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.166418] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.175168] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.184666] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.184671] uvcvideo: Control 0x00980903 not found.
+[ 2725.184673] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.184677] uvcvideo: Control 0x00980904 not found.
+[ 2725.184679] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.184682] uvcvideo: Control 0x00980905 not found.
+[ 2725.184684] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.184687] uvcvideo: Control 0x00980906 not found.
+[ 2725.184689] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.184692] uvcvideo: Control 0x00980907 not found.
+[ 2725.184694] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.184697] uvcvideo: Control 0x00980908 not found.
+[ 2725.184699] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.184702] uvcvideo: Control 0x00980909 not found.
+[ 2725.184704] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.184707] uvcvideo: Control 0x0098090a not found.
+[ 2725.184709] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.184712] uvcvideo: Control 0x0098090b not found.
+[ 2725.184714] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.187041] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.187044] uvcvideo: Control 0x0098090d not found.
+[ 2725.187046] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.187049] uvcvideo: Control 0x0098090e not found.
+[ 2725.187051] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.187054] uvcvideo: Control 0x0098090f not found.
+[ 2725.187056] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.187060] uvcvideo: Control 0x00980910 not found.
+[ 2725.187061] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.187064] uvcvideo: Control 0x00980911 not found.
+[ 2725.187066] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.187069] uvcvideo: Control 0x00980912 not found.
+[ 2725.187071] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.196665] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.196670] uvcvideo: Control 0x00980914 not found.
+[ 2725.196672] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.196675] uvcvideo: Control 0x00980915 not found.
+[ 2725.196677] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.196680] uvcvideo: Control 0x00980916 not found.
+[ 2725.196682] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.196685] uvcvideo: Control 0x00980917 not found.
+[ 2725.196687] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.199164] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.199167] uvcvideo: Control 0x00980919 not found.
+[ 2725.199169] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.209286] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.219914] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.228916] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.228920] uvcvideo: Control 0x0098091d not found.
+[ 2725.228922] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.228925] uvcvideo: Control 0x0098091e not found.
+[ 2725.228927] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.228930] uvcvideo: Control 0x0098091f not found.
+[ 2725.228932] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCTRL)
+[ 2725.228935] uvcvideo: Control 0x00980920 not found.
+[ 2725.228945] uvcvideo: uvc_v4l2_ioctl(VIDIOC_G_STD)
+[ 2725.228947] uvcvideo: Unsupported ioctl 0x80085617
+[ 2725.228952] uvcvideo: uvc_v4l2_ioctl(VIDIOC_G_INPUT)
+[ 2725.229278] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FMT)
+[ 2725.229283] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FMT)
+[ 2725.229293] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.229297] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229303] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229307] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229310] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229314] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229317] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229321] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229337] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.229341] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229345] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229349] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229353] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229357] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229360] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229364] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229375] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.229378] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229383] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229386] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229390] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229394] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229397] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229401] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229411] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.229415] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229419] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229423] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229427] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229430] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229434] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229437] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229447] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.229451] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229455] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229459] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229463] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229466] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229469] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229473] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229483] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.229486] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229491] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229494] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229498] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229502] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229505] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229515] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.229518] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229523] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229526] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229536] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.229539] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229544] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229553] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.229570] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229575] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229579] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229583] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229587] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229590] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229595] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229608] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229613] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229617] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229621] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229625] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229629] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229633] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229645] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229650] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229654] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229658] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229662] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229666] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229670] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229682] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229687] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229691] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229695] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229699] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229703] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229707] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229719] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229724] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229728] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229732] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229736] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229740] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229744] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229755] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229760] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229765] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229769] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229773] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229777] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229781] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229792] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229797] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229801] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229805] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229817] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229822] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229844] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229849] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229853] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229857] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229861] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229865] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229869] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229881] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229886] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229890] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229894] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229898] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229902] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229906] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229917] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229922] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229927] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229931] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229935] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229938] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229942] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229954] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229959] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229963] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229967] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229971] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229975] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229979] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229991] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.229996] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238555] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238556] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238560] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238564] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238568] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238585] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238590] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238594] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238598] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238602] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238606] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238610] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238623] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238628] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238632] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238637] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238648] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238653] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238676] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.238680] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238684] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238688] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238692] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238695] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238699] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238702] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238713] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.238717] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238721] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238724] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238728] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238732] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238735] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238739] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238748] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.238752] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238756] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238760] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238764] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238767] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238771] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238774] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238784] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.238787] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238791] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238795] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238799] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238802] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238806] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238810] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238819] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.238823] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238827] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238831] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238835] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238838] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238842] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238845] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238855] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.238859] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238863] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238867] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238870] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238874] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238877] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238881] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238890] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.238894] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238898] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238902] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238905] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238915] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMESIZES)
+[ 2725.238930] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238936] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238940] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238944] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238948] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238952] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238956] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238969] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238974] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238978] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238982] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238986] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238990] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.238994] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239007] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239012] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239016] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239020] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239024] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239028] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239032] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239044] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239049] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239053] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239057] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239061] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239065] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239069] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239081] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239086] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239090] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239094] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239098] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239102] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239106] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239119] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239123] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239128] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239132] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239136] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239140] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239144] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239156] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239161] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239165] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239169] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239181] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239186] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239212] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239217] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239222] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239226] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239230] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239234] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239238] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239251] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239256] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239260] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239264] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239268] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239272] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239276] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239288] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239293] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239298] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239302] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239305] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239309] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239313] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239326] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239331] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239335] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239339] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239343] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239347] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239351] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239363] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239368] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239373] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239377] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239381] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239384] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239388] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239401] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239406] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239410] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239414] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239418] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239422] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239426] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239439] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239443] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239448] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239452] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239464] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.239469] uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FRAMEINTERVALS)
+[ 2725.293388] uvcvideo: uvc_v4l2_ioctl(VIDIOC_S_FMT)
+[ 2725.293392] uvcvideo: Trying format 0x47504a4d (MJPG): 960x720.
+[ 2725.293394] uvcvideo: Using default frame interval 100000.0 us (10.0 fps).
+[ 2725.317541] uvcvideo: uvc_v4l2_ioctl(VIDIOC_G_PARM)
+[ 2725.317546] uvcvideo: uvc_v4l2_ioctl(VIDIOC_S_PARM)
+[ 2725.317550] uvcvideo: Setting frame interval to 1/15 (666666).
+[ 2725.341920] uvcvideo: uvc_v4l2_ioctl(VIDIOC_REQBUFS)
+[ 2725.342018] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYBUF)
+[ 2725.342029] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYBUF)
+[ 2725.342034] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYBUF)
+[ 2725.342050] uvcvideo: uvc_v4l2_mmap
+[ 2725.342076] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYBUF)
+[ 2725.342080] uvcvideo: uvc_v4l2_mmap
+[ 2725.342101] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2725.342104] uvcvideo: Queuing buffer 0.
+[ 2725.342107] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2725.342109] uvcvideo: Queuing buffer 1.
+[ 2725.342112] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMON)
+[ 2725.351525] uvcvideo: uvc_v4l2_poll
+[ 2725.860657] uvcvideo: Frame complete (EOF found).
+[ 2725.860675] uvcvideo: uvc_v4l2_poll
+[ 2725.860683] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[ 2725.860687] uvcvideo: Dequeuing buffer 0 (3, 27409 bytes).
+[ 2725.874452] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2725.874456] uvcvideo: Queuing buffer 0.
+[ 2726.060648] uvcvideo: Frame complete (EOF found).
+[ 2726.198147] uvcvideo: uvc_v4l2_poll
+[ 2726.198152] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[ 2726.198155] uvcvideo: Dequeuing buffer 1 (3, 29352 bytes).
+[ 2726.207141] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2726.207143] uvcvideo: Queuing buffer 1.
+[ 2726.212847] uvcvideo: uvc_v4l2_poll
+[ 2726.260656] uvcvideo: Frame complete (EOF found).
+[ 2726.260676] uvcvideo: uvc_v4l2_poll
+[ 2726.260685] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[ 2726.260690] uvcvideo: Dequeuing buffer 0 (3, 32542 bytes).
+[ 2726.273457] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2726.273460] uvcvideo: Queuing buffer 0.
+[ 2726.273563] uvcvideo: uvc_v4l2_poll
+[ 2726.444656] uvcvideo: Frame complete (EOF found).
+[ 2726.444677] uvcvideo: uvc_v4l2_poll
+[ 2726.444686] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[ 2726.444691] uvcvideo: Dequeuing buffer 1 (3, 34552 bytes).
+[ 2726.457640] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2726.457644] uvcvideo: Queuing buffer 1.
+[ 2726.457751] uvcvideo: uvc_v4l2_poll
+[ 2726.628655] uvcvideo: Frame complete (EOF found).
+[ 2726.628677] uvcvideo: uvc_v4l2_poll
+[ 2726.628686] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[ 2726.628691] uvcvideo: Dequeuing buffer 0 (3, 39728 bytes).
+[ 2726.642543] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2726.642548] uvcvideo: Queuing buffer 0.
+[ 2726.642649] uvcvideo: uvc_v4l2_poll
+[ 2726.792658] uvcvideo: Frame complete (EOF found).
+[ 2726.792677] uvcvideo: uvc_v4l2_poll
+[ 2726.792686] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[ 2726.792691] uvcvideo: Dequeuing buffer 1 (3, 43167 bytes).
+[ 2726.807749] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2726.807753] uvcvideo: Queuing buffer 1.
+[ 2726.807853] uvcvideo: uvc_v4l2_poll
+[ 2726.960658] uvcvideo: Frame complete (EOF found).
+[ 2726.960677] uvcvideo: uvc_v4l2_poll
+[ 2726.960687] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[ 2726.960692] uvcvideo: Dequeuing buffer 0 (3, 49899 bytes).
+[ 2726.974816] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2726.974820] uvcvideo: Queuing buffer 0.
+[ 2726.974924] uvcvideo: uvc_v4l2_poll
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005239.html">[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks	046d:0991&quot;
+</A></li>
+	<LI>Next message: <A HREF="005246.html">[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks 046d:0991&quot;
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5241">[ date ]</a>
+              <a href="thread.html#5241">[ thread ]</a>
+              <a href="subject.html#5241">[ subject ]</a>
+              <a href="author.html#5241">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

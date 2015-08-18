@@ -1,0 +1,306 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Timestamp Accuracy Patch
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Timestamp%20Accuracy%20Patch&In-Reply-To=%3C833B0B09C5041D42A9924A3BA6A12B9A0375E949D3%40CALMAIL-CMS.smarttech.inc%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005443.html">
+   <LINK REL="Next"  HREF="005438.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Timestamp Accuracy Patch</H1>
+    <B>Jacob Fehr</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Timestamp%20Accuracy%20Patch&In-Reply-To=%3C833B0B09C5041D42A9924A3BA6A12B9A0375E949D3%40CALMAIL-CMS.smarttech.inc%3E"
+       TITLE="[Linux-uvc-devel] Timestamp Accuracy Patch">JacobFehr at smarttech.com
+       </A><BR>
+    <I>Tue Dec 22 19:32:38 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005443.html">[Linux-uvc-devel] How can I use a UVC Device in OMAP3530
+</A></li>
+        <LI>Next message: <A HREF="005438.html">[Linux-uvc-devel] has no release call back
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5436">[ date ]</a>
+              <a href="thread.html#5436">[ thread ]</a>
+              <a href="subject.html#5436">[ subject ]</a>
+              <a href="author.html#5436">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey Laurent,
+
+I'm just having a quick look at section 2.4.3.3 in the UVC spec. If I read that correctly, the SCR SOF counter is not necessarily the same as the USB SOF frame number. The device can maintain it's own 1 KHz counter and send that instead of the USBS SOF frame number. That would mean that there is no way to correlate device time to USB time for devices that maintain their own counter. The only thing the PTS, SCR could be used for is to determine interframe jitter/skew.
+
+I have a camera that seems to take advantage of this. I modified the UVC driver to print out the SCR SOF and urb.start_frame then I plugged two cameras into the same USB controller. This is a sample log:
+
+[  249.799452] uvcvideo: stream = 0xe9ea2000, urb-&gt;start_frame = 7590
+[  249.812207] uvcvideo: stream = 0xe9ea5000, sof = 1158
+[  249.812217] uvcvideo: stream = 0xe9ea5000, urb-&gt;start_frame = 7700
+[  249.815195] uvcvideo: stream = 0xe9ea2000, sof = 843
+[  249.815203] uvcvideo: stream = 0xe9ea2000, urb-&gt;start_frame = 7723
+[  249.830206] uvcvideo: stream = 0xe9ea5000, sof = 1174
+[  249.830216] uvcvideo: stream = 0xe9ea5000, urb-&gt;start_frame = 7834
+[  249.833196] uvcvideo: stream = 0xe9ea2000, sof = 860
+[  249.833205] uvcvideo: stream = 0xe9ea2000, urb-&gt;start_frame = 7857
+[  249.845958] uvcvideo: stream = 0xe9ea5000, sof = 1191
+[  249.845967] uvcvideo: stream = 0xe9ea5000, urb-&gt;start_frame = 7967
+[  249.848949] uvcvideo: stream = 0xe9ea2000, sof = 877
+[  249.848957] uvcvideo: stream = 0xe9ea2000, urb-&gt;start_frame = 7990
+[  249.861710] uvcvideo: stream = 0xe9ea5000, sof = 1208
+[  249.861720] uvcvideo: stream = 0xe9ea5000, urb-&gt;start_frame = 8100
+[  249.864701] uvcvideo: stream = 0xe9ea2000, sof = 893
+[  249.864710] uvcvideo: stream = 0xe9ea2000, urb-&gt;start_frame = 8123
+[  249.879704] uvcvideo: stream = 0xe9ea5000, sof = 1224
+[  249.879714] uvcvideo: stream = 0xe9ea5000, urb-&gt;start_frame = 41
+[  249.882696] uvcvideo: stream = 0xe9ea2000, sof = 910
+[  249.882705] uvcvideo: stream = 0xe9ea2000, urb-&gt;start_frame = 64
+[  249.895457] uvcvideo: stream = 0xe9ea5000, sof = 1241
+[  249.895466] uvcvideo: stream = 0xe9ea5000, urb-&gt;start_frame = 175
+[  249.898451] uvcvideo: stream = 0xe9ea2000, sof = 927
+
+Camera 0xe9ea5000 seems to be running off a different time reference from camera 0xe9ea2000. If the cameras did echo the USB SOF into the SCR they should track with urb-&gt;start_frame.
+
+As far as I can tell there is no way to correlate the SCR SOF counter to the USB SOF. It looks like there is no way to (generically) determine the device latency... I can't tell when a device will use it's own counter or when it'll echo the USB SOF frame number.
+
+Jake
+
+
+-----Original Message-----
+From: Laurent Pinchart [mailto:<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>] 
+Sent: Tuesday, November 24, 2009 6:17 PM
+To: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel at lists.berlios.de</A>
+Cc: Jacob Fehr
+Subject: Re: [Linux-uvc-devel] Timestamp Accuracy Patch
+
+Hi Jacob,
+
+I'm very sorry for the (very) late review. I barely had time to work on the
+UVC driver for the past 4 weeks. Things will hopefully settle down a bit
+soon. Please don't believe your contribution isn't appreciated.
+
+On Saturday 31 October 2009 00:07:51 Jacob Fehr wrote:
+&gt;<i> Hey Laurent,
+</I>&gt;<i> 
+</I>&gt;<i> Attached is a changeset that will sync the computer's clock to the camera
+</I>&gt;<i> clock.
+</I>
+Thank you very much. I've copied the patch inline for the purpose of
+commenting.
+
+&gt;<i> The final result is that uvc_buffer.buf.timestamp is adjusted to compensate
+</I>&gt;<i> for the latency that happens on the camera and the latency that happens in
+</I>&gt;<i> the USB stack. It seems to work quite nicely. With the patch, I get very
+</I>&gt;<i> even timestamp intervals. In fact it's so accurate that I see a 9
+</I>&gt;<i> microsecond/frame drift between my camera clock and my computer clock.
+</I>
+Very nice. Do you have a GPS clock to check which one is correct ;-)
+ 
+&gt;<i> There is still +-105 microseconds of latency that could be tweaked out. But
+</I>&gt;<i> for now this is should be accurate enough for even the most demanding 
+</I>&gt;<i> application... such as watching TV, DVDs, etc. :-) I suspect the remaining
+</I>&gt;<i> latency is coming from the interrupt handler and USB stack. Getting that out
+</I>&gt;<i> would require that I get down into the HCD code.
+</I>&gt;<i> 
+</I>&gt;<i> Have a look and let me know what you think.
+</I>
+&gt;<i> diff -r 214c94aa62aa -r 4617ec8de827 linux/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> --- a/linux/drivers/media/video/uvc/uvc_driver.c	Sat Oct 10 01:55:23 2009 +0200
+</I>&gt;<i> +++ b/linux/drivers/media/video/uvc/uvc_driver.c	Fri Oct 30 16:24:31 2009 -0600
+</I>&gt;<i> @@ -198,24 +198,23 @@
+</I>&gt;<i>  	kfree(an);
+</I>&gt;<i>  }
+</I>&gt;<i>  
+</I>&gt;<i> -/* Convert a fraction to a frame interval in 100ns multiples. The idea here is
+</I>&gt;<i> - * to compute numerator / denominator * 10000000 using 32 bit fixed point
+</I>&gt;<i> - * arithmetic only.
+</I>&gt;<i> +/* Calculate a crossproduct. The idea here is to compute
+</I>&gt;<i> + * numerator / denominator * multiplier using 32 bit fixed point arithmetic
+</I>&gt;<i> + * only.
+</I>&gt;<i>   */
+</I>&gt;<i> -uint32_t uvc_fraction_to_interval(uint32_t numerator, uint32_t denominator)
+</I>&gt;<i> +uint32_t uvc_cross_product(uint32_t numerator, uint32_t denominator,
+</I>&gt;<i> +	uint32_t multiplier)
+</I>
+Interesting reuse of the function. Are you sure this is called a cross
+product ? Both Wikipedia and my algebra classes fail to give me a definition
+for cross product that could apply here.
+
+&gt;<i>  {
+</I>&gt;<i> -	uint32_t multiplier;
+</I>&gt;<i>  
+</I>&gt;<i>  	/* Saturate the result if the operation would overflow. */
+</I>&gt;<i>  	if (denominator == 0 ||
+</I>&gt;<i> -	    numerator/denominator &gt;= ((uint32_t)-1)/10000000)
+</I>&gt;<i> +	    numerator/denominator &gt;= ((uint32_t)-1)/multiplier)
+</I>&gt;<i>  		return (uint32_t)-1;
+</I>&gt;<i>  
+</I>&gt;<i>  	/* Divide both the denominator and the multiplier by two until
+</I>&gt;<i>  	 * numerator * multiplier doesn't overflow. If anyone knows a better
+</I>&gt;<i>  	 * algorithm please let me know.
+</I>&gt;<i>  	 */
+</I>&gt;<i> -	multiplier = 10000000;
+</I>&gt;<i>  	while (numerator &gt; ((uint32_t)-1)/multiplier) {
+</I>&gt;<i>  		multiplier /= 2;
+</I>&gt;<i>  		denominator /= 2;
+</I>
+[snip]
+
+&gt;<i> diff -r 214c94aa62aa -r 4617ec8de827 linux/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> --- a/linux/drivers/media/video/uvc/uvc_video.c	Sat Oct 10 01:55:23 2009 +0200
+</I>&gt;<i> +++ b/linux/drivers/media/video/uvc/uvc_video.c	Fri Oct 30 16:24:31 2009 -0600
+</I>&gt;<i> @@ -373,6 +373,8 @@
+</I>&gt;<i>  		struct uvc_buffer *buf, const __u8 *data, int len)
+</I>&gt;<i>  {
+</I>&gt;<i>  	__u8 fid;
+</I>&gt;<i> +	__u32 pts = 0, stc = 0, pts_stc_delta, device_latency = 0;
+</I>&gt;<i> +	int i = 0, idx = 2;
+</I>&gt;<i>  
+</I>&gt;<i>  	/* Sanity checks:
+</I>&gt;<i>  	 * - packet must be at least 2 bytes long
+</I>&gt;<i> @@ -417,7 +419,44 @@
+</I>&gt;<i>  			return -ENODATA;
+</I>&gt;<i>  		}
+</I>&gt;<i>  
+</I>&gt;<i> -		/* TODO: Handle PTS and SCR. */
+</I>&gt;<i> +		do_gettimeofday(&amp;buf-&gt;buf.timestamp);
+</I>&gt;<i> +
+</I>&gt;<i> +		if((data[1] &amp; UVC_STREAM_PTS) &amp;&amp;
+</I>&gt;<i> +				(data[1] &amp; UVC_STREAM_SCR &amp;&amp; 
+</I>&gt;<i> +				stream-&gt;dev-&gt;clock_frequency)) {
+</I>
+Please make sure that your patch conforms with Linux kernel coding style
+(Documentation/CodingStyle). You can verify patches using the
+scripts/checkpatch.pl before submitting them.
+
+&gt;<i> +
+</I>&gt;<i> +                        for(i = 0; i &lt; 4; i++) {
+</I>&gt;<i> +                                pts += data[idx+i] &lt;&lt; (8*i);
+</I>&gt;<i> +                        }
+</I>&gt;<i> +
+</I>&gt;<i> +			idx += 4;
+</I>&gt;<i> +
+</I>&gt;<i> +                        for(i = 0; i &lt; 4; i++) {
+</I>&gt;<i> +                                stc += data[idx+i] &lt;&lt; (8*i);
+</I>&gt;<i> +                        }
+</I>
+You should use the le32_to_cpup macros instead of reinventing them:
+
+	pts = le32_to_cpup(&amp;data[2]);
+	stc = le32_to_cpup(&amp;data[6]);
+
+&gt;<i> +
+</I>&gt;<i> +			if(stc &lt; pts) {
+</I>&gt;<i> +				// Camera clock rolled over
+</I>&gt;<i> +				pts_stc_delta = UINT_MAX-pts+stc;
+</I>&gt;<i> +			}
+</I>&gt;<i> +			else {
+</I>&gt;<i> +				pts_stc_delta = stc-pts;
+</I>&gt;<i> +			}
+</I>
+You don't need to handle the overflow manually,
+
+	pts_stc_delta = stc - pts;
+
+will produce the right value thanks to the integer overflow in all cases.
+
+&gt;<i> +			device_latency = uvc_cross_product(
+</I>&gt;<i> +				pts_stc_delta, stream-&gt;dev-&gt;clock_frequency,
+</I>&gt;<i> +				1000000);
+</I>
+You should use stream-&gt;ctrl.dwClockFrequency here. The VC Interface Header
+Descriptor dwClockFrequency, stored in stream-&gt;dev-&gt;clock_frequency, has been
+deprecated in UVC 1.1.
+
+&gt;<i> +			if(device_latency &amp;&amp;
+</I>&gt;<i> +				buf-&gt;buf.timestamp.tv_usec &lt; device_latency) {
+</I>&gt;<i> +
+</I>&gt;<i> +				// borrow a second
+</I>&gt;<i> +				buf-&gt;buf.timestamp.tv_sec--;
+</I>&gt;<i> +				buf-&gt;buf.timestamp.tv_usec += 1000000;
+</I>&gt;<i> +			}
+</I>&gt;<i> +
+</I>&gt;<i> +			buf-&gt;buf.timestamp.tv_usec -= device_latency;
+</I>
+You're trying to compute device latency by subtracting the PTS field from the
+STC field, and then subtracting that latency, converted to microseconds using
+the nominal device clock frequency, from the system time acquired when the
+first URB of a video frame completes. I'm afraid this is not correct.
+
+First of all, the nominal device clock frequency isn't accurate. Drift and
+jitter make the frequency vary over time. Even if it didn't, the device clock
+isn't synchronized to the host clock, so you can't use the device clock
+frequency to convert a time stamp difference to a host time delta.
+
+The whole purpose of the PTS and SCR fields is to account for the device clock
+inaccuracies by offering a mean to match the device and host clock rates over
+time in an adaptive way.
+
+The PTS field gives the device time at which the raw frame capture begins. This
+is the time that must be copied to the buffer's timestamp after being converted
+to host time.
+
+As the device and host clocks are not synchronized and do not slave to a common
+clock, conversion from device time to host time requires additional
+information. This is the purpose of the SCR field.
+
+The SCR field gives two timestamps sampled from two clocks at the same time.
+The 32 low-order bits are sampled from the device clock (System Time Clock or
+STC), and the next 10 bits are sampled from the USB bus clock (SOF counter).
+
+As the SOF counter resolution is only 1ms in full-speed USB, an error of up
+to 1ms can be present in the SCR field. This error can be mitigated using
+statistical analysis on consecutive SCR samples.
+
+Using that information, the relationship between the device clock and the USB
+bus clock can be computed, and the PTS field can be converted to USB bus clock
+units.
+
+Now, on the host side, a similar process can be done by sampling the USB SOF
+counter and the system time at regular intervals, and the relationship between
+the USB bus clock and the system clock can be established. The PTS field
+converted to USB bus clock units can further be converted to host clock units.
+
+This is what the PTS/SCR support patch should do. With such an algorithm, the
+USB latency calculation in uvc_video_decode_isoc() becomes unnecessary. I'm
+afraid the version you submitted doesn't perform those operations.
+
+I'm sorry to have to refuse the patch in its current state.
+
+-- 
+Best regards,
+
+Laurent Pinchart
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005443.html">[Linux-uvc-devel] How can I use a UVC Device in OMAP3530
+</A></li>
+	<LI>Next message: <A HREF="005438.html">[Linux-uvc-devel] has no release call back
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5436">[ date ]</a>
+              <a href="thread.html#5436">[ thread ]</a>
+              <a href="subject.html#5436">[ subject ]</a>
+              <a href="author.html#5436">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

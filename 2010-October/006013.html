@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Microphone stopped working on Logitech Quickcam 3000 for Business
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microphone%20stopped%20working%20on%20Logitech%0A%20Quickcam%203000%20for%20Business&In-Reply-To=%3CAANLkTimf5AZ8wuikQbDK3AhZoViGuE4D12s7_jFw0Sfh%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006011.html">
+   <LINK REL="Next"  HREF="006017.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Microphone stopped working on Logitech Quickcam 3000 for Business</H1>
+    <B>Paulo Assis</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microphone%20stopped%20working%20on%20Logitech%0A%20Quickcam%203000%20for%20Business&In-Reply-To=%3CAANLkTimf5AZ8wuikQbDK3AhZoViGuE4D12s7_jFw0Sfh%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Microphone stopped working on Logitech Quickcam 3000 for Business">pj.assis at gmail.com
+       </A><BR>
+    <I>Mon Oct  4 10:38:11 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006011.html">[Linux-uvc-devel] Microphone stopped working on Logitech Quickcam	3000 for Business
+</A></li>
+        <LI>Next message: <A HREF="006017.html">[Linux-uvc-devel] Microphone stopped working on Logitech	Quickcam 3000 for Business
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6013">[ date ]</a>
+              <a href="thread.html#6013">[ thread ]</a>
+              <a href="subject.html#6013">[ subject ]</a>
+              <a href="author.html#6013">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+Audio in this camera is handled by usb-audio driver not uvcvideo (video only).
+In any case when grabbing audio from it make sure you set the sample
+rate to 16 Khz (mono), a sound server like pulse should convert the
+sample rate and channels automatically, but if you are not using it
+then you must use the correct frequency.
+
+Regards,
+Paulo
+
+in your test you are using 8 khz:
+&gt;<i> Recording WAVE 'test' : Signed 16 bit Little Endian, Rate 8000 Hz, Mono
+</I>
+
+
+2010/10/4 EJS &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">ejshoor at yahoo.com</A>&gt;:
+&gt;<i> Hi all,
+</I>&gt;<i>
+</I>&gt;<i> So I went out and bought this web cam because supposedly it worked right out of
+</I>&gt;<i> the box and it did. I least for a few weeks, but a few days ago I was trying to
+</I>&gt;<i> use skype and the microphone on the camera doesnt seem to work any more. (It
+</I>&gt;<i> used to work with skype.)
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> I had been installing some new applications and upgrading some packages
+</I>&gt;<i> recently; so I couldnt really tell what I would dave done to break it.&#160; Anyway,
+</I>&gt;<i> I have spend the past few days rolling everything back and I still cant figure
+</I>&gt;<i> out what the problem is. I've also changed the order or the kernel modules
+</I>&gt;<i> loading, and even took out all of the other cards that might be causing a
+</I>&gt;<i> conflict.&#160; If anyone, might be willing to help troubleshoot or at least point me
+</I>&gt;<i> in the right direction, I would appreciate it.
+</I>&gt;<i>
+</I>&gt;<i> Here are some system details. Everything seems to look okay.
+</I>&gt;<i>
+</I>&gt;<i> uname -a
+</I>&gt;<i> Linux jshoor-media 2.6.32-24-generic #43-Ubuntu SMP Thu Sep 16 14:17:33 UTC 2010
+</I>&gt;<i> i686 GNU/Linux
+</I>&gt;<i>
+</I>&gt;<i> lsusb
+</I>&gt;<i> Bus 002 Device 002: ID 0bc7:0004 X10 Wireless Technology, Inc. X10 Receiver
+</I>&gt;<i> Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+</I>&gt;<i> Bus 001 Device 003: ID 046d:09a5 Logitech, Inc.
+</I>&gt;<i> Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+</I>&gt;<i>
+</I>&gt;<i> dmesg |grep video
+</I>&gt;<i> [&#160;&#160;&#160; 0.281434] pci 0000:00:10.0: Boot video device
+</I>&gt;<i> [&#160;&#160; 13.436269] Linux video capture interface: v2.00
+</I>&gt;<i> [&#160;&#160; 13.819647] cx88[0]/0: registered device video0 [v4l2]
+</I>&gt;<i> [&#160;&#160; 14.350621] uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:09a5)
+</I>&gt;<i> [&#160;&#160; 14.419363] usbcore: registered new interface driver uvcvideo
+</I>&gt;<i>
+</I>&gt;<i> dmesg |grep snd
+</I>&gt;<i> [&#160;&#160; 14.172483] usbcore: registered new interface driver snd-usb-audio
+</I>&gt;<i>
+</I>&gt;<i> arecord -l
+</I>&gt;<i> **** List of CAPTURE Hardware Devices ****
+</I>&gt;<i> card 0: NVidia [HDA NVidia], device 0: ALC889A Analog [ALC889A Analog]
+</I>&gt;<i> &#160; Subdevices: 1/1
+</I>&gt;<i> &#160; Subdevice #0: subdevice #0
+</I>&gt;<i> card 0: NVidia [HDA NVidia], device 1: ALC889A Digital [ALC889A Digital]
+</I>&gt;<i> &#160; Subdevices: 1/1
+</I>&gt;<i> &#160; Subdevice #0: subdevice #0
+</I>&gt;<i> card 0: NVidia [HDA NVidia], device 2: ALC889A Analog [ALC889A Analog]
+</I>&gt;<i> &#160; Subdevices: 2/2
+</I>&gt;<i> &#160; Subdevice #0: subdevice #0
+</I>&gt;<i> &#160; Subdevice #1: subdevice #1
+</I>&gt;<i> card 1: U0x46d0x9a5 [USB Device 0x46d:0x9a5], device 0: USB Audio [USB Audio]
+</I>&gt;<i> &#160; Subdevices: 1/1
+</I>&gt;<i> &#160; Subdevice #0: subdevice #0
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> &#160;arecord&#160; -v -f S16_LE -d 10 -D plughw:1,0 test
+</I>&gt;<i> Recording WAVE 'test' : Signed 16 bit Little Endian, Rate 8000 Hz, Mono
+</I>&gt;<i> Plug PCM: Rate conversion PCM (16000, sformat=S16_LE)
+</I>&gt;<i> Converter: libspeex (builtin)
+</I>&gt;<i> Protocol version: 10002
+</I>&gt;<i> Its setup is:
+</I>&gt;<i> &#160; stream&#160;&#160;&#160;&#160;&#160;&#160; : CAPTURE
+</I>&gt;<i> &#160; access&#160;&#160;&#160;&#160;&#160;&#160; : RW_INTERLEAVED
+</I>&gt;<i> &#160; format&#160;&#160;&#160;&#160;&#160;&#160; : S16_LE
+</I>&gt;<i> &#160; subformat&#160;&#160;&#160; : STD
+</I>&gt;<i> &#160; channels&#160;&#160;&#160;&#160; : 1
+</I>&gt;<i> &#160; rate&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; : 8000
+</I>&gt;<i> &#160; exact rate&#160;&#160; : 8000 (8000/1)
+</I>&gt;<i> &#160; msbits&#160;&#160;&#160;&#160;&#160;&#160; : 16
+</I>&gt;<i> &#160; buffer_size&#160; : 4000
+</I>&gt;<i> &#160; period_size&#160; : 1000
+</I>&gt;<i> &#160; period_time&#160; : 125000
+</I>&gt;<i> &#160; tstamp_mode&#160; : NONE
+</I>&gt;<i> &#160; period_step&#160; : 1
+</I>&gt;<i> &#160; avail_min&#160;&#160;&#160; : 1000
+</I>&gt;<i> &#160; period_event : 0
+</I>&gt;<i> &#160; start_threshold&#160; : 1
+</I>&gt;<i> &#160; stop_threshold&#160;&#160; : 4000
+</I>&gt;<i> &#160; silence_threshold: 0
+</I>&gt;<i> &#160; silence_size : 0
+</I>&gt;<i> &#160; boundary&#160;&#160;&#160;&#160; : 1048576000
+</I>&gt;<i> Slave: Hardware PCM card 1 'USB Device 0x46d:0x9a5' device 0 subdevice 0
+</I>&gt;<i> Its setup is:
+</I>&gt;<i> &#160; stream&#160;&#160;&#160;&#160;&#160;&#160; : CAPTURE
+</I>&gt;<i> &#160; access&#160;&#160;&#160;&#160;&#160;&#160; : MMAP_INTERLEAVED
+</I>&gt;<i> &#160; format&#160;&#160;&#160;&#160;&#160;&#160; : S16_LE
+</I>&gt;<i> &#160; subformat&#160;&#160;&#160; : STD
+</I>&gt;<i> &#160; channels&#160;&#160;&#160;&#160; : 1
+</I>&gt;<i> &#160; rate&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; : 16000
+</I>&gt;<i> &#160; exact rate&#160;&#160; : 16000 (16000/1)
+</I>&gt;<i> &#160; msbits&#160;&#160;&#160;&#160;&#160;&#160; : 16
+</I>&gt;<i> &#160; buffer_size&#160; : 8002
+</I>&gt;<i> &#160; period_size&#160; : 2000
+</I>&gt;<i> &#160; period_time&#160; : 125000
+</I>&gt;<i> &#160; tstamp_mode&#160; : NONE
+</I>&gt;<i> &#160; period_step&#160; : 1
+</I>&gt;<i> &#160; avail_min&#160;&#160;&#160; : 2000
+</I>&gt;<i> &#160; period_event : 0
+</I>&gt;<i> &#160; start_threshold&#160; : 2
+</I>&gt;<i> &#160; stop_threshold&#160;&#160; : 8002
+</I>&gt;<i> &#160; silence_threshold: 0
+</I>&gt;<i> &#160; silence_size : 0
+</I>&gt;<i> &#160; boundary&#160;&#160;&#160;&#160; : 2097676288
+</I>&gt;<i> &#160; appl_ptr&#160;&#160;&#160;&#160; : 0
+</I>&gt;<i> &#160; hw_ptr&#160;&#160;&#160;&#160;&#160;&#160; : 0
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Thanks,
+</I>&gt;<i> J
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006011.html">[Linux-uvc-devel] Microphone stopped working on Logitech Quickcam	3000 for Business
+</A></li>
+	<LI>Next message: <A HREF="006017.html">[Linux-uvc-devel] Microphone stopped working on Logitech	Quickcam 3000 for Business
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6013">[ date ]</a>
+              <a href="thread.html#6013">[ thread ]</a>
+              <a href="subject.html#6013">[ subject ]</a>
+              <a href="author.html#6013">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

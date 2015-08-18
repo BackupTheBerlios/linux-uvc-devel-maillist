@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Trouble recording from two webcams
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Trouble%20recording%20from%20two%20webcams&In-Reply-To=%3C200712282336.07370.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002672.html">
+   <LINK REL="Next"  HREF="002674.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Trouble recording from two webcams</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Trouble%20recording%20from%20two%20webcams&In-Reply-To=%3C200712282336.07370.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Trouble recording from two webcams">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Fri Dec 28 23:36:07 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002672.html">[Linux-uvc-devel] Asus G1s built-in webcam problems
+</A></li>
+        <LI>Next message: <A HREF="002674.html">[Linux-uvc-devel] Installing uvcvideo.ko driver on SUSE Linux
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2662">[ date ]</a>
+              <a href="thread.html#2662">[ thread ]</a>
+              <a href="subject.html#2662">[ subject ]</a>
+              <a href="author.html#2662">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Friday 21 December 2007, Plooij wrote:
+&gt;<i> I have some news on this issue: after an update from Ubuntu last Wednesday,
+</I>&gt;<i> both cameras work fine simultaneously. They even continue to work fine
+</I>&gt;<i> after rebooting, so the problem seems to be solved permanently (there's
+</I>&gt;<i> nothing worse than problems that occur only sometimes). The Ubuntu update
+</I>&gt;<i> contained an updated kernel.
+</I>&gt;<i>
+</I>&gt;<i> Sorry, I forgot rule nr. 1 in bug reporting: use the latest version of the
+</I>&gt;<i> program. I downloaded a recent version of your driver from SVN. Should I
+</I>&gt;<i> use that one instead of the one from Ubuntu that seems to work now?
+</I>
+Given that the Ubuntu package will probably follow the driver's development, I 
+would at least try the SVN version to discover bugs before it's too late :-)
+
+&gt;<i> After the update, I still can't set the frame rate parameter. I've added my
+</I>&gt;<i> code below (irrelevant code is replaced by text between [] brackets). This
+</I>&gt;<i> is the output of the code section:
+</I>&gt;<i>
+</I>&gt;<i> Parameter getting not supported.
+</I>&gt;<i> Parameter setting not supported.
+</I>
+See comment below.
+
+&gt;<i> Do you think it is possible to make a driver that skips frames in case of
+</I>&gt;<i> insufficient bandwidth, instead of giving corrupted frames to applications?
+</I>
+For YUV video streams that would be possible, as images have a fixed size. For 
+MJPEG video streams there is no way to detect packet loss.
+
+&gt;<i> void CGrabber_Implementation::init_device()
+</I>&gt;<i> {
+</I>&gt;<i> 	struct v4l2_capability cap;
+</I>&gt;<i> 	struct v4l2_cropcap cropcap;
+</I>&gt;<i> 	struct v4l2_crop crop;
+</I>&gt;<i> 	struct v4l2_streamparm streamparm;
+</I>&gt;<i> 	struct v4l2_format fmt;
+</I>&gt;<i> 	unsigned int min;
+</I>&gt;<i>
+</I>&gt;<i> 	[Capability checks]
+</I>&gt;<i>
+</I>&gt;<i> 	[Cropping settings]
+</I>&gt;<i>
+</I>&gt;<i> 	//Parameters
+</I>&gt;<i> 	CLEAR(streamparm);
+</I>
+Set streamparm.type to V4L2_BUF_TYPE_VIDEO_CAPTURE. That should solve your 
+problem.
+
+&gt;<i> 	if (-1 == xioctl (fd, VIDIOC_G_PARM, &amp;streamparm))
+</I>&gt;<i> 	{
+</I>&gt;<i> 		switch (errno)
+</I>&gt;<i> 		{
+</I>&gt;<i> 		case EINVAL:
+</I>&gt;<i> 			printf(&quot;Parameter getting not supported.\n&quot;);
+</I>&gt;<i> 			break;
+</I>&gt;<i> 		default:
+</I>&gt;<i> 			errno_exit (&quot;VIDIOC_G_PARM&quot;);
+</I>&gt;<i> 			break;
+</I>&gt;<i> 		}
+</I>&gt;<i> 	}
+</I>&gt;<i>
+</I>&gt;<i> 	streamparm.parm.capture.timeperframe.numerator   = 1;
+</I>&gt;<i> 	streamparm.parm.capture.timeperframe.denominator = 15;
+</I>&gt;<i>
+</I>&gt;<i> 	if (-1 == xioctl (fd, VIDIOC_S_PARM, &amp;streamparm))
+</I>&gt;<i> 	{
+</I>&gt;<i> 		switch (errno)
+</I>&gt;<i> 		{
+</I>&gt;<i> 		case EINVAL:
+</I>&gt;<i> 			printf(&quot;Parameter setting not supported.\n&quot;);
+</I>&gt;<i> 			break;
+</I>&gt;<i> 		default:
+</I>&gt;<i> 			errno_exit (&quot;VIDIOC_S_PARM&quot;);
+</I>&gt;<i> 			break;
+</I>&gt;<i> 		}
+</I>&gt;<i> 	}
+</I>&gt;<i>
+</I>&gt;<i> 	//Format
+</I>&gt;<i> 	CLEAR (fmt);
+</I>&gt;<i>
+</I>&gt;<i> 	fmt.type                = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+</I>&gt;<i> 	fmt.fmt.pix.width       = 640;
+</I>&gt;<i> 	fmt.fmt.pix.height      = 480;
+</I>&gt;<i> 	fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
+</I>&gt;<i> 	fmt.fmt.pix.field       = V4L2_FIELD_NONE;
+</I>&gt;<i>
+</I>&gt;<i> 	if (-1 == xioctl (fd, VIDIOC_S_FMT, &amp;fmt))
+</I>&gt;<i> 		errno_exit (&quot;VIDIOC_S_FMT&quot;);
+</I>&gt;<i>
+</I>&gt;<i> 	[Format checks]
+</I>&gt;<i>
+</I>&gt;<i> 	[More initialization]
+</I>&gt;<i>
+</I>&gt;<i> 	[Camera control settings]
+</I>&gt;<i> }
+</I>
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002672.html">[Linux-uvc-devel] Asus G1s built-in webcam problems
+</A></li>
+	<LI>Next message: <A HREF="002674.html">[Linux-uvc-devel] Installing uvcvideo.ko driver on SUSE Linux
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2662">[ date ]</a>
+              <a href="thread.html#2662">[ thread ]</a>
+              <a href="subject.html#2662">[ subject ]</a>
+              <a href="author.html#2662">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech C910 -- trying to run more than one.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20C910%20--%20trying%20to%20run%20more%20than%20one.&In-Reply-To=%3C201103061214.19341.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006354.html">
+   <LINK REL="Next"  HREF="006348.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech C910 -- trying to run more than one.</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20C910%20--%20trying%20to%20run%20more%20than%20one.&In-Reply-To=%3C201103061214.19341.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Logitech C910 -- trying to run more than one.">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Sun Mar  6 12:14:19 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006354.html">[Linux-uvc-devel] [PATCH 1/3] Initial patch to use	dynamic_debug system
+</A></li>
+        <LI>Next message: <A HREF="006348.html">[Linux-uvc-devel] Logitech C910 -- trying to run more than one.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6336">[ date ]</a>
+              <a href="thread.html#6336">[ thread ]</a>
+              <a href="subject.html#6336">[ subject ]</a>
+              <a href="author.html#6336">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Philip,
+
+On Sunday 20 February 2011 21:57:24 Philip Gladstone wrote:
+&gt;<i> I attached two C910s to a small linux box, and ran into the 'Failed to
+</I>&gt;<i> submit URB' problem.
+</I>&gt;<i> 
+</I>&gt;<i> When I look at the descriptors for this camera, I think I understand the
+</I>&gt;<i> problem. I'm capturing at 5 Mpixels and I'm trying two cameras.
+</I>&gt;<i> 
+</I>&gt;<i>        VideoStreaming Interface Descriptor:
+</I>&gt;<i>          bLength                            38
+</I>&gt;<i>          bDescriptorType                    36
+</I>&gt;<i>          bDescriptorSubtype                  7 (FRAME_MJPEG)
+</I>&gt;<i>          bFrameIndex                        28
+</I>&gt;<i>          bmCapabilities                   0x01
+</I>&gt;<i>            Still image supported
+</I>&gt;<i>          wWidth                           2592
+</I>&gt;<i>          wHeight                          1944
+</I>&gt;<i>          dwMinBitRate                403107840
+</I>&gt;<i>          dwMaxBitRate                806215680
+</I>&gt;<i>          dwMaxVideoFrameBufferSize    10077696
+</I>&gt;<i>          dwDefaultFrameInterval        1000000
+</I>&gt;<i>          bFrameIntervalType                  3
+</I>&gt;<i>          dwFrameInterval( 0)           1000000
+</I>&gt;<i>          dwFrameInterval( 1)           1333333
+</I>&gt;<i>          dwFrameInterval( 2)           2000000
+</I>&gt;<i> 
+</I>&gt;<i> The video frame size is set to 10Mb. This is surprisingly large as
+</I>&gt;<i> actual frames captured with MJPEG on this camera are typically 500kb or
+</I>&gt;<i> less. When I checked the descriptor for the uncompressed version of the
+</I>&gt;<i> same frame, it came back with the same value of dwMaxVideoFrameBufferSize
+</I>&gt;<i> (effectively 16 bits per pixel). The values for min/max bit rate are
+</I>&gt;<i> (correctly) calculated from the frame intervals and the buffer size.
+</I>
+The uvcvideo driver doesn't use the dwMaxVideoFrameBufferSize field to compute 
+the required bandwidth but queries the device at runtime instead.
+
+You can enable the UVC_TRACE_VIDEO trace flag to get the driver to print the 
+bandwidth requested by the device to the kernel log.
+
+&gt;<i> Typical JPEG compression gets down to 1 bit per pixel, and 2 bits is
+</I>&gt;<i> very unusual.
+</I>&gt;<i> 
+</I>&gt;<i> What I want to know is what the impact would be of defining a new QUIRK
+</I>&gt;<i> that overrode the frame buffer size for compressed frames and calculated
+</I>&gt;<i> them at (say) 2 bits per pixel?
+</I>&gt;<i> 
+</I>&gt;<i> Do other webcams get this right?
+</I>
+You would be surprised by how many webcams get things wrong.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006354.html">[Linux-uvc-devel] [PATCH 1/3] Initial patch to use	dynamic_debug system
+</A></li>
+	<LI>Next message: <A HREF="006348.html">[Linux-uvc-devel] Logitech C910 -- trying to run more than one.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6336">[ date ]</a>
+              <a href="thread.html#6336">[ thread ]</a>
+              <a href="subject.html#6336">[ subject ]</a>
+              <a href="author.html#6336">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

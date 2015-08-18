@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Please fix this bug of 5986:0203
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Please%20fix%20this%20bug%20of%205986%3A0203&In-Reply-To=%3C4E9AB7F5.1070909%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006949.html">
+   <LINK REL="Next"  HREF="006952.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Please fix this bug of 5986:0203</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Please%20fix%20this%20bug%20of%205986%3A0203&In-Reply-To=%3C4E9AB7F5.1070909%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] Please fix this bug of 5986:0203">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Sun Oct 16 12:54:45 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006949.html">[Linux-uvc-devel] Please fix this bug of 5986:0203
+</A></li>
+        <LI>Next message: <A HREF="006952.html">[Linux-uvc-devel] report of UVC device and request for info
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6950">[ date ]</a>
+              <a href="thread.html#6950">[ thread ]</a>
+              <a href="subject.html#6950">[ subject ]</a>
+              <a href="author.html#6950">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Daniele,
+
+can you please apply this patch on top of current kernel git.
+With this patch you can get access to some webcams  infos without 
+spaming the sys log.
+After you compiled kernel and rebooted, or reloaded uvcvideo module, you 
+can do this:
+watch cat /sys/kernel/debug/usb/uvcvideo/001.007_046d.0808/stats
+
+or just &quot;cat&quot; it, to monitore what's happening. Instead of 
+&quot;001.007_046d.0808&quot; you need to set some thing different.
+
+The field i interested in, is &quot;error bit&quot; or &quot;uvc_stream_err&quot;. Seems 
+like some cams depends on this bit, and current uvcvideo code do not use it.
+If your cam hangs after it set err_bit than may be we can do some thing. 
+I plan to invest my time to err_bit  handler right after uvc_debugfs 
+patch will go upstream.
+
+Regards,
+Alexey.
+
+Am 16.10.2011 02:06, schrieb Daniele Coccato:
+&gt;<i> Hello,
+</I>&gt;<i> there is a bug of 5986:0203 which causes the webcam to automatically
+</I>&gt;<i> turn to &quot;red and black&quot; after some seconds since initialization.
+</I>&gt;<i> This happens only on the FIRST initialization of the webcam, later
+</I>&gt;<i> initializations will not cause this problem anymore, until reboot.
+</I>&gt;<i> This bug exists since LONG time (more than 2 years) and it is pretty annoying.
+</I>&gt;<i> Could any developer please fix it?
+</I>&gt;<i> If any more info is needed, feel free to ask.
+</I>&gt;<i> Thanks.
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: uvc_debugfs_2.diff
+Type: text/x-patch
+Size: 13893 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20111016/773a3fdd/attachment.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20111016/773a3fdd/attachment.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006949.html">[Linux-uvc-devel] Please fix this bug of 5986:0203
+</A></li>
+	<LI>Next message: <A HREF="006952.html">[Linux-uvc-devel] report of UVC device and request for info
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6950">[ date ]</a>
+              <a href="thread.html#6950">[ thread ]</a>
+              <a href="subject.html#6950">[ subject ]</a>
+              <a href="author.html#6950">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

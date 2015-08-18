@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [RFC] Switching from SVN on Berlios to Mercurial on linux-tv.org
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Switching%20from%20SVN%20on%20Berlios%20to%0A%20Mercurial%20on%20linux-tv.org&In-Reply-To=%3C48F5E16F.2070101%40redembedded.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004107.html">
+   <LINK REL="Next"  HREF="004117.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [RFC] Switching from SVN on Berlios to Mercurial on linux-tv.org</H1>
+    <B>Darren Longhorn</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Switching%20from%20SVN%20on%20Berlios%20to%0A%20Mercurial%20on%20linux-tv.org&In-Reply-To=%3C48F5E16F.2070101%40redembedded.com%3E"
+       TITLE="[Linux-uvc-devel] [RFC] Switching from SVN on Berlios to Mercurial on linux-tv.org">darren.longhorn at redembedded.com
+       </A><BR>
+    <I>Wed Oct 15 14:26:23 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004107.html">[Linux-uvc-devel] [RFC] Switching from SVN on Berlios to	Mercurial on linux-tv.org
+</A></li>
+        <LI>Next message: <A HREF="004117.html">[Linux-uvc-devel] [RFC] Switching from SVN on Berlios to	Mercurial on linux-tv.org
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4113">[ date ]</a>
+              <a href="thread.html#4113">[ thread ]</a>
+              <a href="subject.html#4113">[ subject ]</a>
+              <a href="author.html#4113">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Laurent Pinchart wrote:
+&gt;<i> Hi Darren,
+</I>&gt;<i> 
+</I>&gt;<i> thanks for taking the time to provide feedback.
+</I>
+No problem.
+
+&gt;<i> On Wednesday 15 October 2008, Darren Longhorn wrote:
+</I>&gt;&gt;<i> Laurent Pinchart wrote:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> &lt;snip&gt;
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> linux-tv.org Mercurial trees contain a copy of the whole v4l/dvb
+</I>&gt;&gt;&gt;<i> subsystem. The main implication would be that, to use the latest uvcvideo
+</I>&gt;&gt;&gt;<i> driver instead of the one shipped with your kernel, you will have to
+</I>&gt;&gt;&gt;<i> install the v4l core module from the Mercurial tree along with the
+</I>&gt;&gt;&gt;<i> uvcvideo module, instead of the uvcvideo module only as you do now.
+</I>&gt;&gt;<i> Could you expand on why the v4l core module would also be required?
+</I>&gt;<i> 
+</I>&gt;<i> Mercurial trees host a copy of the whole v4l/dvb subsystem. The v4l/dvb core 
+</I>&gt;<i> is source compatible with all Linux kernels from 2.6.16 up. The device 
+</I>&gt;<i> drivers maintain backward source compatibility as well, but the first Linux 
+</I>&gt;<i> kernel version they are compatible with depends on the individual drivers' 
+</I>&gt;<i> developers.
+</I>&gt;<i> 
+</I>&gt;<i> As a v4l/dvb tree host a backward compatible copy of the v4l core source, 
+</I>&gt;<i> drivers don't have to care about backward compatibility with older versions 
+</I>&gt;<i> of the v4l/dvb APIs. For the uvcvideo driver this would mean I can drop an 
+</I>&gt;<i> important part of the compatibility code as the driver will only have to 
+</I>&gt;<i> support the latest v4l/dvb API. To use the driver with older kernels you 
+</I>&gt;<i> would then have to use the v4l/dvb core moduels as well, as the driver itself 
+</I>&gt;<i> doesn't maintain backward compability with previous versions of the v4l/dvb 
+</I>&gt;<i> core.
+</I>
+Thanks, that's very clear.
+
+&gt;&gt;&gt;<i> I would expect the number of SVN checkouts to have dropped over the last
+</I>&gt;&gt;&gt;<i> 3 monts, but Berlios doesn't provide such statistics. I'm thus asking
+</I>&gt;&gt;&gt;<i> your opinion : should I switch the Linux UVC driver to a Mercurial tree ?
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Pros:
+</I>&gt;&gt;&gt;<i>  - The driver will be hosted along most other video-related kernel
+</I>&gt;&gt;&gt;<i> projects - An important part of the compatibility code (uvc_compat.h and
+</I>&gt;&gt;&gt;<i> various #ifdef's around the source) can be dropped, as the source tree
+</I>&gt;&gt;&gt;<i> contains the latest v4l core source.
+</I>&gt;&gt;<i> That answers my questions above, I think? I think that would be a con
+</I>&gt;&gt;<i> for those of use who backport to older kernels.
+</I>&gt;<i> 
+</I>&gt;<i> Backporting will still work, but you will have to backport the v4l/dvb core as 
+</I>&gt;<i> well.
+</I>
+Sure.
+
+&gt;<i> Do you really mean backporting (thus on kernels older than 2.6.15, as the 
+</I>&gt;<i> uvcvideo driver supports 2.6.15+ kernels already), or were you referring to 
+</I>&gt;<i> using the driver with a 2.6.15+ kernel ? In the later case the switch to 
+</I>&gt;<i> Mercurial would drop compatibility with 2.6.15 but 2.6.16 and above should 
+</I>&gt;<i> work.
+</I>
+Unfortunately, yes. One of the embedded platforms I develop for is based
+around 2.6.10.
+
+&gt;&gt;<i> &lt;snip&gt;
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> What's your opinion ? Is someone strongly opposed to the switch ? If so
+</I>&gt;&gt;&gt;<i> please state your reasons. All constructive opinions are welcome.
+</I>&gt;&gt;<i> I guess I would be opposed for teh reson above, but I'm probably a very
+</I>&gt;&gt;<i> small minority!
+</I>&gt;<i> 
+</I>&gt;<i> Your opinion in nonetheless important.
+</I>&gt;<i> 
+</I>&gt;<i> Maintaining backward compatibility in the uvcvideo driver itself wasn't that 
+</I>&gt;<i> much of a burden until now, but changes in the v4l core queued for 2.6.28 
+</I>&gt;<i> would introduced a whole new set of #ifdef's all around the driver. The code 
+</I>&gt;<i> would become messy and I'd like to avoid that if possible. Hence the idea of 
+</I>&gt;<i> switching to Mercurial.
+</I>
+I can see that you would wish to avoid that.
+
+Cheers
+
+Darren
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004107.html">[Linux-uvc-devel] [RFC] Switching from SVN on Berlios to	Mercurial on linux-tv.org
+</A></li>
+	<LI>Next message: <A HREF="004117.html">[Linux-uvc-devel] [RFC] Switching from SVN on Berlios to	Mercurial on linux-tv.org
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4113">[ date ]</a>
+              <a href="thread.html#4113">[ thread ]</a>
+              <a href="subject.html#4113">[ subject ]</a>
+              <a href="author.html#4113">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Maximum framerate with multiple USB 2 cameras?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Maximum%20framerate%20with%20multiple%20USB%202%20cameras%3F&In-Reply-To=%3C74e91400611022105t5ebf0c24y77ed138071c3b6a3%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000932.html">
+   <LINK REL="Next"  HREF="000921.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Maximum framerate with multiple USB 2 cameras?</H1>
+    <B>Denis McLaughlin</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Maximum%20framerate%20with%20multiple%20USB%202%20cameras%3F&In-Reply-To=%3C74e91400611022105t5ebf0c24y77ed138071c3b6a3%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Maximum framerate with multiple USB 2 cameras?">mclaughlin.denis at gmail.com
+       </A><BR>
+    <I>Fri Nov  3 06:05:40 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000932.html">[Linux-uvc-devel] Maximum framerate with multiple USB 2 cameras?
+</A></li>
+        <LI>Next message: <A HREF="000921.html">[Linux-uvc-devel] Maximum framerate with multiple USB 2 cameras?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#919">[ date ]</a>
+              <a href="thread.html#919">[ thread ]</a>
+              <a href="subject.html#919">[ subject ]</a>
+              <a href="author.html#919">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>  I'm working on a project that involves streaming from multiple web cams.
+By and large, things work, but there are some gotchas.
+
+ - my system is a P4 2.8GHz with 1G of memory
+ - running Debian with kernel 2.6.17
+ - I have 8 logitech QC fusions, as well as 6 logitech QC messengers on the
+system
+ - the 8 fusions are grouped 4-each into two USB2 hubs
+ - I'm capturing the fusions at 640x480x15fps
+ - I wrote a capture program (based on luvcview) which grabs frames from a
+uvc cam and dunks it into a datafile with a timestamp: I run 8 instances of
+this capture program, one for each of the fusions
+ - the messengers, being USB 1.1, can't stream, but I snap pics from them
+round-robin fashion, hitting each cam about once every 3 or 4 seconds
+ - I'm also recording audio from each of the 8 fusions as well
+ - the entire recording system is stable enough to run for 2-3 hours or more
+(generating 70-80G of audio and video)
+
+  Because I'm getting MJPEG encoded frames from the fusions, the frames can
+be directly stored without any post-processing, and consequently there is
+very little CPU overhead in capturing the data.  I can capture 8
+640x480x15fps video streams, plus record 8 audio streams, and snap pics from
+the messengers, all on the same system, and CPU utilization is spiky but
+generally low.
+
+  However, there are gotchas, not all of which I have solutions for:
+
+ - Audio recording from the fusions has a persistent pop or click in it.
+This makes the audio unusable directly, but it's not difficult to remove the
+clicks using something like audacity or gnome wave cleaner.
+
+ - While the USB 2 bus can support 8 streaming cams, there seems to be a
+fair bit of jitter in capture time.  The capture utility I wrote time-stamps
+each frame as it receives it, but while the frames are generally uniformly
+spaced 0.066s, there are occasional dropouts and periods where frames are
+snapped very quickly one after another.  I haven't done enough testing to
+know whether this jitter gets worse with more web cams or not.
+
+ - Likely as a consequence of the time jitter in the USB bus (or maybe a
+problem with the cams?  or maybe my capture program?), I'm having a lot of
+trouble trying to synchronize the video streams from the fusions with the
+audio I recorded.  I'm still working on a solution to this one... :(
+
+  Capturing the cameras in YUV format may introduce other bottlenecks
+because of the increased bandwidth, I haven't tried that.  My 640x480 MJPEG
+frames come in around 70k apiece.
+
+  Hope this helps!
+
+Denis
+
+On 10/20/06, Pablo dAngelo &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Pablo.dAngelo at web.de</A>&gt; wrote:
+&gt;<i>
+</I>&gt;<i> Hi all,
+</I>&gt;<i>
+</I>&gt;<i> I would like to build an omnidirectional video camera system, that can
+</I>&gt;<i> capture a 360&#176; degree view of a scene, similar to the ladybug camera by
+</I>&gt;<i> pointgrey (<A HREF="http://www.ptgrey.com/products/ladybug2/index.asp">http://www.ptgrey.com/products/ladybug2/index.asp</A>). Such a
+</I>&gt;<i> system would probably consist of 4 or 5 cameras rotated by 90 or 72 degrees
+</I>&gt;<i> each, and maybe another one pointing upwards. They should all capture images
+</I>&gt;<i> in parallel.
+</I>&gt;<i>
+</I>&gt;<i> Since it should be quite cheap (but high quality), my only option is to
+</I>&gt;<i> use webcams, either based on USB or Firewire (although the only affordable
+</I>&gt;<i> firewire camera I found, the Fire-I seems to be out of production).
+</I>&gt;<i>
+</I>&gt;<i> I have a single Philips 740K camera, which has a nice picture quality and
+</I>&gt;<i> provides a standard M12x0.5 lens screw mount, so I can mount some third
+</I>&gt;<i> party wide angle lens. However, it is limited to USB 1.1, that will lead
+</I>&gt;<i> to a very limited framerate, I fear.
+</I>&gt;<i>
+</I>&gt;<i> Therefore I'm thinking about using USB2 webcams, such as the Logitech
+</I>&gt;<i> Fusion or Pro 5000, to increase the overall framerate I can archive with
+</I>&gt;<i> this driver. The question now is, which framerate could I expect from 5 UVC
+</I>&gt;<i> USB2 cameras connected to a single laptop? Or is there a principal problem
+</I>&gt;<i> of using that amount of cameras at the same time?
+</I>&gt;<i>
+</I>&gt;<i> On
+</I>&gt;<i> <A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/2006-March/000365.html,">https://lists.berlios.de/pipermail/linux-uvc-devel/2006-March/000365.html,</A>
+</I>&gt;<i> David Moore noticed:
+</I>&gt;<i> &gt; Hi, I'm interested in connecting more than one camera at once,
+</I>&gt;<i> &gt; specifically, a pair of Logitech Quickcam Pro 5000s.
+</I>&gt;<i> &gt; I only have one at the moment, but when I run it at full uncompressed
+</I>&gt;<i> &gt; resolution (640x480x30fps YUV), it chooses an ISO endpoint with a packet
+</I>&gt;<i> &gt; size of 3060 bytes.  This is more than half of the available ISO
+</I>&gt;<i> &gt; bandwidth. (cat /proc/bus/usb/devices claims it's 60%)
+</I>&gt;<i>
+</I>&gt;<i> Is there a compression method supported by the cameras (for example
+</I>&gt;<i> MJPEG), that would lead to higher compression, thus allowing a higher total
+</I>&gt;<i> framerate?
+</I>&gt;<i>
+</I>&gt;<i> Btw. Thanks a lot for developing this driver!
+</I>&gt;<i>
+</I>&gt;<i> ciao
+</I>&gt;<i>   Pablo
+</I>&gt;<i> __________________________________________________________________________
+</I>&gt;<i> Erweitern Sie FreeMail zu einem noch leistungsst&#228;rkeren E-Mail-Postfach!
+</I>&gt;<i> Mehr Infos unter <A HREF="http://freemail.web.de/home/landingpad/?mc=021131">http://freemail.web.de/home/landingpad/?mc=021131</A>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061103/31714401/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061103/31714401/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000932.html">[Linux-uvc-devel] Maximum framerate with multiple USB 2 cameras?
+</A></li>
+	<LI>Next message: <A HREF="000921.html">[Linux-uvc-devel] Maximum framerate with multiple USB 2 cameras?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#919">[ date ]</a>
+              <a href="thread.html#919">[ thread ]</a>
+              <a href="subject.html#919">[ subject ]</a>
+              <a href="author.html#919">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

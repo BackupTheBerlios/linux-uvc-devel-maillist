@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Creating new /dev/video?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Creating%20new%20/dev/video%3F&In-Reply-To=%3C1168180533.4488.71.camel%40delight%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001143.html">
+   <LINK REL="Next"  HREF="001170.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Creating new /dev/video?</H1>
+    <B>Martin</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Creating%20new%20/dev/video%3F&In-Reply-To=%3C1168180533.4488.71.camel%40delight%3E"
+       TITLE="[Linux-uvc-devel] Creating new /dev/video?">mailinglisten at habmalnefrage.de
+       </A><BR>
+    <I>Sun Jan  7 15:35:33 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001143.html">[Linux-uvc-devel] Creating new /dev/video?
+</A></li>
+        <LI>Next message: <A HREF="001170.html">[Linux-uvc-devel] Creating new /dev/video?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1144">[ date ]</a>
+              <a href="thread.html#1144">[ thread ]</a>
+              <a href="subject.html#1144">[ subject ]</a>
+              <a href="author.html#1144">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Am Sonntag, den 07.01.2007, 13:03 +0000 schrieb Alex Pounds:
+&gt;<i> On Sun, Jan 07, 2007 at 11:03:45AM +0100, Martin wrote:
+</I>&gt;<i> &gt; Am Samstag, den 30.12.2006, 15:23 +0100 schrieb Laurent Pinchart:
+</I>&gt;<i> &gt; &gt; On a side note, aMSN should now work properly with UVC webcams. Philippe 
+</I>&gt;<i> &gt; &gt; Valembois added MJPEG support, and even fixed a small bug in the driver. 
+</I>&gt;<i> &gt; &gt; Thanks Phil.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Right after your message (or two days later?) I checked it out from the
+</I>&gt;<i> &gt; SVN. Yet, it did not work for me. Please do not ask me, why. I can do
+</I>&gt;<i> &gt; some debugging in a month or two, presumed someone is interested in the
+</I>&gt;<i> &gt; resulting stuff.
+</I>&gt;<i> 
+</I>&gt;<i> I also grabbed a SVN snapshot of aMSN, but I found it worked fine for me.
+</I>
+Ok, some facts now:
+
+linux-uvc-video Revision 75
+amsn Revision 7723
+
+Bus 001 Device 003: ID 046d:08c5 Logitech, Inc. 
+
+Procedure:
+1) Starting amsn from command line (gnome-Terminal) to see output
+directly
+2) Connecting to MSN
+3) Preferences -&gt; Others
+4) &quot;Webcam&quot; -&gt; UVC-driver (on the left column)
+
+Still no output on the command line.
+
+5) &quot;Camera&quot; (appeared in step 4 in the left column)
+
+Output as follows:
+
+ioctl: VIDIOC_REQBUFS(count=1;type=VIDEO_CAPTURE;memory=MMAP): Invalid
+argument
+
+Then several times:
+
+ioctl: VIDIOC_DQBUF(index=0;type=VIDEO_CAPTURE;bytesused=0;flags=0x0
+[];field=ANY;;timecode.type=0;timecode.flags=0;timecode.frames=0;timecode.seconds=0;timecode.minutes=0;timecode.hours=0;timecode.userbits=&quot;&quot;;sequence=0;memory=unknown): Invalid argument
+
+So let's check out the FAQ and the test.tcl:
+
+Selecting device is alright. A small (very small) picture appears.
+Switching settings ... is a bit strange: The setting shall be set from 0
+to 6553x, and no really reasonable result is put out. (Maybe I did not
+try hard enough, tell me, when these values are meant to be alright,
+please.)
+
+Since the picture is too small for me, I click von &quot;switch resolution&quot;.
+It works, up to a certain amount, BUT there's some output:
+
+ioctl: VIDIOC_REQBUFS(count=1;type=VIDEO_CAPTURE;memory=MMAP): Invalid
+argument
+ioctl: VIDIOC_REQBUFS(count=1;type=VIDEO_CAPTURE;memory=MMAP): Invalid
+argument
+Changing to QSIF
+ioctl: VIDIOC_REQBUFS(count=1;type=VIDEO_CAPTURE;memory=MMAP): Invalid
+argument
+
+Changing to QCIF
+ioctl: VIDIOC_REQBUFS(count=1;type=VIDEO_CAPTURE;memory=MMAP): Invalid
+argument
+
+Changing to SIF
+ioctl: VIDIOC_REQBUFS(count=1;type=VIDEO_CAPTURE;memory=MMAP): Invalid
+argument
+
+Changing to CIF
+ioctl: VIDIOC_REQBUFS(count=1;type=VIDEO_CAPTURE;memory=MMAP): Invalid
+argument
+
+Changing to VGA
+ioctl: VIDIOC_REQBUFS(count=1;type=VIDEO_CAPTURE;memory=MMAP): Invalid
+argument
+
+Speicherzugriffsfehler
+
+(Speicherzugriffsfehler = Segfault)
+
+As you can imagine, the program does end when &quot;segfault&quot; appears.
+
+v4l-info is not to be found on my system (Gentoo), sorry.
+
+Hope this helps ...
+
+Martin
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001143.html">[Linux-uvc-devel] Creating new /dev/video?
+</A></li>
+	<LI>Next message: <A HREF="001170.html">[Linux-uvc-devel] Creating new /dev/video?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1144">[ date ]</a>
+              <a href="thread.html#1144">[ thread ]</a>
+              <a href="subject.html#1144">[ subject ]</a>
+              <a href="author.html#1144">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

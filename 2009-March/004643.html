@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech QuickCam Pro 9000,	unable to get more 	then 5 fps when live recording, whats going on?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20Pro%209000%2C%0A%09unable%20to%20get%20more%20%09then%205%20fps%20when%20live%20recording%2C%20whats%20going%20on%3F&In-Reply-To=%3C59cf47a80903131601n463d9060pa295281326ba57e0%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004642.html">
+   <LINK REL="Next"  HREF="004645.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech QuickCam Pro 9000,	unable to get more 	then 5 fps when live recording, whats going on?</H1>
+    <B>Paulo Assis</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20Pro%209000%2C%0A%09unable%20to%20get%20more%20%09then%205%20fps%20when%20live%20recording%2C%20whats%20going%20on%3F&In-Reply-To=%3C59cf47a80903131601n463d9060pa295281326ba57e0%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Logitech QuickCam Pro 9000,	unable to get more 	then 5 fps when live recording, whats going on?">pj.assis at gmail.com
+       </A><BR>
+    <I>Sat Mar 14 00:01:06 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004642.html">[Linux-uvc-devel] Logitech QuickCam Pro 9000, unable to get more then 5 fps when live recording, whats going on?
+</A></li>
+        <LI>Next message: <A HREF="004645.html">[Linux-uvc-devel] Logitech QuickCam Pro 9000, unable to get more then 5 fps when live recording, whats going on?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4643">[ date ]</a>
+              <a href="thread.html#4643">[ thread ]</a>
+              <a href="subject.html#4643">[ subject ]</a>
+              <a href="author.html#4643">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i>
+</I>&gt;<i> I did a lot more testing today (this is full day 5 already) and I found
+</I>&gt;<i> some very disturbing discoveries!
+</I>&gt;<i>
+</I>&gt;<i> I can watch the webcam at width=320:height=240:fps=30 and have the
+</I>&gt;<i> correct result. However when going over this resolution I will get only
+</I>&gt;<i> 15 fps and i can max go to 640x480 resolution.
+</I>&gt;<i>
+</I>&gt;<i> Any idea why a tool as guvcviewer seems to output 800x600 and even
+</I>&gt;<i> 1600x1200 but mplayer does not want go higher as 640x480 (it does go lower)
+</I>&gt;<i>
+</I>
+I believe mplayer checks your hardware and sets resolution accordingly (not
+sure about this though).
+
+
+&gt;<i>
+</I>&gt;<i> I upgraded to guvcview 1.0.2 and tested some more there is still the
+</I>&gt;<i> issue that i get lower fps when recording. Could somebody test recording
+</I>&gt;<i> 800x600 with 25fps and sound, if its really 25fps the sound will be in
+</I>&gt;<i> sync.
+</I>
+
+In the case of guvcview you should check the resulting fps in the avi
+header, use avidemux to check the avi properties.
+Sound can become out of sync due to a bad microphone or if fps varies a lot
+during capture, guvcview will write the average fps (total number of frames
+/ total time of capture) to the avi header.
+The quality of video capture is very dependent on your hardware since video
+processing requires a lot from ones system (processor, memory, disk, ...),
+in your case and although the eeepc is a damn good machine for it's size and
+price, I wouldn't consider it a prime candidate for this type of usage.
+
+
+&gt;<i>
+</I>&gt;<i> Also i tested the v4l2 fields of the webcam and there are a lot of errors
+</I>&gt;<i> and non working fields. Is the device really v4l2 compatible? Could
+</I>&gt;<i> somebody check this out further?
+</I>&gt;<i>
+</I>
+Maybe you had some bad luck and bought the 2008 model, this camera has some
+serious firmware issues causing all sorts of problems in linux, the 2009
+models according to logitech have these problems fixed:
+
+<A HREF="http://forums.quickcamteam.net/showthread.php?tid=551">http://forums.quickcamteam.net/showthread.php?tid=551</A>
+
+
+
+&gt;<i>
+</I>&gt;<i> I also want to use the device on headless machines so no X. How can I
+</I>&gt;<i> configure the device then so it does not use auto exposure...?
+</I>&gt;<i>
+</I>
+If you need a command line control application, you should consider
+libwebcam:
+
+<A HREF="http://www.quickcamteam.net/software/libwebcam">http://www.quickcamteam.net/software/libwebcam</A>
+
+
+
+&gt;<i>
+</I>&gt;<i> I attacked all test reports I made that lead to my conclusions please
+</I>&gt;<i> look at them.
+</I>&gt;<i>
+</I>&gt;<i> I can be contacted on chat.freenode.org as /msg tuxcrafter
+</I>&gt;<i>
+</I>&gt;<i> Does somebody know a usb device that can be used for recording with v4l2
+</I>&gt;<i> capable tools at at-leased 25pfs and 800x600 some auto balancing and
+</I>&gt;<i> focusing would be nice to.
+</I>&gt;<i>
+</I>
+If you need hardware autofocus, the best one I can remember is the *QuickCam
+* Vision Pro, but there is also the creative cam optia AF.
+They are both UVC cameras so should do fine in linux.
+
+
+&gt;<i>
+</I>&gt;<i> Again please checkout the attachment.
+</I>&gt;<i>
+</I>&gt;<i> Thanks in advance for help.
+</I>&gt;<i>
+</I>&gt;<i> Jelle de Jong
+</I>&gt;<i>
+</I>
+Best regards,
+Paulo
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090313/c806df0b/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090313/c806df0b/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004642.html">[Linux-uvc-devel] Logitech QuickCam Pro 9000, unable to get more then 5 fps when live recording, whats going on?
+</A></li>
+	<LI>Next message: <A HREF="004645.html">[Linux-uvc-devel] Logitech QuickCam Pro 9000, unable to get more then 5 fps when live recording, whats going on?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4643">[ date ]</a>
+              <a href="thread.html#4643">[ thread ]</a>
+              <a href="subject.html#4643">[ subject ]</a>
+              <a href="author.html#4643">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

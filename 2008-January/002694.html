@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Possible bug in while enumerating private	controls
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Possible%20bug%20in%20while%20enumerating%20private%0A%09controls&In-Reply-To=%3C20080103220845.GA22364%40via.ecp.fr%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002693.html">
+   <LINK REL="Next"  HREF="002730.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Possible bug in while enumerating private	controls</H1>
+    <B>Antoine Cellerier</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Possible%20bug%20in%20while%20enumerating%20private%0A%09controls&In-Reply-To=%3C20080103220845.GA22364%40via.ecp.fr%3E"
+       TITLE="[Linux-uvc-devel] Possible bug in while enumerating private	controls">dionoea at videolan.org
+       </A><BR>
+    <I>Thu Jan  3 23:08:45 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002693.html">[Linux-uvc-devel] Possible bug in while enumerating private controls
+</A></li>
+        <LI>Next message: <A HREF="002730.html">[Linux-uvc-devel] Possible bug in while enumerating private	controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2694">[ date ]</a>
+              <a href="thread.html#2694">[ thread ]</a>
+              <a href="subject.html#2694">[ subject ]</a>
+              <a href="author.html#2694">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thu, Jan 03, 2008, Antoine Cellerier wrote:
+&gt;<i> Since I don't know the uvcvideo control code really well I haven't
+</I>&gt;<i> started patching it yet and would like a confirmation from the gurus
+</I>&gt;<i> that I'm reading the spec correctly.
+</I>
+Ok, so here is a patch that &quot;fixes&quot; the problem as far as i can tell.
+It involved:
+1/ filling in the gaps in uvc_control_mappings so all the controls up to
+V4L2_CID_PRIVATE_LAST are present. I looked up the controls in the
+USB_Video_Class_1.1.pdf file. The only one which I can't figure out is
+V4L2_CID_PANTILT_RESET, I don't understand why it even has a CID.
+Of course I don't own a device implementing any of those new controls so
+I haven't been able to try them out yet.
+2/ adding code to return the control with V4L2_CTRL_FLAG_DISABLED set in
+uvc_query_v4l2_ctrl() when uvc_find_control() failed.
+
+Sorry if I got some of the code conventions wrong or something.
+
+-- 
+Antoine Cellerier
+dionoea
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: linux-uvc.flag_disabled.patch
+Type: text/x-diff
+Size: 2979 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080103/bda25c04/attachment.patch">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080103/bda25c04/attachment.patch</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002693.html">[Linux-uvc-devel] Possible bug in while enumerating private controls
+</A></li>
+	<LI>Next message: <A HREF="002730.html">[Linux-uvc-devel] Possible bug in while enumerating private	controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2694">[ date ]</a>
+              <a href="thread.html#2694">[ thread ]</a>
+              <a href="subject.html#2694">[ subject ]</a>
+              <a href="author.html#2694">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Disconnect video out device from non-root hub.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Disconnect%20video%20out%20device%20from%20non-root%20hub.&In-Reply-To=%3CC3C930591D7B9D4083B73AC7CB7A5FF364F475%40nl-exc-02.intra.local%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005462.html">
+   <LINK REL="Next"  HREF="005473.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Disconnect video out device from non-root hub.</H1>
+    <B>Robert Lukassen</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Disconnect%20video%20out%20device%20from%20non-root%20hub.&In-Reply-To=%3CC3C930591D7B9D4083B73AC7CB7A5FF364F475%40nl-exc-02.intra.local%3E"
+       TITLE="[Linux-uvc-devel] Disconnect video out device from non-root hub.">Robert.Lukassen at tomtom.com
+       </A><BR>
+    <I>Tue Jan  5 13:49:34 CET 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005462.html">[Linux-uvc-devel] 'BisonCam' - USB ID 5986:0241 &amp; Ubuntu 9.10	Karmic Koala 2.6.31-15
+</A></li>
+        <LI>Next message: <A HREF="005473.html">[Linux-uvc-devel] Disconnect video out device from non-root hub.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5463">[ date ]</a>
+              <a href="thread.html#5463">[ thread ]</a>
+              <a href="subject.html#5463">[ subject ]</a>
+              <a href="author.html#5463">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+In Ubuntu 9.10, support for Video Out devices (bulk-only) has been added. We noticed that when such a device is disconnected from a non-root hub, the queued urbs are returned with usb-&gt;status == -EPROTO. The video completion callback cancels the queue, and does not re-submit the urb.
+
+Because the hub driver needs some time to process the disconnect properly, there is a brief interval in time where queued urbs for the disconnected device do not result in -ESHUTDOWN, as expected, but with other error codes (such as EPROTO).
+
+We have found that (in case of status == -EPROTO) resubmitting the urb and not canceling the queue results in the correct behaviour. Eventually one of the urbs indeed comes back with status == -ESHUTDOWN and the device is properly administrated as disconnected. Subsequent QBUF attempts then also result in correct user-space experience.
+
+We propose the following simple patch:
+
+In uvc_video.c:
+
+static void uvc_video_complete(struct urb *urb)
+{
+	struct uvc_video_device *video = urb-&gt;context;
+	struct uvc_video_queue *queue = &amp;video-&gt;queue;
+	struct uvc_buffer *buf = NULL;
+	unsigned long flags;
+	int ret;
+
+	switch (urb-&gt;status) {
+	case 0:
+		break;
+
+	default:
+		uvc_printk(KERN_WARNING, &quot;Non-zero status (%d) in video &quot;
+			&quot;completion handler.\n&quot;, urb-&gt;status);
++		break;
+
+	case -ENOENT:		/* usb_kill_urb() called. */
+		if (video-&gt;frozen)
+			return;
+
+	case -ECONNRESET:	/* usb_unlink_urb() called. */
+	case -ESHUTDOWN:	/* The endpoint is being disabled. */
+		uvc_queue_cancel(queue, urb-&gt;status == -ESHUTDOWN);
+		return;
+	}
+
+	spin_lock_irqsave(&amp;queue-&gt;irqlock, flags);
+	if (!list_empty(&amp;queue-&gt;irqqueue))
+		buf = list_first_entry(&amp;queue-&gt;irqqueue, struct uvc_buffer,
+				       queue);
+	spin_unlock_irqrestore(&amp;queue-&gt;irqlock, flags);
+
+	video-&gt;decode(urb, video, buf);
+
+	if ((ret = usb_submit_urb(urb, GFP_ATOMIC)) &lt; 0) {
+		uvc_printk(KERN_ERR, &quot;Failed to resubmit video URB (%d).\n&quot;,
+			ret);
+	}
+}
+
+We welcome your comments.
+
+Thanks,
+
+Robert Lukassen
+
+
+
+
+This e-mail message contains information which is confidential and may be privileged. It is intended for use by the addressee only. If you are not the intended addressee, we request that you notify the sender immediately and delete or destroy this e-mail message and any attachment(s), without copying, saving, forwarding, disclosing or using its contents in any other way. TomTom N.V., TomTom International BV or any other company belonging to the TomTom group of companies will not be liable for damage relating to the communication by e-mail of data, documents or any other information.
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100105/a839f664/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100105/a839f664/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005462.html">[Linux-uvc-devel] 'BisonCam' - USB ID 5986:0241 &amp; Ubuntu 9.10	Karmic Koala 2.6.31-15
+</A></li>
+	<LI>Next message: <A HREF="005473.html">[Linux-uvc-devel] Disconnect video out device from non-root hub.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5463">[ date ]</a>
+              <a href="thread.html#5463">[ thread ]</a>
+              <a href="subject.html#5463">[ subject ]</a>
+              <a href="author.html#5463">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

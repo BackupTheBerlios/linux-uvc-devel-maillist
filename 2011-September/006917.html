@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo: Failed to resubmit video URB (-27)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%3A%20Failed%20to%20resubmit%20video%20URB%20%28-27%29&In-Reply-To=%3C4E7B4665.1080903%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006915.html">
+   <LINK REL="Next"  HREF="006919.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo: Failed to resubmit video URB (-27)</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%3A%20Failed%20to%20resubmit%20video%20URB%20%28-27%29&In-Reply-To=%3C4E7B4665.1080903%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo: Failed to resubmit video URB (-27)">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Thu Sep 22 16:29:57 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006915.html">[Linux-uvc-devel] uvcvideo: Failed to resubmit video URB (-27)
+</A></li>
+        <LI>Next message: <A HREF="006919.html">[Linux-uvc-devel] uvcvideo: Failed to resubmit video URB (-27)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6917">[ date ]</a>
+              <a href="thread.html#6917">[ thread ]</a>
+              <a href="subject.html#6917">[ subject ]</a>
+              <a href="author.html#6917">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 20.09.2011 22:34, Pitt, Jason N wrote:
+&gt;<i> Hi-
+</I>&gt;<i> 
+</I>&gt;<i> I have a ubuntu 11.04 machine that I'm trying to capture 12 usb webcam feeds on.  The webcams are split over 3 pcie usb cards and the motherboards's usb controller.  I'm encountering instability using both streamer and guvcview.  I can get all 12 streams running but eventually one dies (in a minute or so) and then about 3 more die as well...leaving me with 7 or 8 stable streams.  What is the limitation?  The guvcview error is:
+</I>&gt;<i> 
+</I>&gt;<i> Could not grab image (select timeout): Resource temporarily unavailable
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> which is repeated repeatedly....
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> the streamer error is:
+</I>&gt;<i> v4l2: oops: select timeouts
+</I>&gt;<i> 
+</I>&gt;<i> this usually only effects one or two cameras
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> with both programs dmesg yields:
+</I>&gt;<i> 
+</I>&gt;<i> [ 5330.048166] uvcvideo: Failed to resubmit video URB (-27).
+</I>&gt;<i> [ 5330.048174] uvcvideo: Failed to resubmit video URB (-27).
+</I>&gt;<i> [ 5330.048178] uvcvideo: Failed to resubmit video URB (-27).
+</I>&gt;<i> [ 5330.048183] uvcvideo: Failed to resubmit video URB (-27).
+</I>&gt;<i> [ 5330.048188] uvcvideo: Failed to resubmit video URB (-27).
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> I only need to capture an image from every camera every 2.4 seconds, if someone can provide me a good work-around I'd appreciate it!
+</I>&gt;<i> 
+</I>
+Hi,
+usb controller or usb device is usually responsible URB errors.
+-27 is th error number. You can find it in
+include/asm-generic/errno-base.h
+27 is EFBIG in this case,
+then in Documentation/usb/error-codes.txt
+you can find description of this error.
+&quot;-EFBIG  Host controller driver can't schedule that many ISO frames.&quot;
+
+I currently do not know if usbcore itself do not allow so many ISO
+frames, or only one controller can't handle it. Are there any system in
+this error? I mean do cams day on one controller or only one per controller?
+
+Regards,
+Alexey
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006915.html">[Linux-uvc-devel] uvcvideo: Failed to resubmit video URB (-27)
+</A></li>
+	<LI>Next message: <A HREF="006919.html">[Linux-uvc-devel] uvcvideo: Failed to resubmit video URB (-27)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6917">[ date ]</a>
+              <a href="thread.html#6917">[ thread ]</a>
+              <a href="subject.html#6917">[ subject ]</a>
+              <a href="author.html#6917">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

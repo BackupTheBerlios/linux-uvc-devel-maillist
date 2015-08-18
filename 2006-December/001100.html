@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] max fps that can be achieved using logitech	fusion webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20max%20fps%20that%20can%20be%20achieved%20using%20logitech%0A%09fusion%20webcam&In-Reply-To=%3Cop.tkvewrqb42iof8%40maya%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001098.html">
+   <LINK REL="Next"  HREF="001102.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] max fps that can be achieved using logitech	fusion webcam</H1>
+    <B>Martin Rubli</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20max%20fps%20that%20can%20be%20achieved%20using%20logitech%0A%09fusion%20webcam&In-Reply-To=%3Cop.tkvewrqb42iof8%40maya%3E"
+       TITLE="[Linux-uvc-devel] max fps that can be achieved using logitech	fusion webcam">linux at rubli.info
+       </A><BR>
+    <I>Wed Dec 20 19:27:53 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001098.html">[Linux-uvc-devel] max fps that can be achieved using logitech	fusion webcam
+</A></li>
+        <LI>Next message: <A HREF="001102.html">[Linux-uvc-devel] Ricoh webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1100">[ date ]</a>
+              <a href="thread.html#1100">[ thread ]</a>
+              <a href="subject.html#1100">[ subject ]</a>
+              <a href="author.html#1100">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Streaming VGA at 30 fps definitely works. The problem is that many  
+applications can't or don't set the frame rate correctly when they start  
+the stream. So what happens is that the driver just takes a default frame  
+rate, which is not necessarily the highest possible.
+
+GStreamer's v4l2src plugin can set the frame rate, so you may want to try  
+something like:
+     gst-launch v4l2src ... ! xvimagesink
+and give the correct arguments to v4l2src. You should be able to capture  
+video into a file at 30 fps using a more sophisticated pipeline.
+
+Cheers,
+Martin
+
+
+On Wed, 20 Dec 2006 19:28:57 +0100, Francisco Vera &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">fvera at ucv.cl</A>&gt; wrote:
+
+&gt;<i> I need to know what is the max fps for the logitech fusion.
+</I>&gt;<i>
+</I>&gt;<i> In the past days I have read almost all the messages fron the last two  
+</I>&gt;<i> months
+</I>&gt;<i> from this list, the discussion on the thread Trouble recording from two
+</I>&gt;<i> webcams was illuminating, and the table from
+</I>&gt;<i> <A HREF="http://www.mail-archive.com/linux-uvc-devel%40lists.berlios.de/msg00306.html">http://www.mail-archive.com/linux-uvc-devel%40lists.berlios.de/msg00306.html</A>
+</I>&gt;<i> from logitech, it is clear that 30 fps can be achieved in mjpeg and yuv  
+</I>&gt;<i> modes,
+</I>&gt;<i> real tests with other logitech cameras report 15 fps at 640x480 and 10  
+</I>&gt;<i> fps at
+</I>&gt;<i> 960x720.
+</I>&gt;<i>
+</I>&gt;<i> When I installed the fusion on my windows xp using the software bundled  
+</I>&gt;<i> with
+</I>&gt;<i> this camera, one can record video at a resolution of 640x480, but when
+</I>&gt;<i> playing this video on linux one can see that the video is only at 15 fps.
+</I>&gt;<i>
+</I>&gt;<i> Yesterday I got the uvcvideo driver from cvs (split branch) and  
+</I>&gt;<i> installed in
+</I>&gt;<i> my debian sid pc. Luvcview works at 640x480 15 fps in mjpeg mode and  
+</I>&gt;<i> 1024x576
+</I>&gt;<i> 10 fps in yuv mode.
+</I>&gt;<i>
+</I>&gt;<i> I can record video using:
+</I>&gt;<i>  ffmpeg -an -r 50 -y -vd /dev/video0 -sameq -t 4 -s 1024x576  test.avi
+</I>&gt;<i> and ffmpeg say:
+</I>&gt;<i> -------------
+</I>&gt;<i> [video4linux2 @ 0xb7ef0610][4]Capabilities: 4000001
+</I>&gt;<i> Input #0, video4linux2, from '':
+</I>&gt;<i>   Duration: N/A, bitrate: N/A
+</I>&gt;<i>   Stream #0.0: Video: rawvideo, yuv422, 1024x576, 471859 kb/s, 50.00  
+</I>&gt;<i> fps(r)
+</I>&gt;<i> Output #0, avi, to 'test.avi':
+</I>&gt;<i>   Stream #0.0: Video: mpeg4, yuv420p, 1024x576, q=2-31, 200 kb/s, 50.00  
+</I>&gt;<i> fps(c)
+</I>&gt;<i> ------------------
+</I>&gt;<i>
+</I>&gt;<i> But this video has duplicate frames (5) so in reality it is only 10 fps,
+</I>&gt;<i> trying other frame rates also produce duplicated frames and 10 fps  
+</I>&gt;<i> effective.
+</I>&gt;<i>
+</I>&gt;<i> I can also view video with mplayer using (in a window or full window):
+</I>&gt;<i> ffmpeg -an -vd /dev/video0 -s 1024x576 -r 10 -b 5000 -y -vcodec mpeg4 -f
+</I>&gt;<i> avi - | /usr/bin/mplayer -
+</I>&gt;<i>
+</I>&gt;<i> If someone find how to record video un mjpeg mode with ffmpeg, please  
+</I>&gt;<i> post to
+</I>&gt;<i> this list.
+</I>&gt;<i>
+</I>&gt;<i> installing: apt-get install libpt-plugins-V4L2 allows ekiga to works,  
+</I>&gt;<i> but it
+</I>&gt;<i> is inestable.
+</I>&gt;<i>
+</I>&gt;<i> installing v4l2ucp-1.2 allows to change some parameters for the camera
+</I>&gt;<i>
+</I>&gt;<i> I have looked into the code but appears like the code automatically  
+</I>&gt;<i> detect the
+</I>&gt;<i> best frame rate for the camera?.
+</I>&gt;<i>
+</I>&gt;<i> Does someone knows if it is possible to capture 30 fps with these  
+</I>&gt;<i> cameras in
+</I>&gt;<i> 640x480?
+</I>&gt;<i>
+</I>&gt;<i> I need this information urgent because if it is possible, in these days  
+</I>&gt;<i> I will
+</I>&gt;<i> buy 3 more of these cams. if not I will have to go to plan B, and buy a  
+</I>&gt;<i> non
+</I>&gt;<i> expensive digital cameras (not a webcam) that can grab video at 640x480  
+</I>&gt;<i> and
+</I>&gt;<i> 30 fps.
+</I>&gt;<i>
+</I>&gt;<i> I really appreciate the work from the people involved in this driver,
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i>
+</I>&gt;<i> Francisco
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001098.html">[Linux-uvc-devel] max fps that can be achieved using logitech	fusion webcam
+</A></li>
+	<LI>Next message: <A HREF="001102.html">[Linux-uvc-devel] Ricoh webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1100">[ date ]</a>
+              <a href="thread.html#1100">[ thread ]</a>
+              <a href="subject.html#1100">[ subject ]</a>
+              <a href="author.html#1100">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

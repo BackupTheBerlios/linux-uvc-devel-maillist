@@ -1,0 +1,307 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] ekiga hang cancelling druid
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20ekiga%20hang%20cancelling%20druid&In-Reply-To=%3C1197163401.2694.21.camel%40avenin.ebourne.me.uk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002571.html">
+   <LINK REL="Next"  HREF="002566.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] ekiga hang cancelling druid</H1>
+    <B>Martin Ebourne</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20ekiga%20hang%20cancelling%20druid&In-Reply-To=%3C1197163401.2694.21.camel%40avenin.ebourne.me.uk%3E"
+       TITLE="[Linux-uvc-devel] ekiga hang cancelling druid">lists at ebourne.me.uk
+       </A><BR>
+    <I>Sun Dec  9 02:23:20 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002571.html">[Linux-uvc-devel] ekiga fails to open camera on second run
+</A></li>
+        <LI>Next message: <A HREF="002566.html">[Linux-uvc-devel] ekiga hang cancelling druid
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2553">[ date ]</a>
+              <a href="thread.html#2553">[ thread ]</a>
+              <a href="subject.html#2553">[ subject ]</a>
+              <a href="author.html#2553">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>When I run ekiga, open the configuration druid and then cancel it, most
+times ekiga locks up.
+
+I'm using r5776 and the backtrace is below.
+
+Cheers,
+
+Martin.
+
+Program received signal SIGINT, Interrupt.
+[Switching to Thread 46912516974944 (LWP 15824)]
+0x000000376160a8f9 in pthread_cond_wait@@GLIBC_2.3.2 ()
+   from /lib64/libpthread.so.0
+(gdb) thread apply all bt
+
+Thread 23 (Thread 1107339600 (LWP 15869)):
+#0  0x00000037606cddf2 in select () from /lib64/libc.so.6
+#1  0x00002aaaaac4aec5 in PSocket::Select (read=&lt;value optimized out&gt;, 
+    write=&lt;value optimized out&gt;, except=&lt;value optimized out&gt;, 
+    timeout=@0x42009fd0) at socket.cxx:319
+#2  0x00002aaaaac5ec94 in PSocket::Select (read=@0x42009d80, 
+    timeout=@0x42009fd0) at ../common/sockets.cxx:1031
+#3  0x00002aaaaac66077 in PMonitoredSockets::ReadFromSocket (this=0xd49450, 
+    info=@0xd49b98, buf=0xf3d770, len=2000, addr=@0x42009eb0, 
+    port=@0x42009eae, lastReadCount=@0x42009ea8, timeout=@0x42009fd0)
+    at ../../ptclib/psockbun.cxx:564
+#4  0x00002aaaaac6638d in PSingleMonitoredSocket::ReadFromBundle (
+    this=0xd49450, buf=0xf3d770, len=2000, addr=@0x42009eb0, port=@0x42009eae, 
+    iface=@0x42009e50, lastReadCount=@0x42009ea8, timeout=@0x42009fd0)
+    at ../../ptclib/psockbun.cxx:1084
+#5  0x00002aaaab391d33 in OpalListenerUDP::Accept (this=0xcfd7d0, 
+    timeout=@0x42009fd0)
+    at /usr/src/debug/opal-3.1.0/src/opal/transports.cxx:757
+#6  0x00002aaaab396e2c in OpalListener::ListenForConnections (this=0xcfd7d0, 
+    thread=@0xd4a2a0) at /usr/src/debug/opal-3.1.0/src/opal/transports.cxx:416
+#7  0x00002aaaaac55ba3 in PThread::PX_ThreadStart (arg=&lt;value optimized out&gt;)
+    at tlibthrd.cxx:804
+---Type &lt;return&gt; to continue, or q &lt;return&gt; to quit---
+#8  0x0000003761606407 in start_thread () from /lib64/libpthread.so.0
+#9  0x00000037606d4b0d in clone () from /lib64/libc.so.6
+Current language:  auto; currently c
+
+Thread 22 (Thread 1085827408 (LWP 15868)):
+#0  0x00000037606cddf2 in select () from /lib64/libc.so.6
+#1  0x00002aaaaac59374 in PThread::PXBlockOnIO (this=0xcfdd10, handle=43, 
+    type=2, timeout=@0x40b85d40) at tlibthrd.cxx:896
+#2  0x00002aaaaac4cf0a in PChannel::PXSetIOBlock (this=0xcfd8a8, 
+    type=PChannel::PXAcceptBlock, timeout=@0x40b85d40) at channel.cxx:119
+#3  0x00002aaaaac48e6e in PSocket::os_accept (this=0xcf1470, 
+    listener=@0xcfd8a8, addr=0x40b85da0, size=0x40b85d9c) at socket.cxx:197
+#4  0x00002aaaaac60860 in PTCPSocket::Accept (this=0xcf1470, socket=@0xcfd8a8)
+    at ../common/sockets.cxx:2231
+#5  0x00002aaaab394ee1 in OpalListenerTCP::Accept (this=0xcfd850, 
+    timeout=&lt;value optimized out&gt;)
+    at /usr/src/debug/opal-3.1.0/src/opal/transports.cxx:661
+#6  0x00002aaaab396e2c in OpalListener::ListenForConnections (this=0xcfd850, 
+    thread=@0xcfdd10) at /usr/src/debug/opal-3.1.0/src/opal/transports.cxx:416
+#7  0x00002aaaaac55ba3 in PThread::PX_ThreadStart (arg=&lt;value optimized out&gt;)
+    at tlibthrd.cxx:804
+#8  0x0000003761606407 in start_thread () from /lib64/libpthread.so.0
+#9  0x00000037606d4b0d in clone () from /lib64/libc.so.6
+
+---Type &lt;return&gt; to continue, or q &lt;return&gt; to quit---
+Thread 16 (Thread 1107605840 (LWP 15858)):
+#0  0x00000037606cddf2 in select () from /lib64/libc.so.6
+#1  0x00002aaaaac56049 in PThread::Sleep (timeout=@0x4204afa0)
+    at tlibthrd.cxx:672
+#2  0x00000000004c58f9 in GMAccountsEndpoint::Main (this=0xd4ae00)
+    at endpoints/accountshandler.cpp:163
+#3  0x00002aaaaac55ba3 in PThread::PX_ThreadStart (arg=&lt;value optimized out&gt;)
+    at tlibthrd.cxx:804
+#4  0x0000003761606407 in start_thread () from /lib64/libpthread.so.0
+#5  0x00000037606d4b0d in clone () from /lib64/libc.so.6
+
+Thread 14 (Thread 1107073360 (LWP 15856)):
+#0  0x000000376160ab7d in pthread_cond_timedwait@@GLIBC_2.3.2 ()
+   from /lib64/libpthread.so.0
+#1  0x00002aaaaac55041 in PSyncPoint::Wait (this=0x2aaaaaf0fa88, 
+    waitTime=@0x2aaaaaf0fa38) at tlibthrd.cxx:1434
+#2  0x00002aaaaac66a7d in PInterfaceMonitor::UpdateThreadMain (
+    this=0x2aaaaaf0fa00) at ../../ptclib/psockbun.cxx:236
+#3  0x00002aaaaac55ba3 in PThread::PX_ThreadStart (arg=&lt;value optimized out&gt;)
+    at tlibthrd.cxx:804
+#4  0x0000003761606407 in start_thread () from /lib64/libpthread.so.0
+#5  0x00000037606d4b0d in clone () from /lib64/libc.so.6
+Current language:  auto; currently asm
+
+---Type &lt;return&gt; to continue, or q &lt;return&gt; to quit---
+Thread 12 (Thread 1074538832 (LWP 15854)):
+#0  0x000000376160cef4 in __lll_lock_wait () from /lib64/libpthread.so.0
+#1  0x0000003761608915 in _L_lock_102 () from /lib64/libpthread.so.0
+#2  0x0000003761608390 in pthread_mutex_lock () from /lib64/libpthread.so.0
+#3  0x00000000004ad84c in gnomemeeting_threads_enter () at gui/misc.cpp:65
+#4  0x00000000004b7731 in PVideoInputDevice_Picture::GetFrameDataNoDelay (
+    this=0xce2000, frame=0x2aaab571f010 '&#65533; &lt;repeats 200 times&gt;..., 
+    i=&lt;value optimized out&gt;) at devices/fakevideoinput.cpp:270
+#5  0x00000000004b7673 in PVideoInputDevice_Picture::GetFrameData (
+    this=0xce2000, a=0x2aaab571f010 '&#65533; &lt;repeats 200 times&gt;..., i=0x400c1f5c)
+    at devices/fakevideoinput.cpp:238
+#6  0x00002aaaaabf4422 in PVideoInputDevice::GetFrame (this=0xce2000, 
+    frame=@0x400c1fa0) at ../common/videoio.cxx:1184
+#7  0x00000000004ba414 in GMVideoGrabber::Main (this=0xc97110)
+    at devices/videoinput.cpp:124
+#8  0x00002aaaaac55ba3 in PThread::PX_ThreadStart (arg=&lt;value optimized out&gt;)
+    at tlibthrd.cxx:804
+#9  0x0000003761606407 in start_thread () from /lib64/libpthread.so.0
+#10 0x00000037606d4b0d in clone () from /lib64/libc.so.6
+
+Thread 11 (Thread 1075071312 (LWP 15853)):
+#0  0x000000376160a8f9 in pthread_cond_wait@@GLIBC_2.3.2 ()
+   from /lib64/libpthread.so.0
+---Type &lt;return&gt; to continue, or q &lt;return&gt; to quit---
+#1  0x0000003fb3c08a0e in PArrayObjects::Insert () at ../common/collect.cxx:153
+#2  0x0000003fb3c0a485 in xcb_wait_for_reply () from /usr/lib64/libxcb.so.1
+#3  0x0000003fb444b08b in _XReply () from /usr/lib64/libX11.so.6
+#4  0x0000003fb443f7aa in XSync () from /usr/lib64/libX11.so.6
+#5  0x00000000004ef2e8 in XVWindow::Sync (this=0xdeb500) at xvwindow.cpp:326
+#6  0x00000000004bcefa in GMVideoDisplay_embedded::Main (this=0xce72e0)
+    at devices/videodisplay.cpp:156
+#7  0x00002aaaaac55ba3 in PThread::PX_ThreadStart (arg=&lt;value optimized out&gt;)
+    at tlibthrd.cxx:804
+#8  0x0000003761606407 in start_thread () from /lib64/libpthread.so.0
+#9  0x00000037606d4b0d in clone () from /lib64/libc.so.6
+
+Thread 8 (Thread 1085561168 (LWP 15841)):
+#0  0x00000037606cbd66 in __poll (fds=0x889220, nfds=1, timeout=-1)
+    at ../sysdeps/unix/sysv/linux/poll.c:87
+#1  0x000000373a031f3e in g_main_context_iterate (context=0x88dfe0, block=1, 
+    dispatch=1, self=&lt;value optimized out&gt;) at gmain.c:2996
+#2  0x000000373a0323fa in IA__g_main_loop_run (loop=0x88a650) at gmain.c:2898
+#3  0x0000003fbca181fd in startup_mainloop (arg=&lt;value optimized out&gt;)
+    at e-book.c:3767
+#4  0x000000373a050664 in g_thread_create_proxy (data=0x889970)
+    at gthread.c:635
+#5  0x0000003761606407 in start_thread () from /lib64/libpthread.so.0
+---Type &lt;return&gt; to continue, or q &lt;return&gt; to quit---
+#6  0x00000037606d4b0d in clone () from /lib64/libc.so.6
+Current language:  auto; currently c
+
+Thread 7 (Thread 1074805072 (LWP 15839)):
+#0  0x00000037606cbd66 in __poll (fds=0x888ce0, nfds=9, timeout=-1)
+    at ../sysdeps/unix/sysv/linux/poll.c:87
+#1  0x000000373a031f3e in g_main_context_iterate (context=0x86cde0, block=1, 
+    dispatch=1, self=&lt;value optimized out&gt;) at gmain.c:2996
+#2  0x000000373a0323fa in IA__g_main_loop_run (loop=0x86cec0) at gmain.c:2898
+#3  0x00000037416463b0 in PArrayObjects::Insert () at ../common/collect.cxx:153
+#4  0x000000373a050664 in g_thread_create_proxy (data=0x82c810)
+    at gthread.c:635
+#5  0x0000003761606407 in start_thread () from /lib64/libpthread.so.0
+#6  0x00000037606d4b0d in clone () from /lib64/libc.so.6
+
+Thread 4 (Thread 1074272592 (LWP 15837)):
+#0  0x000000376160ab7d in pthread_cond_timedwait@@GLIBC_2.3.2 ()
+   from /lib64/libpthread.so.0
+#1  0x00002aaaaac55041 in PSyncPoint::Wait (this=0x7d1698, 
+    waitTime=@0x40080ff0) at tlibthrd.cxx:1434
+#2  0x00002aaaaac5750b in PHouseKeepingThread::Main (this=0x86e2a0)
+    at tlibthrd.cxx:125
+#3  0x00002aaaaac55ba3 in PThread::PX_ThreadStart (arg=&lt;value optimized out&gt;)
+    at tlibthrd.cxx:804
+---Type &lt;return&gt; to continue, or q &lt;return&gt; to quit---
+#4  0x0000003761606407 in start_thread () from /lib64/libpthread.so.0
+#5  0x00000037606d4b0d in clone () from /lib64/libc.so.6
+Current language:  auto; currently asm
+
+Thread 3 (Thread 1074006352 (LWP 15836)):
+#0  0x000000376160ab7d in pthread_cond_timedwait@@GLIBC_2.3.2 ()
+   from /lib64/libpthread.so.0
+#1  0x00002aaaaac55041 in PSyncPoint::Wait (this=0x869d40, 
+    waitTime=@0x4003ffe0) at tlibthrd.cxx:1434
+#2  0x00002aaaab359d13 in OpalManager::GarbageMain (this=0x869420)
+    at /usr/src/debug/opal-3.1.0/src/opal/manager.cxx:1241
+#3  0x00002aaaaac55ba3 in PThread::PX_ThreadStart (arg=&lt;value optimized out&gt;)
+    at tlibthrd.cxx:804
+#4  0x0000003761606407 in start_thread () from /lib64/libpthread.so.0
+#5  0x00000037606d4b0d in clone () from /lib64/libc.so.6
+
+Thread 2 (Thread 46912516974944 (LWP 15824)):
+#0  0x000000376160a8f9 in pthread_cond_wait@@GLIBC_2.3.2 ()
+   from /lib64/libpthread.so.0
+#1  0x0000003fb3c088bb in _xcb_lock_io () from /usr/lib64/libxcb.so.1
+#2  0x0000003fb3c08a1c in PArrayObjects::Insert () at ../common/collect.cxx:153
+#3  0x0000003fb3c0a485 in xcb_wait_for_reply () from /usr/lib64/libxcb.so.1
+#4  0x0000003fb444b08b in _XReply () from /usr/lib64/libX11.so.6
+#5  0x0000003fb4439616 in XQueryPointer () from /usr/lib64/libX11.so.6
+---Type &lt;return&gt; to continue, or q &lt;return&gt; to quit---
+#6  0x00000035360623dd in _gdk_windowing_window_get_pointer (
+    display=&lt;value optimized out&gt;, window=0xbe3f30, x=0x7fff7ddd295c, 
+    y=0x7fff7ddd2958, mask=0x7fff7ddd2954) at gdkwindow-x11.c:3593
+#7  0x0000003536031fe9 in IA__gdk_window_get_pointer (window=0xbe3f30, 
+    x=0x7fff7ddd29a4, y=0x7fff7ddd29a0, mask=0x0) at gdkwindow.c:3099
+#8  0x000000353606a16f in IA__gdk_device_get_state (device=0x81ca00, 
+    window=0xbe3f30, axes=0x0, mask=0x0) at gdkinput-x11.c:787
+#9  0x0000003535c3c3d8 in _gtk_tooltip_handle_event (event=0xefa630)
+    at gtktooltip.c:1202
+#10 0x0000003535b5aaf7 in IA__gtk_main_do_event (event=0xefa630)
+    at gtkmain.c:1591
+#11 0x000000353604b82c in gdk_event_dispatch (source=&lt;value optimized out&gt;, 
+    callback=&lt;value optimized out&gt;, user_data=&lt;value optimized out&gt;)
+    at gdkevents-x11.c:2351
+#12 0x000000373a02edf3 in IA__g_main_context_dispatch (context=0x7ec940)
+    at gmain.c:2061
+#13 0x000000373a0320ed in g_main_context_iterate (context=0x7ec940, block=1, 
+    dispatch=1, self=&lt;value optimized out&gt;) at gmain.c:2694
+#14 0x000000373a0323fa in IA__g_main_loop_run (loop=0xda6120) at gmain.c:2898
+#15 0x0000003535b5b0c3 in IA__gtk_main () at gtkmain.c:1146
+#16 0x00000000004a8c49 in main (argc=3, argv=&lt;value optimized out&gt;, 
+    envp=&lt;value optimized out&gt;) at gui/main.cpp:4413
+
+---Type &lt;return&gt; to continue, or q &lt;return&gt; to quit---
+Thread 1 (LWP 15824):
+#0  0x000000376160a8f9 in pthread_cond_wait@@GLIBC_2.3.2 ()
+   from /lib64/libpthread.so.0
+#1  0x0000003fb3c088bb in _xcb_lock_io () from /usr/lib64/libxcb.so.1
+#2  0x0000003fb3c08a1c in PArrayObjects::Insert () at ../common/collect.cxx:153
+#3  0x0000003fb3c0a485 in xcb_wait_for_reply () from /usr/lib64/libxcb.so.1
+#4  0x0000003fb444b08b in _XReply () from /usr/lib64/libX11.so.6
+#5  0x0000003fb4439616 in XQueryPointer () from /usr/lib64/libX11.so.6
+#6  0x00000035360623dd in _gdk_windowing_window_get_pointer (
+    display=&lt;value optimized out&gt;, window=0xbe3f30, x=0x7fff7ddd295c, 
+    y=0x7fff7ddd2958, mask=0x7fff7ddd2954) at gdkwindow-x11.c:3593
+#7  0x0000003536031fe9 in IA__gdk_window_get_pointer (window=0xbe3f30, 
+    x=0x7fff7ddd29a4, y=0x7fff7ddd29a0, mask=0x0) at gdkwindow.c:3099
+#8  0x000000353606a16f in IA__gdk_device_get_state (device=0x81ca00, 
+    window=0xbe3f30, axes=0x0, mask=0x0) at gdkinput-x11.c:787
+#9  0x0000003535c3c3d8 in _gtk_tooltip_handle_event (event=0xefa630)
+    at gtktooltip.c:1202
+#10 0x0000003535b5aaf7 in IA__gtk_main_do_event (event=0xefa630)
+    at gtkmain.c:1591
+#11 0x000000353604b82c in gdk_event_dispatch (source=&lt;value optimized out&gt;, 
+    callback=&lt;value optimized out&gt;, user_data=&lt;value optimized out&gt;)
+    at gdkevents-x11.c:2351
+#12 0x000000373a02edf3 in IA__g_main_context_dispatch (context=0x7ec940)
+---Type &lt;return&gt; to continue, or q &lt;return&gt; to quit---
+    at gmain.c:2061
+#13 0x000000373a0320ed in g_main_context_iterate (context=0x7ec940, block=1, 
+    dispatch=1, self=&lt;value optimized out&gt;) at gmain.c:2694
+#14 0x000000373a0323fa in IA__g_main_loop_run (loop=0xda6120) at gmain.c:2898
+#15 0x0000003535b5b0c3 in IA__gtk_main () at gtkmain.c:1146
+#16 0x00000000004a8c49 in main (argc=3, argv=&lt;value optimized out&gt;, 
+    envp=&lt;value optimized out&gt;) at gui/main.cpp:4413
+#0  0x000000376160a8f9 in pthread_cond_wait@@GLIBC_2.3.2 ()
+   from /lib64/libpthread.so.0
+(gdb) 
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002571.html">[Linux-uvc-devel] ekiga fails to open camera on second run
+</A></li>
+	<LI>Next message: <A HREF="002566.html">[Linux-uvc-devel] ekiga hang cancelling druid
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2553">[ date ]</a>
+              <a href="thread.html#2553">[ thread ]</a>
+              <a href="subject.html#2553">[ subject ]</a>
+              <a href="author.html#2553">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

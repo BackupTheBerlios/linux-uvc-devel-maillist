@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [patch] add &quot;report&quot; file to debugfs
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5Bpatch%5D%20add%20%22report%22%20file%20to%20debugfs&In-Reply-To=%3C4EEE7063.5060308%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007138.html">
+   <LINK REL="Next"  HREF="007139.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [patch] add &quot;report&quot; file to debugfs</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5Bpatch%5D%20add%20%22report%22%20file%20to%20debugfs&In-Reply-To=%3C4EEE7063.5060308%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] [patch] add &quot;report&quot; file to debugfs">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Sun Dec 18 23:59:47 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007138.html">[Linux-uvc-devel] [patch] add &quot;report&quot; file to debugfs
+</A></li>
+        <LI>Next message: <A HREF="007139.html">[Linux-uvc-devel] [faq] test cases
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7142">[ date ]</a>
+              <a href="thread.html#7142">[ thread ]</a>
+              <a href="subject.html#7142">[ subject ]</a>
+              <a href="author.html#7142">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Am 18.12.2011 20:37, schrieb Laurent Pinchart:
+&gt;<i> Hi Alexey,
+</I>&gt;<i> 
+</I>&gt;<i> Thanks for the patch, and sorry for the late reply.
+</I>&gt;<i> 
+</I>&gt;<i> On Monday 21 November 2011 15:51:47 Alexey Fisher wrote:
+</I>&gt;&gt;<i> Hi Laurent,
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> here is my version of bug_report file for debugfs. It include
+</I>&gt;&gt;<i> usb.id, dmi.system.product (for upsidedown report). And stream
+</I>&gt;&gt;<i> specific information. I think it is good size for initial patch. 
+</I>&gt;&gt;<i> I near future i would like to add control call count  and control
+</I>&gt;&gt;<i> error rate to stats. And probably firs urb error number to report
+</I>&gt;&gt;<i> file. I think it will be enough to provide needed info for
+</I>&gt;&gt;<i> troubleshooting.
+</I>&gt;<i> 
+</I>&gt;<i> I got a couple of comments regarding both the purpose of the patch
+</I>&gt;<i> and its implementation. I'd like to discuss the purpose first.
+</I>&gt;<i> 
+</I>&gt;<i> My understanding is that this new debugfs entry is meant to help
+</I>&gt;<i> diagnosing and debugging issues. This is a nice thing, but most of
+</I>&gt;<i> the debugging information (such as the USB VID:PID and the DMI
+</I>&gt;<i> information) can already be obtained using lsusb and dmidecode.
+</I>&gt;<i> Duplicating in debugfs information that is already available
+</I>&gt;<i> through other means isn't something I'm very fond of. Sure, 
+</I>&gt;<i> dmidecode needs to be run as root, but if the user can't figure
+</I>&gt;<i> that out I don't think getting him to moutn debugfs will be a great
+</I>&gt;<i> success either :-)
+</I>
+Ok, i agree.
+The i suggest to add two updates for FAQ.
+1)
+sudo echo 0xffff &gt; /sys/module/uvcvideo/parameters/trace
+and
+sudo echo 0 &gt; /sys/module/uvcvideo/parameters/trace
+
+should be probably corrected to:
+sudo sh -c &quot;echo 0xffff &gt; /sys/module/uvcvideo/parameters/trace&quot;
+sudo sh -c &quot;echo 0 &gt; /sys/module/uvcvideo/parameters/trace&quot;
+
+at least on ubuntu it is imposable to execute the previous version.
+
+2) add in case of upside down webcam.
+sudo dmidecode -t system -t baseboard
+
+
+after some more time in this list i got some reasonable amount of
+skepticism. so i can agree to remove many of my previous suggestions :D
+
+Here i my current thoughts:
+- - Looks like bandwidth keeps to be a major problem. Last month there
+was cases with: lowspeed cam; high speed on low speed bus(?); advanced
+cases with more then one cam using jpeg compression (usually buggy
+cams)...
+i also noticed that people (including me) wont to know video format
+currently used by cam. So probably packet size, and frame format
+should be included in to debugfs report.
+
+- - other problem i noticed is: looks like uvcvideo collides some time
+with snd-usb-audio. For example if audio use lots of ctrl messages and
+get time out because of video stream, it resets usb device and kill
+both audio and video.
+Other example from one of last mails:
+=================================================
+uvcvideo: uvc_set_video_ctrl: PROBE; bmHint: 1; bFormatIndex: 1;
+bFrameIndex: 8; dwFrameInterval: 333333; wKeyFrameRate: 0;
+wCompQuality: 0; wCompWindowSize: 0; wDelay: 0; dwMaxVideoFrameSize 0;
+dwMaxPayloadTransferSize: 0
+5:3:1: cannot get freq at ep 0x82
+uvcvideo: Failed to set UVC probe control : -32 (exp. 26).
+=================================================
+if i interpret it correctly: video and audio send ctrl at same time
+and fail. -32 mean wrong pipe. am i correct? stand alone each works fine.
+
+for this case i have no idea for debugfs report. probably dmesg is the
+best way to do it.
+
+- -- 
+Regards,
+Alexey
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - <A HREF="http://enigmail.mozdev.org/">http://enigmail.mozdev.org/</A>
+
+iEYEARECAAYFAk7ucGMACgkQw8E0jNwoJm/SGgCcCeorwiDQCaWQ+x4gV1S3wfS2
+XjsAoKwFbcuHaggi3dL2wdlAcwrQ647m
+=3sIb
+-----END PGP SIGNATURE-----
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007138.html">[Linux-uvc-devel] [patch] add &quot;report&quot; file to debugfs
+</A></li>
+	<LI>Next message: <A HREF="007139.html">[Linux-uvc-devel] [faq] test cases
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7142">[ date ]</a>
+              <a href="thread.html#7142">[ thread ]</a>
+              <a href="subject.html#7142">[ subject ]</a>
+              <a href="author.html#7142">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

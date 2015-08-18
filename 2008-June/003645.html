@@ -1,0 +1,733 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20SOLVED%3A%20upside-down%20image%20from%20SONIX%20laptop%0A%09embedded%20webcam&In-Reply-To=%3C879e1f2b0806190610qb10759fm5efc3b3ebe66b464%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003644.html">
+   <LINK REL="Next"  HREF="003648.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam</H1>
+    <B>Marco Argiolas</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20SOLVED%3A%20upside-down%20image%20from%20SONIX%20laptop%0A%09embedded%20webcam&In-Reply-To=%3C879e1f2b0806190610qb10759fm5efc3b3ebe66b464%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam">arjos85 at gmail.com
+       </A><BR>
+    <I>Thu Jun 19 15:10:08 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003644.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+        <LI>Next message: <A HREF="003648.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3645">[ date ]</a>
+              <a href="thread.html#3645">[ thread ]</a>
+              <a href="subject.html#3645">[ subject ]</a>
+              <a href="author.html#3645">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Just to show you what I'm getting from my webcam, I've attached 3 png
+pictures:
+- original_uvcvideo.jpg (size 50%, quality 15%)
+- modded_uvcvideo_1pixel.jpg (size 50%, quality 15%)
+- modded_uvcvideo_2pixel.jpg (size 100%, quality 50%)
+the first is made with the original uvcvideo driver, the other two with my
+modded version.
+
+You are going to see my red tshirt.
+These are 3 snapshot of my desktop while running mplayer with this command:
+$ mplayer <A HREF="tv://">tv://</A> -tv
+driver=v4l2:device=/dev/video0:outfmt=yuy2:width=640:height=480:fps=50 -vo
+x11
+
+The differences between the two &quot;modded&quot; is the value of &quot;pixel_size&quot;.
+In modded_uvcvideo_1pixel.jpg, &quot;pixel_size = 2&quot; , it means each pixel needs
+2 bytes (just as in my case, where bpp=16), the problem is that colours are
+not so real.
+In the second case, &quot;pixel_size=4&quot;, it means pixel are moved in blocks of 2.
+As you can see now colours are perfect, but there is the problem that
+copying 2 pixel each time, the resulting image has pixel exchanged 2 by 2 :
+just watch &quot;modded_uvcvideo_2pixel.jpg&quot; on the right under my armpit or the
+edges of my tshirt.
+
+The only way to solve this problem is to set &quot;pixel_size=1280&quot;, in this way
+i got a perfect image, but it is mirrored (and it is also a good news for
+me).
+The problem is that it just works with 640x480 (maximum accepted by
+mplayer), also if lsusb tells that my webcam should also support 1280x960
+and 1280x1024 resolutions. This trick obviously doesn't work with all
+smaller resolutions supported by my webcam (352x288, 320x240, 176x144,
+160x120), because in these cases there are some missing line in the image.
+My webcam is nominally a 1.3 Mpx (1280x1024), but in realty it is just a
+640x480 one.
+And when I use
+$ mplayer <A HREF="tv://">tv://</A> -tv
+driver=v4l2:device=/dev/video0:outfmt=yuy2:width=MY_WIDTH:height=MY_HEIGHT:fps=50
+-vo x11
+mplayer just accept resolutions up to 640x480.
+
+This is the output coming from mplayer with : MY_WIDTH=1280, MY_HEIGHT=960,
+pixel_size=1280:
+
+MPlayer 1.0rc2-4.2.3 (C) 2000-2007 MPlayer Team
+CPU: Intel(R) Core(TM)2 Duo CPU     T7500  @ 2.20GHz (Family: 6, Model: 15,
+Stepping: 11)
+CPUflags:  MMX: 1 MMX2: 1 3DNow: 0 3DNow2: 0 SSE: 1 SSE2: 1
+Compiled with runtime CPU detection.
+mplayer: could not connect to socket
+mplayer: No such file or directory
+Failed to open LIRC support. You will not be able to use your remote
+control.
+
+Playing <A HREF="tv://.">tv://.</A>
+TV file format detected.
+Selected driver: v4l2
+ name: Video 4 Linux 2 input
+ author: Martin Olschewski &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">olschewski at zpr.uni-koeln.de</A>&gt;
+ comment: first try, more to come ;-)
+v4l2: ioctl get standard failed: Invalid argument
+Selected device: USB 2.0 Camera
+ Capabilites:  video capture  streaming
+ supported norms:
+ inputs: 0 = Camera 1;
+ Current input: 0
+ Current format: YUYV
+tv.c: norm_from_string(pal): Bogus norm parameter, setting default.
+v4l2: ioctl enum norm failed: Invalid argument
+Error: Cannot set norm!
+Selected input hasn't got a tuner!
+v4l2: ioctl set mute failed: Invalid argument
+xscreensaver_disable: Could not find XScreenSaver window.
+==========================================================================
+Opening video decoder: [raw] RAW Uncompressed Video
+VDec: vo config request - 320 x 240 (preferred colorspace: Packed YUY2)
+Could not find matching colorspace - retrying with -vf scale...
+Opening video filter: [scale]
+VDec: using Packed YUY2 as output csp (no 0)
+Movie-Aspect is undefined - no prescaling applied.
+SwScaler: reducing / aligning filtersize 1 -&gt; 4
+SwScaler: reducing / aligning filtersize 1 -&gt; 4
+SwScaler: reducing / aligning filtersize 1 -&gt; 1
+SwScaler: reducing / aligning filtersize 1 -&gt; 1
+[swscaler @ 0x8934890]SwScaler: BICUBIC scaler, from yuyv422 to rgb32 using
+MMX2
+[swscaler @ 0x8934890]SwScaler: using 4-tap MMX scaler for horizontal
+luminance scaling
+[swscaler @ 0x8934890]SwScaler: using 4-tap MMX scaler for horizontal
+chrominance scaling
+[swscaler @ 0x8934890]SwScaler: using n-tap MMX scaler for vertical scaling
+(BGR)
+[swscaler @ 0x8934890]SwScaler: using MMX YV12-&gt;BGR32 Converter
+[swscaler @ 0x8934890]SwScaler: 320x240 -&gt; 320x240
+VO: [x11] 320x240 =&gt; 320x240 BGRA
+Selected video codec: [rawyuy2] vfm: raw (RAW YUY2)
+==========================================================================
+
+What do you think is the problem?
+
+Please let me know everything,
+I'm so curious!!
+
+Thanks,
+
+2008/6/17 Marco Argiolas &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">arjos85 at gmail.com</A>&gt;:
+
+&gt;<i> Here I'm again to correct some mistakes and to add some missing data:
+</I>&gt;<i> - first of all I have a Sonix webcam with device id 174f:5a35 (at the end
+</I>&gt;<i> of this message I've attached the complete verbose lsusb output);
+</I>&gt;<i> - with my webcam,  &quot;pixel_size&quot; (# of bytes per pixel) has to be set equal
+</I>&gt;<i> to &quot;2&quot; (pixel_size=2 ), because bpp=16 (2 byte);
+</I>&gt;<i> - I've also added a kfree() in order to free the preallocated space;
+</I>&gt;<i> - in order to speed up the allocation process I've used GFP_ATOMIC flag in
+</I>&gt;<i> kmalloc() function.
+</I>&gt;<i>
+</I>&gt;<i> Please let me know if you think something is wrong.
+</I>&gt;<i> Because just right now my cam is working fine, now images are not
+</I>&gt;<i> upside-down, but colour are not so perfect.
+</I>&gt;<i> Also if the colour of my skin seems to be the right one, red and blu colour
+</I>&gt;<i> are exchanged each other.
+</I>&gt;<i>
+</I>&gt;<i> Do you think the &quot;=&quot; is appropriate in &quot;if (len &gt;= maxlen)&quot; statement?
+</I>&gt;<i>
+</I>&gt;<i> Here you can find the patch:
+</I>&gt;<i>
+</I>&gt;<i> ---------------START PATCH--------------
+</I>&gt;<i>
+</I>&gt;<i> --- /home/arjos/trunk/uvc_video.c       2008-06-17 19:31:06.000000000 +0200
+</I>&gt;<i> +++ uvc_video_tmp.c     2008-06-17 20:55:58.000000000 +0200
+</I>&gt;<i> @@ -377,6 +377,9 @@
+</I>&gt;<i>         struct uvc_video_queue *queue = &amp;video-&gt;queue;
+</I>&gt;<i>         unsigned int maxlen, nbytes;
+</I>&gt;<i>         void *mem;
+</I>&gt;<i> +       __u8 *mem_tmp;
+</I>&gt;<i> +       int i, k, pixel_size;
+</I>&gt;<i> +       unsigned int size_tmp;
+</I>&gt;<i>
+</I>&gt;<i>         if (len &lt;= 0)
+</I>&gt;<i>                 return;
+</I>&gt;<i> @@ -389,7 +392,16 @@
+</I>&gt;<i>         buf-&gt;buf.bytesused += nbytes;
+</I>&gt;<i>
+</I>&gt;<i>         /* Complete the current frame if the buffer size was exceeded. */
+</I>&gt;<i> -       if (len &gt; maxlen) {
+</I>&gt;<i> +       if (len &gt;= maxlen) {
+</I>&gt;<i> +               size_tmp = buf-&gt;buf.bytesused;
+</I>&gt;<i> +               mem_tmp = (__u8 *) kmalloc(size_tmp , GFP_ATOMIC);
+</I>&gt;<i> +               if (mem_tmp != NULL ){
+</I>&gt;<i> +                       memcpy(mem_tmp, queue-&gt;mem + buf-&gt;buf.m.offset,
+</I>&gt;<i> size_tmp);
+</I>&gt;<i> +                       pixel_size = 2;
+</I>&gt;<i> +                       for ( i=0, k=size_tmp - pixel_size ; i &lt; size_tmp;
+</I>&gt;<i> i+=pixel_size, k-=pixel_size)
+</I>&gt;<i> +                               memcpy( (__u8 *)queue-&gt;mem +
+</I>&gt;<i> buf-&gt;buf.m.offset + i, mem_tmp + k, pixel_size );
+</I>&gt;<i> +                       kfree(mem_tmp);
+</I>&gt;<i> +               }
+</I>&gt;<i>                 uvc_trace(UVC_TRACE_FRAME, &quot;Frame complete (overflow).\n&quot;);
+</I>&gt;<i>                 buf-&gt;state = UVC_BUF_STATE_DONE;
+</I>&gt;<i>         }
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> ---------------END PATCH--------------
+</I>&gt;<i>
+</I>&gt;<i> Has attachement you can also find the complete uvc_video.c file.
+</I>&gt;<i> In order to test the changes I use the following script:
+</I>&gt;<i>
+</I>&gt;<i> ----- START SCRIPT -------------
+</I>&gt;<i>
+</I>&gt;<i> make
+</I>&gt;<i> sudo modprobe -r uvcvideo
+</I>&gt;<i> sudo make install
+</I>&gt;<i> sudo cp uvcvideo.ko /lib/modules/`uname -r`/ubuntu/media/usbvideo
+</I>&gt;<i> sudo modprobe uvcvideo
+</I>&gt;<i> make clean
+</I>&gt;<i>
+</I>&gt;<i> ----- END SCRIPT -----------------
+</I>&gt;<i>
+</I>&gt;<i> Let me know if you don't understand something or if there's something wrong
+</I>&gt;<i> in what i've written.
+</I>&gt;<i>
+</I>&gt;<i> Thank you
+</I>&gt;<i>
+</I>&gt;<i> Marco Argiolas
+</I>&gt;<i>
+</I>&gt;<i> ------------- lsusb output ------------------------------------
+</I>&gt;<i> Bus 006 Device 002: ID 174f:5a35
+</I>&gt;<i> Device Descriptor:
+</I>&gt;<i>   bLength                18
+</I>&gt;<i>   bDescriptorType         1
+</I>&gt;<i>   bcdUSB               2.00
+</I>&gt;<i>   bDeviceClass          239 Miscellaneous Device
+</I>&gt;<i>   bDeviceSubClass         2 ?
+</I>&gt;<i>   bDeviceProtocol         1 Interface Association
+</I>&gt;<i>   bMaxPacketSize0        64
+</I>&gt;<i>   idVendor           0x174f
+</I>&gt;<i>   idProduct          0x5a35
+</I>&gt;<i>   bcdDevice            4.11
+</I>&gt;<i>   iManufacturer           2 Sonix Technology Co., Ltd.
+</I>&gt;<i>   iProduct                1 USB 2.0 Camera
+</I>&gt;<i>   iSerial                 3 SN0001
+</I>&gt;<i>   bNumConfigurations      1
+</I>&gt;<i>   Configuration Descriptor:
+</I>&gt;<i>     bLength                 9
+</I>&gt;<i>     bDescriptorType         2
+</I>&gt;<i>     wTotalLength          627
+</I>&gt;<i>     bNumInterfaces          2
+</I>&gt;<i>     bConfigurationValue     1
+</I>&gt;<i>     iConfiguration          0
+</I>&gt;<i>     bmAttributes         0x80
+</I>&gt;<i>       (Bus Powered)
+</I>&gt;<i>     MaxPower              500mA
+</I>&gt;<i>     Interface Association:
+</I>&gt;<i>       bLength                 8
+</I>&gt;<i>       bDescriptorType        11
+</I>&gt;<i>       bFirstInterface         0
+</I>&gt;<i>       bInterfaceCount         2
+</I>&gt;<i>       bFunctionClass         14 Video
+</I>&gt;<i>       bFunctionSubClass       3 Video Interface Collection
+</I>&gt;<i>       bFunctionProtocol       0
+</I>&gt;<i>       iFunction               1 USB 2.0 Camera
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        0
+</I>&gt;<i>       bAlternateSetting       0
+</I>&gt;<i>       bNumEndpoints           1
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      1 Video Control
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              1 USB 2.0 Camera
+</I>&gt;<i>       VideoControl Interface Descriptor:
+</I>&gt;<i>         bLength                13
+</I>&gt;<i>         bDescriptorType        36
+</I>&gt;<i>         bDescriptorSubtype      1 (HEADER)
+</I>&gt;<i>         bcdUVC               1.00
+</I>&gt;<i>         wTotalLength           77
+</I>&gt;<i>         dwClockFrequency        6.000000MHz
+</I>&gt;<i>         bInCollection           1
+</I>&gt;<i>         baInterfaceNr( 0)       1
+</I>&gt;<i>       VideoControl Interface Descriptor:
+</I>&gt;<i>         bLength                 9
+</I>&gt;<i>         bDescriptorType        36
+</I>&gt;<i>         bDescriptorSubtype      3 (OUTPUT_TERMINAL)
+</I>&gt;<i>         bTerminalID             2
+</I>&gt;<i>         wTerminalType      0x0101 USB Streaming
+</I>&gt;<i>         bAssocTerminal          0
+</I>&gt;<i>         bSourceID               4
+</I>&gt;<i>         iTerminal               0
+</I>&gt;<i>       VideoControl Interface Descriptor:
+</I>&gt;<i>         bLength                26
+</I>&gt;<i>         bDescriptorType        36
+</I>&gt;<i>         bDescriptorSubtype      6 (EXTENSION_UNIT)
+</I>&gt;<i>         bUnitID                 4
+</I>&gt;<i>         guidExtensionCode         {7033f028-1163-2e4a-ba2c-6890eb334016}
+</I>&gt;<i>         bNumControl             1
+</I>&gt;<i>         bNrPins                 1
+</I>&gt;<i>         baSourceID( 0)          3
+</I>&gt;<i>         bControlSize            1
+</I>&gt;<i>         bmControls( 0)       0x01
+</I>&gt;<i>         iExtension              0
+</I>&gt;<i>       VideoControl Interface Descriptor:
+</I>&gt;<i>         bLength                18
+</I>&gt;<i>         bDescriptorType        36
+</I>&gt;<i>         bDescriptorSubtype      2 (INPUT_TERMINAL)
+</I>&gt;<i>         bTerminalID             1
+</I>&gt;<i>         wTerminalType      0x0201 Camera Sensor
+</I>&gt;<i>         bAssocTerminal          0
+</I>&gt;<i>         iTerminal               0
+</I>&gt;<i>         wObjectiveFocalLengthMin      0
+</I>&gt;<i>         wObjectiveFocalLengthMax      0
+</I>&gt;<i>         wOcularFocalLength            0
+</I>&gt;<i>         bControlSize                  3
+</I>&gt;<i>         bmControls           0x00000000
+</I>&gt;<i>       VideoControl Interface Descriptor:
+</I>&gt;<i>         bLength                11
+</I>&gt;<i>         bDescriptorType        36
+</I>&gt;<i>         bDescriptorSubtype      5 (PROCESSING_UNIT)
+</I>&gt;<i>       Warning: Descriptor too short
+</I>&gt;<i>         bUnitID                 3
+</I>&gt;<i>         bSourceID               1
+</I>&gt;<i>         wMaxMultiplier          0
+</I>&gt;<i>         bControlSize            2
+</I>&gt;<i>         bmControls     0x0000053f
+</I>&gt;<i>           Brightness
+</I>&gt;<i>           Contrast
+</I>&gt;<i>           Hue
+</I>&gt;<i>           Saturation
+</I>&gt;<i>           Sharpness
+</I>&gt;<i>           Gamma
+</I>&gt;<i>           Backlight Compensation
+</I>&gt;<i>           Power Line Frequency
+</I>&gt;<i>         iProcessing             0
+</I>&gt;<i>         bmVideoStandards     0x 0
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x83  EP 3 IN
+</I>&gt;<i>         bmAttributes            3
+</I>&gt;<i>           Transfer Type            Interrupt
+</I>&gt;<i>           Synch Type               None
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x0010  1x 16 bytes
+</I>&gt;<i>         bInterval               6
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        1
+</I>&gt;<i>       bAlternateSetting       0
+</I>&gt;<i>       bNumEndpoints           0
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      2 Video Streaming
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            14
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  1 (INPUT_HEADER)
+</I>&gt;<i>         bNumFormats                        1
+</I>&gt;<i>         wTotalLength                      407
+</I>&gt;<i>         bEndPointAddress                  129
+</I>&gt;<i>         bmInfo                              0
+</I>&gt;<i>         bTerminalLink                       2
+</I>&gt;<i>         bStillCaptureMethod                 2
+</I>&gt;<i>         bTriggerSupport                     1
+</I>&gt;<i>         bTriggerUsage                       0
+</I>&gt;<i>         bControlSize                        1
+</I>&gt;<i>         bmaControls( 0)                    27
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            27
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  4 (FORMAT_UNCOMPRESSED)
+</I>&gt;<i>         bFormatIndex                        1
+</I>&gt;<i>         bNumFrameDescriptors                7
+</I>&gt;<i>         guidFormat
+</I>&gt;<i> {59555932-0000-1000-8000-00aa00389b71}
+</I>&gt;<i>         bBitsPerPixel                      16
+</I>&gt;<i>         bDefaultFrameIndex                  1
+</I>&gt;<i>         bAspectRatioX                       0
+</I>&gt;<i>         bAspectRatioY                       0
+</I>&gt;<i>         bmInterlaceFlags                 0x00
+</I>&gt;<i>           Interlaced stream or variable: No
+</I>&gt;<i>           Fields per frame: 1 fields
+</I>&gt;<i>           Field 1 first: No
+</I>&gt;<i>           Field pattern: Field 1 only
+</I>&gt;<i>           bCopyProtect                      0
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                         1
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            640
+</I>&gt;<i>         wHeight                           480
+</I>&gt;<i>         dwMinBitRate                   614400
+</I>&gt;<i>         dwMaxBitRate                 18432000
+</I>&gt;<i>         dwMaxVideoFrameBufferSize      614400
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            500000
+</I>&gt;<i>         dwFrameInterval( 2)            666666
+</I>&gt;<i>         dwFrameInterval( 3)           1000000
+</I>&gt;<i>         dwFrameInterval( 4)           2000000
+</I>&gt;<i>         dwFrameInterval( 5)          10000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                         2
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            352
+</I>&gt;<i>         wHeight                           288
+</I>&gt;<i>         dwMinBitRate                   202752
+</I>&gt;<i>         dwMaxBitRate                  6082560
+</I>&gt;<i>         dwMaxVideoFrameBufferSize      202752
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            500000
+</I>&gt;<i>         dwFrameInterval( 2)            666666
+</I>&gt;<i>         dwFrameInterval( 3)           1000000
+</I>&gt;<i>         dwFrameInterval( 4)           2000000
+</I>&gt;<i>         dwFrameInterval( 5)          10000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                         3
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            320
+</I>&gt;<i>         wHeight                           240
+</I>&gt;<i>         dwMinBitRate                   153600
+</I>&gt;<i>         dwMaxBitRate                  4608000
+</I>&gt;<i>         dwMaxVideoFrameBufferSize      153600
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            500000
+</I>&gt;<i>         dwFrameInterval( 2)            666666
+</I>&gt;<i>         dwFrameInterval( 3)           1000000
+</I>&gt;<i>         dwFrameInterval( 4)           2000000
+</I>&gt;<i>         dwFrameInterval( 5)          10000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                         4
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            176
+</I>&gt;<i>         wHeight                           144
+</I>&gt;<i>         dwMinBitRate                    50688
+</I>&gt;<i>         dwMaxBitRate                  1520640
+</I>&gt;<i>         dwMaxVideoFrameBufferSize       50688
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            500000
+</I>&gt;<i>         dwFrameInterval( 2)            666666
+</I>&gt;<i>         dwFrameInterval( 3)           1000000
+</I>&gt;<i>         dwFrameInterval( 4)           2000000
+</I>&gt;<i>         dwFrameInterval( 5)          10000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                         5
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            160
+</I>&gt;<i>         wHeight                           120
+</I>&gt;<i>         dwMinBitRate                    38400
+</I>&gt;<i>         dwMaxBitRate                  1152000
+</I>&gt;<i>         dwMaxVideoFrameBufferSize       38400
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            500000
+</I>&gt;<i>         dwFrameInterval( 2)            666666
+</I>&gt;<i>         dwFrameInterval( 3)           1000000
+</I>&gt;<i>         dwFrameInterval( 4)           2000000
+</I>&gt;<i>         dwFrameInterval( 5)          10000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            38
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                         6
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                           1280
+</I>&gt;<i>         wHeight                           960
+</I>&gt;<i>         dwMinBitRate                  2457600
+</I>&gt;<i>         dwMaxBitRate                 22118400
+</I>&gt;<i>         dwMaxVideoFrameBufferSize     2457600
+</I>&gt;<i>         dwDefaultFrameInterval        1111111
+</I>&gt;<i>         bFrameIntervalType                  3
+</I>&gt;<i>         dwFrameInterval( 0)           1111111
+</I>&gt;<i>         dwFrameInterval( 1)           2000000
+</I>&gt;<i>         dwFrameInterval( 2)          10000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            38
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                         7
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                           1280
+</I>&gt;<i>         wHeight                          1024
+</I>&gt;<i>         dwMinBitRate                  2621440
+</I>&gt;<i>         dwMaxBitRate                 23592960
+</I>&gt;<i>         dwMaxVideoFrameBufferSize     2621440
+</I>&gt;<i>         dwDefaultFrameInterval        1111111
+</I>&gt;<i>         bFrameIntervalType                  3
+</I>&gt;<i>         dwFrameInterval( 0)           1111111
+</I>&gt;<i>         dwFrameInterval( 1)           2000000
+</I>&gt;<i>         dwFrameInterval( 2)          10000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            34
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  3 (STILL_IMAGE_FRAME)
+</I>&gt;<i>         bEndpointAddress                    0
+</I>&gt;<i>         bNumImageSizePatterns               7
+</I>&gt;<i>         wWidth( 0)                       1280
+</I>&gt;<i>         wHeight( 0)                      1024
+</I>&gt;<i>         wWidth( 1)                       1280
+</I>&gt;<i>         wHeight( 1)                       960
+</I>&gt;<i>         wWidth( 2)                        640
+</I>&gt;<i>         wHeight( 2)                       480
+</I>&gt;<i>         wWidth( 3)                        352
+</I>&gt;<i>         wHeight( 3)                       288
+</I>&gt;<i>         wWidth( 4)                        320
+</I>&gt;<i>         wHeight( 4)                       240
+</I>&gt;<i>         wWidth( 5)                        176
+</I>&gt;<i>         wHeight( 5)                       144
+</I>&gt;<i>         wWidth( 6)                        160
+</I>&gt;<i>         wHeight( 6)                       120
+</I>&gt;<i>         bNumCompressionPatterns             7
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                             6
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                 13 (COLORFORMAT)
+</I>&gt;<i>         bColorPrimaries                     1 (BT.709,sRGB)
+</I>&gt;<i>         bTransferCharacteristics            1 (BT.709)
+</I>&gt;<i>         bMatrixCoefficients                 4 (SMPTE 170M (BT.601))
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        1
+</I>&gt;<i>       bAlternateSetting       1
+</I>&gt;<i>       bNumEndpoints           1
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      2 Video Streaming
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x81  EP 1 IN
+</I>&gt;<i>         bmAttributes            5
+</I>&gt;<i>           Transfer Type            Isochronous
+</I>&gt;<i>           Synch Type               Asynchronous
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x0080  1x 128 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        1
+</I>&gt;<i>       bAlternateSetting       2
+</I>&gt;<i>       bNumEndpoints           1
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      2 Video Streaming
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x81  EP 1 IN
+</I>&gt;<i>         bmAttributes            5
+</I>&gt;<i>           Transfer Type            Isochronous
+</I>&gt;<i>           Synch Type               Asynchronous
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x0100  1x 256 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        1
+</I>&gt;<i>       bAlternateSetting       3
+</I>&gt;<i>       bNumEndpoints           1
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      2 Video Streaming
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x81  EP 1 IN
+</I>&gt;<i>         bmAttributes            5
+</I>&gt;<i>           Transfer Type            Isochronous
+</I>&gt;<i>           Synch Type               Asynchronous
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x0320  1x 800 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        1
+</I>&gt;<i>       bAlternateSetting       4
+</I>&gt;<i>       bNumEndpoints           1
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      2 Video Streaming
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x81  EP 1 IN
+</I>&gt;<i>         bmAttributes            5
+</I>&gt;<i>           Transfer Type            Isochronous
+</I>&gt;<i>           Synch Type               Asynchronous
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x0b20  2x 800 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        1
+</I>&gt;<i>       bAlternateSetting       5
+</I>&gt;<i>       bNumEndpoints           1
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      2 Video Streaming
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x81  EP 1 IN
+</I>&gt;<i>         bmAttributes            5
+</I>&gt;<i>           Transfer Type            Isochronous
+</I>&gt;<i>           Synch Type               Asynchronous
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x1320  3x 800 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        1
+</I>&gt;<i>       bAlternateSetting       6
+</I>&gt;<i>       bNumEndpoints           1
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      2 Video Streaming
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x81  EP 1 IN
+</I>&gt;<i>         bmAttributes            5
+</I>&gt;<i>           Transfer Type            Isochronous
+</I>&gt;<i>           Synch Type               Asynchronous
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x13e8  3x 1000 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i> Device Qualifier (for other device speed):
+</I>&gt;<i>   bLength                10
+</I>&gt;<i>   bDescriptorType         6
+</I>&gt;<i>   bcdUSB               2.00
+</I>&gt;<i>   bDeviceClass          239 Miscellaneous Device
+</I>&gt;<i>   bDeviceSubClass         2 ?
+</I>&gt;<i>   bDeviceProtocol         1 Interface Association
+</I>&gt;<i>   bMaxPacketSize0        64
+</I>&gt;<i>   bNumConfigurations      1
+</I>&gt;<i> Device Status:     0x0000
+</I>&gt;<i>   (Bus Powered)
+</I>
+
+
+
+-- 
+Marco Argiolas
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">marco.argiolas at studenti.polito.it</A>
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">arjos85 at gmail.com</A>
+skype: arjos85
+msn: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">sarace2003 at libero.it</A>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080619/1172a3c5/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080619/1172a3c5/attachment.html</A>&gt;
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: original_uvcvideo.jpg
+Type: image/jpeg
+Size: 5064 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080619/1172a3c5/attachment.jpg">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080619/1172a3c5/attachment.jpg</A>&gt;
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: modded_uvcvideo_1pixel.jpg
+Type: image/jpeg
+Size: 5203 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080619/1172a3c5/attachment-0001.jpg">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080619/1172a3c5/attachment-0001.jpg</A>&gt;
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: modded_uvcvideo_2pixel.jpg
+Type: image/jpeg
+Size: 27521 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080619/1172a3c5/attachment-0002.jpg">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080619/1172a3c5/attachment-0002.jpg</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003644.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+	<LI>Next message: <A HREF="003648.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3645">[ date ]</a>
+              <a href="thread.html#3645">[ thread ]</a>
+              <a href="subject.html#3645">[ subject ]</a>
+              <a href="author.html#3645">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo module install in wrong folder.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20module%20install%20in%20wrong%20folder.&In-Reply-To=%3C1137761709.9034.16.camel%40yossarian%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000100.html">
+   <LINK REL="Next"  HREF="000102.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo module install in wrong folder.</H1>
+    <B>Mikael Nilsson</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20module%20install%20in%20wrong%20folder.&In-Reply-To=%3C1137761709.9034.16.camel%40yossarian%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo module install in wrong folder.">mini at nada.kth.se
+       </A><BR>
+    <I>Fri Jan 20 13:55:09 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000100.html">[Linux-uvc-devel] uvcvideo module install in wrong folder.
+</A></li>
+        <LI>Next message: <A HREF="000102.html">[Linux-uvc-devel] Error grabing frame on quickcam pro 5000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#101">[ date ]</a>
+              <a href="thread.html#101">[ thread ]</a>
+              <a href="subject.html#101">[ subject ]</a>
+              <a href="author.html#101">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>fre 2006-01-20 klockan 13:33 +0100 skrev mirak:
+&gt;<i> So the problem is that the module is installed in
+</I>&gt;<i> /lib/modules/2.6.12/usb/media/
+</I>&gt;<i> instead of
+</I>&gt;<i> /lib/modules/2.6.12-10-k7/kernel/drivers/usb/media/
+</I>
+Are you running debian? In that case:
+
+-----------------------------------
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=345918">http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=345918</A>
+
+(short version: will probably be fixed in Debian soon)
+
+Quick fix for debian users:
+
+cd /usr/src/linux-headers-2.6.15-1-686   # or wherever...
+cp .extraversion localversion
+-----------------------------------
+
+In short, make sure you have &quot;-10-k7&quot; in a file named localversion in
+your kernel build dir (on debian that is linux-headers-*).
+
+Done!
+
+/Mikael
+
+&gt;<i> 
+</I>&gt;<i> The Makefile is below just before there is a make plus a make install.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at mirak</A>:/usr/src/uvc/linux-uvc/linux-uvc/trunk# LANG=en make
+</I>&gt;<i> Building USB Video Class driver...
+</I>&gt;<i> (cd /lib/modules/2.6.12-10-k7/build &amp;&amp; make -C 
+</I>&gt;<i> /lib/modules/2.6.12-10-k7/build 
+</I>&gt;<i> SUBDIRS=/usr/src/uvc/linux-uvc/linux-uvc/trunk modules)
+</I>&gt;<i> make[1]: Entering directory `/usr/src/linux-headers-2.6.12-10-k7'
+</I>&gt;<i>   CC [M]  /usr/src/uvc/linux-uvc/linux-uvc/trunk/uvcvideo.o
+</I>&gt;<i>   Building modules, stage 2.
+</I>&gt;<i>   MODPOST
+</I>&gt;<i>   CC      /usr/src/uvc/linux-uvc/linux-uvc/trunk/uvcvideo.mod.o
+</I>&gt;<i>   LD [M]  /usr/src/uvc/linux-uvc/linux-uvc/trunk/uvcvideo.ko
+</I>&gt;<i> make[1]: Leaving directory `/usr/src/linux-headers-2.6.12-10-k7'
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at mirak</A>:/usr/src/uvc/linux-uvc/linux-uvc/trunk# LANG=en make install
+</I>&gt;<i> Installing USB Video Class driver...
+</I>&gt;<i> (cd /lib/modules/2.6.12-10-k7/build &amp;&amp; make -C 
+</I>&gt;<i> /lib/modules/2.6.12-10-k7/build 
+</I>&gt;<i> SUBDIRS=/usr/src/uvc/linux-uvc/linux-uvc/trunk INSTALL_MOD_DIR=usb/media 
+</I>&gt;<i> modules_install)
+</I>&gt;<i> make[1]: Entering directory `/usr/src/linux-headers-2.6.12-10-k7'
+</I>&gt;<i>   INSTALL /usr/src/uvc/linux-uvc/linux-uvc/trunk/uvcvideo.ko
+</I>&gt;<i> make[1]: Leaving directory `/usr/src/linux-headers-2.6.12-10-k7'
+</I>&gt;<i> depmod -ae
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at mirak</A>:/usr/src/uvc/linux-uvc/linux-uvc/trunk# cat Makefile
+</I>&gt;<i> KERNEL_VERSION  := `uname -r`
+</I>&gt;<i> KERNEL_DIR      := /lib/modules/$(KERNEL_VERSION)/build
+</I>&gt;<i> INSTALL_MOD_DIR := usb/media
+</I>&gt;<i> 
+</I>&gt;<i> PWD             := $(shell pwd)
+</I>&gt;<i> 
+</I>&gt;<i> obj-m           := uvcvideo.o
+</I>&gt;<i> 
+</I>&gt;<i> %.o : %.c
+</I>&gt;<i>         gcc $(TEST_CFLAGS) -c -o $@ $&lt;
+</I>&gt;<i> 
+</I>&gt;<i> all: uvcvideo
+</I>&gt;<i> 
+</I>&gt;<i> uvcvideo:
+</I>&gt;<i>         @echo &quot;Building USB Video Class driver...&quot;
+</I>&gt;<i>         @echo &quot;(cd $(KERNEL_DIR) &amp;&amp; make -C $(KERNEL_DIR) SUBDIRS=$(PWD) 
+</I>&gt;<i> modules)&quot;
+</I>&gt;<i>         @(cd $(KERNEL_DIR) &amp;&amp; make -C $(KERNEL_DIR) SUBDIRS=$(PWD) modules)
+</I>&gt;<i> 
+</I>&gt;<i> install:
+</I>&gt;<i>         @echo &quot;Installing USB Video Class driver...&quot;
+</I>&gt;<i>         @echo &quot;(cd $(KERNEL_DIR) &amp;&amp; make -C $(KERNEL_DIR) SUBDIRS=$(PWD) 
+</I>&gt;<i> INSTALL_MOD_DIR=$(INSTALL_MOD_DIR) modules_install)&quot;
+</I>&gt;<i>         @(cd $(KERNEL_DIR) &amp;&amp; make -C $(KERNEL_DIR) SUBDIRS=$(PWD) 
+</I>&gt;<i> INSTALL_MOD_DIR=$(INSTALL_MOD_DIR) modules_install)
+</I>&gt;<i>         depmod -ae
+</I>&gt;<i> 
+</I>&gt;<i> clean:
+</I>&gt;<i>         -rm -f *.o *.ko .*.cmd .*.flags *.mod.c
+</I>&gt;<i>         -rm -rf .tmp_versions
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="http://lists.berlios.de/mailman/listinfo/linux-uvc-devel">http://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i> 
+</I>-- 
+Plus &#231;a change, plus c'est la m&#234;me chose
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000100.html">[Linux-uvc-devel] uvcvideo module install in wrong folder.
+</A></li>
+	<LI>Next message: <A HREF="000102.html">[Linux-uvc-devel] Error grabing frame on quickcam pro 5000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#101">[ date ]</a>
+              <a href="thread.html#101">[ thread ]</a>
+              <a href="subject.html#101">[ subject ]</a>
+              <a href="author.html#101">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

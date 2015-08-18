@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Multi cameras synchronization
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multi%20cameras%20synchronization&In-Reply-To=%3C1179152496.5110.52.camel%40altrandsd%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001740.html">
+   <LINK REL="Next"  HREF="001746.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Multi cameras synchronization</H1>
+    <B>julien quelen</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multi%20cameras%20synchronization&In-Reply-To=%3C1179152496.5110.52.camel%40altrandsd%3E"
+       TITLE="[Linux-uvc-devel] Multi cameras synchronization">jq03 at tid.es
+       </A><BR>
+    <I>Mon May 14 16:21:36 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001740.html">[Linux-uvc-devel] Multi cameras synchronization
+</A></li>
+        <LI>Next message: <A HREF="001746.html">[Linux-uvc-devel] Multi cameras synchronization
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1744">[ date ]</a>
+              <a href="thread.html#1744">[ thread ]</a>
+              <a href="subject.html#1744">[ subject ]</a>
+              <a href="author.html#1744">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+
+On Sun, 2007-05-13 at 23:14 +0200, Laurent Pinchart wrote:
+&gt;<i> Hi Julien,
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> On Friday 11 May 2007, julien quelen wrote:
+</I>&gt;<i> &gt; Hi all,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I am trying to build a synchronized multiple cameras capture.
+</I>&gt;<i> &gt; I started with 2 Logitech QuickCam UltraVision USB webcams.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I have difficulties synchronizing them.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; In my tests, I manage to extract the exact timestamp of each captured
+</I>&gt;<i> &gt; frame.
+</I>&gt;<i> 
+</I>&gt;<i> I'm curious, how did you do that ? Which time source did you use ?
+</I>&gt;<i> 
+</I>
+On the one hand we have in all USB packets:
+- PTS field containing the device clock time when the current video
+frame capture began.
+- SCR field containing the device clock time sampled at USB packet
+emission.
+
+On the other hand we have the host clock time when we received an
+complete URB.
+
+What I need is: the host clock when a new video frame capture begins.
+
+To know that, I assume the following approximation: For one URB
+received, the SCR time of the URB's last packet and the host time when
+this URB was received complete correspond to the same real time.
+
+So at each complete URB, I store last packet's SCR (Tscr) and host time
+(Thost) with do_gettimeofday.
+
+When uvc receives a URB containing a packet with a video EOF, I take
+packet PTS (Tpts), I take last stored host time (Thost) and I substract
+to it the time (in us) that separate last URB completion and current
+video SOF time.
+
+Thost(Video SOF) = Thost - ((Tscr - Tpts) / dwClockFrequency * 1000000))
+
+
+I agree that this calculation starts from an approximation, however I
+guess the time error should be less than 500us..
+
+Then I can compare video SOF times of several usbcams and the results
+look coherent.
+
+Please let me know your opinion on this calculation.. I am open to any
+comment!..
+
+&gt;<i> &gt; So then the synchronization can be made by sofware (comparing 
+</I>&gt;<i> &gt; timestamps). But I would prefer the cameras to be directly synchronized
+</I>&gt;<i> &gt; at the source (shot on each camera is taken at the same time).
+</I>&gt;<i> 
+</I>&gt;<i> That's an interesting idea. Both cameras have a common time source (the USB 
+</I>&gt;<i> SOF tokens), so they could in theory start streaming at the same time. In 
+</I>&gt;<i> practice, the feature will have to be implemented in the camera.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; The only way I found to do that for the moment is starting the 2 cameras
+</I>&gt;<i> &gt; at the same time (simultaneous call of VIDIOC_STREAMON for the 2 cams. I
+</I>&gt;<i> &gt; use mmap method, USB isochronous transferts). Frames appear to be more
+</I>&gt;<i> &gt; or less synchronized. However sometimes, the 2 cameras start totally
+</I>&gt;<i> &gt; dephased.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Is there a way to be more precise in the image capture start?
+</I>&gt;<i> 
+</I>&gt;<i> I don't think there's currently a way to synchronise acquisition on several 
+</I>&gt;<i> cameras. I'll pass the idea to Logitech, they might add the feature to future 
+</I>&gt;<i> models.
+</I>&gt;<i> 
+</I>&gt;<i> Best regards,
+</I>&gt;<i> 
+</I>&gt;<i> Laurent Pinchart
+</I>
+Best regards,
+
+Julien Quelen
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001740.html">[Linux-uvc-devel] Multi cameras synchronization
+</A></li>
+	<LI>Next message: <A HREF="001746.html">[Linux-uvc-devel] Multi cameras synchronization
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1744">[ date ]</a>
+              <a href="thread.html#1744">[ thread ]</a>
+              <a href="subject.html#1744">[ subject ]</a>
+              <a href="author.html#1744">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

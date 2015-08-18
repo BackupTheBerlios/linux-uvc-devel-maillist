@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20SOLVED%3A%20upside-down%20image%20from%20SONIX%20laptop%0A%09embedded%20webcam&In-Reply-To=%3C879e1f2b0806150737m9d71ea2sd9d3056624b58053%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003637.html">
+   <LINK REL="Next"  HREF="003635.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam</H1>
+    <B>Marco Argiolas</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20SOLVED%3A%20upside-down%20image%20from%20SONIX%20laptop%0A%09embedded%20webcam&In-Reply-To=%3C879e1f2b0806150737m9d71ea2sd9d3056624b58053%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam">arjos85 at gmail.com
+       </A><BR>
+    <I>Sun Jun 15 16:37:28 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003637.html">[Linux-uvc-devel] webcam  Chicony Electronics
+</A></li>
+        <LI>Next message: <A HREF="003635.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3632">[ date ]</a>
+              <a href="thread.html#3632">[ thread ]</a>
+              <a href="subject.html#3632">[ subject ]</a>
+              <a href="author.html#3632">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi everybody,
+I'm new of this mailing list and I haven't read all the messaged previously
+posted.
+However I'm just writing to you in order to help all those who have my same
+problem.
+
+Just two weeks ago I bought a new laptop: ASUS F3SR (cpu intel duo T500,
+2GB ram, .....) with a Sonix webcam.
+On preinstalled Win Vista (excuse me for the heresy) everything works fine.
+But on Kubuntu 8.04 the webcam just show me upside-down images.
+
+I've try to solve this problem with a pipe and a vloopback module, but
+unluckly I could not make it works.
+So I decided to mod the uvcvideo driver...and after some damns I got it
+works.
+I've added very few lines of code and in just one function.
+Has attachement you can find the changed file &quot;uvc_video.c&quot;.
+In the follow I report the changed function:
+
+----------------------------------------------------------------------------------------
+
+static void uvc_video_decode_data(struct uvc_video_device *video,
+        struct uvc_buffer *buf, const __u8 *data, int len)
+{
+    struct uvc_video_queue *queue = &amp;video-&gt;queue;
+    unsigned int maxlen, nbytes;
+    void *mem;
+    //// ADDED VARIABLES /////
+    __u8 *mem_tmp;
+    int i, k, pixel_size;
+    unsigned int size_tmp;
+    //// ADDED VARIABLES /////
+
+    if (len &lt;= 0)
+        return;
+
+    /* Copy the video data to the buffer. */
+    maxlen = buf-&gt;buf.length - buf-&gt;buf.bytesused;
+    mem = queue-&gt;mem + buf-&gt;buf.m.offset + buf-&gt;buf.bytesused;
+    nbytes = min((unsigned int)len, maxlen);
+
+    memcpy(mem, data, nbytes);
+
+    buf-&gt;buf.bytesused += nbytes;
+
+    /* Complete the current frame if the buffer size was exceeded. */
+
+/////////////////// START ADDED CODE
+/////////////////////////////////////////////////////////////////////
+    // I've just added the &quot;=&quot; operator in order to set &quot;buf-&gt;state =
+UVC_BUF_STATE_DONE&quot;        //
+    // right now without waiting another &quot;round&quot;
+ //
+    if (len &gt;= maxlen) {
+        // Total size of the pixel frame                            //
+        size_tmp = buf-&gt;buf.bytesused - (len - maxlen);
+
+        // Area in which to save the original frame before the conversion
+         //
+        mem_tmp=(__u8 *) kmalloc(size_tmp , GFP_USER);
+
+        // Copy the original frame in a temporary buffer
+ //
+        memcpy(mem_tmp, queue-&gt;mem + buf-&gt;buf.m.offset, size_tmp);
+
+        // Size of each pixel, in my case is 4 byte! If you have some
+problems with color or    //
+        // image coherency just try to change this value in accordance with
+your video device    //
+        // If you have problem I suggest to try &quot;pixel_size = 2;&quot;
+     //
+        pixel_size = 4 ;
+        // The following cycle just copy pixels from the temporary frame
+(originary one)     //
+        // in a reverse order: from the last (bottom right in the
+upside-down image) to     //
+        // the first (top left in the final flipped image)
+ //
+        for (     i=0, k=size_tmp - pixel_size; i &lt; size_tmp; i+=pixel_size,
+k-=pixel_size)
+            memcpy( (__u8 *)queue-&gt;mem + buf-&gt;buf.m.offset + i, mem_tmp + k,
+pixel_size );
+/////////////////// END ADDED CODE
+///////////////////////////////////////////////////////////////////////
+
+        uvc_trace(UVC_TRACE_FRAME, &quot;Frame complete (overflow).\n&quot;);
+        buf-&gt;state = UVC_BUF_STATE_DONE;
+    }
+}
+
+--------------------------------------------------------------------------------------------------------
+
+You can either:
+- copy this function and substitute to the original one in &quot;uvc_video.c&quot;
+or
+- use the attachement file and delete the original file.
+
+The following steps are intended for those who have already installed
+uvcvideo driver and their webcam is recognised but with upside-down images.
+
+Then you should do:
+- close all the program that are using the input video device
+- with your terminal go inside the folder where there are the uvcvideo
+source files and type:
+$ sudo modprobe -r uvcvideo
+$ KERNEL_VERSION=`uname -r`
+$ find /lib/modules/$KERNEL_VERSION -name uvcvideo.ko
+// with the previous command you should get a list of just 2 path in which
+uvcvideo.ko is already installed
+// one of this ends with &quot;usb/media/uvcvideo.ko&quot;, just copy the OTHER one,
+in the next steps I will call this  &quot;COPIED_PATH&quot;!!
+$ make
+$ sudo make install
+// &quot;make install&quot; command will install uvcvideo.ko  in
+/lib/modules/$(KERNEL_VERSION)/usb/media/
+// but you also need to copy uvcvideo.ko in an another dir, and in my case
+on kubuntu  this folder
+// is /lib/modules/2.6.24-18-generic/ubuntu/media/usbvideo/  but you have to
+do:
+$ sudo cp uvcvideo.ko COPIED_DIR
+$ sudo modprobe uvcvideo
+
+Now your webcam is ready and should work in the right way.
+If you have  problems with color or image incoherency, please try to mod my
+code (refer to my comments inside the changed code).
+
+Let me know if you have some doubts....
+i know i am not an expert of linux...so i could have made some error in the
+previous shell commands!!
+
+Please let me know!!
+However i hope my help could be useful for someone!!
+
+Ciao
+
+Marco Argiolas
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080615/e0ded8cb/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080615/e0ded8cb/attachment.html</A>&gt;
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: uvc_video.c
+Type: text/x-csrc
+Size: 29109 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080615/e0ded8cb/attachment.c">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080615/e0ded8cb/attachment.c</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003637.html">[Linux-uvc-devel] webcam  Chicony Electronics
+</A></li>
+	<LI>Next message: <A HREF="003635.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3632">[ date ]</a>
+              <a href="thread.html#3632">[ thread ]</a>
+              <a href="subject.html#3632">[ subject ]</a>
+              <a href="author.html#3632">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

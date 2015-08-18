@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20Xbox%20Live%20Vision%20Cam%20%28045e%3A0294%29&In-Reply-To=%3C46E85ADC.7040207%40elitedvb.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002095.html">
+   <LINK REL="Next"  HREF="002100.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)</H1>
+    <B>Felix Domke</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20Xbox%20Live%20Vision%20Cam%20%28045e%3A0294%29&In-Reply-To=%3C46E85ADC.7040207%40elitedvb.net%3E"
+       TITLE="[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)">tmbinc at elitedvb.net
+       </A><BR>
+    <I>Wed Sep 12 23:32:12 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002095.html">[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+</A></li>
+        <LI>Next message: <A HREF="002100.html">[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2097">[ date ]</a>
+              <a href="thread.html#2097">[ thread ]</a>
+              <a href="subject.html#2097">[ subject ]</a>
+              <a href="author.html#2097">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+
+Laurent Pinchart wrote:
+&gt;&gt;<i> i've spent some time on the Microsoft Xbox Live Vision cam (it's pretty
+</I>&gt;&gt;<i> cheap, USB 2.0, nearly uvc 1.0 compliant, has a pretty good image
+</I>&gt;&gt;<i> quality, manual focus, allegedly a 1280x960 sensor (i haven't checked,
+</I>&gt;&gt;<i> it might just upscale, but i don't think so), and supports MJPG and YUYV).
+</I>&gt;<i> *nearly* UVC compliant ? *sigh*... Can't they test their hardware with 
+</I>&gt;<i> Linux ? :-)
+</I>*g*
+
+Well, given that the thing is designed for a gaming console, I consider
+it as an advancement already that it a.) doesn't have a proprietary
+connector, and b.) at least tries to follow SOME standard, and c.)
+doesn't try to put all the magic into the host.
+
+&gt;<i> SET_INTERFACE shouldn't be required. Upon being plugged in, the webcam should 
+</I>&gt;<i> select the default alternate setting.
+</I>here is a lsusb -v:
+
+<A HREF="http://tmb.elitedvb.net/lsusb_045e0294">http://tmb.elitedvb.net/lsusb_045e0294</A>
+
+What's with that &quot;Xbox Security Method 3&quot; interface? So that's not the
+default interface? (We can/should totally ignore that interface, it's
+only an optional authentication between the host and the device. I just
+want to be sure that this is not the default interface.)
+
+&gt;&gt;<i> b.) The cam requires about ~3sec time after the initial SET_INTERFACE.
+</I>&gt;<i> Now this is bad news. What happens if you query controls during those ~3sec ? 
+</I>&gt;<i> Those the webcam timeout but stay functional, or does it crash ?
+</I>It stays functional. It just responds with NAKs, and then, after it has
+initialized itself, it answers (unless, of course, the transaction has
+been cancelled).
+
+&gt;<i> I'll test the SET_INTERFACE part and commit it soon. Regarding the timeouts, 
+</I>&gt;<i> what happens if you modify the streaming timeout only ?
+</I>I can currently not test it, because the cam is operating at a remote
+place (and I don't want to risk a crash), but I can this test tomorrow.
+My guess it that it will work, because the streaming command is done first.
+
+I still vote for a dummy transaction after the SET_INTERFACE with a long
+timeout, to make sure the cam has initialized itself. After that the
+short timeout should suffice. Just incrementing the timeout is a bad
+thing, i'd say.
+
+Felix
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002095.html">[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+</A></li>
+	<LI>Next message: <A HREF="002100.html">[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2097">[ date ]</a>
+              <a href="thread.html#2097">[ thread ]</a>
+              <a href="subject.html#2097">[ subject ]</a>
+              <a href="author.html#2097">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,606 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] UVC Camera not registering as UVC
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20UVC%20Camera%20not%20registering%20as%20UVC&In-Reply-To=%3C2F80C2C3-0DC4-4E5D-964E-C87D981F803E%40jpl.nasa.gov%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001347.html">
+   <LINK REL="Next"  HREF="001351.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] UVC Camera not registering as UVC</H1>
+    <B>David C Trotz Jr</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20UVC%20Camera%20not%20registering%20as%20UVC&In-Reply-To=%3C2F80C2C3-0DC4-4E5D-964E-C87D981F803E%40jpl.nasa.gov%3E"
+       TITLE="[Linux-uvc-devel] UVC Camera not registering as UVC">David.C.Trotz at jpl.nasa.gov
+       </A><BR>
+    <I>Wed Feb  7 03:00:52 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001347.html">[Linux-uvc-devel] Any HQ videoconference with uvcvideo?
+</A></li>
+        <LI>Next message: <A HREF="001351.html">[Linux-uvc-devel] UVC Camera not registering as UVC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1348">[ date ]</a>
+              <a href="thread.html#1348">[ thread ]</a>
+              <a href="subject.html#1348">[ subject ]</a>
+              <a href="author.html#1348">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all,
+I am an employee here at JPL and my current task is to get some IR  
+camera's which claim to be UVC compliant to talk to linux. This is  
+the camera: <A HREF="http://www.thermoteknix.com/content/english/products/">http://www.thermoteknix.com/content/english/products/</A> 
+miricle/110k/index.html
+
+First let me say that I am so thankful for the work you have already  
+done in this area, you have given me a head start on this task.
+
+The problem I am having is this. I downloaded and installed the  
+latest drivers from the svn server. The driver does not detect the  
+cameras. Upon further investigation I found out that lsusb -d 17dc: 
+0100 -v | grep &quot;14 Video&quot; returns nothing, so it appears that this is  
+not a UVC camera, except I am 99.9% sure it is. I was reading one of  
+the threads in this list and found out that I might be able to add  
+the Vendor id and Device id. So I added this to the file
+
+/* Thermoteknix MIRICLE */
+{
+	.match_flags = USB_DEVICE_ID_MATCH_DEVICE |  
+USB_DEVICE_ID_MATCH_INT_INFO,
+	.idVendor = 0x17dc,
+	.idProduct = 0x0100,
+	.bInterfaceClass = USB_CLASS_VENDOR_SPEC, // Also tried USB_CLASS_VIDEO
+	.bInterfaceSubClass = 1
+	.bInterfaceProtocol = 0,
+	// tried .driver_info as well
+}
+
+When I run lsusb -d 17dc:0100 -v I get the following:
+
+&lt;SNIP&gt;
+Bus 005 Device 012: ID 17dc:0100
+Device Descriptor:
+   bLength                18
+   bDescriptorType         1
+   bcdUSB               2.00
+   bDeviceClass          255 Vendor Specific Class
+   bDeviceSubClass       255 Vendor Specific Subclass
+   bDeviceProtocol       255 Vendor Specific Protocol
+   bMaxPacketSize0        64
+   idVendor           0x17dc
+   idProduct          0x0100
+   bcdDevice            0.00
+   iManufacturer           0
+   iProduct                0
+   iSerial                 0
+   bNumConfigurations      1
+   Configuration Descriptor:
+     bLength                 9
+     bDescriptorType         2
+     wTotalLength          171
+     bNumInterfaces          1
+     bConfigurationValue     1
+     iConfiguration          0
+     bmAttributes         0x80
+     MaxPower              100mA
+     Interface Descriptor:
+       bLength                 9
+       bDescriptorType         4
+       bInterfaceNumber        0
+       bAlternateSetting       0
+       bNumEndpoints           0
+       bInterfaceClass       255 Vendor Specific Class
+       bInterfaceSubClass    255 Vendor Specific Subclass
+       bInterfaceProtocol    255 Vendor Specific Protocol
+       iInterface              0
+     Interface Descriptor:
+       bLength                 9
+       bDescriptorType         4
+       bInterfaceNumber        0
+       bAlternateSetting       1
+       bNumEndpoints           6
+       bInterfaceClass       255 Vendor Specific Class
+       bInterfaceSubClass    255 Vendor Specific Subclass
+       bInterfaceProtocol    255 Vendor Specific Protocol
+       iInterface              0
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x01  EP 1 OUT
+         bmAttributes            2
+           Transfer Type            Bulk
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0200  1x 512 bytes
+         bInterval               0
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x81  EP 1 IN
+         bmAttributes            2
+           Transfer Type            Bulk
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0200  1x 512 bytes
+         bInterval               0
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x02  EP 2 OUT
+         bmAttributes            2
+           Transfer Type            Bulk
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0200  1x 512 bytes
+         bInterval               0
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x04  EP 4 OUT
+         bmAttributes            2
+           Transfer Type            Bulk
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0200  1x 512 bytes
+         bInterval               0
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x86  EP 6 IN
+         bmAttributes            2
+           Transfer Type            Bulk
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0200  1x 512 bytes
+         bInterval               0
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x88  EP 8 IN
+         bmAttributes            2
+           Transfer Type            Bulk
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0200  1x 512 bytes
+         bInterval               0
+     Interface Descriptor:
+       bLength                 9
+       bDescriptorType         4
+       bInterfaceNumber        0
+       bAlternateSetting       2
+       bNumEndpoints           6
+       bInterfaceClass       255 Vendor Specific Class
+       bInterfaceSubClass    255 Vendor Specific Subclass
+       bInterfaceProtocol    255 Vendor Specific Protocol
+       iInterface              0
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x01  EP 1 OUT
+         bmAttributes            3
+           Transfer Type            Interrupt
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0040  1x 64 bytes
+         bInterval               1
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x81  EP 1 IN
+         bmAttributes            3
+           Transfer Type            Interrupt
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0040  1x 64 bytes
+         bInterval               1
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x02  EP 2 OUT
+         bmAttributes            3
+           Transfer Type            Interrupt
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0200  1x 512 bytes
+         bInterval               1
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x04  EP 4 OUT
+         bmAttributes            2
+           Transfer Type            Bulk
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0200  1x 512 bytes
+         bInterval               0
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x86  EP 6 IN
+         bmAttributes            3
+           Transfer Type            Interrupt
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0200  1x 512 bytes
+         bInterval               1
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x88  EP 8 IN
+         bmAttributes            2
+           Transfer Type            Bulk
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0200  1x 512 bytes
+         bInterval               0
+     Interface Descriptor:
+       bLength                 9
+       bDescriptorType         4
+       bInterfaceNumber        0
+       bAlternateSetting       3
+       bNumEndpoints           6
+       bInterfaceClass       255 Vendor Specific Class
+       bInterfaceSubClass    255 Vendor Specific Subclass
+       bInterfaceProtocol    255 Vendor Specific Protocol
+       iInterface              0
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x01  EP 1 OUT
+         bmAttributes            3
+           Transfer Type            Interrupt
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0040  1x 64 bytes
+         bInterval               1
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x81  EP 1 IN
+         bmAttributes            3
+           Transfer Type            Interrupt
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0040  1x 64 bytes
+         bInterval               1
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x02  EP 2 OUT
+         bmAttributes            1
+           Transfer Type            Isochronous
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0200  1x 512 bytes
+         bInterval               1
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x04  EP 4 OUT
+         bmAttributes            2
+           Transfer Type            Bulk
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0200  1x 512 bytes
+         bInterval               0
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x86  EP 6 IN
+         bmAttributes            1
+           Transfer Type            Isochronous
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0200  1x 512 bytes
+         bInterval               1
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x88  EP 8 IN
+         bmAttributes            2
+           Transfer Type            Bulk
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0200  1x 512 bytes
+         bInterval               0
+Device Qualifier (for other device speed):
+   bLength                10
+   bDescriptorType         6
+   bcdUSB               2.00
+   bDeviceClass          255 Vendor Specific Class
+   bDeviceSubClass       255 Vendor Specific Subclass
+   bDeviceProtocol       255 Vendor Specific Protocol
+   bMaxPacketSize0        64
+   bNumConfigurations      1
+&lt;/SNIP&gt;
+
+
+
+When I run the USB Device Viewer in Windows I get the following info  
+on the camera:
+
+&lt;SNIP&gt;
+           ---===&gt;Device Information&lt;===---
+English product name: &quot;MIRICLE&quot;
+
+ConnectionStatus:
+Current Config Value:              0x01  -&gt; Device Bus Speed: High
+Device Address:                    0x04
+Open Pipes:                           1
+
+           ===&gt;Endpoint Descriptor&lt;===
+bLength:                           0x07
+bDescriptorType:                   0x05
+bEndpointAddress:                  0x82  -&gt; Direction: IN -  
+EndpointID: 2
+bmAttributes:                      0x02  -&gt; Bulk Transfer Type
+wMaxPacketSize:                  0x0200 = 0x200 max bytes
+bInterval:                         0x00
+
+           ===&gt;Device Descriptor&lt;===
+bLength:                           0x12
+bDescriptorType:                   0x01
+bcdUSB:                          0x0200
+bDeviceClass:                      0xEF  -&gt; This is a Multi-interface  
+Function Code Device
+bDeviceSubClass:                   0x02  -&gt; This is the Common Class  
+Sub Class
+bDeviceProtocol:                   0x01  -&gt; This is the Interface  
+Association Descriptor protocol
+bMaxPacketSize0:                   0x40 = (64) Bytes
+idVendor:                         
+0x17DCidProduct:                       0x0201
+bcdDevice:                       0x0001
+iManufacturer:                     0x01
+      English (United States)  &quot;Thermoteknix Systems Ltd&quot;
+iProduct:                          0x02
+      English (United States)  &quot;MIRICLE&quot;
+iSerialNumber:                     0x03
+      English (United States)  &quot;00000&quot;
+bNumConfigurations:                0x01
+
+           ===&gt;Configuration Descriptor&lt;===
+bLength:                           0x09
+bDescriptorType:                   0x02
+wTotalLength:                    0x00A5  -&gt; Validated
+bNumInterfaces:                    0x02
+bConfigurationValue:               0x01
+iConfiguration:                    0x02
+      English (United States)  &quot;MIRICLE&quot;
+bmAttributes:                      0x40  -&gt; Self Powered
+MaxPower:                          0x32 = 100 mA
+
+           ===&gt;IAD Descriptor&lt;===
+bLength:                           0x08
+bDescriptorType:                   0x0B
+bFirstInterface:                   0x00
+bInterfaceCount:                   0x02
+bFunctionClass:                    0x0E  -&gt; Video Interface Class
+bFunctionSubClass:                 0x03  -&gt; Video Interface Collection
+bFunctionProtocol:                 0x00  -&gt; PC_PROTOCOL_UNDEFINED  
+protocol
+iFunction:                         0x02
+      English (United States)  &quot;MIRICLE&quot;
+
+           ===&gt;Interface Descriptor&lt;===
+bLength:                           0x09
+bDescriptorType:                   0x04
+bInterfaceNumber:                  0x00
+bAlternateSetting:                 0x00
+bNumEndpoints:                     0x00
+bInterfaceClass:                   0x0E  -&gt; Video Interface Class
+bInterfaceSubClass:                0x01  -&gt; Video Control Interface  
+SubClass
+bInterfaceProtocol:                0x00
+iInterface:                        0x02
+      English (United States)  &quot;MIRICLE&quot;
+
+           ===&gt;Class-Specific Video Control Interface Header  
+Descriptor&lt;===
+bLength:                           0x0D
+bDescriptorType:                   0x24
+bDescriptorSubtype:                0x01
+bcdVDC:                          0x0110
+wTotalLength:                    0x002E  -&gt; Validated
+dwClockFrequency:            0x003D0900 = (4000000) Hz
+bInCollection:                     0x01
+baInterfaceNr[1]:                  0x01
+
+           ===&gt;Video Control Input Terminal Descriptor&lt;===
+bLength:                           0x11
+bDescriptorType:                   0x24
+bDescriptorSubtype:                0x02
+bTerminalID:                       0x01
+wTerminalType:                   0x0201 = (ITT_CAMERA)
+bAssocTerminal:                    0x00
+iTerminal:                         0x05
+      English (United States)  &quot;Miricle Video&quot;
+===&gt;Camera Input Terminal Data
+wObjectiveFocalLengthMin:        0x0000
+wObjectiveFocalLengthMax:        0x0000
+wOcularFocalLength:              0x0000
+bControlSize:                      0x02
+bmControls : 0x20 0x00
+      D00 = 0   no -  Scanning Mode
+      D01 = 0   no -  Auto-Exposure Mode
+      D02 = 0   no -  Auto-Exposure Priority
+      D03 = 0   no -  Exposure Time (Absolute)
+      D04 = 0   no -  Exposure Time (Relative)
+      D05 = 1  yes -  Focus (Absolute)
+      D06 = 0   no -  Focus (Relative)
+      D07 = 0   no -  Iris (Absolute)
+      D08 = 0   no -  Iris (Relative)
+      D09 = 0   no -  Zoom (Absolute)
+      D10 = 0   no -  Zoom (Relative)
+      D11 = 0   no -  Pan (Absolute)
+      D12 = 0   no -  Pan (Relative)
+      D13 = 0   no -  Roll (Absolute)
+      D14 = 0   no -  Roll (Relative)
+      D15 = 0   no -  Tilt (Absolute)
+
+           ===&gt;Video Control Output Terminal Descriptor&lt;===
+bLength:                           0x09
+bDescriptorType:                   0x24
+bDescriptorSubtype:                0x03
+bTerminalID:                       0x02
+wTerminalType:                   0x0101 = (TT_STREAMING)
+bAssocTerminal:                    0x00
+bSourceID:                         0x03
+iTerminal:                         0x06
+      English (United States)  &quot;Miricle USB&quot;
+
+           ===&gt;Video Control Selector Unit Descriptor&lt;===
+bLength:                           0x07
+bDescriptorType:                   0x24
+bDescriptorSubtype:                0x04
+bUnitID:                           0x03
+bNrInPins:                         0x01
+===&gt;List of Connected Unit and Terminal ID's
+baSourceID[1]:                     0x01
+iSelector:                         0x02
+      English (United States)  &quot;MIRICLE&quot;
+
+           ===&gt;Interface Descriptor&lt;===
+bLength:                           0x09
+bDescriptorType:                   0x04
+bInterfaceNumber:                  0x01
+bAlternateSetting:                 0x00
+bNumEndpoints:                     0x01
+bInterfaceClass:                   0x0E  -&gt; Video Interface Class
+bInterfaceSubClass:                0x02  -&gt; Video Streaming Interface  
+SubClass
+bInterfaceProtocol:                0x00
+iInterface:                        0x06
+      English (United States)  &quot;Miricle USB&quot;
+
+           ===&gt;Video Class-Specific VS Video Input Header Descriptor&lt;===
+bLength:                           0x0E
+bDescriptorType:                   0x24
+bDescriptorSubtype:                0x01
+bNumFormats:                       0x01
+wTotalLength:                    0x004D  -&gt; Validated
+bEndpointAddress:                  0x82  -&gt; Direction: IN -  
+EndpointID: 2
+bmInfo:                            0x00  -&gt; Dynamic Format Change not  
+Supported
+bTerminalLink:                     0x02
+bStillCaptureMethod:               0x00  -&gt; Still Capture Method 0
+bTriggerSupport:                   0x00  -&gt; No Hardware Triggering  
+Support
+bTriggerUsage:                     0x00
+bControlSize:                      0x01
+Video Payload Format 1             0x00
+      D00 = 0   no -  Key Frame Rate
+      D01 = 0   no -  P Frame Rate
+      D02 = 0   no -  Compression Quality
+      D03 = 0   no -  Compression Window Size
+      D04 = 0   no -  Generate Key Frame
+      D05 = 0   no -  Update Frame Segment
+      D06 = 0   no -  Reserved
+      D07 = 0   no -  Reserved
+
+           ===&gt;Video Streaming Uncompressed Format Type Descriptor&lt;===
+bLength:                           0x1B
+bDescriptorType:                   0x24
+bDescriptorSubtype:                0x04
+bFormatIndex:                      0x01
+bNumFrameDescriptors:              0x01
+guidFormat:                         
+{32595559-0000-0010-8000-00AA00389B71} = YUY2 Format
+bBitsPerPixel:                     0x10
+bDefaultFrameIndex:                0x01
+bAspectRatioX:                     0x04
+bAspectRatioY:                     0x03
+bmInterlaceFlags:                  0x00
+      D0    = 0x00 Interlaced stream or variable: No
+      D1    = 0x00 Fields per frame: 2 fields
+      D2    = 0x00 Field 1 first: No
+      D3    = 0x00 Reserved
+      D4..5 = 0x00 Field patterns  -&gt; Field 1 only
+      D6..7 = 0x00 Display Mode  -&gt; Bob only
+bCopyProtect:                      0x00  -&gt; Duplication Unrestricted
+
+           ===&gt;Video Streaming Uncompressed Frame Type Descriptor&lt;===
+bLength:                           0x1E
+bDescriptorType:                   0x24
+bDescriptorSubtype:                0x05
+bFrameIndex:                       0x01
+bmCapabilities:                    0x02
+wWidth:                          0x0180
+wHeight:                         0x0120
+dwMinBitRate:                0x05460000
+dwMaxBitRate:                0x05460000
+dwMaxVideoFrameBufferSize:   0x00036000
+dwDefaultFrameInterval:      0x00030D40
+bFrameIntervalType:                0x01
+===&gt;Additional Discrete Frame Type Data
+dwFrameInterval[1]:          0x00030D40
+
+           ===&gt;Color Matching Descriptor&lt;===
+bLength:                           0x06
+bDescriptorType:                   0x24
+bDescriptorSubtype:                0x0D
+bColorPrimaries:                   0x00
+bTransferCharacteristics:          0x00
+bMatrixCoefficients:               0x00
+
+           ===&gt;Endpoint Descriptor&lt;===
+bLength:                           0x07
+bDescriptorType:                   0x05
+bEndpointAddress:                  0x82  -&gt; Direction: IN -  
+EndpointID: 2
+bmAttributes:                      0x02  -&gt; Bulk Transfer Type
+wMaxPacketSize:                  0x0200 = 0x200 max bytes
+bInterval:                         0x00
+&lt;/SNIP&gt;
+
+
+Funny thing is, I am getting a bInterfaceClass as 0x0E which is the  
+flag for UVC right? But I am not getting this same info when I lsusb,  
+this is weird. So my question is is my entry listed above correct?  
+Are there certain parameters I need to supply that I haven't? And if  
+I am certain this is a UVC device how do I go about coercing the  
+uvcvideo driver to agree with me? Also is there an irc chat room  
+setup for uvc_driver devs?
+Thanks in advance for the help,
+--
+David Trotz
+Technical Staff, Computer Vision Group
+Jet Propulsion Laboratory
+Mail Stop 198-235
+4800 Oak Grove Drive
+Pasadena, CA 91109
+Office 818-354-1897, Fax 818-393-5007
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001347.html">[Linux-uvc-devel] Any HQ videoconference with uvcvideo?
+</A></li>
+	<LI>Next message: <A HREF="001351.html">[Linux-uvc-devel] UVC Camera not registering as UVC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1348">[ date ]</a>
+              <a href="thread.html#1348">[ thread ]</a>
+              <a href="subject.html#1348">[ subject ]</a>
+              <a href="author.html#1348">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

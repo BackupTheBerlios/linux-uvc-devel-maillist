@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20with%20H264%20encoder%20not%20in%20Devicelist&In-Reply-To=%3C804463466.358092.1308200212914.JavaMail.root%40ahm.einfochips.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006618.html">
+   <LINK REL="Next"  HREF="006620.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist</H1>
+    <B>Ajay Bhargav</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20with%20H264%20encoder%20not%20in%20Devicelist&In-Reply-To=%3C804463466.358092.1308200212914.JavaMail.root%40ahm.einfochips.com%3E"
+       TITLE="[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist">ajay.bhargav at einfochips.com
+       </A><BR>
+    <I>Thu Jun 16 06:56:52 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006618.html">[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+</A></li>
+        <LI>Next message: <A HREF="006620.html">[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6619">[ date ]</a>
+              <a href="thread.html#6619">[ thread ]</a>
+              <a href="subject.html#6619">[ subject ]</a>
+              <a href="author.html#6619">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi, 
+
+as far as i know stream based format are not yet supported in UVC driver. and UVC 1.1 specifications defines the H.264 payload specifications. I dont think they are implemented yet. 
+
+I have a camera with me which outputs H.264 stream using MPEG2-TS container format. If you have any idea how to add support for MPEG2-TS please let me know. 
+
+--Ajay 
+
+----- Original Message ----- 
+From: &quot;Alexey Fisher&quot; &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt; 
+To: &quot;Kofi Jedamzik&quot; &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">kofi at jedamzik.net</A>&gt; 
+Cc: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel at lists.berlios.de</A> 
+Sent: Wednesday, June 15, 2011 8:10:36 PM 
+Subject: Re: [Linux-uvc-devel] Webcam with H264 encoder not in Devicelist 
+
+Hi, 
+
+theoretically this should do it: 
+gst-inspect-0.10 v4l2src ! video/x-h264 ! ffdec_h264 ! autovideosink 
+
+but, if i'm correct, current kernel do not support h264. There was a 
+patch for some time, but im not sure if Laurent applyed it. 
+
+Am Mittwoch, den 15.06.2011, 16:01 +0200 schrieb Kofi Jedamzik: 
+&gt;<i> Hi, 
+</I>&gt;<i> 
+</I>&gt;<i> ... there is a &quot;new&quot; Logitech Webcam called &quot;B990 HD Webcam&quot; with 
+</I>&gt;<i> device id 046d:0828 
+</I>&gt;<i> it has an integrated hardware based H264 baseline video encoder 
+</I>&gt;<i> 
+</I>&gt;<i> This cam is not listed. 
+</I>&gt;<i> 
+</I>&gt;<i> MJPEG seems to work but I want to get out the H264 stream. 
+</I>&gt;<i> 
+</I>&gt;<i> Is there anyone who could give me a hint how to do it? 
+</I>&gt;<i> 
+</I>&gt;<i> Here are som dumps which might be helpful... 
+</I>&gt;<i> 
+</I>&gt;<i> best regards 
+</I>&gt;<i> 
+</I>&gt;<i> Kofi 
+</I>&gt;<i> 
+</I>&gt;<i> #lsusb --verbose -d 046d:0828 
+</I>&gt;<i> (big output) --&gt;&gt; <A HREF="http://pastebin.com/9WFgytwY">http://pastebin.com/9WFgytwY</A> 
+</I>&gt;<i> 
+</I>&gt;<i> #guvcview --device /dev/video0 --verbose 
+</I>&gt;<i> (big output) --&gt;&gt; <A HREF="http://pastebin.com/pqmUGYyn">http://pastebin.com/pqmUGYyn</A> 
+</I>&gt;<i> 
+</I>&gt;<i> #modinfo uvcvideo 
+</I>&gt;<i> filename: 
+</I>&gt;<i> /lib/modules/2.6.38-8-generic/kernel/drivers/media/video/uvc/uvcvideo.ko 
+</I>&gt;<i> version: v1.0.0 
+</I>&gt;<i> 
+</I>&gt;<i> #tail /var/log/syslog 
+</I>&gt;<i> [11588.664940] usb 1-6: USB disconnect, address 4 
+</I>&gt;<i> [11594.580043] usb 1-6: new high speed USB device using ehci_hcd and address 5 
+</I>&gt;<i> [11594.927759] uvcvideo: Unknown video format 
+</I>&gt;<i> 34363248-0000-0010-8000-00aa00389b71 
+</I>&gt;<i> [11594.927786] uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:0828) 
+</I>&gt;<i> [11595.024093] input: UVC Camera (046d:0828) as 
+</I>&gt;<i> /devices/pci0000:00/0000:00:12.2/usb1/1-6/1-6:1.0/input/input8 
+</I>-- 
+Regards, 
+Alexey 
+
+_______________________________________________ 
+Linux-uvc-devel mailing list 
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A> 
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A> 
+
+-- 
+This message has been scanned for viruses and 
+dangerous content by Clean Mail Gateway, and is 
+believed to be clean. 
+
+************************************************************************************************************************************************************* 
+einfochips Business Disclaimer : This e-mail message and all attachments transmitted with it are intended solely for the use of the addressee and may contain legally privileged and confidential information. If the reader of this message is not the intended recipient, or an employee or agent responsible for delivering this message to the intended recipient, you are hereby notified that any dissemination, distribution, copying, or other use of this message or its attachments is strictly prohibited. If you have received this message in error, please notify the sender immediately by replying to this message and please delete it from your computer. Any views expressed in this message are those of the individual sender unless otherwise stated. Company has taken enough precautions to prevent the spread of viruses. However the company accepts no liability for any damage caused by any virus transmitted by this email. 
+************************************************************************************************************************************************************* 
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110616/aead0764/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110616/aead0764/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006618.html">[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+</A></li>
+	<LI>Next message: <A HREF="006620.html">[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6619">[ date ]</a>
+              <a href="thread.html#6619">[ thread ]</a>
+              <a href="subject.html#6619">[ subject ]</a>
+              <a href="author.html#6619">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

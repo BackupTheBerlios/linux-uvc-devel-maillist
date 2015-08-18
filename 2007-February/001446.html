@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Quick Cam Pro 5000 046d:08ce don't run on Ubuntu Feisty Fawn
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quick%20Cam%20Pro%205000%20046d%3A08ce%20don%27t%20run%20on%0A%20Ubuntu%20Feisty%20Fawn&In-Reply-To=%3C45DF20AD.3010302%40martinfunk.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001442.html">
+   <LINK REL="Next"  HREF="001447.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Quick Cam Pro 5000 046d:08ce don't run on Ubuntu Feisty Fawn</H1>
+    <B>Martin Funk</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quick%20Cam%20Pro%205000%20046d%3A08ce%20don%27t%20run%20on%0A%20Ubuntu%20Feisty%20Fawn&In-Reply-To=%3C45DF20AD.3010302%40martinfunk.de%3E"
+       TITLE="[Linux-uvc-devel] Quick Cam Pro 5000 046d:08ce don't run on Ubuntu Feisty Fawn">ich at martinfunk.de
+       </A><BR>
+    <I>Fri Feb 23 18:13:17 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001442.html">[Linux-uvc-devel] Quick Cam Pro 5000 046d:08ce don't run on	Ubuntu Feisty Fawn
+</A></li>
+        <LI>Next message: <A HREF="001447.html">[Linux-uvc-devel] Quick Cam Pro 5000 046d:08ce don't run on Ubuntu Feisty Fawn
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1446">[ date ]</a>
+              <a href="thread.html#1446">[ thread ]</a>
+              <a href="subject.html#1446">[ subject ]</a>
+              <a href="author.html#1446">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>it works now!
+
+And I'm a little ashamed of why it didn't before:
+
+svn diff -r HEAD
+Index: Makefile
+===================================================================
+--- Makefile    (Revision 89)
++++ Makefile    (Arbeitskopie)
+@@ -1,6 +1,6 @@
+  KERNEL_VERSION := `uname -r`
+  KERNEL_DIR     := /lib/modules/$(KERNEL_VERSION)/build
+-INSTALL_MOD_DIR        := usb/media
++INSTALL_MOD_DIR        := kernel/ubuntu/media/usbvideo
+
+  PWD            := $(shell pwd)
+
+
+adding the trace messages showed me, that I wasn't using the downloaded 
+module at all, but the
+module provided by ubuntu.
+
+If you don't mind I'll drop a bugreport at <A HREF="https://launchpad.net/">https://launchpad.net/</A> 
+telling em that the uvcvideo module they provide is outdated.
+
+Martin
+
+
+Laurent Pinchart schrieb:
+&gt;<i> On Tuesday 20 February 2007 22:05, Martin Funk wrote:
+</I>&gt;&gt;<i> Hi Thomas,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> verry same output of v4l-video here, just the bus_info differs.
+</I>&gt;&gt;<i> It also makes no difference if the given uvc_ids is added to the code or
+</I>&gt;&gt;<i> not.
+</I>&gt;<i> 
+</I>&gt;<i> Here's what bothers me in your kernel log:
+</I>&gt;<i> 
+</I>&gt;<i> [  284.165685] uvcvideo: uvc_v4l2_ioctl
+</I>&gt;<i> [  284.165691] v4l2 ioctl VIDIOC_STREAMON, dir=-w (0x40045612)
+</I>&gt;<i> [  284.165967] uvcvideo: uvc_v4l2_ioctl
+</I>&gt;<i> [  284.165970] v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0585611)
+</I>&gt;<i> [  284.166061] uvcvideo: Dequeuing buffer 0.
+</I>&gt;<i> [  284.171785] uvcvideo: Dropping packet (out of sync).
+</I>&gt;<i> [  284.171788] uvcvideo: Dropping packet (out of sync).
+</I>&gt;<i> [  284.171790] uvcvideo: Dropping packet (out of sync).
+</I>&gt;<i> [  284.171791] uvcvideo: Dropping packet (out of sync).
+</I>&gt;<i> 
+</I>&gt;<i> Right after started streaming, the application tries to dequeue the first 
+</I>&gt;<i> buffer using VIDIOC_DQBUF. The ioctl checks the first buffer in the queue 
+</I>&gt;<i> (which is buffer 0) and blocks until the buffer is filled with image data. It 
+</I>&gt;<i> seems from what you reported that this never happens.
+</I>&gt;<i> 
+</I>&gt;<i> The driver keeps printing out-of-sync messages, and that shouldn't happen. An 
+</I>&gt;<i> out-of-sync message can happen from times to times, but definitely not at the 
+</I>&gt;<i> very beginning. Could you hack uvc_video.c to print more information in the 
+</I>&gt;<i> out of sync message, such as the buffer number (buff-&gt;buf.index) and state 
+</I>&gt;<i> (buff-&gt;buf.index) ?
+</I>&gt;<i> 
+</I>&gt;<i> Best regards,
+</I>&gt;<i> 
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i> 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001442.html">[Linux-uvc-devel] Quick Cam Pro 5000 046d:08ce don't run on	Ubuntu Feisty Fawn
+</A></li>
+	<LI>Next message: <A HREF="001447.html">[Linux-uvc-devel] Quick Cam Pro 5000 046d:08ce don't run on Ubuntu Feisty Fawn
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1446">[ date ]</a>
+              <a href="thread.html#1446">[ thread ]</a>
+              <a href="subject.html#1446">[ subject ]</a>
+              <a href="author.html#1446">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

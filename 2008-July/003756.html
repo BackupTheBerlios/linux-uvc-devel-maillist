@@ -1,0 +1,191 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] USB2.0 UVC PC Camera
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20USB2.0%20UVC%20PC%20Camera&In-Reply-To=%3C879e1f2b0807061406r67fb3938k250bc72fa3ca8e88%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003755.html">
+   <LINK REL="Next"  HREF="003757.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] USB2.0 UVC PC Camera</H1>
+    <B>Marco Argiolas</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20USB2.0%20UVC%20PC%20Camera&In-Reply-To=%3C879e1f2b0807061406r67fb3938k250bc72fa3ca8e88%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] USB2.0 UVC PC Camera">arjos85 at gmail.com
+       </A><BR>
+    <I>Sun Jul  6 23:06:47 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003755.html">[Linux-uvc-devel] USB2.0 UVC PC Camera
+</A></li>
+        <LI>Next message: <A HREF="003757.html">[Linux-uvc-devel] USB2.0 UVC PC Camera
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3756">[ date ]</a>
+              <a href="thread.html#3756">[ thread ]</a>
+              <a href="subject.html#3756">[ subject ]</a>
+              <a href="author.html#3756">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Well, first of all you have to be sure your webcam is UVC compliant.
+Try to execute this command:
+sudo lsusb -d 174f:8a31 -v | grep &quot;14 Video&quot;
+
+If your webcam is UVC compliant then you should get something like this:
+      bFunctionClass         14 Video
+      bInterfaceClass        14 Video
+      bInterfaceClass        14 Video
+      bInterfaceClass        14 Video
+
+If your is a UVC-webcam, then maybe uvcvideo module is not loaded!
+lsmod | grep uvcvideo
+
+If it is not loaded:
+sudo modprobe uvcvideo
+
+If it is loaded, just verify if there is the corrispond node for your
+webcam:
+ls -l /dev/video*
+
+Now you can be sure your webcam is recognised!!
+Just for another test, install
+luvcview&lt;<A HREF="http://packages.ubuntu.com/hardy/x11/luvcview">http://packages.ubuntu.com/hardy/x11/luvcview</A>&gt;and then run:
+luvcview -L
+
+If everything seems to be good, maybe it is a problem of software
+configuration:
+skype: from properties you have just to enable webcam capturing and select
+the webcam source (e.g. /dev/video0);
+ekiga: from Preference, select Device-&gt;Video Devices and set:
+-  Video Plugin = V4L2
+-  Format = PAL europe
+-  Channel = 0
+amsn: from Prefernce select &quot;Others&quot; tab and then &quot;Audio &amp; Video Settings&quot;
+and follow the guide!!
+
+Good luck!!! ;)
+
+Marco Argiolas
+
+2008/7/6 erwin &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">marconico at tiscali.it</A>&gt;:
+
+&gt;<i> Hi, i have an notebook ASUS F9SG with on board cam as per subject. I
+</I>&gt;<i> have the problem that programs like skype ekiga amsn etc.. switch it on
+</I>&gt;<i> but can't get image or they say &quot;no web cam detected. the model is D-MAX
+</I>&gt;<i> (stk-2135) i'm running ubuntu 7.10
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$ lsusb
+</I>&gt;<i> Bus 004 Device 001: ID 0000:0000
+</I>&gt;<i> Bus 002 Device 001: ID 0000:0000
+</I>&gt;<i> Bus 005 Device 002: ID 046d:c016 Logitech, Inc. M-UV69a Optical Wheel
+</I>&gt;<i> Mouse
+</I>&gt;<i> Bus 005 Device 001: ID 0000:0000
+</I>&gt;<i> Bus 007 Device 002: ID 0b05:1712 ASUSTek Computer, Inc.
+</I>&gt;<i> Bus 007 Device 001: ID 0000:0000
+</I>&gt;<i> Bus 006 Device 002: ID 08ff:1600 AuthenTec, Inc.
+</I>&gt;<i> Bus 006 Device 001: ID 0000:0000
+</I>&gt;<i> Bus 003 Device 007: ID 0bda:0116 Realtek Semiconductor Corp.
+</I>&gt;<i> Bus 003 Device 004: ID 174f:8a31
+</I>&gt;<i> Bus 003 Device 003: ID 152d:2339
+</I>&gt;<i> Bus 003 Device 001: ID 0000:0000
+</I>&gt;<i> Bus 001 Device 001: ID 0000:0000
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$ lspci
+</I>&gt;<i> 00:00.0 Host bridge: Intel Corporation Mobile PM965/GM965/GL960 Memory
+</I>&gt;<i> Controller Hub (rev 03)
+</I>&gt;<i> 00:01.0 PCI bridge: Intel Corporation Mobile PM965/GM965/GL960 PCI
+</I>&gt;<i> Express Root Port (rev 03)
+</I>&gt;<i> 00:1a.0 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI
+</I>&gt;<i> Contoller #4 (rev 03)
+</I>&gt;<i> 00:1a.1 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI
+</I>&gt;<i> Controller #5 (rev 03)
+</I>&gt;<i> 00:1a.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI
+</I>&gt;<i> Controller #2 (rev 03)
+</I>&gt;<i> 00:1b.0 Audio device: Intel Corporation 82801H (ICH8 Family) HD Audio
+</I>&gt;<i> Controller (rev 03)
+</I>&gt;<i> 00:1c.0 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express
+</I>&gt;<i> Port 1 (rev 03)
+</I>&gt;<i> 00:1c.1 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express
+</I>&gt;<i> Port 2 (rev 03)
+</I>&gt;<i> 00:1c.2 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express
+</I>&gt;<i> Port 3 (rev 03)
+</I>&gt;<i> 00:1d.0 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI
+</I>&gt;<i> Controller #1 (rev 03)
+</I>&gt;<i> 00:1d.1 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI
+</I>&gt;<i> Controller #2 (rev 03)
+</I>&gt;<i> 00:1d.2 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI
+</I>&gt;<i> Controller #3 (rev 03)
+</I>&gt;<i> 00:1d.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI
+</I>&gt;<i> Controller #1 (rev 03)
+</I>&gt;<i> 00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev f3)
+</I>&gt;<i> 00:1f.0 ISA bridge: Intel Corporation 82801HEM (ICH8M) LPC Interface
+</I>&gt;<i> Controller (rev 03)
+</I>&gt;<i> 00:1f.1 IDE interface: Intel Corporation 82801HBM/HEM (ICH8M/ICH8M-E)
+</I>&gt;<i> IDE Controller (rev 03)
+</I>&gt;<i> 00:1f.2 SATA controller: Intel Corporation 82801HBM/HEM (ICH8M/ICH8M-E)
+</I>&gt;<i> SATA AHCI Controller (rev 03)
+</I>&gt;<i> 01:00.0 VGA compatible controller: nVidia Corporation Unknown device
+</I>&gt;<i> 042e (rev a1)
+</I>&gt;<i> 02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
+</I>&gt;<i> RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 01)
+</I>&gt;<i> 05:00.0 Network controller: Intel Corporation PRO/Wireless 4965 AG or
+</I>&gt;<i> AGN Network Connection (rev 61)
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$
+</I>&gt;<i>
+</I>&gt;<i> I really hope you'll find soon a solution for this issue.
+</I>&gt;<i>
+</I>&gt;<i> Thanks in advance.
+</I>&gt;<i>
+</I>&gt;<i> erwin
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>
+
+
+-- 
+Marco Argiolas
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">marco.argiolas at studenti.polito.it</A>
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">arjos85 at gmail.com</A>
+skype: arjos85
+msn: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">sarace2003 at libero.it</A>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080706/3e31e983/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080706/3e31e983/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003755.html">[Linux-uvc-devel] USB2.0 UVC PC Camera
+</A></li>
+	<LI>Next message: <A HREF="003757.html">[Linux-uvc-devel] USB2.0 UVC PC Camera
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3756">[ date ]</a>
+              <a href="thread.html#3756">[ thread ]</a>
+              <a href="subject.html#3756">[ subject ]</a>
+              <a href="author.html#3756">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

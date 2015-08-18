@@ -1,0 +1,277 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] unstable pictures with logitech pro 5000
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20unstable%20pictures%20with%20logitech%20pro%205000&In-Reply-To=%3C200612072228.42414.simon.morlat%40linphone.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001071.html">
+   <LINK REL="Next"  HREF="001079.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] unstable pictures with logitech pro 5000</H1>
+    <B>Simon Morlat</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20unstable%20pictures%20with%20logitech%20pro%205000&In-Reply-To=%3C200612072228.42414.simon.morlat%40linphone.org%3E"
+       TITLE="[Linux-uvc-devel] unstable pictures with logitech pro 5000">simon.morlat at linphone.org
+       </A><BR>
+    <I>Thu Dec  7 22:28:42 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001071.html">[Linux-uvc-devel] unstable pictures with logitech pro 5000
+</A></li>
+        <LI>Next message: <A HREF="001079.html">[Linux-uvc-devel] Ricoh UVC Cam in HP Pavilion dv6000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1074">[ date ]</a>
+              <a href="thread.html#1074">[ thread ]</a>
+              <a href="subject.html#1074">[ subject ]</a>
+              <a href="author.html#1074">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi, 
+
+Thanks for your fast answer !
+The QBUF/DQBUF bug is fixed in CVS. Actually in 1.5.1 the v4lv2 support was 
+still under development and testing, that's why it was not enabled by 
+default.
+the Xsync message traduces a segmentation fault: executing from gdb should 
+show the backtrace. Unfortunately I don't reproduce that problem, if after 
+upgrading to cvs you can do it with gdb I 'll fix it.
+
+It appears the bug never produces at linphone startup.
+Actually linphone closes/reopen the device for each new call and for each 
+inter call duration where only local preview is enabled.
+I wonder whether those fast close/reopen events do not disturb the driver or 
+the camera.
+The luvcview program works perfectly but I think it opens the device only 
+once.
+I 'm still looking for a bug in linphone code... I'll try YUV but it 's not as 
+simple as MJPEG for me for design reasons. If it were planar YUV (ideally 
+YUV420P) it would be easy but it seems the driver (or the camera) only 
+accepts a packed YUV format.
+
+Simon
+
+
+
+
+Le jeudi 7 d&#233;cembre 2006 16:30, Martin Rubli a &#233;crit&#160;:
+&gt;<i> Hi Simon,
+</I>&gt;<i>
+</I>&gt;<i> I did a little testing with linphone. I downloaded 1.5.1 and enabled
+</I>&gt;<i> HAVE_LINUX_VIDEODEV2_H by hand. Is that supposed to be this way? (In the
+</I>&gt;<i> future, please specify the version you work with.)
+</I>&gt;<i>
+</I>&gt;<i> After I got it running I had very different runs:
+</I>&gt;<i>
+</I>&gt;<i> 1. Sometimes it worked fine, the video seemed okay, no errors, etc. I
+</I>&gt;<i> still got a lot of errors, though. See trace 1 (taken with --verbose)
+</I>&gt;<i> below.
+</I>&gt;<i>
+</I>&gt;<i> 2. Usually when I ran it without --verbose it crashed when I enabled video
+</I>&gt;<i> with &quot;Xlib: unexpected async reply (sequence 0x3a12)!&quot; (different numbers
+</I>&gt;<i> each time). It crashed more often than not but for the times it didn't,
+</I>&gt;<i> the traces looked like trace 2 below.
+</I>&gt;<i>
+</I>&gt;<i> 3. One time I was able to reproduce the screwed up pictures you mentioned.
+</I>&gt;<i> IIRC --verbose was disabled.
+</I>&gt;<i>
+</I>&gt;<i> My ideas:
+</I>&gt;<i>
+</I>&gt;<i> I would first try to analyze where the &quot;VIDIOC_QBUF failed: Invalid
+</I>&gt;<i> argument&quot; comes from. Something's really wrong there.
+</I>&gt;<i>
+</I>&gt;<i> Also, the Xlib errors you get, the different behavior with --verbose
+</I>&gt;<i> enabled/disabled, as well as the screwed up picture might hint at some
+</I>&gt;<i> synchronization issues in your program. I've seen those in the past when I
+</I>&gt;<i> wrote webcam software.
+</I>&gt;<i>
+</I>&gt;<i> It's unlikely that the errors you see are actually the camera's fault. The
+</I>&gt;<i> &quot;EOF in empty packet.&quot; are harmless and if you use a newer driver version,
+</I>&gt;<i> they shouldn't appear anymore (except in debug mode, but as I mentioned,
+</I>&gt;<i> that's harmless).
+</I>&gt;<i>
+</I>&gt;<i> If you really think the MJPEG stream is broken, try to use the YUV mode
+</I>&gt;<i> instead and see what it gives you. If your picture has green areas or
+</I>&gt;<i> spots, the data gets corrupted somewhere.
+</I>&gt;<i>
+</I>&gt;<i> Cheers,
+</I>&gt;<i> Martin
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> *** Trace 1 **********************************
+</I>&gt;<i>
+</I>&gt;<i> ortp-message-v4l_start: open, fd=28
+</I>&gt;<i> ortp-message-v4lv2: MJPEG choosen
+</I>&gt;<i> ortp-message-ms_filter_link: MSV4l:0x81dad40,0--&gt;MSMJpegDec:0x81f91f0,0
+</I>&gt;<i> ortp-message-ms_filter_link: MSMJpegDec:0x81f91f0,0--&gt;MSSdlOut:0x81e46b0,0
+</I>&gt;<i> ortp-message-v4l_thread starting
+</I>&gt;<i> ortp-warning-VIDIOC_QBUF failed: Invalid argument
+</I>&gt;<i> ortp-warning-VIDIOC_QBUF failed: Invalid argument
+</I>&gt;<i> ortp-warning-VIDIOC_QBUF failed: Invalid argument
+</I>&gt;<i> [mjpeg @ 0xb6c9d9a8]only 8 bits/component accepted
+</I>&gt;<i> ortp-warning-ms_AVdecoder_process: error -1.
+</I>&gt;<i> ortp-warning-VIDIOC_QBUF failed: Invalid argument
+</I>&gt;<i> ortp-warning-VIDIOC_QBUF failed: Invalid argument
+</I>&gt;<i> ortp-message-Using yuv overlay.
+</I>&gt;<i> ortp-message-YUV overlay using hardware acceleration.
+</I>&gt;<i> ortp-warning-We are late of 73 miliseconds.
+</I>&gt;<i> [mjpeg @ 0xb6c9d9a8]only 8 bits/component accepted
+</I>&gt;<i> ortp-warning-ms_AVdecoder_process: error -1.
+</I>&gt;<i> ortp-warning-VIDIOC_QBUF failed: Invalid argument
+</I>&gt;<i> ortp-warning-VIDIOC_QBUF failed: Invalid argument
+</I>&gt;<i> [mjpeg @ 0xb6c9d9a8]mjpeg: unsupported coding type (cf)
+</I>&gt;<i> [mjpeg @ 0xb6c9d9a8]invalid id 255
+</I>&gt;<i> ortp-warning-ms_AVdecoder_process: error -1.
+</I>&gt;<i> ortp-warning-VIDIOC_QBUF failed: Invalid argument
+</I>&gt;<i> ortp-warning-VIDIOC_QBUF failed: Invalid argument
+</I>&gt;<i> [mjpeg @ 0xb6c9d9a8]only 8 bits/component accepted
+</I>&gt;<i> ortp-warning-ms_AVdecoder_process: error -1.
+</I>&gt;<i> ortp-warning-VIDIOC_QBUF failed: Invalid argument
+</I>&gt;<i> ortp-warning-VIDIOC_QBUF failed: Invalid argument
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> *** Trace 2 **********************************
+</I>&gt;<i>
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]invalid id 255
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]only 8 bits/component accepted
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]invalid id 255
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]only 8 bits/component accepted
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]invalid id 255
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]mjpeg: unsupported coding type (c8)
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]mjpeg: unsupported coding type (c8)
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]mjpeg: unsupported coding type (c8)
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]mjpeg: unsupported coding type (c8)
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]mjpeg: unsupported coding type (c8)
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]mjpeg: unsupported coding type (c8)
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]mjpeg: unsupported coding type (c8)
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]mjpeg: unsupported coding type (c8)
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]mjpeg: unsupported coding type (c8)
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]mjpeg: unsupported coding type (c8)
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]mjpeg: unsupported coding type (c8)
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]mjpeg: unsupported coding type (c8)
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]mjpeg: unsupported coding type (c8)
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]mjpeg: unsupported coding type (c8)
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]huffman table decode error
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]invalid id 255
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]only 8 bits/component accepted
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]invalid id 255
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]only 8 bits/component accepted
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]invalid id 255
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]only 8 bits/component accepted
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]invalid id 255
+</I>&gt;<i> [mjpeg @ 0xb6cc49a8]only 8 bits/component accepted
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> On Thu, 07 Dec 2006 14:31:16 +0100, Simon Morlat
+</I>&gt;<i>
+</I>&gt;<i> &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">simon.morlat at linphone.org</A>&gt; wrote:
+</I>&gt;<i> &gt; Hello,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I've bought a Logitech Quickcam Pro 5000 (Bus 004 Device 003: ID
+</I>&gt;<i> &gt; 046d:08c5
+</I>&gt;<i> &gt; Logitech, Inc.), and I've got some problems with it and the uvc driver.
+</I>&gt;<i> &gt; I use linphone (a sip video phone I'm the maintainer). The picture is
+</I>&gt;<i> &gt; grabbed
+</I>&gt;<i> &gt; using mmap v4lv2 standart method with MJPEG format, then passed to
+</I>&gt;<i> &gt; ffmpeg to
+</I>&gt;<i> &gt; decode it as YUV420P and then displayed.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Sometimes (quite often), it works well.
+</I>&gt;<i> &gt; Sometimes, despite pictures display correctly, ffmpeg complains with
+</I>&gt;<i> &gt; those
+</I>&gt;<i> &gt; warnings:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; [mjpeg @ 0xb6c8e9a8]mjpeg: unsupported coding type (c7)
+</I>&gt;<i> &gt; [mjpeg @ 0xb6c8e9a8]mjpeg: unsupported coding type (c6)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; [mjpeg @ 0xb6c8e9a8]picture size invalid (62975x62965)
+</I>&gt;<i> &gt; [mjpeg @ 0xb6c8e9a8]picture size invalid (62975x62965)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; [mjpeg @ 0xb6c8e9a8]huffman table decode error
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; [mjpeg @ 0xb6c689a8]mjpeg: unsupported coding type (cf)
+</I>&gt;<i> &gt; [mjpeg @ 0xb6c689a8]invalid id 224
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; That seems to indicate that there is something corrupted in the MJPEG
+</I>&gt;<i> &gt; bitstream.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; And finally sometimes the picture are completely mixed, look for example
+</I>&gt;<i> &gt; this
+</I>&gt;<i> &gt; one:
+</I>&gt;<i> &gt; <A HREF="http://simon.morlat.free.fr/pro5000bug.jpg">http://simon.morlat.free.fr/pro5000bug.jpg</A>
+</I>&gt;<i> &gt; The frontiers between image parts are constantly and quicly moving.
+</I>&gt;<i> &gt; I saw on the mailing list that I was not the only one having this
+</I>&gt;<i> &gt; problem.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; As I'm also suspecting a problem with my code, I tried with xawtv, but
+</I>&gt;<i> &gt; unfortunately it fails and display nothing (for other reasons):
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; This is xawtv-3.95, running on Linux/i686 (2.6.18-fm)
+</I>&gt;<i> &gt; WARNING: Your X-Server has no DGA support.
+</I>&gt;<i> &gt; /dev/video0 [v4l2]: no overlay support
+</I>&gt;<i> &gt; v4l-conf had some trouble, trying to continue anyway
+</I>&gt;<i> &gt; Warning: Cannot convert string
+</I>&gt;<i> &gt; &quot;-*-ledfixed-medium-r-*--39-*-*-*-c-*-*-*&quot; to
+</I>&gt;<i> &gt; type FontStruct
+</I>&gt;<i> &gt; ioctl: VIDIOC_G_STD(std=0xbffd1744
+</I>&gt;<i> &gt; [PAL_G,PAL_D1,PAL_M,PAL_N,PAL_Nc,NTSC_M,SECAM_B,SECAM_G,SECAM_H,SECAM_K,S
+</I>&gt;<i> &gt;ECAM_K1,SECAM_L,?ATSC_8_VSB,ATSC_16_VSB,
+</I>&gt;<i> &gt; (null),(null),(null),(null),(null),(null)]): Argument invalide
+</I>&gt;<i> &gt; ioctl: VIDIOC_S_STD(std=0x0 []): Argument invalide
+</I>&gt;<i> &gt; ioctl: VIDIOC_DQBUF(index=0;type=VIDEO_CAPTURE;bytesused=0;flags=0x0
+</I>&gt;<i> &gt; [];field=ANY;;timecode.type=0;timecode.flags=0;timecode.frames=0;timecode
+</I>&gt;<i> &gt;.seconds=0;timecode.minutes=0;timecode.hours=0;timecode.userbits=&quot;&quot;;sequen
+</I>&gt;<i> &gt;ce=0;memory=unknown): Argument invalide
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Maybe you have other suggestion of a working v4lv2 compatible viewer ?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I used the uvc driver from svn (updated yesterday), compiled for 2.6.18
+</I>&gt;<i> &gt; kernel.
+</I>&gt;<i> &gt; In dmesg, I have thoses messages:
+</I>&gt;<i> &gt; EOF in empty packet.
+</I>&gt;<i> &gt; EOF in empty packet.
+</I>&gt;<i> &gt; EOF in empty packet.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I'm not sure they are related with uvc driver.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thanks for your help, tell me if you need more information.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Simon
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; Linux-uvc-devel mailing list
+</I>&gt;<i> &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001071.html">[Linux-uvc-devel] unstable pictures with logitech pro 5000
+</A></li>
+	<LI>Next message: <A HREF="001079.html">[Linux-uvc-devel] Ricoh UVC Cam in HP Pavilion dv6000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1074">[ date ]</a>
+              <a href="thread.html#1074">[ thread ]</a>
+              <a href="subject.html#1074">[ subject ]</a>
+              <a href="author.html#1074">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

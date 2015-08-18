@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Philips SPC 620 NC webcam works partially
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Philips%20SPC%20620%20NC%20webcam%20works%20partially&In-Reply-To=%3C200803241150.28445.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003272.html">
+   <LINK REL="Next"  HREF="003280.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Philips SPC 620 NC webcam works partially</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Philips%20SPC%20620%20NC%20webcam%20works%20partially&In-Reply-To=%3C200803241150.28445.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Philips SPC 620 NC webcam works partially">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Mar 24 11:50:28 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003272.html">[Linux-uvc-devel] Philips SPC 620 NC webcam works partially
+</A></li>
+        <LI>Next message: <A HREF="003280.html">[Linux-uvc-devel] Philips SPC 620 NC webcam works partially
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3277">[ date ]</a>
+              <a href="thread.html#3277">[ thread ]</a>
+              <a href="subject.html#3277">[ subject ]</a>
+              <a href="author.html#3277">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Malte,
+
+On Monday 24 March 2008, Malte Gell wrote:
+&gt;<i> On Sonntag, 23. M&#228;rz 2008, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; Could you please post the output of
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; lsusb -v -d 0471:0333
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; (using usbutils 0.72 or newer - 0.73+ preferred) as well as any
+</I>&gt;<i> &gt; kernel log message related to the webcam that might get printed
+</I>&gt;<i> &gt; during your Skype run and after the freeze ?
+</I>&gt;<i>
+</I>&gt;<i> Thanx a lot for helping, I've put the output of lsusb ver. 0.72 from
+</I>&gt;<i> openSUSE 10.3 to the attached .txt file, so it may be better to read.
+</I>
+Thanks.
+
+&gt;<i> I just used grep uvcvideo /var/log/messages and put the output into the
+</I>&gt;<i> attached file, so you can see every message the module has produced.
+</I>&gt;<i>
+</I>&gt;<i> The funny thing is, there is one tip I found somewhere: unload the
+</I>&gt;<i> ehci_hcd module and load the uvc again, so I did this:
+</I>&gt;<i>
+</I>&gt;<i> rmmod ehci_hcd
+</I>&gt;<i> modprobe uvcvideo
+</I>&gt;<i>
+</I>&gt;<i> and this totally improves stability! So I could use the cam for hours,
+</I>&gt;<i> but, without the fast USB2 support, the cam only works with a smaller
+</I>&gt;<i> resolution.
+</I>
+Here's the most annoying part in the kernel log:
+
+Mar 23 23:18:28 linuxbox kernel: uvcvideo: Failed to resubmit video URB (-45).
+Mar 23 23:33:34 linuxbox kernel: uvcvideo: Failed to resubmit video URB (-45).
+Mar 23 23:33:34 linuxbox kernel: uvcvideo: Failed to resubmit video URB (-45).
+
+-45 is -EL2NSYNC. In a nutshell the EHCI scheduler tells that the timeslot for 
+the URB the driver tried to submit (if you're not familiar with URBs, thing 
+about them as data packets on the USB) has already elapsed. This should not 
+happen, as the Linux UVC driver just requests the URB to be sent ASAP and 
+doesn't request any specific timeslot. There is clearly a bug in the EHCI 
+scheduler.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003272.html">[Linux-uvc-devel] Philips SPC 620 NC webcam works partially
+</A></li>
+	<LI>Next message: <A HREF="003280.html">[Linux-uvc-devel] Philips SPC 620 NC webcam works partially
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3277">[ date ]</a>
+              <a href="thread.html#3277">[ thread ]</a>
+              <a href="subject.html#3277">[ subject ]</a>
+              <a href="author.html#3277">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

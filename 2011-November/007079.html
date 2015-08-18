@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Send some bytes to device
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Send%20some%20bytes%20to%20device&In-Reply-To=%3C4ECA1566.9080802%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007078.html">
+   <LINK REL="Next"  HREF="007080.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Send some bytes to device</H1>
+    <B>DIXLOR</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Send%20some%20bytes%20to%20device&In-Reply-To=%3C4ECA1566.9080802%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Send some bytes to device">dixlor at gmail.com
+       </A><BR>
+    <I>Mon Nov 21 10:09:58 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007078.html">[Linux-uvc-devel] JVC GR-D72 support
+</A></li>
+        <LI>Next message: <A HREF="007080.html">[Linux-uvc-devel] [patch] add &quot;report&quot; file to debugfs
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7079">[ date ]</a>
+              <a href="thread.html#7079">[ thread ]</a>
+              <a href="subject.html#7079">[ subject ]</a>
+              <a href="author.html#7079">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+21, 01, 1, 0x600, 0x400, buf, 0x7, 1000
+
+21 - CLASS
+01 - DIRECTION
+0x600 - ?
+0x400 - ?
+buf - buf
+0x7 - sizeof(buf)
+1000 - timeout
+
+it's dump via usbmon.
+
+
+For example  setting brightness
+
+# v4l2-ctl -c brightness=1
+
+in dump look like a
+
+s 21 01 0200 0001 001a 26 =
+01000101 15160500 00000000 00000000 52890060 0900000c 0000
+. . . .  . . . .  . . . .  . . . .  R . . `  . . . .  . .
+
+503f1000 3992.234728 S Co:1:021:0 s 21 01 0200 0300 0002 2 =
+    0200
+
+or in libusb
+
+#define BRIGHT  &quot;\x02\x00&quot;
+memcpy(buf, BRIGHT, 0x2);
+usb_control_msg(devh, USB_TYPE_CLASS + USB_RECIP_INTERFACE,  1, 0x200, 0x300,
+buf, 0x2, 1000);
+
+or via ioctl()
+
+ struct v4l2_ext_control xctrl;
+ ctrl.id = V4L2_CID_BRIGHTNESS;
+ ctrl.value = 0x2;
+
+ fd = open(&quot;/dev/video0&quot;, O_RDWR);
+ ioctl(fd, VIDIOC_S_EXT_CTRLS, &amp;xctrl);
+
+---
+What do you think, what me need insert into struct v4l2_ext_control,
+that have turned out 0x600 and 0x400 in USB control message?
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007078.html">[Linux-uvc-devel] JVC GR-D72 support
+</A></li>
+	<LI>Next message: <A HREF="007080.html">[Linux-uvc-devel] [patch] add &quot;report&quot; file to debugfs
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7079">[ date ]</a>
+              <a href="thread.html#7079">[ thread ]</a>
+              <a href="subject.html#7079">[ subject ]</a>
+              <a href="author.html#7079">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

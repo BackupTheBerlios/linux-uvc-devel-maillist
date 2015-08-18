@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20suyin%20crystal%20eye%20webcam%20064e%3Aa103%20not%20working&In-Reply-To=%3Cebff8ece0906031525x653addb5k79c7bb32abbe04ed%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004836.html">
+   <LINK REL="Next"  HREF="004841.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working</H1>
+    <B>bruce m beach</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20suyin%20crystal%20eye%20webcam%20064e%3Aa103%20not%20working&In-Reply-To=%3Cebff8ece0906031525x653addb5k79c7bb32abbe04ed%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working">brucembeach at gmail.com
+       </A><BR>
+    <I>Thu Jun  4 00:25:22 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004836.html">[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam
+</A></li>
+        <LI>Next message: <A HREF="004841.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4838">[ date ]</a>
+              <a href="thread.html#4838">[ thread ]</a>
+              <a href="subject.html#4838">[ subject ]</a>
+              <a href="author.html#4838">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello Laurent
+
+&gt;&gt;<i> May 28 10:53:26 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMON)
+</I>&gt;&gt;<i> May 28 10:53:26 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+</I>&gt;&gt;<i> May 28 10:53:28 lapsystemx kernel: uvcvideo: Frame complete (overflow).
+</I>&gt;&gt;<i> May 28 10:53:28 lapsystemx kernel: uvcvideo: Dropping payload (out of sync).
+</I>&gt;&gt;<i> May 28 10:53:28 lapsystemx last message repeated 18 times
+</I>&gt;&gt;<i> May 28 10:53:28 lapsystemx kernel: uvcvideo: Dequeuing buffer 0 (3, 307789 bytes).
+</I>&gt;&gt;<i> May 28 10:53:28 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+</I>&gt;&gt;<i> May 28 10:53:28 lapsystemx kernel: uvcvideo: Queuing buffer 0.
+</I>&gt;&gt;<i> May 28 10:53:28 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+</I>&gt;&gt;<i> May 28 10:53:28 lapsystemx kernel: uvcvideo: Dropping payload (out of sync).
+</I>&gt;&gt;<i> May 28 10:53:59 lapsystemx last message repeated 30784 times
+</I>&gt;&gt;<i> May 28 10:55:00 lapsystemx last message repeated 60992 times
+</I>&gt;&gt;<i> MESSAGE cntrl backslash
+</I>&gt;&gt;<i> May 28 10:55:24 lapsystemx last message repeated 24351 times
+</I>&gt;&gt;<i> May 28 10:55:24 lapsystemx kernel: uvcvideo: uvc_v4l2_release
+</I>&gt;&gt;<i> MESSAGE done
+</I>&gt;<i>
+</I>&gt;<i> It seems the device doesn't toggle the FID bit in the UVC
+</I>&gt;<i> packet header. Could you try loading the driver with
+</I>&gt;<i> quirks=16 ?
+</I>
+
+First of all it sure looks light the camera
+is indeed streaming since I get the line
+
+         uvcvideo: Dequeuing buffer 0 (3, 307789 bytes)
+
+which is very close to the format
+
+         640x480=307200 + 589 control bytes (whatever they are)
+
+Okay I tried the following command (and a million other variations)
+
+         modprobe -v uvcvideo trace=255 quirks=16
+
+and got the line from the kernel log
+
+         kernel: uvcvideo: Forcing device quirks 0x10
+                            by module parameter for testing purpose.
+
+
+This has no effect at all, same output as the trace above,
+so I thought it might be a good idea to see what was
+happening in the header.  Now if I went to the wrong place
+then all my data is wrong.
+
+
+I went to the call
+
+    &quot;static int uvc_video_decode_start&quot;
+
+in the file &quot;uvc_video.c&quot;
+
+I added the lines
+
+    __u8 packet_header;
+    packet_header=data[1] &amp; 255;
+
+    uvc_trace(UVC_TRACE_FRAME, &quot;packet header=%d\n&quot;,
+                                   packet_header);
+
+After compiling, installing and reloading
+I immediately got many pages of
+
+   packet header=141
+
+so I tried the following, see if the header ever changes.
+
+    if (packet_header != 141)
+    uvc_trace(UVC_TRACE_FRAME, &quot;packet header=%d\n&quot;,
+                                   packet_header);
+
+which never got printed. In other words the packet header is
+always 141 and we have the information below
+
+            UVC_STREAM_EOH  (1 &lt;&lt; 7)  1 (set)
+            UVC_STREAM_ERR  (1 &lt;&lt; 6)  0 (reset)
+            UVC_STREAM_STI  (1 &lt;&lt; 5)  0 (reset)
+            UVC_STREAM_RES  (1 &lt;&lt; 4)  0 (reset)
+            UVC_STREAM_SCR  (1 &lt;&lt; 3)  1 (set)
+            UVC_STREAM_PTS  (1 &lt;&lt; 2)  1 (set)
+            UVC_STREAM_EOF  (1 &lt;&lt; 1)  0 (reset)
+            UVC_STREAM_FID  (1 &lt;&lt; 0)  1 (set)
+
+
+Looking forward to your comments
+regards bruce
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004836.html">[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam
+</A></li>
+	<LI>Next message: <A HREF="004841.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4838">[ date ]</a>
+              <a href="thread.html#4838">[ thread ]</a>
+              <a href="subject.html#4838">[ subject ]</a>
+              <a href="author.html#4838">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH 2/2] count scr.sof per frame and pts for	whole stream
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%202/2%5D%20count%20scr.sof%20per%20frame%20and%20pts%20for%0A%09whole%20stream&In-Reply-To=%3C4DFF21AD.5090209%40minet.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006666.html">
+   <LINK REL="Next"  HREF="006642.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH 2/2] count scr.sof per frame and pts for	whole stream</H1>
+    <B>Yann Sionneau</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%202/2%5D%20count%20scr.sof%20per%20frame%20and%20pts%20for%0A%09whole%20stream&In-Reply-To=%3C4DFF21AD.5090209%40minet.net%3E"
+       TITLE="[Linux-uvc-devel] [PATCH 2/2] count scr.sof per frame and pts for	whole stream">yann at minet.net
+       </A><BR>
+    <I>Mon Jun 20 12:32:13 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006666.html">[Linux-uvc-devel] [PATCH 1/2] adding statistics about timestamps
+</A></li>
+        <LI>Next message: <A HREF="006642.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6641">[ date ]</a>
+              <a href="thread.html#6641">[ thread ]</a>
+              <a href="subject.html#6641">[ subject ]</a>
+              <a href="author.html#6641">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>---
+  drivers/media/video/uvc/uvc_video.c |   30 +++++++++++++++++++++---------
+  drivers/media/video/uvc/uvcvideo.h  |    7 +++++--
+  2 files changed, 26 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/media/video/uvc/uvc_video.c 
+b/drivers/media/video/uvc/uvc_video.c
+index feb585b..c8c5967 100644
+--- a/drivers/media/video/uvc/uvc_video.c
++++ b/drivers/media/video/uvc/uvc_video.c
+@@ -436,7 +436,9 @@ static void uvc_video_stats_decode(struct 
+uvc_streaming *stream,
+      /* Do the SCR.STC and SCR.SOF fields vary through the frame ? */
+      if (has_scr &amp;&amp; stream-&gt;stats.frame.nb_scr) {
+          if (stream-&gt;stats.frame.scr_stc != scr_stc)
+-            stream-&gt;stats.frame.nb_scr_diffs++;
++            stream-&gt;stats.frame.nb_scr_stc_diffs++;
++        if (stream-&gt;stats.frame.scr_sof != scr_sof)
++            stream-&gt;stats.frame.nb_scr_sof_diffs++;
+      }
+
+      if (has_scr) {
+@@ -457,6 +459,13 @@ static void uvc_video_stats_decode(struct 
+uvc_streaming *stream,
+              stream-&gt;stats.stream.max_sof = scr_sof;
+      }
+
++    if (has_pts) {
++        if (stream-&gt;stats.frame.nb_pts &gt; 0 &amp;&amp; stream-&gt;stats.stream.pts &gt; 0)
++            stream-&gt;stats.stream.nb_pts_count +=
++            (pts - stream-&gt;stats.stream.pts);
++        stream-&gt;stats.stream.pts = pts;
++    }
++
+      if (stream-&gt;stats.frame.size == 0 &amp;&amp; len &gt; header_size)
+          stream-&gt;stats.frame.first_data = stream-&gt;stats.frame.nb_packets;
+
+@@ -474,13 +483,15 @@ static void uvc_video_stats_update(struct 
+uvc_streaming *stream)
+      struct uvc_stats_frame *frame = &amp;stream-&gt;stats.frame;
+
+      uvc_trace(UVC_TRACE_TIMESTAMP, &quot;frame %u stats: %u/%u/%u packets &quot;
+-          &quot;%u/%u/%u pts (%searly %sinitial) %u/%u scr\n&quot;,
++          &quot;%u/%u/%u pts (%searly %sinitial) %u/%u scr.stc &quot;
++          &quot;%u/%u scr.sof&quot;,
+            stream-&gt;sequence, frame-&gt;first_data,
+            frame-&gt;nb_non_empty_packets, frame-&gt;nb_packets,
+            frame-&gt;nb_pts_diffs, frame-&gt;last_pts_diff, frame-&gt;nb_pts,
+            frame-&gt;has_early_pts ? &quot;&quot; : &quot;!&quot;,
+            frame-&gt;has_initial_pts ? &quot;&quot; : &quot;!&quot;,
+-          frame-&gt;nb_scr_diffs, frame-&gt;nb_scr);
++          frame-&gt;nb_scr_stc_diffs, frame-&gt;nb_scr,
++          frame-&gt;nb_scr_sof_diffs, frame-&gt;nb_scr);
+
+      stream-&gt;stats.stream.nb_frames++;
+
+@@ -492,8 +503,8 @@ static void uvc_video_stats_update(struct 
+uvc_streaming *stream)
+          stream-&gt;stats.stream.nb_pts_constant++;
+      if (frame-&gt;nb_scr &gt;= frame-&gt;nb_non_empty_packets)
+          stream-&gt;stats.stream.nb_scr_count_ok++;
+-    if (frame-&gt;nb_scr_diffs + 1 == frame-&gt;nb_scr)
+-        stream-&gt;stats.stream.nb_scr_diffs_ok++;
++    if (frame-&gt;nb_scr_stc_diffs + 1 == frame-&gt;nb_scr)
++        stream-&gt;stats.stream.nb_scr_stc_diffs_ok++;
+
+      memset(&amp;stream-&gt;stats.frame, 0, sizeof(stream-&gt;stats.frame));
+  }
+@@ -524,16 +535,17 @@ static void uvc_video_stats_dump(struct 
+uvc_streaming *stream)
+          scr_sof_freq = 0;
+
+      uvc_trace(UVC_TRACE_TIMESTAMP, &quot;stream stats: %u frames %u early pts &quot;
+-          &quot;%u initial pts %u pts ok %u scr count ok %u scr diff ok, &quot;
+-          &quot;%u &lt;= sof &lt;= %u, sof freq %u.%03u kHz\n&quot;,
++          &quot;%u initial pts %u pts ok %u scr count ok %u scr.stc diff ok&quot;
++          &quot; %u &lt;= sof &lt;= %u, sof freq %u.%03u kHz, pts count = %llu&quot;,
+            stream-&gt;stats.stream.nb_frames,
+            stream-&gt;stats.stream.nb_pts_early,
+            stream-&gt;stats.stream.nb_pts_initial,
+            stream-&gt;stats.stream.nb_pts_constant,
+            stream-&gt;stats.stream.nb_scr_count_ok,
+-          stream-&gt;stats.stream.nb_scr_diffs_ok,
++          stream-&gt;stats.stream.nb_scr_stc_diffs_ok,
+            stream-&gt;stats.stream.min_sof, stream-&gt;stats.stream.max_sof,
+-          scr_sof_freq / 1000, scr_sof_freq % 1000);
++          scr_sof_freq / 1000, scr_sof_freq % 1000,
++          (unsigned long long)stream-&gt;stats.stream.nb_pts_count);
+  }
+
+  static void uvc_video_stats_init(struct uvc_streaming *stream)
+diff --git a/drivers/media/video/uvc/uvcvideo.h 
+b/drivers/media/video/uvc/uvcvideo.h
+index 40f461c..6c823d7 100644
+--- a/drivers/media/video/uvc/uvcvideo.h
++++ b/drivers/media/video/uvc/uvcvideo.h
+@@ -471,11 +471,13 @@ struct uvc_streaming {
+              unsigned int nb_pts_early;    /* Number of frames with 
+early PTS */
+              unsigned int nb_pts_initial;    /* Number of frames with 
+initial PTS */
+              unsigned int nb_scr_count_ok;    /* Number of frames with 
+at least one SCR per non empty packet */
+-            unsigned int nb_scr_diffs_ok;    /* Number of frames with 
+varying SCR.STC */
++            unsigned int nb_scr_stc_diffs_ok;    /* Number of frames 
+with varying SCR.STC */
+              unsigned int scr_sof_count;    /* STC.SOF counter 
+accumulated since stream start */
+              unsigned int scr_sof;        /* STC.SOF of the last packet */
+              unsigned int min_sof;        /* Minimum STC.SOF value */
+              unsigned int max_sof;        /* Maximum STC.SOF value */
++            unsigned int pts;
++            u64 nb_pts_count;
+          } stream;
+
+          struct uvc_stats_frame {
+@@ -495,7 +497,8 @@ struct uvc_streaming {
+              u32 pts;            /* PTS of the last packet */
+
+              unsigned int nb_scr;        /* Number of packets with a 
+SCR timestamp */
+-            unsigned int nb_scr_diffs;    /* Number of SCR.STC 
+differences inside a frame */
++            unsigned int nb_scr_stc_diffs;    /* Number of SCR.STC 
+differences inside a frame */
++            unsigned int nb_scr_sof_diffs;    /* Number of SCR.SOF 
+differences inside a frame */
+              u16 scr_sof;            /* SCR.SOF of the last packet */
+              u32 scr_stc;            /* SCR.STC of the last packet */
+          } frame;
+-- 
+1.7.4.1
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006666.html">[Linux-uvc-devel] [PATCH 1/2] adding statistics about timestamps
+</A></li>
+	<LI>Next message: <A HREF="006642.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6641">[ date ]</a>
+              <a href="thread.html#6641">[ thread ]</a>
+              <a href="subject.html#6641">[ subject ]</a>
+              <a href="author.html#6641">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

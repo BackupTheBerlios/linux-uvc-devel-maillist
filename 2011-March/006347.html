@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH 2/3] Recalculate	dwMaxVideoFrameBufferSize for MJPEG
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%202/3%5D%20Recalculate%0A%09dwMaxVideoFrameBufferSize%20for%20MJPEG&In-Reply-To=%3C1299415239.8708.11.camel%40mini%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006340.html">
+   <LINK REL="Next"  HREF="006334.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH 2/3] Recalculate	dwMaxVideoFrameBufferSize for MJPEG</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%202/3%5D%20Recalculate%0A%09dwMaxVideoFrameBufferSize%20for%20MJPEG&In-Reply-To=%3C1299415239.8708.11.camel%40mini%3E"
+       TITLE="[Linux-uvc-devel] [PATCH 2/3] Recalculate	dwMaxVideoFrameBufferSize for MJPEG">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Sun Mar  6 13:40:39 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006340.html">[Linux-uvc-devel] [PATCH 2/3] Recalculate	dwMaxVideoFrameBufferSize for MJPEG
+</A></li>
+        <LI>Next message: <A HREF="006334.html">[Linux-uvc-devel] [PATCH 3/3] Make video fixup more robust
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6347">[ date ]</a>
+              <a href="thread.html#6347">[ thread ]</a>
+              <a href="subject.html#6347">[ subject ]</a>
+              <a href="author.html#6347">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Am Sonntag, den 06.03.2011, 12:42 +0100 schrieb Laurent Pinchart:
+&gt;<i> Hi Alexey,
+</I>&gt;<i> 
+</I>&gt;<i> On Sunday 06 March 2011 11:57:14 Alexey Fisher wrote:
+</I>&gt;<i> &gt; Some webcams report wired dwMaxVideoFrameBufferSize size,
+</I>&gt;<i> &gt; some times too big, some times too smole.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I tested two webcams:
+</I>&gt;<i> &gt; 046d:0809 Logitech, Inc. Webcam Pro 9000
+</I>&gt;<i> &gt; 046d:0991 Logitech, Inc. QuickCam Pro for Notebooks
+</I>&gt;<i> &gt; with fallowing results.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; The dwMaxVideoFrameBufferSize is not always the same. Reported
+</I>&gt;<i> &gt; range is about betwene 4 and 10 bpp calculated with this formula:
+</I>&gt;<i> &gt; bpp = (dwMaxVideoFrameBufferSize * 8) / (frame-&gt;wWidth * frame-&gt;wHeight)
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I tested also a real comression on this cameras. Comression
+</I>&gt;<i> &gt; with noremal conditions (video chat) was about 1 bpp.
+</I>&gt;<i> &gt; Worst compression was by captureing moving text on monitore
+</I>&gt;<i> &gt; (lots of light, high fps) is about 3bpp.
+</I>&gt;<i> &gt; So we can calculate predictable buffer size in driver, insted of
+</I>&gt;<i> &gt; getting some random numers from the cam.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Setting bpp to 4 for mjpeg should be safe.
+</I>&gt;<i> 
+</I>&gt;<i> Can you but sure that it will be safe for *all* cameras ? I can't.
+</I>&gt;<i> 
+</I>&gt;<i> The uvcvideo driver doesn't use the dwMaxVideoFrameBufferSize field but 
+</I>&gt;<i> queries the device at runtime for the maximum frame size value (there's one 
+</I>&gt;<i> exception to this though, the driver uses dwMaxVideoFrameBufferSize for 
+</I>&gt;<i> pre-1.10 UVC devices that report a 0 frame size at runtime).
+</I>&gt;<i> 
+</I>&gt;<i> The field is also totally unrelated to USB bandwidth management, the maximum 
+</I>&gt;<i> frame size value is only used to allocate the V4L2 buffers.
+</I>
+
+Correct. Suddently i found it later. But i use
+dwMaxVideoFrameBufferSize in  uvc_fixup_video_ctrl to calculate
+bundwidth (insted of bandwidth = frame-&gt;wWidth * frame-&gt;wHeight / 8 *
+format-&gt;bpp).
+
+The bandwidth do make a difference for usb.
+
+&gt;<i> 
+</I>&gt;<i> &gt; Signed-off-by: Alexey Fisher &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt;
+</I>&gt;<i> &gt; ---
+</I>&gt;<i> &gt;  drivers/media/video/uvc/uvc_driver.c |    5 +++--
+</I>&gt;<i> &gt;  drivers/media/video/uvc/uvc_video.c  |    3 ++-
+</I>&gt;<i> &gt;  2 files changed, 5 insertions(+), 3 deletions(-)
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; diff --git a/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> &gt; b/drivers/media/video/uvc/uvc_driver.c index e41285a..5a74de0 100644
+</I>&gt;<i> &gt; --- a/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> &gt; +++ b/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> &gt; @@ -347,7 +347,7 @@ static int uvc_parse_format(struct uvc_device *dev,
+</I>&gt;<i> &gt;  		strlcpy(format-&gt;name, &quot;MJPEG&quot;, sizeof format-&gt;name);
+</I>&gt;<i> &gt;  		format-&gt;fcc = V4L2_PIX_FMT_MJPEG;
+</I>&gt;<i> &gt;  		format-&gt;flags = UVC_FMT_FLAG_COMPRESSED;
+</I>&gt;<i> &gt; -		format-&gt;bpp = 0;
+</I>&gt;<i> &gt; +		format-&gt;bpp = 4;
+</I>&gt;<i> &gt;  		ftype = UVC_VS_FRAME_MJPEG;
+</I>&gt;<i> &gt;  		break;
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; @@ -460,7 +460,8 @@ static int uvc_parse_format(struct uvc_device *dev,
+</I>&gt;<i> &gt;  		 * uncompressed formats this can be fixed by computing the
+</I>&gt;<i> &gt;  		 * value from the frame size.
+</I>&gt;<i> &gt;  		 */
+</I>&gt;<i> &gt; -		if (!(format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED))
+</I>&gt;<i> &gt; +		if (!(format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) ||
+</I>&gt;<i> &gt; +				(format-&gt;fcc == V4L2_PIX_FMT_MJPEG))
+</I>&gt;<i> &gt;  			frame-&gt;dwMaxVideoFrameBufferSize = format-&gt;bpp
+</I>&gt;<i> &gt;  				* frame-&gt;wWidth * frame-&gt;wHeight / 8;
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; diff --git a/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> &gt; b/drivers/media/video/uvc/uvc_video.c index 9a95a62..64bd1d6 100644
+</I>&gt;<i> &gt; --- a/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> &gt; +++ b/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> &gt; @@ -114,7 +114,8 @@ static void uvc_fixup_video_ctrl(struct uvc_streaming
+</I>&gt;<i> &gt; *stream,
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;  	if (!(format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) ||
+</I>&gt;<i> &gt;  	     (ctrl-&gt;dwMaxVideoFrameSize == 0 &amp;&amp;
+</I>&gt;<i> &gt; -	      stream-&gt;dev-&gt;uvc_version &lt; 0x0110)) {
+</I>&gt;<i> &gt; +	      stream-&gt;dev-&gt;uvc_version &lt; 0x0110) ||
+</I>&gt;<i> &gt; +	     (format-&gt;fcc == V4L2_PIX_FMT_MJPEG)) {
+</I>&gt;<i> &gt;  		pr_debug(&quot;%s: rewrite dwMaxVideoFrameSize=%u to %u.&quot;,
+</I>&gt;<i> &gt;  			 __func__, ctrl-&gt;dwMaxVideoFrameSize,
+</I>&gt;<i> &gt;  			frame-&gt;dwMaxVideoFrameBufferSize);
+</I>&gt;<i> 
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006340.html">[Linux-uvc-devel] [PATCH 2/3] Recalculate	dwMaxVideoFrameBufferSize for MJPEG
+</A></li>
+	<LI>Next message: <A HREF="006334.html">[Linux-uvc-devel] [PATCH 3/3] Make video fixup more robust
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6347">[ date ]</a>
+              <a href="thread.html#6347">[ thread ]</a>
+              <a href="subject.html#6347">[ subject ]</a>
+              <a href="author.html#6347">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

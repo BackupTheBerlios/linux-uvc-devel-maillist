@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Add%20new%20sync%20quirk%20to%20uvcvideo%20and%20use%20with%0A%09Syntek%20174f%3A5212&In-Reply-To=%3C200801151142.24985.herton%40mandriva.com.br%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002718.html">
+   <LINK REL="Next"  HREF="002789.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212</H1>
+    <B>Herton Ronaldo Krzesinski</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Add%20new%20sync%20quirk%20to%20uvcvideo%20and%20use%20with%0A%09Syntek%20174f%3A5212&In-Reply-To=%3C200801151142.24985.herton%40mandriva.com.br%3E"
+       TITLE="[Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212">herton at mandriva.com.br
+       </A><BR>
+    <I>Tue Jan 15 14:42:23 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002718.html">[Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212
+</A></li>
+        <LI>Next message: <A HREF="002789.html">[Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2779">[ date ]</a>
+              <a href="thread.html#2779">[ thread ]</a>
+              <a href="subject.html#2779">[ subject ]</a>
+              <a href="author.html#2779">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Em Thursday 10 January 2008 17:30:32 Laurent Pinchart escreveu:
+&gt;<i> Hi Claudio,
+</I>&gt;<i>
+</I>&gt;<i> On Saturday 29 December 2007, Claudio Matsuoka wrote:
+</I>&gt;<i> &gt; On Dec 28, 2007 9:26 PM, Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt;
+</I>&gt;<i>
+</I>&gt;<i> wrote:
+</I>&gt;<i> &gt; &gt; I have a pending patch that passes the uvc_video_device structure to
+</I>&gt;<i> &gt; &gt; URB completion callbacks instead of the uvc_video_queue structure. This
+</I>&gt;<i> &gt; &gt; should take care of the problem you solved by setting
+</I>&gt;<i> &gt; &gt; dev-&gt;udev-&gt;quirks.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Could you send me that patch so I can rework the Syntek quirk to use it?
+</I>&gt;<i>
+</I>&gt;<i> I've just committed it to SVN.
+</I>&gt;<i>
+</I>&gt;<i> Best regards,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>
+Hi Laurent, thanks for the commit and advice. We played with the webcam again 
+(sorry for delay) and we found out that it isn't really reporting the FID 
+bit, but only end of frame marker (EOF). This is strange indeed, as from what 
+I understand from UVC spec FID is required while EOF is optional. I reworked 
+the quirk that Claudio made against revision 166 from svn, but now using the 
+EOF to sync the stream (the previous quirk was ok, but on laggy 
+communication, like using to transmit a video stream over internet etc., the 
+frames would overlap etc. resulting in many display issues):
+
+The Syntek 174f:5212 UVC camera in HP Spartan/Leon laptops don't report
+FID bit for each frame, but report EOF. Add quirk to use EOF to synchronize
+frames and use it.
+
+Signed-off-by: Herton Ronaldo Krzesinski &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">herton at mandriva.com</A>&gt;
+Signed-off-by: Claudio Matsuoka &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">cmatsuoka at gmail.com</A>&gt;
+
+diff -Naurp uvc.orig/uvc_driver.c uvc/uvc_driver.c
+--- uvc.orig/uvc_driver.c	2008-01-11 11:14:27.000000000 -0200
++++ uvc/uvc_driver.c	2008-01-14 16:22:15.000000000 -0200
+@@ -1658,6 +1658,16 @@ static int uvc_resume(struct usb_interfa
+  * though they are compliant.
+  */
+ static struct usb_device_id uvc_ids[] = {
++	/* Syntek (HP Spartan) */
++	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE
++				| USB_DEVICE_ID_MATCH_INT_INFO,
++	  .idVendor		= 0x174f,
++	  .idProduct		= 0x5212,
++	  .bInterfaceClass	= USB_CLASS_VIDEO,
++	  .bInterfaceSubClass	= 1,
++	  .bInterfaceProtocol	= 0,
++	  .driver_info		= UVC_QUIRK_EOF_SYNC
++	},
+ 	/* ALi M5606 (Clevo M540SR) */
+ 	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE
+ 				| USB_DEVICE_ID_MATCH_INT_INFO,
+diff -Naurp uvc.orig/uvc_video.c uvc/uvc_video.c
+--- uvc.orig/uvc_video.c	2008-01-11 11:14:27.000000000 -0200
++++ uvc/uvc_video.c	2008-01-14 16:32:04.000000000 -0200
+@@ -286,6 +286,12 @@ static int uvc_video_decode_start(struct
+ 
+ 	fid = data[1] &amp; UVC_STREAM_FID;
+ 
++	/* Some webcams don't report FID as they should. For now use EOF
++	 * marker as a workaround
++	 */
++	if (video-&gt;dev-&gt;quirks &amp; UVC_QUIRK_EOF_SYNC)
++		fid = !!(data[1] &amp; UVC_STREAM_EOF);
++
+ 	/* Store the payload FID bit and return immediately when the buffer is
+ 	 * NULL.
+ 	 */
+diff -Naurp uvc.orig/uvcvideo.h uvc/uvcvideo.h
+--- uvc.orig/uvcvideo.h	2008-01-11 11:14:27.000000000 -0200
++++ uvc/uvcvideo.h	2008-01-14 16:33:01.000000000 -0200
+@@ -313,6 +313,7 @@ struct uvc_xu_control {
+ #define UVC_QUIRK_PROBE_MINMAX		0x00000002
+ #define UVC_QUIRK_PROBE_EXTRAFIELDS	0x00000004
+ #define UVC_QUIRK_BUILTIN_ISIGHT	0x00000008
++#define UVC_QUIRK_EOF_SYNC		0x00000010
+ 
+ /* Format flags */
+ #define UVC_FMT_FLAG_COMPRESSED		0x00000001
+
+And attached is the kernel log output without the quirk above enabled as
+requested, I placed printks in the start of each decode function (
+printing header info in hexa). Note that it starts decoding the first
+frame, but as it doesn't sees FID after first frame it just gets stuck at
+uvc_video_decode_start (and FID is never reported, but EOF is).
+
+-- 
+[]'s
+Herton
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: uvcvideo.log.gz
+Type: application/x-gzip
+Size: 1031 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080115/239e1143/attachment.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080115/239e1143/attachment.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002718.html">[Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212
+</A></li>
+	<LI>Next message: <A HREF="002789.html">[Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2779">[ date ]</a>
+              <a href="thread.html#2779">[ thread ]</a>
+              <a href="subject.html#2779">[ subject ]</a>
+              <a href="author.html#2779">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

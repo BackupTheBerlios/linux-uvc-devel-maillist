@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Max number of packets in an isochronous URB
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Max%20number%20of%20packets%20in%20an%20isochronous%20URB&In-Reply-To=%3C200705101321.54916.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001728.html">
+   <LINK REL="Next"  HREF="001730.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Max number of packets in an isochronous URB</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Max%20number%20of%20packets%20in%20an%20isochronous%20URB&In-Reply-To=%3C200705101321.54916.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Max number of packets in an isochronous URB">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Thu May 10 13:21:54 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001728.html">[Linux-uvc-devel] Max number of packets in an isochronous URB
+</A></li>
+        <LI>Next message: <A HREF="001730.html">[Linux-uvc-devel] Max number of packets in an isochronous URB
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1729">[ date ]</a>
+              <a href="thread.html#1729">[ thread ]</a>
+              <a href="subject.html#1729">[ subject ]</a>
+              <a href="author.html#1729">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Julien,
+
+&gt;<i> On Thu, 2007-05-10 at 10:56 +0200, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; Hi Julien,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; I am working on video capture with several cameras.
+</I>&gt;<i> &gt; &gt; I have Logitech QuickCam UltraVision webcams.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Is it possible to reduce the number of packets per isochronous URB in
+</I>&gt;<i> &gt; &gt; uvcvideo driver?
+</I>&gt;<i> &gt; &gt; By default, UVC_MAX_ISO_PACKETS is egual to 40.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Yes that should be possible. I'm curious, why do you want to do that ?
+</I>&gt;<i>
+</I>&gt;<i> I try to capture images with several synchronized cameras. I started
+</I>&gt;<i> with 2.
+</I>&gt;<i> In the configuration I use my cams, (2 captures at JPEG VGA 30fps), I
+</I>&gt;<i> observe:
+</I>&gt;<i> - An image output period granularity of 5ms for each camera (difference
+</I>&gt;<i> between 2 consecutive images queued in the same cam is either 30ms or
+</I>&gt;<i> 35ms). This comes from the fact that an URB is received in uvc driver
+</I>&gt;<i> every 5ms (40 packets of 125us). So as the real period of the streaming
+</I>&gt;<i> emitted by the camera is 30fps (I verified with packets PTS and SCR
+</I>&gt;<i> fields), an EOF is detected (and the corresponding image is queued) by
+</I>&gt;<i> uvc after 30ms, or 35 ms sometimes.
+</I>&gt;<i>
+</I>&gt;<i> - A image synchronisation jump between 2 cameras. When my 2 cameras are
+</I>&gt;<i> synchronized more or less, I still observe some delay jumps of 35ms
+</I>&gt;<i> immediately recovered on the next frame. My explication is: Let's
+</I>&gt;<i> suppose my 2 cameras are synchronized.The 5ms period granularity makes
+</I>&gt;<i> that potentially 1 image can be queued in one driver 5 ms after the
+</I>&gt;<i> corresponding synchro image on the other driver. During these 5ms, if I
+</I>&gt;<i> dequeue an image (VIDIOC_DQBUF) on the 2 driver, I put the 2 queues in
+</I>&gt;<i> a different state.=&gt;one frame desynchro
+</I>&gt;<i>
+</I>&gt;<i> That why I would like to minimize this 5ms time..
+</I>&gt;<i>
+</I>&gt;<i> &gt; &gt; When I change this value to 10 for example, image capture with 1 cam
+</I>&gt;<i> &gt; &gt; works fine. However, as soon as i add and capture from a second camera,
+</I>&gt;<i> &gt; &gt; images on both cams appear wrong (bad colours, image cut)..
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Does it work with 40 packets ?
+</I>&gt;<i>
+</I>&gt;<i> Yes 2 cams capture works fine with 40 packets. For info, it works also
+</I>&gt;<i> for any higher multiple of 40 (80, 120, 160 ..packets), but not for any
+</I>&gt;<i> other value.. I can't explain why..
+</I>
+Could you try lowering the number of packets per URB to 20, and allocating 
+twice as much URBs ? If it still works, you could try 10 packets per URBs 
+with 4 times as much URBs.
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001728.html">[Linux-uvc-devel] Max number of packets in an isochronous URB
+</A></li>
+	<LI>Next message: <A HREF="001730.html">[Linux-uvc-devel] Max number of packets in an isochronous URB
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1729">[ date ]</a>
+              <a href="thread.html#1729">[ thread ]</a>
+              <a href="subject.html#1729">[ subject ]</a>
+              <a href="author.html#1729">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

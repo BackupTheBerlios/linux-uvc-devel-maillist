@@ -1,0 +1,174 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] webcams on LTSP thin clients
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20webcams%20on%20LTSP%20thin%20clients&In-Reply-To=%3C48FE1773.4080307%40biochemfluidics.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004137.html">
+   <LINK REL="Next"  HREF="004127.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] webcams on LTSP thin clients</H1>
+    <B>Rob Owens</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20webcams%20on%20LTSP%20thin%20clients&In-Reply-To=%3C48FE1773.4080307%40biochemfluidics.com%3E"
+       TITLE="[Linux-uvc-devel] webcams on LTSP thin clients">rob.owens at biochemfluidics.com
+       </A><BR>
+    <I>Tue Oct 21 19:54:59 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004137.html">[Linux-uvc-devel] webcams on LTSP thin clients
+</A></li>
+        <LI>Next message: <A HREF="004127.html">[Linux-uvc-devel] Framegrabber USB for Linux
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4138">[ date ]</a>
+              <a href="thread.html#4138">[ thread ]</a>
+              <a href="subject.html#4138">[ subject ]</a>
+              <a href="author.html#4138">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks for your response.  See below...
+
+Laurent Pinchart wrote:
+&gt;<i> Hi Rob,
+</I>&gt;<i> 
+</I>&gt;<i> On Wednesday 15 October 2008, Rob Owens wrote:
+</I>&gt;&gt;<i> Laurent Pinchart wrote:
+</I>&gt;&gt;&gt;<i> Hi Rob,
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> On Wednesday 15 October 2008, Rob Owens wrote:
+</I>&gt;&gt;&gt;&gt;<i> Has anybody gotten a webcam to work on an LTSP-powered thin client?  I
+</I>&gt;&gt;&gt;&gt;<i> asked on the LTSP list but apparently nobody there has done it before.
+</I>&gt;&gt;&gt;<i> Could you describe the problem with more details ? A quick summary of the
+</I>&gt;&gt;&gt;<i> hardware/software setup would probably be interesting too.
+</I>&gt;&gt;<i> LTSP is Linux Terminal Server Project.  Basically it allows you to run
+</I>&gt;&gt;<i> low-power, diskless workstations (also called thin clients) completely
+</I>&gt;&gt;<i> over the network.  The thin clients retrieve a basic operating system
+</I>&gt;&gt;<i> from the LTSP server, then establish a remote session (graphical or
+</I>&gt;&gt;<i> otherwise) to the LTSP server or to any other server you specify.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> The key here is that there is no embedded operating system on these thin
+</I>&gt;&gt;<i> clients.  They use PXE or Etherboot to get their operating system from
+</I>&gt;&gt;<i> the LTSP server.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> The thin clients run a local X server (downloaded from the LTSP server),
+</I>&gt;&gt;<i> and then all applications run on the LTSP server.  A 200 MHz thin client
+</I>&gt;&gt;<i> with 64 MB of RAM is capable of running modern software very quickly.
+</I>&gt;&gt;<i> Well, really it's only displaying the software -- it's actually running
+</I>&gt;&gt;<i> on the server.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Anyway, this causes some complications when plugging local devices into
+</I>&gt;&gt;<i> the thin client, because the server needs access to these devices.
+</I>&gt;&gt;<i> Local usb storage works.  Local sound works.  But I haven't come across
+</I>&gt;&gt;<i> anyone using local webcams.  When I tried it, it didn't work, but I
+</I>&gt;&gt;<i> didn't try for very long.  I have to borrow the webcam to do my testing,
+</I>&gt;&gt;<i> and I have limited time to do my testing.
+</I>&gt;<i> 
+</I>&gt;<i> Do you know how local USB storage is handled ? Obviously, as the USB storage 
+</I>&gt;<i> device is plugged into the thin client, the thin client operating system 
+</I>&gt;<i> (both kernel space and userspace) must support the device and 
+</I>&gt;<i> somehow &quot;export&quot; it through the network.
+</I>&gt;<i> 
+</I>&gt;<i> I see two ways this can work for USB storage devices. Either the thin client 
+</I>&gt;<i> acts as a USB-Ethernet bridge (USB/IP), with the server handling the actual 
+</I>&gt;<i> USB mass storage protocol, or the thin client mounts the device locally and 
+</I>&gt;<i> exports it through the network (NFS, CIFS, ...).
+</I>&gt;<i> 
+</I>I researched this a bit.  USB local storage is handled by what they call
+ltspfs.  It seems to be a good solution for files, but probably not for
+devices.
+
+In case you're interested, here is a description:
+<A HREF="http://www.ltsp.org/twiki/bin/view/Ltsp/LtspFS#Introduction">http://www.ltsp.org/twiki/bin/view/Ltsp/LtspFS#Introduction</A>
+
+&gt;<i> In the first case the same system might be used for webcams, although the 
+</I>&gt;<i> latency and bandwidth requirements are quite different.
+</I>&gt;<i> 
+</I>&gt;&gt;<i> So the problem can be attacked in a few ways.  All of these depend on
+</I>&gt;&gt;<i> getting the proper modules to load when the camera device is plugged in,
+</I>&gt;&gt;<i> which I think I can handle.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> 1) Run the video application (luvcview, for instance) locally on the
+</I>&gt;&gt;<i> thin client.  LTSP calls this &quot;local applications&quot; and I'd consult the
+</I>&gt;&gt;<i> LTSP list for instructions on doing that.
+</I>&gt;<i> 
+</I>&gt;<i> That's probably the easiest path for you, although it might be a bit heavy on 
+</I>&gt;<i> the thin client resources.
+</I>&gt;<i> 
+</I>This is what I'm researching now, because I agree, it does seem like the
+easiest path right now.
+
+&gt;&gt;<i> 2) Run the video application on the server (the normal way LTSP works),
+</I>&gt;&gt;<i> but convince the video application to access a video device over the
+</I>&gt;&gt;<i> network.
+</I>&gt;<i> 
+</I>&gt;<i> You will need a server process on the thin client to forward the video stream 
+</I>&gt;<i> to the server-side application, which will then re-forward them to the thin 
+</I>&gt;<i> client's display. The CPU and memory constraints incurred by the Linux UVC 
+</I>&gt;<i> driver would still have to be handled by the thin client as in option 1, but 
+</I>&gt;<i> you will save the application's memory and CPU footprint. In case of simple 
+</I>&gt;<i> applications such as luvcview I think this will actually be slower than 
+</I>&gt;<i> option 1.
+</I>&gt;<i> 
+</I>&gt;&gt;<i> 3) Have LTSP treat the local webcam the same way a local USB drive or a
+</I>&gt;&gt;<i> local sound card is treated.  Unfortunately I don't know the specifics
+</I>&gt;&gt;<i> of that, so I was hoping to hear from somebody &quot;sure I've done that
+</I>&gt;&gt;<i> before, it's easy!&quot;
+</I>&gt;<i> 
+</I>&gt;<i> Can you ssh into the LTSP box ? If so you can easily check if USB mass storage 
+</I>&gt;<i> devices are locally mounted or exported through the network using USB/IP.
+</I>&gt;<i> 
+</I>That's possible to do, but I'm not set up for it yet.  Still learning...
+
+I'll report back when I've made some progress.
+
+-Rob
+********************************************************
+
+The information transmitted is intended only for the person or entity to
+which it is addressed and may contain confidential and/or privileged
+material. If you are not the addressee, any disclosure, reproduction,
+copying, distribution, or other dissemination or use of this transmission in
+error please notify the sender immediately and then delete this e-mail.
+E-mail transmission cannot be guaranteed to be secure or error free as
+information could be intercepted, corrupted lost, destroyed, arrive late or
+incomplete, or contain viruses.
+The sender therefore does not accept liability for any errors or omissions
+in the contents of this message which arise as a result of e-mail
+transmission. If verification is required please request a hard copy
+version.
+
+********************************************************
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004137.html">[Linux-uvc-devel] webcams on LTSP thin clients
+</A></li>
+	<LI>Next message: <A HREF="004127.html">[Linux-uvc-devel] Framegrabber USB for Linux
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4138">[ date ]</a>
+              <a href="thread.html#4138">[ thread ]</a>
+              <a href="subject.html#4138">[ subject ]</a>
+              <a href="author.html#4138">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

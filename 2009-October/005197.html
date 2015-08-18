@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Added functionality (Syncing to HCD USB Start Frame, lifting admin reqmnt for UVCIOC_CTRL_MAP, 
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Added%20functionality%20%28Syncing%20to%20HCD%20USB%20Start%0A%20Frame%2C%20lifting%20admin%20reqmnt%20for%20UVCIOC_CTRL_MAP%2C%20&In-Reply-To=%3C833B0B09C5041D42A9924A3BA6A12B9A028FB21F7C%40CALMAIL-CMS.smarttech.inc%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005195.html">
+   <LINK REL="Next"  HREF="005205.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Added functionality (Syncing to HCD USB Start Frame, lifting admin reqmnt for UVCIOC_CTRL_MAP, </H1>
+    <B>Jacob Fehr</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Added%20functionality%20%28Syncing%20to%20HCD%20USB%20Start%0A%20Frame%2C%20lifting%20admin%20reqmnt%20for%20UVCIOC_CTRL_MAP%2C%20&In-Reply-To=%3C833B0B09C5041D42A9924A3BA6A12B9A028FB21F7C%40CALMAIL-CMS.smarttech.inc%3E"
+       TITLE="[Linux-uvc-devel] Added functionality (Syncing to HCD USB Start Frame, lifting admin reqmnt for UVCIOC_CTRL_MAP, ">JacobFehr at smarttech.com
+       </A><BR>
+    <I>Fri Oct  2 20:43:00 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005195.html">[Linux-uvc-devel] Fwd: Fwd: Why can't set format after	VIDIOC_STREAMINGOFF?
+</A></li>
+        <LI>Next message: <A HREF="005205.html">[Linux-uvc-devel] Added functionality (Syncing to HCD USB Start	Frame, lifting admin reqmnt for UVCIOC_CTRL_MAP, 
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5197">[ date ]</a>
+              <a href="thread.html#5197">[ thread ]</a>
+              <a href="subject.html#5197">[ subject ]</a>
+              <a href="author.html#5197">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey Laurent,
+
+What do think about making a couple enhancements to the UVC driver? I would be willing to write the code and send it your way.
+
+v4l2_buffer.timestamp Accuracy
+
+The first change that I'm looking into is enhancing the accuracy of v4l2_buffer.timestamp. Currently, the driver stamps this with the system time. An URB reads data off of the bus for a period of time that is determined by the number of isochronous packets in the URB. The problem is that video frames do not always fall on URB boundaries. The average error in the timestamp is equal to urb.number_of_packets x urb.interval / 8 / 2 milliseconds. The maximum error is 4 ms because UVC_MAX_PACKETS is set to 32.
+
+To correct this I was thinking of offsetting v4l2_buffer.timestamp by searching through the ISO packet array in the URB, keeping track of the index in usb_iso_packet_descriptor where the device toggles the FID and/or sets the EOF flag and then adjusting v4l2_buffer.timestamp by 125 microseconds x the index into the urb.
+
+Another way to correct this would be to use the PTS, SCR, urb.start_frame and gettimeofday() values to create a timestamp that would be accurate to 125 microseconds. This would require quite a bit more math than the method I mentioned above but it would be more accurate.
+
+UVC_CTRL_CONTROL_TIMEOUT
+
+Currently this is hardcoded to 300 ms. I have a device with an extension unit with a control that takes up to &#190; of a second. What do you think about creating a custom IO control that could be used to set this?
+
+UVCIOC_CTRL_MAP/UVCIOC_CTRL_ADD requiring root permissions
+
+What do you think about lifting this restriction? It's not difficult to work around this but it does require handshaking of some sort between two processes. Any application that needs to access the XU of any camera will always need to be divided into two components. A component that runs as root and a component that runs as a normal user. Or it would need to be one component that runs as root. How much value is there in protecting the extension units in UVC cameras? This goes hand-in-hand with the next suggestion.
+
+UVCIOC_CTRL_MAP/UVCIOC_CTRL_ADD has global scope
+
+I have noticed these IO controls affect the driver not the device. Would it make sense to change this to device scope? I may have two different UVC cameras each with different extension units that I may want to configure.
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091002/939e5cfa/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091002/939e5cfa/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005195.html">[Linux-uvc-devel] Fwd: Fwd: Why can't set format after	VIDIOC_STREAMINGOFF?
+</A></li>
+	<LI>Next message: <A HREF="005205.html">[Linux-uvc-devel] Added functionality (Syncing to HCD USB Start	Frame, lifting admin reqmnt for UVCIOC_CTRL_MAP, 
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5197">[ date ]</a>
+              <a href="thread.html#5197">[ thread ]</a>
+              <a href="subject.html#5197">[ subject ]</a>
+              <a href="author.html#5197">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

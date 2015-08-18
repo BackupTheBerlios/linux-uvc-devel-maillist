@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] OmniVision / I've screwed my system
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20OmniVision%20/%20I%27ve%20screwed%20my%20system&In-Reply-To=%3C59cf47a81003300708s6924808ekb90e1fe220469da6%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005618.html">
+   <LINK REL="Next"  HREF="005620.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] OmniVision / I've screwed my system</H1>
+    <B>Paulo Assis</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20OmniVision%20/%20I%27ve%20screwed%20my%20system&In-Reply-To=%3C59cf47a81003300708s6924808ekb90e1fe220469da6%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] OmniVision / I've screwed my system">pj.assis at gmail.com
+       </A><BR>
+    <I>Tue Mar 30 16:08:33 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005618.html">[Linux-uvc-devel] OmniVision / I've screwed my system
+</A></li>
+        <LI>Next message: <A HREF="005620.html">[Linux-uvc-devel] OmniVision / I've screwed my system
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5619">[ date ]</a>
+              <a href="thread.html#5619">[ thread ]</a>
+              <a href="subject.html#5619">[ subject ]</a>
+              <a href="author.html#5619">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Jeff Hi,
+
+You should have followed the v4l-dvb wiki:
+<A HREF="http://www.linuxtv.org/wiki/index.php/How_to_Obtain,_Build_and_Install_V4L-DVB_Device_Drivers">http://www.linuxtv.org/wiki/index.php/How_to_Obtain,_Build_and_Install_V4L-DVB_Device_Drivers</A>
+
+you now have mixed modules (new and old) and this is causing the errors.
+
+get mercurial, the kernel headers and the full v4l tree from linuxtv.
+
+from the top of the hg tree:
+
+make rminstall
+make distclean
+sudo make menuconfig       &lt;--- disable fireDTV or you will end up
+with errors when building
+make
+sudo make install
+sudo make unload
+sudo modprobe uvcvideo
+
+
+Best regards,
+Paulo
+
+2010/3/30 Jeff Van Epps &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">lordbah at lordbah.com</A>&gt;:
+&gt;<i> I am having trouble getting the OmniVision webcam in the Dell SP2309W
+</I>&gt;<i> monitor to work under Ubuntu 9.10. Others have reported that the video
+</I>&gt;<i> works right out of the box but they have problems with the audio. I
+</I>&gt;<i> don't know why my situation would be any different, but it is.
+</I>&gt;<i>
+</I>&gt;<i> Bus 005 Device 006: ID 05a9:2649 OmniVision Technologies, Inc.
+</I>&gt;<i>
+</I>&gt;<i> I'd like to include luvcview -L output here but it has scrolled away and
+</I>&gt;<i> my attempts to correct the situation have left me unable to run it any
+</I>&gt;<i> more. It said there was one supported format, MJPG, at various
+</I>&gt;<i> resolutions and frame rate of variously 1/15 or 2/15. But even with -f
+</I>&gt;<i> mjpg it would not work. However, we probably can't debug that until I
+</I>&gt;<i> can fix my drivers.
+</I>&gt;<i>
+</I>&gt;<i> How I messed up my system: I had source downloaded a couple of months
+</I>&gt;<i> ago and built it
+</I>&gt;<i>
+</I>&gt;<i> make release
+</I>&gt;<i> make
+</I>&gt;<i> make install
+</I>&gt;<i>
+</I>&gt;<i> At this point a modprobe uvcvideo fails:
+</I>&gt;<i>
+</I>&gt;<i> FATAL: Error inserting uvcvideo
+</I>&gt;<i> (/lib/modules/2.6.31-21-generic/kernel/drivers/media/video/uvc/uvcvideo.ko):
+</I>&gt;<i> Unknown symbol in module, or unknown parameter (see dmesg)
+</I>&gt;<i>
+</I>&gt;<i> dmesg says:
+</I>&gt;<i>
+</I>&gt;<i> [165394.669479] uvcvideo: disagrees about version of symbol video_devdata
+</I>&gt;<i> [165394.669486] uvcvideo: Unknown symbol video_devdata
+</I>&gt;<i> [165394.670453] uvcvideo: disagrees about version of symbol
+</I>&gt;<i> video_unregister_device
+</I>&gt;<i> [165394.670457] uvcvideo: Unknown symbol video_unregister_device
+</I>&gt;<i> [165394.670751] uvcvideo: disagrees about version of symbol
+</I>&gt;<i> video_device_alloc
+</I>&gt;<i> [165394.670754] uvcvideo: Unknown symbol video_device_alloc
+</I>&gt;<i> [165394.671023] uvcvideo: disagrees about version of symbol
+</I>&gt;<i> video_register_device
+</I>&gt;<i> [165394.671026] uvcvideo: Unknown symbol video_register_device
+</I>&gt;<i> [165394.671754] uvcvideo: disagrees about version of symbol
+</I>&gt;<i> video_device_release
+</I>&gt;<i> [165394.671757] uvcvideo: Unknown symbol video_device_release
+</I>&gt;<i>
+</I>&gt;<i> Wanting to get back to my previous state:
+</I>&gt;<i>
+</I>&gt;<i> make rminstall
+</I>&gt;<i>
+</I>&gt;<i> and I put back the uvcvideo.ko which was present before I ever compiled
+</I>&gt;<i> anything. But modprobe uvcvideo now fails with:
+</I>&gt;<i>
+</I>&gt;<i> WARNING: Could not open
+</I>&gt;<i> '/lib/modules/2.6.31-21-generic/kernel/drivers/media/video/v4l1-compat.ko':
+</I>&gt;<i> No such file or directory
+</I>&gt;<i> WARNING: Could not open
+</I>&gt;<i> '/lib/modules/2.6.31-21-generic/kernel/drivers/media/video/videodev.ko':
+</I>&gt;<i> No such file or directory
+</I>&gt;<i>
+</I>&gt;<i> Apparently I did something wrong. How can I get back to some sane state?
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Jeff Van Epps
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005618.html">[Linux-uvc-devel] OmniVision / I've screwed my system
+</A></li>
+	<LI>Next message: <A HREF="005620.html">[Linux-uvc-devel] OmniVision / I've screwed my system
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5619">[ date ]</a>
+              <a href="thread.html#5619">[ thread ]</a>
+              <a href="subject.html#5619">[ subject ]</a>
+              <a href="author.html#5619">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

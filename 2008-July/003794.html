@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Concurent accesses to multiple devices.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Concurent%20accesses%20to%20multiple%20devices.&In-Reply-To=%3C79A7992D-F363-4261-90E6-3F5EB463C93F%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003795.html">
+   <LINK REL="Next"  HREF="003797.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Concurent accesses to multiple devices.</H1>
+    <B>MARTIN Pierre</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Concurent%20accesses%20to%20multiple%20devices.&In-Reply-To=%3C79A7992D-F363-4261-90E6-3F5EB463C93F%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Concurent accesses to multiple devices.">hickscorp at gmail.com
+       </A><BR>
+    <I>Wed Jul  9 16:10:07 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003795.html">[Linux-uvc-devel] asus f9sg webcam
+</A></li>
+        <LI>Next message: <A HREF="003797.html">[Linux-uvc-devel] Concurent accesses to multiple devices.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3794">[ date ]</a>
+              <a href="thread.html#3794">[ thread ]</a>
+              <a href="subject.html#3794">[ subject ]</a>
+              <a href="author.html#3794">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello list people :)
+
+i have been posting about some issues i had a couple of monthes ago.
+The company i'm working for was in the need of a system with 5  
+webcams, able to shoot simultaneously &quot;objects&quot; from 5 different POVs.  
+The generated pictures are then used for 3D modeling.
+
+Big problem, the &quot;object&quot; is a horse, so the total time of shooting  
+has to be around 10 seconds, not more, because holding a horse still  
+for more than 10 seconds require super powers, which we don't have (Or  
+are too expensive, i dont know) :)
+
+So we bought 5 quickcam 9000 pro, since the required resolution to  
+have a find 3D mesh is 1600x1200.
+
+Actually, all the webcams are wired to a single USB hub, and a little  
+application i have coded handles a very simple queue when the user  
+presses the &quot;shoot&quot; button.
+The application simply calls the uvccapture command, waits for it to  
+finish, stores the result, and starts uvccapture on the next camera (/ 
+dev/video0 / 1 / 2 / 3 / 4) and so on.
+
+The task takes around 18 seconds it's a bit too much.
+
+So i was wondering... Why not to use two USB hubs to wire the cameras,  
+3 cameras on the first hub, two on the second, so the application will  
+be able to shoot two cams at the same time, then again, then the one  
+remaining?
+
+So today i coded this workflow on my application, /dev/video0 to /dev/ 
+video2 on the first hub, /dev/video3 and /dev/video4 on the other.
+The goal was to shoot video0 / video 3 at the same time, then video1 /  
+video4 at the same time, then /dev/video3.
+And i was very surprised to see that the system doesn't allows me  
+simultaneous requests to the driver.
+
+Is there any solution to that?
+
+Thanks for your time!
+Pierre.
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: MARTIN Pierre.vcf
+Type: text/directory
+Size: 3116 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080709/4c1a90b9/attachment.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080709/4c1a90b9/attachment.bin</A>&gt;
+-------------- next part --------------
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003795.html">[Linux-uvc-devel] asus f9sg webcam
+</A></li>
+	<LI>Next message: <A HREF="003797.html">[Linux-uvc-devel] Concurent accesses to multiple devices.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3794">[ date ]</a>
+              <a href="thread.html#3794">[ thread ]</a>
+              <a href="subject.html#3794">[ subject ]</a>
+              <a href="author.html#3794">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] v4l-dvb and uvcvideo
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20v4l-dvb%20and%20uvcvideo&In-Reply-To=%3C1169946202.5067.44.camel%40satellite%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001307.html">
+   <LINK REL="Next"  HREF="001309.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] v4l-dvb and uvcvideo</H1>
+    <B>Brandon Drummond</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20v4l-dvb%20and%20uvcvideo&In-Reply-To=%3C1169946202.5067.44.camel%40satellite%3E"
+       TITLE="[Linux-uvc-devel] v4l-dvb and uvcvideo">nijusan at utdallas.edu
+       </A><BR>
+    <I>Sun Jan 28 02:03:22 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001307.html">[Linux-uvc-devel] green screen
+</A></li>
+        <LI>Next message: <A HREF="001309.html">[Linux-uvc-devel] Window resize crash report,	with luvcveiw-20070107 and QC Fusion	(046d:08c1)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1308">[ date ]</a>
+              <a href="thread.html#1308">[ thread ]</a>
+              <a href="subject.html#1308">[ subject ]</a>
+              <a href="author.html#1308">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+I've been posting on the v4l-dvb mailing list about getting the uvcvideo
+module to build and load properly after installing the v4l-dvb
+distribution. The problem is that they supply their own version of the
+v4l headers, and that causes any v4l related modules built with the
+standard headers to fail loading with a number of unresolved symbols. A
+way around this is to re-build the uvcvideo module using the v4l-dvb
+headers. So within the v4l-dvb distribution you order a &quot;make
+kernel-links&quot; command which updates the headers. One problem is that the
+headers they supply are from a more up-to-date kernel, so when the
+uvc_compat.h file checks the kernel it see a version &lt; 2.6.18 (actually
+2.6.17-10-generic) and subsequently tries to define a number of
+structures already present in the more up-to-date videodev2.h file. A
+dirty way around this is to force uvc_compat.h to think the kernel
+version is &gt; 2.6.19 to avoid the redefinitions. When I do that the
+uvcvideo module builds without complaint, however, it still fails to
+load issuing a series of unresolved symbols:
+
+$ sudo insmod uvcvideo.ko
+insmod: error inserting 'uvcvideo.ko': -1 Unknown symbol in module
+[17185392.912000] uvcvideo: disagrees about version of symbol
+video_devdata
+[17185392.912000] uvcvideo: Unknown symbol video_devdata
+[17185392.912000] uvcvideo: disagrees about version of symbol
+video_unregister_device
+[17185392.912000] uvcvideo: Unknown symbol video_unregister_device
+[17185392.916000] uvcvideo: disagrees about version of symbol
+video_device_alloc
+[17185392.916000] uvcvideo: Unknown symbol video_device_alloc
+[17185392.916000] uvcvideo: disagrees about version of symbol
+video_register_device
+[17185392.916000] uvcvideo: Unknown symbol video_register_device
+[17185392.916000] uvcvideo: disagrees about version of symbol
+video_device_release
+[17185392.916000] uvcvideo: Unknown symbol video_device_release
+
+Is there a problem with my dirty &quot;fix&quot;. Perhaps uvcvideo is still
+relying on a module that needs to be rebuilt with hte new headers.
+Anyone have any ideas?
+
+Cheers,
+-Brandon Drummond
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001307.html">[Linux-uvc-devel] green screen
+</A></li>
+	<LI>Next message: <A HREF="001309.html">[Linux-uvc-devel] Window resize crash report,	with luvcveiw-20070107 and QC Fusion	(046d:08c1)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1308">[ date ]</a>
+              <a href="thread.html#1308">[ thread ]</a>
+              <a href="subject.html#1308">[ subject ]</a>
+              <a href="author.html#1308">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

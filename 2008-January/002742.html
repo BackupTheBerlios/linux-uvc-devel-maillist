@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Powering off 046d:08c6
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Powering%20off%20046d%3A08c6&In-Reply-To=%3C1200051992.4091.12.camel%40speck.logular.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002740.html">
+   <LINK REL="Next"  HREF="002743.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Powering off 046d:08c6</H1>
+    <B>Jason Grant</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Powering%20off%20046d%3A08c6&In-Reply-To=%3C1200051992.4091.12.camel%40speck.logular.com%3E"
+       TITLE="[Linux-uvc-devel] Powering off 046d:08c6">expires07 at logular.com
+       </A><BR>
+    <I>Fri Jan 11 12:46:32 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002740.html">[Linux-uvc-devel] Powering off 046d:08c6
+</A></li>
+        <LI>Next message: <A HREF="002743.html">[Linux-uvc-devel] Powering off 046d:08c6
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2742">[ date ]</a>
+              <a href="thread.html#2742">[ thread ]</a>
+              <a href="subject.html#2742">[ subject ]</a>
+              <a href="author.html#2742">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi All,
+
+Thanks for your efforts and tips on this.
+
+I am running the following fedora kernel
+
+  2.6.23.1-42.fc8
+
+with CONFIG_USB_SUSPEND=y, and uvcvideo compiled from today's svn head.
+
+When I echo &quot;auto&quot; to the relevant /sys/devices/../power/level, the cam
+seems to continue to draw power indefinitely.  As soon as I echo &quot;1&quot;
+to /sys/devices/../power/autosuspend, the camera immediately cools, and
+the laptop consumes approx 1.4W less power.  I also see the &quot;Suspending
+interface&quot; trace message from uvc_driver.c.
+
+Is there something else that needs to be configured before suspend will
+be triggered automatically?
+
+Thanks for any tips, and I'm happy to troubleshoot further,
+
+Jason.
+
+On Thu, 2008-01-10 at 20:25 -0800, Brandon Philips wrote:
+&gt;<i> On 19:58 Thu 10 Jan 2008, Jason Grant wrote:
+</I>&gt;<i> &gt; I rarely use the integrated webcam on my laptop (046d:08c6).  It runs
+</I>&gt;<i> &gt; very hot, and I would like to stop it consuming battery power.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; It looks like a power-management patch is in the works, however in the
+</I>&gt;<i> &gt; interim, I have read that it is possible to power off the camera by
+</I>&gt;<i> &gt; doing something like:
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; echo &quot;0&quot;
+</I>&gt;<i> &gt; &gt; /sys/devices/pci0000:00/0000:00:1d.7/usb1/1-5/bConfigurationValue
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I have tried this without success (running fedora 8 and latest uvcvideo
+</I>&gt;<i> &gt; from svn).  Is there any truth to this?  If not, I am hoping that
+</I>&gt;<i> &gt; someone here could provide me with info on how to manually turn this
+</I>&gt;<i> &gt; camera off/on.  I will happily write a c program to do this if required.
+</I>&gt;<i> 
+</I>&gt;<i> The autosuspend code has been added to SVN if you want to test it.
+</I>&gt;<i> 
+</I>&gt;<i> 0. Recompile with CONFIG_USB_DEBUG if you want to see debugging output
+</I>&gt;<i> 1. Locate the device with lsusb
+</I>&gt;<i> 2. Go to its sysfs directory
+</I>&gt;<i> 3. echo &quot;auto&quot; &gt; power/level
+</I>&gt;<i> 4. wait for messages about the device and its root hub being suspended
+</I>&gt;<i>    in syslog. It'll take a few seconds (if you have CONFIG_USB_DEBUG)
+</I>&gt;<i> 
+</I>&gt;<i> e.g.
+</I>&gt;<i> 
+</I>&gt;<i> ~$ lsusb
+</I>&gt;<i> Bus 005 Device 005: ID 046d:0991 Logitech, Inc.
+</I>&gt;<i> 
+</I>&gt;<i> # echo auto &gt;
+</I>&gt;<i> /sys/devices/pci0000\:00/0000\:00\:1d.7/usb5/5-1/power/level
+</I>&gt;<i> 
+</I>&gt;<i> Cheers,
+</I>&gt;<i> 
+</I>&gt;<i> 	Brandon
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002740.html">[Linux-uvc-devel] Powering off 046d:08c6
+</A></li>
+	<LI>Next message: <A HREF="002743.html">[Linux-uvc-devel] Powering off 046d:08c6
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2742">[ date ]</a>
+              <a href="thread.html#2742">[ thread ]</a>
+              <a href="subject.html#2742">[ subject ]</a>
+              <a href="author.html#2742">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

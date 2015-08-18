@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Thoughts on software autofocus
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Thoughts%20on%20software%20autofocus&In-Reply-To=%3C20071008103143.GA23630%40sdg.at%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002254.html">
+   <LINK REL="Next"  HREF="002256.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Thoughts on software autofocus</H1>
+    <B>Dr. techn. Alexander K. Seewald</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Thoughts%20on%20software%20autofocus&In-Reply-To=%3C20071008103143.GA23630%40sdg.at%3E"
+       TITLE="[Linux-uvc-devel] Thoughts on software autofocus">alex at seewald.at
+       </A><BR>
+    <I>Mon Oct  8 12:31:44 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002254.html">[Linux-uvc-devel] Unsupported webcam from Chicony
+</A></li>
+        <LI>Next message: <A HREF="002256.html">[Linux-uvc-devel] Control the status LED?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2255">[ date ]</a>
+              <a href="thread.html#2255">[ thread ]</a>
+              <a href="subject.html#2255">[ subject ]</a>
+              <a href="author.html#2255">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Tom,
+
+If you want to do motion detection by comparing downsampled images
+(as you suggested), the correlation coefficient is probably best
+suited to check for image changes. I've used it for cut recognition
+in TV advertisement recognition, and an appropriate threshold gives
+recall of 0.3 at precision of 1.0 (cuts are when the image totally
+changes ~ maximal motion between images)
+
+Corr. coefficient for images is described in every good digital image
+processing book, e.g. Digitale Bildverarbeitung (Burger &amp; Burge) is
+my favorite. <A HREF="http://www.imagingbook.com/index.php?id=59">http://www.imagingbook.com/index.php?id=59</A> (chapter 17)
+has source code in Java, search for corrCoeffMatcher. It's quite
+simple to port to different languages, basically one loop over the
+image sufficies to compute this (with some optimization of the code)
+
+If there were a camera which outputs true MPEG2, I would happen to know
+a very good paper describing how to use this to get optical flow
+motion vectors from the compressed MPEG2 data very fast - but alas, we
+are dealing with MJPEG here, which is something quite a bit different.
+
+A good way to start for something more subtle might be
+<A HREF="http://en.wikipedia.org/wiki/Jpeg">http://en.wikipedia.org/wiki/Jpeg</A> . The luvcview code has a sample
+decoder in utils.c, jpeg_decode, which might also be helpful.
+
+Best,
+  Alex
+-- 
+Dr. Alexander K. Seewald         +43(664)1106886
+              Seewald Solutions                 
+------------------------------------------------
+         Information wants to be free;
+Information also wants to be expensive (S.Brant)
+--------------- alex.seewald.at ----------------
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002254.html">[Linux-uvc-devel] Unsupported webcam from Chicony
+</A></li>
+	<LI>Next message: <A HREF="002256.html">[Linux-uvc-devel] Control the status LED?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2255">[ date ]</a>
+              <a href="thread.html#2255">[ thread ]</a>
+              <a href="subject.html#2255">[ subject ]</a>
+              <a href="author.html#2255">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

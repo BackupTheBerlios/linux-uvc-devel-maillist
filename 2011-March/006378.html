@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Fixing bandwidth quirk ***just inquire
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Fixing%20bandwidth%20quirk%20%2A%2A%2Ajust%20inquire&In-Reply-To=%3CAANLkTikzqv1N-9PJ-Mb1SXgEBeGiQ0q-cLZfNcVpdvDG%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006377.html">
+   <LINK REL="Next"  HREF="006379.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Fixing bandwidth quirk ***just inquire</H1>
+    <B>Paulo Assis</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Fixing%20bandwidth%20quirk%20%2A%2A%2Ajust%20inquire&In-Reply-To=%3CAANLkTikzqv1N-9PJ-Mb1SXgEBeGiQ0q-cLZfNcVpdvDG%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Fixing bandwidth quirk ***just inquire">pj.assis at gmail.com
+       </A><BR>
+    <I>Fri Mar 11 11:38:50 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006377.html">[Linux-uvc-devel] Fixing bandwidth quirk ***just inquire
+</A></li>
+        <LI>Next message: <A HREF="006379.html">[Linux-uvc-devel] Extension unit documentation
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6378">[ date ]</a>
+              <a href="thread.html#6378">[ thread ]</a>
+              <a href="subject.html#6378">[ subject ]</a>
+              <a href="author.html#6378">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+2011/3/11 Alexey Fisher &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt;:
+&gt;<i> Raw stream is &quot;simple&quot;, for example YUYV need 16 bits to describe one
+</I>&gt;<i> pixel. No extra action is done on this stream. Even if the camera lie
+</I>&gt;<i> about it setting, we can still calculate it our self. For example if you
+</I>&gt;<i> use YUYV 640x480 with 30 fps:
+</I>&gt;<i> 640&#215;480&#215;16=4915200 bit or 4915200/8=614400 byte
+</I>&gt;<i> so dwMaxVideoFrameSize=614400.
+</I>&gt;<i>
+</I>&gt;<i> Same value you will get if you check lsusb -vd xxxx:xxxx
+</I>&gt;<i>
+</I>&gt;<i> To calculate bandwidth uvc use framerate. This value deiced, can you or
+</I>&gt;<i> not use your webcam with some particular settings on your usb hub.
+</I>&gt;<i>
+</I>&gt;<i> Compressed stream can use different compression algorithms, most populas
+</I>&gt;<i> is jpeg. Compression depend on texture what your cam capture, and on the
+</I>&gt;<i> time it has for compression. For example if camera forced to push 30fps,
+</I>&gt;<i> it will choice speed against compression rate.
+</I>
+actually it can also only send a part of the sensor image, just try
+any of the logitech HD models,
+when you pick a different frame rate (even for the same resolution)
+you will get a very different image (more or less zoomed),
+The compression ration seems more or less the same (at least the
+quantization tables don't seem to alter).
+
+
+
+&gt;<i> With compressed stream we can't say for sure, how match bandwidth do we
+</I>&gt;<i> need. On cam's i tested it variate between 6% and &#160;30% of uncompressed
+</I>&gt;<i> stream. If you provide wrong bandwidth to the cam, it will just freeze
+</I>&gt;<i> or send you black frame.
+</I>
+Yes but you can decide on a maximum (say 40% :D) that is never
+reached, this is better than allocating 100% of the bandwidth and can
+be the difference between a working camera and a non working one.
+
+&gt;<i>
+</I>&gt;<i> So, manufacture should provide correct settings and they are different
+</I>&gt;<i> for each cam.
+</I>
+I totally agree with this, but unfortunately, this is not always the
+case, hence the need for the quirks.
+In fact the bandwidth settings should vary at least according to
+resolution, but what wee see in some cases is that manufactures just
+use the same value for every situation (laziness related maybe).
+
+&gt;<i>
+</I>&gt;<i> Or we should add new quirk setting, what adjust compression ratio too.
+</I>&gt;<i> But before, we need some test cases, to find worts compression ratio,
+</I>&gt;<i> and add statistic collection to the driver.
+</I>
+V4l2 has jpeg compression related ioctls, Laurent event created a
+patch for uvc, but for some reason it was never integrated, in fact I
+add support for it in guvcview, but as I remember although the cameras
+I tested seem to accepted it, it didn't really cause any change in the
+compression ratio, so I doubt very much it would cause any on the
+bandwidth settings.
+
+Regards,
+Paulo
+
+&gt;<i>
+</I>&gt;<i> Am Freitag, den 11.03.2011, 00:35 +0200 schrieb Asmaa ElAssal:
+</I>&gt;&gt;<i> Yes, sir, but I use another one.
+</I>&gt;&gt;<i> I received that analysiz from someone on that site about that old
+</I>&gt;&gt;<i> webcam. I want to understand the problem of that previous cam
+</I>&gt;&gt;<i> Excuse me, Could you more explain &quot;Compressed stream is not really
+</I>&gt;&gt;<i> predictable&quot; and it's different of the uncompressed format.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> On Thu, Mar 10, 2011 at 11:59 PM, Alexey Fisher
+</I>&gt;&gt;<i> &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt; wrote:
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; Compressed stream is not really predictable. Every camera can
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; act
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; differently, so my be it will brick more than fix.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; Do your camera need this quirk?
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; Am Donnerstag, den 10.03.2011, 19:43 +0000 schrieb modysama:
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt; modysama &lt;asmaa.elassal.student &lt;at&gt; pua.edu.eg&gt; writes:
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt;
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt; &gt;
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt; &gt; Fixing bandwidth quirk is only works for uncompressed
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; stream
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt; the YUYV format, it doesn&#8217;t work for MJPG.
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt; &gt; Why??need explain, please
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt; &gt; _______________________________________________
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt; &gt; Linux-uvc-devel mailing list
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt; &gt; Linux-uvc-devel &lt;at&gt; lists.berlios.de
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt; &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt; &gt;
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt;
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt;
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt;
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt;
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt; _______________________________________________
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt; Linux-uvc-devel mailing list
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; --
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; Regards,
+</I>&gt;&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;Alexey
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> --
+</I>&gt;&gt;<i> Asmaa El-said Rashad
+</I>&gt;&gt;<i> Pharos University of Alex
+</I>&gt;&gt;<i> Computer Department
+</I>&gt;&gt;<i> 5th year
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006377.html">[Linux-uvc-devel] Fixing bandwidth quirk ***just inquire
+</A></li>
+	<LI>Next message: <A HREF="006379.html">[Linux-uvc-devel] Extension unit documentation
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6378">[ date ]</a>
+              <a href="thread.html#6378">[ thread ]</a>
+              <a href="subject.html#6378">[ subject ]</a>
+              <a href="author.html#6378">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

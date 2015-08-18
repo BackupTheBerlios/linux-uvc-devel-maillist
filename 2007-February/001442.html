@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Quick Cam Pro 5000 046d:08ce don't run on	Ubuntu Feisty Fawn
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quick%20Cam%20Pro%205000%20046d%3A08ce%20don%27t%20run%20on%0A%09Ubuntu%20Feisty%20Fawn&In-Reply-To=%3C200702231340.25569.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001437.html">
+   <LINK REL="Next"  HREF="001446.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Quick Cam Pro 5000 046d:08ce don't run on	Ubuntu Feisty Fawn</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quick%20Cam%20Pro%205000%20046d%3A08ce%20don%27t%20run%20on%0A%09Ubuntu%20Feisty%20Fawn&In-Reply-To=%3C200702231340.25569.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Quick Cam Pro 5000 046d:08ce don't run on	Ubuntu Feisty Fawn">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Fri Feb 23 13:40:25 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001437.html">[Linux-uvc-devel] Quick Cam Pro 5000 046d:08ce don't run on Ubuntu Feisty Fawn
+</A></li>
+        <LI>Next message: <A HREF="001446.html">[Linux-uvc-devel] Quick Cam Pro 5000 046d:08ce don't run on Ubuntu Feisty Fawn
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1442">[ date ]</a>
+              <a href="thread.html#1442">[ thread ]</a>
+              <a href="subject.html#1442">[ subject ]</a>
+              <a href="author.html#1442">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Tuesday 20 February 2007 22:05, Martin Funk wrote:
+&gt;<i> Hi Thomas,
+</I>&gt;<i>
+</I>&gt;<i> verry same output of v4l-video here, just the bus_info differs.
+</I>&gt;<i> It also makes no difference if the given uvc_ids is added to the code or
+</I>&gt;<i> not.
+</I>
+Here's what bothers me in your kernel log:
+
+[  284.165685] uvcvideo: uvc_v4l2_ioctl
+[  284.165691] v4l2 ioctl VIDIOC_STREAMON, dir=-w (0x40045612)
+[  284.165967] uvcvideo: uvc_v4l2_ioctl
+[  284.165970] v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0585611)
+[  284.166061] uvcvideo: Dequeuing buffer 0.
+[  284.171785] uvcvideo: Dropping packet (out of sync).
+[  284.171788] uvcvideo: Dropping packet (out of sync).
+[  284.171790] uvcvideo: Dropping packet (out of sync).
+[  284.171791] uvcvideo: Dropping packet (out of sync).
+
+Right after started streaming, the application tries to dequeue the first 
+buffer using VIDIOC_DQBUF. The ioctl checks the first buffer in the queue 
+(which is buffer 0) and blocks until the buffer is filled with image data. It 
+seems from what you reported that this never happens.
+
+The driver keeps printing out-of-sync messages, and that shouldn't happen. An 
+out-of-sync message can happen from times to times, but definitely not at the 
+very beginning. Could you hack uvc_video.c to print more information in the 
+out of sync message, such as the buffer number (buff-&gt;buf.index) and state 
+(buff-&gt;buf.index) ?
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001437.html">[Linux-uvc-devel] Quick Cam Pro 5000 046d:08ce don't run on Ubuntu Feisty Fawn
+</A></li>
+	<LI>Next message: <A HREF="001446.html">[Linux-uvc-devel] Quick Cam Pro 5000 046d:08ce don't run on Ubuntu Feisty Fawn
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1442">[ date ]</a>
+              <a href="thread.html#1442">[ thread ]</a>
+              <a href="subject.html#1442">[ subject ]</a>
+              <a href="author.html#1442">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

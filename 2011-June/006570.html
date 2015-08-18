@@ -1,0 +1,409 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Frame Rate/Corruption C910, plus 4 others
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Frame%20Rate/Corruption%20C910%2C%20plus%204%20others&In-Reply-To=%3Calpine.DEB.2.02.1106090203420.31839%40cervantes%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006606.html">
+   <LINK REL="Next"  HREF="006574.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Frame Rate/Corruption C910, plus 4 others</H1>
+    <B>Mark Whitis</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Frame%20Rate/Corruption%20C910%2C%20plus%204%20others&In-Reply-To=%3Calpine.DEB.2.02.1106090203420.31839%40cervantes%3E"
+       TITLE="[Linux-uvc-devel] Frame Rate/Corruption C910, plus 4 others">whitis at freelabs.com
+       </A><BR>
+    <I>Thu Jun  9 08:04:56 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006606.html">[Linux-uvc-devel] Multiple webcams, error: uvcvideo: Failed to submit URB 0 (-28)
+</A></li>
+        <LI>Next message: <A HREF="006574.html">[Linux-uvc-devel] Frame Rate/Corruption C910, plus 4 others
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6570">[ date ]</a>
+              <a href="thread.html#6570">[ thread ]</a>
+              <a href="subject.html#6570">[ subject ]</a>
+              <a href="author.html#6570">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Low frame rate problems have been seen with at least 5 UVC cameras on 
+multiple computers.   It isn't low light, USB bandwidth, etc.   In the 
+past, I have assumed the cameras were being dishonest about their 
+performance, now I am pretty sure it is the UVC driver's fault.   On a 
+newer, faster, computer performance has even gone down on some cameras.
+
+I just got a new Logitech C910 UVC webcam.   This camera has a 5MP 
+(2592x1944) sensor and can do 1920x1080/30P, 720x1280/30P, and 
+640x480/60P.  It works right out of the box with guvcview except for:
+   - The crippling frame rate problems described here
+   - uvcvideo doesn't support still picture capture (this is a real 5MP
+     bayer resolution webcam).
+   - Exposure mode can be set to Manual or Aperature Priority.  Auto or
+     Shutter priority produce an error.
+   - Video in MJPG mode is badly corrupted when recording (any program) or 
+when
+     displayed in some programs.
+Other than that, auto/manual exposure, digital zoom, digital pan/tilt 
+(zoom first), auto/manual focus, etc. seem to work.   Sound not tested. 
+It does support still image.
+However, streaming to disk or using a number of other applications fails 
+badly:
+Tests were done on this camera, except where otherwise noted.
+
+As we will see below, mplayer is the only one that admits to dropping 3/4 
+of the video frames at 60fps but the other programs (or the driver) are 
+doing it.
+
+
+
+Because of the large number of video modes, less interesting modes have 
+been deleted and only 480P, 720P, 1080P, and full sensor resolution shown 
+in YUYV and MJPG:
+Init. UVC Camera (046d:0821) (location: usb-0000:00:13.2-3)
+{ pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+{ discrete: width = 640, height = 480 }
+ 	Time interval between frame: 1/30, 1/24, 1/20, 1/15, 1/10, 2/15, 
+1/5,
+{ discrete: width = 1280, height = 720 }
+ 	Time interval between frame: 1/10, 2/15, 1/5,
+{ discrete: width = 1920, height = 1080 }
+ 	Time interval between frame: 1/2,
+{ discrete: width = 2592, height = 1944 }
+ 	Time interval between frame: 1/2,
+{ pixelformat = 'MJPG', description = 'MJPEG' }
+{ discrete: width = 640, height = 480 }
+ 	Time interval between frame: 1/60, 1/30, 1/24, 1/20, 1/15, 1/10, 
+2/15, 1/5,
+{ discrete: width = 1280, height = 720 }
+ 	Time interval between frame: 1/30, 1/24, 1/20, 1/15, 1/10, 2/15, 
+1/5,
+{ discrete: width = 1920, height = 1080 }
+ 	Time interval between frame: 1/30, 1/24, 1/20, 1/15, 1/10, 2/15, 
+1/5,
+{ discrete: width = 2592, height = 1944 }
+ 	Time interval between frame: 1/10, 2/15, 1/5,
+{ pixelformat = 'RGB3', description = 'RGB3' }
+...
+{ pixelformat = 'BGR3', description = 'BGR3' }
+...
+
+vid:046d
+pid:0821
+driver:uvcvideo
+Adding control for Pan (relative)
+UVCIOC_CTRL_ADD - Error: File exists
+checking format: 1196444237
+VIDIOC_G_COMP:: Invalid argument
+    compression control not supported
+fps is set to 1/30
+drawing controls
+
+fps is set to 1/30
+
+guvcview gets max 12-14fps in any video mode down to 160x120.
+Yes, I am using MJPG not YUYV.   No the camera exposure should not be 
+knocking down the frame rate as this occurs even when pointed at a light. 
+No the CPU isn't overloaded; Phenom II 1060T X6 and none of the cores are 
+heavily loaded.   No, I am not plugged into a 12Mbps port.  No, the USB 
+bus isn't loaded (unplugged another webcam). luvcview does a little 
+better, getting 30fps at 160x120.    But if you run guvcview as root, now 
+all of a sudden it can run 30fps up to 1920x1080.   This continues when 
+you switch back to a normal user.    Until it breaks.   Which happened 
+when I tried to read full sensor resolution.   After that, I was stuck at 
+&lt;=15fps in all modes as root and ordinary user.   Removing both copies of 
+.guvcviewrc didn't help.    Unpluging the camera doesn't fix it. 
+Unplugging the camera and rmmoding uvcvideo (which takes videodev with it) 
+and replugging the camera didn't fix it.   Plugging into USB 3.0 
+superspeed port didn't help (not that the camera supports superspeed, just 
+trying to change the USB controller).  &quot;shutdown -h now&quot; didn't fix it. 
+Sound is disabled.
+
+At one point during the brief time that it was working as root, I got 
+58fps 640x480 and it did not slow down even when I lowered frame rate to 
+30fps.   Don't know if it actually had anything to do with being root. 
+It did work just long enough to indicate that the camera can deliver on 
+its promised specifications.
+
+It does appear guvcview frame rate display is somewhat unreliable.   I get 
+different results if I turn it off and on, and they vary depending on how 
+long it was off, like the title bar only gets updated once.   But on 
+different cameras that do slow the frame rate in low light, the title bar 
+fps is updated when I cover the lens.    The changing numbers when turning 
+off/on the title bar fps readout may reflect resetting the boxcar 
+averaging.  The low numbers do seem to reflect reality.  When I record 
+files using various programs, I only get 25fps according to ffprobe.
+
+
+Bad video looks like typically less than half of frame (varies how much 
+frame to frame) with some errors of 1/4 to 1/2 width of frame in the 
+section that is displayed.   Like there is a race condition between 
+grabbing the video and playback or one of the errors encountered is bad 
+enough to kill the rest of the frame.   I have played back with &quot;mplayer 
+-vo x11&quot; to disable any hardware accelleration on my video card and the 
+results are the same.
+
+
+- Cheese - works but very limited
+- guvcview record video - you get less than half a video frame and other 
+errors.
+- ffmpeg -f video4linux2 -s 640x480 -r 60 -vcodec mjpeg -i /dev/video0 -r 
+60 -vcodec copy /tmp/test1.mjpeg
+   You get the same unusable video as guvcview
+   These errors reported before recording starts, then none during 
+recording.
+[mjpeg @ 0x1a0c900]mjpeg_decode_dc: bad vlc: 0:0 (0x1a297c0)
+[mjpeg @ 0x1a0c900]error dc
+[mjpeg @ 0x1a0c900]error y=2 x=11
+[video4linux2 @ 0x1a0b660]Estimating duration from bitrate, this may be 
+inaccurate
+   then playing back recorded stream with ffplay gives the
+[mjpeg @ 0xf95850]mjpeg_decode_dc: bad vlc: 0:0 (0xfe2240)
+[mjpeg @ 0xf95850]error dc
+[mjpeg @ 0xf95850]error y=1 x=21
+[mjpeg @ 0xf95850]mjpeg_decode_dc: bad vlc: 0:0 (0xfe2240)   0B f=0/0
+[mjpeg @ 0xf95850]error dc
+[mjpeg @ 0xf95850]error y=2 x=9
+[mjpeg @ 0xf95850]mjpeg_decode_dc: bad vlc: 0:0 (0xfe2240)f=0/1
+[mjpeg @ 0xf95850]error dc
+[mjpeg @ 0xf95850]error y=2 x=9
+[mjpeg @ 0xf95850]error count: 64
+[mjpeg @ 0xf95850]error y=0 x=30
+[mjpeg @ 0xf95850]mjpeg_decode_dc: bad vlc: 0:0 (0xfe2240)
+[mjpeg @ 0xf95850]error dc
+[mjpeg @ 0xf95850]error y=3 x=21
+The bad vlc lines originate from libavcodec/mjpegdec.c
+
+
+- vlc
+   vlc v4l2:///dev/video0:width=640:height=480:fps=60:chroma=MJPG 
+--sout=file/ogg:/tmp/test3.mjp
+   vlc v4l2:///dev/video0:width=640:height=480:fps=60:chroma=MJPG
+   you get the same unusable video (&lt;1/2frame) whether you are playing or 
+recording.   No errors reported on record.  When simply watching cam, 
+looks like this:
+[0x9ebdb0] signals interface error: signal 17 overriden (0x7f41629c9450)
+[0x9ebdb0] signals interface error:  /usr/lib/libQtCore.so.4(?)[(nil)]
+error dc
+error y=0 x=29
+error dc
+error y=6 x=1
+error dc
+error y=6 x=1
+error dc
+error y=1 x=8
+    vlc does display the image ok if you use YUYV instead of MJPG but then 
+you are severly limited in resolution/frame rate.
+- mplayer
+time mplayer <A HREF="tv://">tv://</A> -tv driver=v4l2:width=640:height=240:fps=60
+v4l2: 159 frames successfully processed, 475 frames dropped.
+real	0m10.939s
+I.E. about 58fps from camera but 14.5fps after frames dropped.
+time mplayer <A HREF="tv://">tv://</A> -tv driver=v4l2:width=640:height=240:fps=30
+v4l2: 149 frames successfully processed, 144 frames dropped.
+real	0m10.101s
+I.E. about 29fps from camera but about 14.75fps after frames dropped
+Setup time may affect results slightly.
+Note that if you request more frames than camera supports, it will report 
+more frames dropped.
+
+
+
+- luvcview -s 640x480 -r 60 -f MJPG &amp;
+
+   prints &quot;find DRI&quot; repeatedly
+   reports 14, 16, and 20fps on subsequent runs when camera set to 60.
+   title bar updated at least twice as it initially reports 0.0 fps.
+
+  luvcview -s 640x480 -r 60 -f MJPG -C -o /tmp/test4.avi &amp;
+  xine, mplayer, and vlc are unable to read the file.
+
+Using read method instead of mmap doesn't seem to make a difference, tried 
+with various programs.
+
+Same problem on netbook running ubuntu 9.04.
+
+It may be a bug where uvcvideo gives you the next frame received after you 
+request a frame instead of giving you the next frame stored in the queue.
+
+No uvcvideo syslog messages
+
+Other UVC cameras:
+   - 230X USB microscope UVC eb1a:1760 (real 1.3MP)
+    v4l2: 132 frames successfully processed, 199 frames dropped.   real 
+12.252s
+    i.e. 10.77fps out of 27fps.
+    { discrete: width = 640, height = 480 }
+ 	Time interval between frame: 1/30,
+    looking at video monitor or overhead light.  guvcview says 17fps but 
+will drop to 3.5fps in low light when fps reported set to 30.
+     <A HREF="http://www.freelabs.com/~whitis/reviews/230X_USB_Microscope/">http://www.freelabs.com/~whitis/reviews/230X_USB_Microscope/</A>
+     On a previous computer I was able to get 27 out of 30fps at 640x480
+     and 7fps out of 15fps at 1280x1024 in bright light.
+   - deal extreme sku #25948 $6.40 camera 18ec:3299 Arkmicro Technologies 
+Inc.  (0.3MP) 
+<A HREF="http://www.dealextreme.com/p/compact-usb-pc-webcam-300k-pixel-25948">http://www.dealextreme.com/p/compact-usb-pc-webcam-300k-pixel-25948</A>
+     { pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+     { discrete: width = 640, height = 480 }
+ 	Time interval between frame: 1/30, 1/15, 1/10, 1/5,
+     ...
+     guvcview reports 20fps looking at overhead light
+     v4l2: 245 frames successfully processed, 74 frames dropped.  real 
+0m10.706s
+     i.e. 22.88fps out of 29.79fps
+     pressing snapshot button changes color instead, cycling between 
+different colors
+
+  - 0c45:62c0 Microdia Sonix USB 2.0 Camera (0.3MP)
+   { pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+    {   discrete: width = 640, height = 480 }
+ 	Time interval between frame: 1/30, 1/20, 1/15, 1/10, 1/5,
+    ...
+    guvcview reports 21.5fps looking at light, 9fps lens blocked
+    v4l2: 311 frames successfully processed, 24 frames dropped. real 
+0m11.514s
+    i.e. 27fps out of 29fps
+    ebay cubeternet USB 2 WEBCAM Camera 5M, Mic, 6 Infrared LED PC/Mac UVC
+    claimed 1.3MP sensor, it was only 0.3MP.
+
+
+  - Built-in netbook camera 064E:A102 Suyin Corp
+    Different computer: Acer Aspire One 532h-2588 netbook
+     { pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+     { discrete: width = 640, height = 480 }
+ 	Time interval between frame: 1/30, 1/25, 1/20, 1/15, 1/10, 1/5,
+     (hand typed)
+     ...
+     guvcview reports 7.00fps looking at overhead light/7.00fps lens 
+covered
+     ditto for luvcview.
+
+   - Logitech quickcam fusion.   Now broken, but I recall similar results a 
+few years ago.   Other cameras were tested now.
+
+
+
+
+Ubuntu 11.04
+Linux cervantes 2.6.38-8-generic #42-Ubuntu SMP Mon Apr 11 03:31:24 UTC 
+2011 x86_64 x86_64 x86_64 GNU/Linux
+AMD Phenom(tm) II X6 1090T Processor
+ASUS Crosshair IV Formula
+Radeon HD 6950
+luvcview 0.2.6
+guvcview 1.4.1
+Cheese 2.32.0
+FFmpeg version 0.6.2-4:0.6.2-1ubuntu1
+VLC media player 1.1.9 The Luggage (revision exported)
+MPlayer 1.0rc4-4.5.2 (C) 2000-2010 MPlayer Team
+This is xine (X11 gui) - a free video player v0.99.6.
+ii  libavcodec-extra-52                   4:0.6.2-1ubuntu2 
+Libav codec library
+rc  libavcodec52                          4:0.6.2-1ubuntu1 
+Libav codec library
+ii  libv4l-0                              0.8.3-1 
+Collection of video4linux support libraries
+ii  libgstreamer0.10-0                    0.10.32-3ubuntu3 
+Core GStreamer libraries and elements
+My video monitors are running at: 60hz (DVI), 60.3hz (VGA over 
+DisplayPort), 60hz (DVI).   ATI proprietary driver 11-5.
+
+
+lsusb -v -d 046d:0821 is 1770 lines, so I won't include it.   The guvcview 
+exceprts include some of the more pertinent details.  Someone else has 
+posted the lsusb output here for same model camera: 
+<A HREF="http://pastebin.ca/raw/1967260">http://pastebin.ca/raw/1967260</A>
+
+Wireshark:
+guvcview -s 640x480 -r 30 -f YUYV
+used YUYV since it is hard to infer info about number of frames from 
+compressed video.
+guvcview reports 16fps
+Over 10 seconds, with guvcview already running:
+125Mbit/second (all traffic)
+ 	640*480*2*8bits*30 = 147.456 megabits
+ 	640*480*2*8bits*16 = 78.6432 megabits
+2629 packets of size&gt;=5120bytes, typically 62016
+This indicates less than 30 frames actually making it onto the wire in 
+this mode or data is being lost within frames.
+
+guvcview -s 1920x1080 -r 30 -f MJPG
+13.50fps
+125MBit/second over 10.941 seconds
+2736 big packets, typically 62016 bytes from camera to host   Same number 
+of  small (320-639) packets, typically 576 bytes host to camera.   4 
+smaller packets (40-159 bytes).
+
+Oddly, the highest MaxBit rate on this camera is 995328000 which exceeds 
+the capacity of USB High Speed.   That is for 1920*1080 30fps MJPEG and is 
+actually the uncompressed bitrate.  The bitrate for that resolution 
+FRAME_UNCOMPRESSED is given as 165888000 which is for 2fps.   Most of the 
+tests were done at 640x480 compressed or uncompressed and adequate 
+bandwidth should be available.
+
+
+
+  lsusb -t
+/:  Bus 08.Port 1: Dev 1, Class=root_hub, Driver=xhci_hcd/4p, 5000M
+/:  Bus 07.Port 1: Dev 1, Class=root_hub, Driver=ohci_hcd/4p, 12M
+/:  Bus 06.Port 1: Dev 1, Class=root_hub, Driver=ohci_hcd/2p, 12M
+/:  Bus 05.Port 1: Dev 1, Class=root_hub, Driver=ohci_hcd/5p, 12M
+/:  Bus 04.Port 1: Dev 1, Class=root_hub, Driver=ohci_hcd/5p, 12M
+     |__ Port 3: Dev 3, If 0, Class=HID, Driver=usbhid, 1.5M
+     |__ Port 3: Dev 3, If 1, Class=HID, Driver=usbhid, 1.5M
+     |__ Port 4: Dev 4, If 0, Class=HID, Driver=usbhid, 1.5M
+/:  Bus 03.Port 1: Dev 1, Class=root_hub, Driver=ehci_hcd/4p, 480M
+     |__ Port 3: Dev 2, If 0, Class=stor., Driver=usb-storage, 480M
+/:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=ehci_hcd/5p, 480M
+     |__ Port 3: Dev 13, If 0, Class=audio, Driver=snd-usb-audio, 480M
+     |__ Port 3: Dev 13, If 1, Class=audio, Driver=snd-usb-audio, 480M
+     |__ Port 3: Dev 13, If 2, Class='bInterfaceClass 0x0e not yet 
+handled', Driver=uvcvideo, 480M
+     |__ Port 3: Dev 13, If 3, Class='bInterfaceClass 0x0e not yet 
+handled', Driver=uvcvideo, 480M
+/:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=ehci_hcd/5p, 480M
+
+Windows users have reported getting 30fps.
+<A HREF="http://forums.quickcamteam.net/showthread.php?tid=1345&amp;page=2">http://forums.quickcamteam.net/showthread.php?tid=1345&amp;page=2</A>
+
+Sometimes I get a little more than 15fps, for no apparent reason.  For 
+example, now guvcview reports 18.00fps at 640x480/30P-MJPG and when I tell 
+guvcview to capture video, it gives 24.18fps:
+  Duration: 00:00:05.54, start: 0.000000, bitrate: 16494 kb/s
+     Stream #0.0: Video: mjpeg, yuvj422p, 640x480, 24.18 tbr, 24.18 tbn, 
+24.18 tbc
+<A HREF="http://ffmpeg-users.933282.n4.nabble.com/What-does-the-output-of-ffmpeg-mean-tbr-tbn-tbc-etc-td941538.html">http://ffmpeg-users.933282.n4.nabble.com/What-does-the-output-of-ffmpeg-mean-tbr-tbn-tbc-etc-td941538.html</A>
+The video is corrupted.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006606.html">[Linux-uvc-devel] Multiple webcams, error: uvcvideo: Failed to submit URB 0 (-28)
+</A></li>
+	<LI>Next message: <A HREF="006574.html">[Linux-uvc-devel] Frame Rate/Corruption C910, plus 4 others
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6570">[ date ]</a>
+              <a href="thread.html#6570">[ thread ]</a>
+              <a href="subject.html#6570">[ subject ]</a>
+              <a href="author.html#6570">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

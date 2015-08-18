@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] uvc: release streaming interface	to	fix suspend to RAM
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvc%3A%20release%20streaming%20interface%0A%09to%09fix%20suspend%20to%20RAM&In-Reply-To=%3C20080604184318.GA4839%40plankton.ifup.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003601.html">
+   <LINK REL="Next"  HREF="003570.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] uvc: release streaming interface	to	fix suspend to RAM</H1>
+    <B>Brandon Philips</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvc%3A%20release%20streaming%20interface%0A%09to%09fix%20suspend%20to%20RAM&In-Reply-To=%3C20080604184318.GA4839%40plankton.ifup.org%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] uvc: release streaming interface	to	fix suspend to RAM">brandon at ifup.org
+       </A><BR>
+    <I>Wed Jun  4 20:43:18 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003601.html">[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)
+</A></li>
+        <LI>Next message: <A HREF="003570.html">[Linux-uvc-devel] [PATCH] uvc: release streaming interface	to	fix suspend to RAM
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3569">[ date ]</a>
+              <a href="thread.html#3569">[ thread ]</a>
+              <a href="subject.html#3569">[ subject ]</a>
+              <a href="author.html#3569">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 18:40 Sat 31 May 2008, Laurent Pinchart wrote:
+&gt;<i> &gt; Index: uvc/uvc_driver.c
+</I>&gt;<i> &gt; ===================================================================
+</I>&gt;<i> &gt; --- uvc.orig/uvc_driver.c
+</I>&gt;<i> &gt; +++ uvc/uvc_driver.c
+</I>&gt;<i> &gt; @@ -865,6 +865,8 @@ static int uvc_parse_standard_control(st
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;  			if (uvc_parse_streaming(dev, streaming) &lt; 0) {
+</I>&gt;<i> &gt;  				usb_put_intf(intf);
+</I>&gt;<i> &gt; +				usb_driver_release_interface(&amp;uvc_driver.driver,
+</I>&gt;<i> &gt; +					intf);
+</I>&gt;<i> &gt;  				kfree(streaming-&gt;format);
+</I>&gt;<i> &gt;  				kfree(streaming-&gt;header.bmaControls);
+</I>&gt;<i> &gt;  				kfree(streaming);
+</I>&gt;<i> &gt; @@ -1524,6 +1526,8 @@ void uvc_delete(struct kref *kref)
+</I>&gt;<i> &gt;  		struct uvc_streaming *streaming;
+</I>&gt;<i> &gt;  		streaming = list_entry(p, struct uvc_streaming, list);
+</I>&gt;<i> &gt;  		usb_put_intf(streaming-&gt;intf);
+</I>&gt;<i> &gt; +		usb_driver_release_interface(&amp;uvc_driver.driver,
+</I>&gt;<i> &gt; +			streaming-&gt;intf);
+</I>&gt;<i> &gt;  		kfree(streaming-&gt;format);
+</I>&gt;<i> &gt;  		kfree(streaming-&gt;header.bmaControls);
+</I>&gt;<i> &gt;  		kfree(streaming);
+</I>&gt;<i>
+</I>&gt;<i> Shouldn't usb_driver_release_interface be called before usb_put_intf ? It 
+</I>&gt;<i> looks like the interface can be freed by usb_put_intf otherwise.
+</I>
+Yes that is correct; I should have seen that 8-)
+
+&gt;<i> You are also missing an error path (kzalloc returning NULL right after
+</I>&gt;<i> claiming the interface).
+</I>
+Good point.
+
+&gt;<i> Here is a modified version of your patch that cleans up the driver
+</I>&gt;<i> code a little as well. It works fine here, could you please test it ? 
+</I>
+The patch looks good, works for me and doesn't claim the interface with
+my test.  Thanks.  I will try and get the user from the original bug to
+test it too.
+
+Signed-off-by: Brandon Philips &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bphilips at suse.de</A>&gt;
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003601.html">[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)
+</A></li>
+	<LI>Next message: <A HREF="003570.html">[Linux-uvc-devel] [PATCH] uvc: release streaming interface	to	fix suspend to RAM
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3569">[ date ]</a>
+              <a href="thread.html#3569">[ thread ]</a>
+              <a href="subject.html#3569">[ subject ]</a>
+              <a href="author.html#3569">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

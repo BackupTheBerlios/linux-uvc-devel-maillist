@@ -1,0 +1,175 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] -Werror fixes for uvcvideo
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20-Werror%20fixes%20for%20uvcvideo&In-Reply-To=%3C20070201121200.A84181%40xorpc.icir.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001318.html">
+   <LINK REL="Next"  HREF="001322.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] -Werror fixes for uvcvideo</H1>
+    <B>Luigi Rizzo</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20-Werror%20fixes%20for%20uvcvideo&In-Reply-To=%3C20070201121200.A84181%40xorpc.icir.org%3E"
+       TITLE="[Linux-uvc-devel] -Werror fixes for uvcvideo">rizzo at icir.org
+       </A><BR>
+    <I>Thu Feb  1 21:12:00 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001318.html">[Linux-uvc-devel] -Werror fixes for uvcvideo
+</A></li>
+        <LI>Next message: <A HREF="001322.html">[Linux-uvc-devel] -Werror fixes for uvcvideo
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1319">[ date ]</a>
+              <a href="thread.html#1319">[ thread ]</a>
+              <a href="subject.html#1319">[ subject ]</a>
+              <a href="author.html#1319">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thu, Feb 01, 2007 at 11:50:24AM -0800, Martin Rubli wrote:
+&gt;<i> Hi Luigi,
+</I>&gt;<i> 
+</I>&gt;<i> &gt; attached are just a couple of trivial patches to
+</I>&gt;<i> &gt; uvcvideo to suppress some compiler warnings - one
+</I>&gt;<i> &gt; related to a missing const, one related to
+</I>&gt;<i> &gt; pointer arithmetic done on a void *
+</I>&gt;<i> 
+</I>&gt;<i> How did you trigger the warnings? The driver uses the standard kernel  
+</I>&gt;<i> build system and on my machine no warnings show up ...
+</I>
+I should have said more - i am building this stuff on FreeBSD:
+
+	<A HREF="http://info.iet.unipi.it/~luigi/FreeBSD/linux_bsd_kld.html">http://info.iet.unipi.it/~luigi/FreeBSD/linux_bsd_kld.html</A>
+
+so the set of compiler flags is different.
+
+&gt;<i> &gt; On passing - i notice that in a couple of structs
+</I>&gt;<i> &gt; in uvcvideo.h you are used unnamed unions, which are
+</I>&gt;<i> &gt; a gcc extension which is not guaranteed to be supported
+</I>&gt;<i> &gt; in the future.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I suppose that, besides convenience, the choice has been
+</I>&gt;<i> &gt; inspired by a similar pattern in videodev2.h .
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Before the use gets too widespread, it might be a good
+</I>&gt;<i> &gt; idea to use standard C and put a name to the union ?
+</I>&gt;<i> &gt; The changes to the source now are relatively small,
+</I>&gt;<i> &gt; and this would prevent the use
+</I>&gt;<i> &gt; of unnamed unions in derived works, which would require
+</I>&gt;<i> &gt; far more work to be fixed.
+</I>&gt;<i> 
+</I>&gt;<i> If I'm not mistaken, GNU C (as opposed to ANSI C) is the official language  
+</I>&gt;<i> used by the Linux kernel and there are quite a few other extensions that  
+</I>&gt;<i> are consistently used throughout the kernel. I therefore don't think  
+</I>&gt;<i> there's going to be a problem with that in the future. But If I'm missing  
+</I>&gt;<i> something, please correct me!
+</I>
+one reason of concern is a note about future support that i misread
+in <A HREF="http://gcc.gnu.org/onlinedocs/gcc/Unnamed-Fields.html:">http://gcc.gnu.org/onlinedocs/gcc/Unnamed-Fields.html:</A>
+
+	... For example, this structure:
+		...
+	It is ambiguous which a is being referred to with `foo.a'.
+	Such constructs are not supported and must be avoided.  In
+	the future, such constructs may be detected and treated as
+	compilation errors.
+
+maybe the note on treating these as errors in the future
+refers only to ambiguous constructs and not to all unnamed unions.
+
+the other reason for concern is ease of porting to other systems -- things
+like pragmas and attributes are easy to remap with a one time
+#define, but unnamed extensions are a pain to handle because you
+have to modify all references to the fields in the source.
+
+and of course - there is the issue of code safety, because
+1)this feature can cause ambiguous constructs, and 2) it doesn't
+suggest the programmer that multiple items are sharing the same
+memory location. The union name at least gives you some hints,
+especially if you call it 'u' ...
+
+&gt;<i> Laurent, can you check Luigi's patch anyway? Some of the changes make  
+</I>&gt;<i> sense regardless of the above. Thanks.
+</I>
+cheers
+luigi
+
+&gt;<i> Cheers,
+</I>&gt;<i> Martin
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> &gt; diff -ubwr trunk/trunk/uvc_ctrl.c ./uvc_ctrl.c
+</I>&gt;<i> &gt; --- trunk/trunk/uvc_ctrl.c	Wed Jan 31 23:53:36 2007
+</I>&gt;<i> &gt; +++ ./uvc_ctrl.c	Wed Jan 31 23:29:59 2007
+</I>&gt;<i> &gt; @@ -795,6 +795,7 @@
+</I>&gt;<i> &gt;  	mutex_unlock(&amp;uvc_driver.ctrl_mutex);
+</I>&gt;<i> &gt;  }
+</I>&gt;<i> &gt; +static
+</I>&gt;<i> &gt;  void uvc_ctrl_add_mapping(struct uvc_control_mapping *mapping)
+</I>&gt;<i> &gt;  {
+</I>&gt;<i> &gt;  	struct uvc_control_info *info;
+</I>&gt;<i> &gt; diff -ubwr trunk/trunk/uvc_driver.c ./uvc_driver.c
+</I>&gt;<i> &gt; --- trunk/trunk/uvc_driver.c	Wed Jan 31 23:53:36 2007
+</I>&gt;<i> &gt; +++ ./uvc_driver.c	Wed Jan 31 21:36:15 2007
+</I>&gt;<i> &gt; @@ -664,7 +664,7 @@
+</I>&gt;<i> &gt;  		unit-&gt;type = VC_EXTENSION_UNIT;
+</I>&gt;<i> &gt;  		memcpy(unit-&gt;extension.guidExtensionCode, &amp;buffer[4], 16);
+</I>&gt;<i> &gt;  		unit-&gt;extension.bNumControls = buffer[20];
+</I>&gt;<i> &gt; -		unit-&gt;extension.bNrInPins = le16_to_cpup((__le16*)&amp;buffer[21]);
+</I>&gt;<i> &gt; +		unit-&gt;extension.bNrInPins = le16_to_cpup((const __le16*)&amp;buffer[21]);
+</I>&gt;<i> &gt;  		unit-&gt;extension.baSourceID = (__u8*)unit + sizeof *unit;
+</I>&gt;<i> &gt;  		memcpy(unit-&gt;extension.baSourceID, &amp;buffer[22], p);
+</I>&gt;<i> &gt;  		unit-&gt;extension.bControlSize = buffer[22+p];
+</I>&gt;<i> &gt; diff -ubwr trunk/trunk/uvcvideo.h ./uvcvideo.h
+</I>&gt;<i> &gt; --- trunk/trunk/uvcvideo.h	Wed Jan 31 23:53:36 2007
+</I>&gt;<i> &gt; +++ ./uvcvideo.h	Wed Jan 31 23:23:50 2007
+</I>&gt;<i> &gt; @@ -478,7 +478,7 @@
+</I>&gt;<i> &gt;  };
+</I>&gt;<i> &gt; struct uvc_video_queue {
+</I>&gt;<i> &gt; -	void *mem;
+</I>&gt;<i> &gt; +	char *mem;	/* we do pointer arithmetic here */
+</I>&gt;<i> &gt;  	unsigned int streaming;
+</I>&gt;<i> &gt;  	__u32 sequence;
+</I>&gt;<i> &gt;  	__u8 last_fid;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; Linux-uvc-devel mailing list
+</I>&gt;<i> &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001318.html">[Linux-uvc-devel] -Werror fixes for uvcvideo
+</A></li>
+	<LI>Next message: <A HREF="001322.html">[Linux-uvc-devel] -Werror fixes for uvcvideo
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1319">[ date ]</a>
+              <a href="thread.html#1319">[ thread ]</a>
+              <a href="subject.html#1319">[ subject ]</a>
+              <a href="author.html#1319">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

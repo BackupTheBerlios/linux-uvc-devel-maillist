@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH 2/3] Recalculate dwMaxVideoFrameBufferSize	for MJPEG
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%202/3%5D%20Recalculate%20dwMaxVideoFrameBufferSize%0A%09for%20MJPEG&In-Reply-To=%3C1299409035-28090-2-git-send-email-bug-track%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006332.html">
+   <LINK REL="Next"  HREF="006340.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH 2/3] Recalculate dwMaxVideoFrameBufferSize	for MJPEG</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%202/3%5D%20Recalculate%20dwMaxVideoFrameBufferSize%0A%09for%20MJPEG&In-Reply-To=%3C1299409035-28090-2-git-send-email-bug-track%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] [PATCH 2/3] Recalculate dwMaxVideoFrameBufferSize	for MJPEG">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Sun Mar  6 11:57:14 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006332.html">[Linux-uvc-devel] [PATCH 1/3] Initial patch to use dynamic_debug	system
+</A></li>
+        <LI>Next message: <A HREF="006340.html">[Linux-uvc-devel] [PATCH 2/3] Recalculate	dwMaxVideoFrameBufferSize for MJPEG
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6333">[ date ]</a>
+              <a href="thread.html#6333">[ thread ]</a>
+              <a href="subject.html#6333">[ subject ]</a>
+              <a href="author.html#6333">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Some webcams report wired dwMaxVideoFrameBufferSize size,
+some times too big, some times too smole.
+
+I tested two webcams:
+046d:0809 Logitech, Inc. Webcam Pro 9000
+046d:0991 Logitech, Inc. QuickCam Pro for Notebooks
+with fallowing results.
+
+The dwMaxVideoFrameBufferSize is not always the same. Reported
+range is about betwene 4 and 10 bpp calculated with this formula:
+bpp = (dwMaxVideoFrameBufferSize * 8) / (frame-&gt;wWidth * frame-&gt;wHeight)
+
+I tested also a real comression on this cameras. Comression
+with noremal conditions (video chat) was about 1 bpp.
+Worst compression was by captureing moving text on monitore
+(lots of light, high fps) is about 3bpp.
+So we can calculate predictable buffer size in driver, insted of
+getting some random numers from the cam.
+
+Setting bpp to 4 for mjpeg should be safe.
+
+Signed-off-by: Alexey Fisher &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt;
+---
+ drivers/media/video/uvc/uvc_driver.c |    5 +++--
+ drivers/media/video/uvc/uvc_video.c  |    3 ++-
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/media/video/uvc/uvc_driver.c b/drivers/media/video/uvc/uvc_driver.c
+index e41285a..5a74de0 100644
+--- a/drivers/media/video/uvc/uvc_driver.c
++++ b/drivers/media/video/uvc/uvc_driver.c
+@@ -347,7 +347,7 @@ static int uvc_parse_format(struct uvc_device *dev,
+ 		strlcpy(format-&gt;name, &quot;MJPEG&quot;, sizeof format-&gt;name);
+ 		format-&gt;fcc = V4L2_PIX_FMT_MJPEG;
+ 		format-&gt;flags = UVC_FMT_FLAG_COMPRESSED;
+-		format-&gt;bpp = 0;
++		format-&gt;bpp = 4;
+ 		ftype = UVC_VS_FRAME_MJPEG;
+ 		break;
+ 
+@@ -460,7 +460,8 @@ static int uvc_parse_format(struct uvc_device *dev,
+ 		 * uncompressed formats this can be fixed by computing the
+ 		 * value from the frame size.
+ 		 */
+-		if (!(format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED))
++		if (!(format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) ||
++				(format-&gt;fcc == V4L2_PIX_FMT_MJPEG))
+ 			frame-&gt;dwMaxVideoFrameBufferSize = format-&gt;bpp
+ 				* frame-&gt;wWidth * frame-&gt;wHeight / 8;
+ 
+diff --git a/drivers/media/video/uvc/uvc_video.c b/drivers/media/video/uvc/uvc_video.c
+index 9a95a62..64bd1d6 100644
+--- a/drivers/media/video/uvc/uvc_video.c
++++ b/drivers/media/video/uvc/uvc_video.c
+@@ -114,7 +114,8 @@ static void uvc_fixup_video_ctrl(struct uvc_streaming *stream,
+ 
+ 	if (!(format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) ||
+ 	     (ctrl-&gt;dwMaxVideoFrameSize == 0 &amp;&amp;
+-	      stream-&gt;dev-&gt;uvc_version &lt; 0x0110)) {
++	      stream-&gt;dev-&gt;uvc_version &lt; 0x0110) ||
++	     (format-&gt;fcc == V4L2_PIX_FMT_MJPEG)) {
+ 		pr_debug(&quot;%s: rewrite dwMaxVideoFrameSize=%u to %u.&quot;,
+ 			 __func__, ctrl-&gt;dwMaxVideoFrameSize,
+ 			frame-&gt;dwMaxVideoFrameBufferSize);
+-- 
+1.7.1
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006332.html">[Linux-uvc-devel] [PATCH 1/3] Initial patch to use dynamic_debug	system
+</A></li>
+	<LI>Next message: <A HREF="006340.html">[Linux-uvc-devel] [PATCH 2/3] Recalculate	dwMaxVideoFrameBufferSize for MJPEG
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6333">[ date ]</a>
+              <a href="thread.html#6333">[ thread ]</a>
+              <a href="subject.html#6333">[ subject ]</a>
+              <a href="author.html#6333">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

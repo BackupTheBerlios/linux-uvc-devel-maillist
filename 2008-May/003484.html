@@ -1,0 +1,341 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] take a picture from command line
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20take%20a%20picture%20from%20command%20line&In-Reply-To=%3C120449920805061558g232c66een5ae92faa0e35e940%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003482.html">
+   <LINK REL="Next"  HREF="003486.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] take a picture from command line</H1>
+    <B>matt baker</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20take%20a%20picture%20from%20command%20line&In-Reply-To=%3C120449920805061558g232c66een5ae92faa0e35e940%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] take a picture from command line">mattlbaker at gmail.com
+       </A><BR>
+    <I>Wed May  7 00:58:53 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003482.html">[Linux-uvc-devel] take a picture from command line
+</A></li>
+        <LI>Next message: <A HREF="003486.html">[Linux-uvc-devel] take a picture from command line
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3484">[ date ]</a>
+              <a href="thread.html#3484">[ thread ]</a>
+              <a href="subject.html#3484">[ subject ]</a>
+              <a href="author.html#3484">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thank you.  It seems like exactly what I want.  Of course I'm having
+an issue though.  I'm using uvccapture-0.4.  It works the first few
+times but then it stops working.  Here is a small script I made for
+testing.
+
+
+
+#!/bin/bash
+
+for ((i=100;i&lt;=200;i+=1)); do
+
+uvccapture -x640 -y480 -o$i.jpg
+
+sleep 10
+
+done
+
+
+
+It pauses for 10 seconds between each uvccapture call.  It will take
+between 3 to 14 pictures before it stops taking pictures.  Here is
+what the console looks like.
+
+
+
+--- console ---
+
+
+
+[<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at computer</A> test]# ./run.sh
+
+ioctl querycontrol error 5
+
+ioctl querycontrol error 5
+
+Unable to set format: 5.
+
+ Init v4L2 failed !! exit fatal
+
+Unable to set format: 5.
+
+ Init v4L2 failed !! exit fatal
+
+Unable to set format: 5.
+
+ Init v4L2 failed !! exit fatal
+
+Unable to set format: 5.
+
+ Init v4L2 failed !! exit fatal
+
+Unable to set format: 5.
+
+ Init v4L2 failed !! exit fatal
+
+
+
+&lt;&lt; I ctrl-c exited my script &gt;&gt;
+
+
+
+---- end console ---
+
+
+
+
+
+here is what a couple runs look like in /var/log/messages
+
+
+
+
+
+May  6 14:05:52 localhost kernel: usb 1-5: new high speed USB device
+using ehci_hcd and address 9
+
+May  6 14:05:52 localhost kernel: usb 1-5: configuration #1 chosen from 1 choice
+
+May  6 14:05:52 localhost kernel: Linux video capture interface: v2.00
+
+May  6 14:05:52 localhost kernel: usbcore: registered new interface
+driver snd-usb-audio
+
+May  6 14:05:52 localhost kernel: uvcvideo: Found UVC 1.00 device
+&lt;unnamed&gt; (046d:08ce)
+
+May  6 14:05:52 localhost kernel: usbcore: registered new interface
+driver uvcvideo
+
+May  6 14:05:52 localhost kernel: USB Video Class driver (v0.1.0)
+
+May  6 14:05:53 localhost pulseaudio[25185]: alsa-util.c: Device hw:1
+doesn't support 44100 Hz, changed to 16000 Hz.
+
+May  6 14:05:53 localhost pulseaudio[25185]: alsa-util.c: Device hw:1
+doesn't support 2 channels, changed to 1.
+
+...
+
+May  6 14:20:10 localhost kernel: uvccapture[28658]: segfault at
+00000000 eip 00a6361d esp bf9ec4ac error 4
+
+May  6 14:20:20 localhost kernel: uvcvideo: Failed to query (131) UVC
+control 3 (unit 2) : -32 (exp. 2).
+
+May  6 14:20:21 localhost kernel: uvccapture[28666]: segfault at
+00000000 eip 00a6361d esp bfbb8e7c error 4
+
+May  6 14:20:31 localhost kernel: uvccapture[28673]: segfault at
+00000000 eip 00a6361d esp bfac658c error 4
+
+May  6 14:20:41 localhost kernel: uvcvideo: Failed to query (130) UVC
+control 4 (unit 2) : -32 (exp. 2).
+
+May  6 14:20:41 localhost kernel: uvccapture[28686]: segfault at
+00000000 eip 00a6361d esp bfb68e2c error 4
+
+May  6 14:20:52 localhost kernel: uvcvideo: Failed to query (1) UVC
+control 1 (unit 0) : -32 (exp. 26).
+
+May  6 14:21:03 localhost kernel: uvcvideo: Failed to query (1) UVC
+control 1 (unit 0) : -110 (exp. 26).
+
+
+
+I unplugged it and tried on a different usb port, routed away from all
+power cords.
+
+
+
+May  6 15:31:42 localhost kernel: uvcvideo: Found UVC 1.00 device
+&lt;unnamed&gt; (046d:08ce)
+
+May  6 15:31:42 localhost pulseaudio[25185]: alsa-util.c: Device hw:1
+doesn't support 44100 Hz, changed to 16000 Hz.
+
+May  6 15:31:42 localhost pulseaudio[25185]: alsa-util.c: Device hw:1
+doesn't support 2 channels, changed to 1.
+
+May  6 15:32:10 localhost kernel: uvccapture[29484]: segfault at
+00000000 eip 00a6361d esp bfdcc08c error 4
+
+May  6 15:32:20 localhost kernel: uvccapture[29491]: segfault at
+00000000 eip 00a6361d esp bf88834c error 4
+
+May  6 15:32:31 localhost kernel: uvccapture[29498]: segfault at
+00000000 eip 00a6361d esp bfc63f2c error 4
+
+May  6 15:32:41 localhost kernel: uvccapture[29507]: segfault at
+00000000 eip 00a6361d esp bfa9ed6c error 4
+
+May  6 15:32:52 localhost kernel: uvccapture[29518]: segfault at
+00000000 eip 00a6361d esp bfddb09c error 4
+
+May  6 15:33:02 localhost kernel: uvccapture[29525]: segfault at
+00000000 eip 00a6361d esp bf809acc error 4
+
+May  6 15:33:13 localhost kernel: uvccapture[29535]: segfault at
+00000000 eip 00a6361d esp bf8e0bac error 4
+
+May  6 15:33:23 localhost kernel: uvccapture[29542]: segfault at
+00000000 eip 00a6361d esp bf84fb1c error 4
+
+May  6 15:33:34 localhost kernel: uvccapture[29551]: segfault at
+00000000 eip 00a6361d esp bfbbde7c error 4
+
+May  6 15:33:44 localhost kernel: uvccapture[29558]: segfault at
+00000000 eip 00a6361d esp bff4c20c error 4
+
+May  6 15:33:55 localhost kernel: uvccapture[29570]: segfault at
+00000000 eip 00a6361d esp bfdf18bc error 4
+
+May  6 15:34:05 localhost kernel: uvcvideo: Failed to query (1) UVC
+control 2 (unit 2) : -32 (exp. 2).
+
+May  6 15:34:05 localhost kernel: uvcvideo: Failed to query (135) UVC
+control 3 (unit 2) : -110 (exp. 2).
+
+May  6 15:34:05 localhost kernel: uvcvideo: Failed to query (135) UVC
+control 7 (unit 2) : -32 (exp. 2).
+
+May  6 15:34:05 localhost kernel: uvccapture[29583]: segfault at
+00000000 eip 00a6361d esp bfb81e4c error 4
+
+May  6 15:34:16 localhost kernel: uvccapture[29596]: segfault at
+00000000 eip 00a6361d esp bfeea1ac error 4
+
+May  6 15:34:26 localhost kernel: uvccapture[29604]: segfault at
+00000000 eip 00a6361d esp bfd6702c error 4
+
+May  6 15:34:37 localhost kernel: uvccapture[29611]: segfault at
+00000000 eip 00a6361d esp bfab0d7c error 4
+
+May  6 15:34:47 localhost kernel: uvcvideo: Failed to query (1) UVC
+control 1 (unit 0) : -32 (exp. 26).
+
+May  6 15:34:57 localhost kernel: uvcvideo: Failed to query (1) UVC
+control 1 (unit 0) : -32 (exp. 26).
+
+May  6 15:35:08 localhost kernel: uvcvideo: Failed to query (1) UVC
+control 1 (unit 0) : -110 (exp. 26).
+
+May  6 15:36:14 localhost kernel:last message repeated 6 times
+
+May  6 15:37:20 localhost kernel:last message repeated 6 times
+
+
+
+
+
+I tried the version of the uvc driver that comes with the fedora 8
+kernel, and also the latest svn.
+
+I have no experience solving segfaults.  I'm probably going to try
+sticking some prints in the code and try to find where it segfaults.
+
+
+
+Thank you again.
+Matt
+
+On Tue, May 6, 2008 at 8:33 AM, iain @ lazygnome. net
+&lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">iain at lazygnome.net</A>&gt; wrote:
+&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>  On Tue, 6 May 2008 08:13:12 -0700, &quot;matt baker&quot; &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">mattlbaker at gmail.com</A>&gt; wrote:
+</I>&gt;<i>
+</I>&gt;<i>  &gt; With luvcview I can  start it up, and then click the take a picture
+</I>&gt;<i>
+</I>&gt;<i>  &gt; button.  It works great.  Does anyone know of a way to take a picture
+</I>&gt;<i>
+</I>&gt;<i>  &gt; with the command line?  I'd like to make it part of a script.
+</I>&gt;<i>
+</I>&gt;<i>  &gt;
+</I>&gt;<i>
+</I>&gt;<i>  &gt; Thank you all!
+</I>&gt;<i>
+</I>&gt;<i>  &gt; Matt
+</I>&gt;<i>
+</I>&gt;<i>  &gt; _______________________________________________
+</I>&gt;<i>
+</I>&gt;<i>  &gt; Linux-uvc-devel mailing list
+</I>&gt;<i>
+</I>&gt;<i>  &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i>
+</I>&gt;<i>  &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>  Hi Matt,
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>  uvccapture by Gabriel A. Devenyi has served me well since the early days of the uvc driver.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>  <A HREF="http://staticwave.ca/source/uvccapture/">http://staticwave.ca/source/uvccapture/</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>  I wrote a simple perl wrapper called caption.pl the overlay a caption to images produced by uvccapture.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>  <A HREF="http://lazygnome.net/projects/caption/0.1/">http://lazygnome.net/projects/caption/0.1/</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>  Hopefully these will be of use to you.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>  Cheers,
+</I>&gt;<i>
+</I>&gt;<i>  Iain
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003482.html">[Linux-uvc-devel] take a picture from command line
+</A></li>
+	<LI>Next message: <A HREF="003486.html">[Linux-uvc-devel] take a picture from command line
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3484">[ date ]</a>
+              <a href="thread.html#3484">[ thread ]</a>
+              <a href="subject.html#3484">[ subject ]</a>
+              <a href="author.html#3484">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

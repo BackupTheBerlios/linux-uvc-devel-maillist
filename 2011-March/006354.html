@@ -1,0 +1,529 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH 1/3] Initial patch to use	dynamic_debug system
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%201/3%5D%20Initial%20patch%20to%20use%0A%09dynamic_debug%20system&In-Reply-To=%3C1299421428.8708.17.camel%40mini%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006335.html">
+   <LINK REL="Next"  HREF="006336.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH 1/3] Initial patch to use	dynamic_debug system</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%201/3%5D%20Initial%20patch%20to%20use%0A%09dynamic_debug%20system&In-Reply-To=%3C1299421428.8708.17.camel%40mini%3E"
+       TITLE="[Linux-uvc-devel] [PATCH 1/3] Initial patch to use	dynamic_debug system">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Sun Mar  6 15:23:48 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006335.html">[Linux-uvc-devel] [PATCH 0/0] description
+</A></li>
+        <LI>Next message: <A HREF="006336.html">[Linux-uvc-devel] Logitech C910 -- trying to run more than one.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6354">[ date ]</a>
+              <a href="thread.html#6354">[ thread ]</a>
+              <a href="subject.html#6354">[ subject ]</a>
+              <a href="author.html#6354">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+i need your feedback about the dynamic_debug patch. For me it is most
+important. It make digging in to uvc code easier, especially for
+beginners like me.
+
+Am Sonntag, den 06.03.2011, 11:57 +0100 schrieb Alexey Fisher:
+&gt;<i> it make possible use of fine tunable system.
+</I>&gt;<i> We can set exact verbosity.
+</I>&gt;<i> 
+</I>&gt;<i> Use case:
+</I>&gt;<i> 
+</I>&gt;<i> this will enablle all message in module uvcvideo:
+</I>&gt;<i> echo &quot;module uvcvideo +p&quot; &gt; /sys/kernel/debug/dynamic_debug/control
+</I>&gt;<i> 
+</I>&gt;<i> this will disable message of function uvc_v4l2_do_ioctl:
+</I>&gt;<i> echo &quot;func uvc_v4l2_do_ioctl -p&quot; &gt; /sys/kernel/debug/dynamic_debug/control
+</I>&gt;<i> 
+</I>&gt;<i> Signed-off-by: Alexey Fisher &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt;
+</I>&gt;<i> ---
+</I>&gt;<i>  drivers/media/video/uvc/uvc_queue.c |    8 ++-
+</I>&gt;<i>  drivers/media/video/uvc/uvc_v4l2.c  |    2 +
+</I>&gt;<i>  drivers/media/video/uvc/uvc_video.c |  137 ++++++++++++++++++++++++++++-------
+</I>&gt;<i>  3 files changed, 120 insertions(+), 27 deletions(-)
+</I>&gt;<i> 
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvc_queue.c b/drivers/media/video/uvc/uvc_queue.c
+</I>&gt;<i> index 36f3c58..19e6cba 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_queue.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_queue.c
+</I>&gt;<i> @@ -137,6 +137,9 @@ int uvc_alloc_buffers(struct uvc_video_queue *queue, unsigned int nbuffers,
+</I>&gt;<i>  	void *mem = NULL;
+</I>&gt;<i>  	int ret;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s: nbuffers %u; buflength: %u&quot;, __func__,
+</I>&gt;<i> +		nbuffers, buflength);
+</I>&gt;<i> +
+</I>&gt;<i>  	if (nbuffers &gt; UVC_MAX_VIDEO_BUFFERS)
+</I>&gt;<i>  		nbuffers = UVC_MAX_VIDEO_BUFFERS;
+</I>&gt;<i>  
+</I>&gt;<i> @@ -347,8 +350,9 @@ int uvc_dequeue_buffer(struct uvc_video_queue *queue,
+</I>&gt;<i>  	if ((ret = uvc_queue_waiton(buf, nonblocking)) &lt; 0)
+</I>&gt;<i>  		goto done;
+</I>&gt;<i>  
+</I>&gt;<i> -	uvc_trace(UVC_TRACE_CAPTURE, &quot;Dequeuing buffer %u (%u, %u bytes).\n&quot;,
+</I>&gt;<i> -		buf-&gt;buf.index, buf-&gt;state, buf-&gt;buf.bytesused);
+</I>&gt;<i> +	pr_debug(&quot;%s: Dequeuing buffer %u (%u, %u/%u bytes).&quot;, __func__,
+</I>&gt;<i> +		buf-&gt;buf.index, buf-&gt;state,
+</I>&gt;<i> +		buf-&gt;buf.length, buf-&gt;buf.bytesused);
+</I>&gt;<i>  
+</I>&gt;<i>  	switch (buf-&gt;state) {
+</I>&gt;<i>  	case UVC_BUF_STATE_ERROR:
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvc_v4l2.c b/drivers/media/video/uvc/uvc_v4l2.c
+</I>&gt;<i> index fa89ebf..3ba2563 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_v4l2.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_v4l2.c
+</I>&gt;<i> @@ -559,6 +559,8 @@ static long uvc_v4l2_do_ioctl(struct file *file, unsigned int cmd, void *arg)
+</I>&gt;<i>  	struct uvc_streaming *stream = handle-&gt;stream;
+</I>&gt;<i>  	long ret = 0;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s: cmd: %u&quot;, __func__, cmd);
+</I>&gt;<i> +
+</I>&gt;<i>  	switch (cmd) {
+</I>&gt;<i>  	/* Query capabilities */
+</I>&gt;<i>  	case VIDIOC_QUERYCAP:
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvc_video.c b/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> index 43f955e..9a95a62 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> @@ -73,6 +73,8 @@ int uvc_query_ctrl(struct uvc_device *dev, __u8 query, __u8 unit,
+</I>&gt;<i>  {
+</I>&gt;<i>  	int ret;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	ret = __uvc_query_ctrl(dev, query, unit, intfnum, cs, data, size,
+</I>&gt;<i>  				UVC_CTRL_CONTROL_TIMEOUT);
+</I>&gt;<i>  	if (ret != size) {
+</I>&gt;<i> @@ -92,6 +94,8 @@ static void uvc_fixup_video_ctrl(struct uvc_streaming *stream,
+</I>&gt;<i>  	struct uvc_frame *frame = NULL;
+</I>&gt;<i>  	unsigned int i;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	if (ctrl-&gt;bFormatIndex &lt;= 0 ||
+</I>&gt;<i>  	    ctrl-&gt;bFormatIndex &gt; stream-&gt;nformats)
+</I>&gt;<i>  		return;
+</I>&gt;<i> @@ -110,9 +114,13 @@ static void uvc_fixup_video_ctrl(struct uvc_streaming *stream,
+</I>&gt;<i>  
+</I>&gt;<i>  	if (!(format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) ||
+</I>&gt;<i>  	     (ctrl-&gt;dwMaxVideoFrameSize == 0 &amp;&amp;
+</I>&gt;<i> -	      stream-&gt;dev-&gt;uvc_version &lt; 0x0110))
+</I>&gt;<i> +	      stream-&gt;dev-&gt;uvc_version &lt; 0x0110)) {
+</I>&gt;<i> +		pr_debug(&quot;%s: rewrite dwMaxVideoFrameSize=%u to %u.&quot;,
+</I>&gt;<i> +			 __func__, ctrl-&gt;dwMaxVideoFrameSize,
+</I>&gt;<i> +			frame-&gt;dwMaxVideoFrameBufferSize);
+</I>&gt;<i>  		ctrl-&gt;dwMaxVideoFrameSize =
+</I>&gt;<i>  			frame-&gt;dwMaxVideoFrameBufferSize;
+</I>&gt;<i> +	}
+</I>&gt;<i>  
+</I>&gt;<i>  	if (!(format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) &amp;&amp;
+</I>&gt;<i>  	    stream-&gt;dev-&gt;quirks &amp; UVC_QUIRK_FIX_BANDWIDTH &amp;&amp;
+</I>&gt;<i> @@ -146,6 +154,9 @@ static void uvc_fixup_video_ctrl(struct uvc_streaming *stream,
+</I>&gt;<i>  		 */
+</I>&gt;<i>  		bandwidth = max_t(u32, bandwidth, 1024);
+</I>&gt;<i>  
+</I>&gt;<i> +		pr_debug(&quot;%s: rewrite dwMaxPayloadTransferSize=%u to %u.&quot;,
+</I>&gt;<i> +			__func__, ctrl-&gt;dwMaxPayloadTransferSize, bandwidth);
+</I>&gt;<i> +
+</I>&gt;<i>  		ctrl-&gt;dwMaxPayloadTransferSize = bandwidth;
+</I>&gt;<i>  	}
+</I>&gt;<i>  }
+</I>&gt;<i> @@ -157,6 +168,8 @@ static int uvc_get_video_ctrl(struct uvc_streaming *stream,
+</I>&gt;<i>  	__u16 size;
+</I>&gt;<i>  	int ret;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	size = stream-&gt;dev-&gt;uvc_version &gt;= 0x0110 ? 34 : 26;
+</I>&gt;<i>  	if ((stream-&gt;dev-&gt;quirks &amp; UVC_QUIRK_PROBE_DEF) &amp;&amp;
+</I>&gt;<i>  			query == UVC_GET_DEF)
+</I>&gt;<i> @@ -233,6 +246,20 @@ static int uvc_get_video_ctrl(struct uvc_streaming *stream,
+</I>&gt;<i>  	uvc_fixup_video_ctrl(stream, ctrl);
+</I>&gt;<i>  	ret = 0;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s: bmHint: %u; bFormatIndex: %u; bFrameIndex: %u; &quot;
+</I>&gt;<i> +		 &quot;dwFrameInterval: %u; wKeyFrameRate: %u; &quot;
+</I>&gt;<i> +		 &quot;wCompQuality: %u; wCompWindowSize: %u; wDelay: %u; &quot;
+</I>&gt;<i> +		 &quot;dwMaxVideoFrameSize %u; dwMaxPayloadTransferSize: %u&quot;,
+</I>&gt;<i> +		__func__, ctrl-&gt;bmHint,
+</I>&gt;<i> +		ctrl-&gt;bFormatIndex,
+</I>&gt;<i> +		ctrl-&gt;bFrameIndex,
+</I>&gt;<i> +		ctrl-&gt;dwFrameInterval,
+</I>&gt;<i> +		ctrl-&gt;wKeyFrameRate,
+</I>&gt;<i> +		ctrl-&gt;wCompQuality,
+</I>&gt;<i> +		ctrl-&gt;wCompWindowSize,
+</I>&gt;<i> +		ctrl-&gt;wDelay,
+</I>&gt;<i> +		ctrl-&gt;dwMaxVideoFrameSize,
+</I>&gt;<i> +		ctrl-&gt;dwMaxPayloadTransferSize);
+</I>&gt;<i>  out:
+</I>&gt;<i>  	kfree(data);
+</I>&gt;<i>  	return ret;
+</I>&gt;<i> @@ -245,6 +272,21 @@ static int uvc_set_video_ctrl(struct uvc_streaming *stream,
+</I>&gt;<i>  	__u16 size;
+</I>&gt;<i>  	int ret;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s: bmHint: %u; bFormatIndex: %u; bFrameIndex: %u; &quot;
+</I>&gt;<i> +		 &quot;dwFrameInterval: %u; wKeyFrameRate: %u; &quot;
+</I>&gt;<i> +		 &quot;wCompQuality: %u; wCompWindowSize: %u; wDelay: %u; &quot;
+</I>&gt;<i> +		 &quot;dwMaxVideoFrameSize %u; dwMaxPayloadTransferSize: %u&quot;,
+</I>&gt;<i> +		__func__, ctrl-&gt;bmHint,
+</I>&gt;<i> +		ctrl-&gt;bFormatIndex,
+</I>&gt;<i> +		ctrl-&gt;bFrameIndex,
+</I>&gt;<i> +		ctrl-&gt;dwFrameInterval,
+</I>&gt;<i> +		ctrl-&gt;wKeyFrameRate,
+</I>&gt;<i> +		ctrl-&gt;wCompQuality,
+</I>&gt;<i> +		ctrl-&gt;wCompWindowSize,
+</I>&gt;<i> +		ctrl-&gt;wDelay,
+</I>&gt;<i> +		ctrl-&gt;dwMaxVideoFrameSize,
+</I>&gt;<i> +		ctrl-&gt;dwMaxPayloadTransferSize);
+</I>&gt;<i> +
+</I>&gt;<i>  	size = stream-&gt;dev-&gt;uvc_version &gt;= 0x0110 ? 34 : 26;
+</I>&gt;<i>  	data = kzalloc(size, GFP_KERNEL);
+</I>&gt;<i>  	if (data == NULL)
+</I>&gt;<i> @@ -292,6 +334,8 @@ int uvc_probe_video(struct uvc_streaming *stream,
+</I>&gt;<i>  	unsigned int i;
+</I>&gt;<i>  	int ret;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	/* Perform probing. The device should adjust the requested values
+</I>&gt;<i>  	 * according to its capabilities. However, some devices, namely the
+</I>&gt;<i>  	 * first generation UVC Logitech webcams, don't implement the Video
+</I>&gt;<i> @@ -349,6 +393,7 @@ done:
+</I>&gt;<i>  int uvc_commit_video(struct uvc_streaming *stream,
+</I>&gt;<i>  	struct uvc_streaming_control *probe)
+</I>&gt;<i>  {
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i>  	return uvc_set_video_ctrl(stream, probe, 0);
+</I>&gt;<i>  }
+</I>&gt;<i>  
+</I>&gt;<i> @@ -406,6 +451,8 @@ static int uvc_video_decode_start(struct uvc_streaming *stream,
+</I>&gt;<i>  {
+</I>&gt;<i>  	__u8 fid;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	/* Sanity checks:
+</I>&gt;<i>  	 * - packet must be at least 2 bytes long
+</I>&gt;<i>  	 * - bHeaderLength value must be at least 2 bytes (see above)
+</I>&gt;<i> @@ -416,8 +463,8 @@ static int uvc_video_decode_start(struct uvc_streaming *stream,
+</I>&gt;<i>  
+</I>&gt;<i>  	/* Skip payloads marked with the error bit (&quot;error frames&quot;). */
+</I>&gt;<i>  	if (data[1] &amp; UVC_STREAM_ERR) {
+</I>&gt;<i> -		uvc_trace(UVC_TRACE_FRAME, &quot;Dropping payload (error bit &quot;
+</I>&gt;<i> -			  &quot;set).\n&quot;);
+</I>&gt;<i> +		pr_debug(&quot;%s: Dropping payload (error bit &quot;
+</I>&gt;<i> +			  &quot;set).&quot;, __func__);
+</I>&gt;<i>  		return -ENODATA;
+</I>&gt;<i>  	}
+</I>&gt;<i>  
+</I>&gt;<i> @@ -449,8 +496,8 @@ static int uvc_video_decode_start(struct uvc_streaming *stream,
+</I>&gt;<i>  		struct timespec ts;
+</I>&gt;<i>  
+</I>&gt;<i>  		if (fid == stream-&gt;last_fid) {
+</I>&gt;<i> -			uvc_trace(UVC_TRACE_FRAME, &quot;Dropping payload (out of &quot;
+</I>&gt;<i> -				&quot;sync).\n&quot;);
+</I>&gt;<i> +			pr_debug(&quot;%s: Dropping payload (out of &quot;
+</I>&gt;<i> +				&quot;sync).&quot;, __func__);
+</I>&gt;<i>  			if ((stream-&gt;dev-&gt;quirks &amp; UVC_QUIRK_STREAM_NO_FID) &amp;&amp;
+</I>&gt;<i>  			    (data[1] &amp; UVC_STREAM_EOF))
+</I>&gt;<i>  				stream-&gt;last_fid ^= UVC_STREAM_FID;
+</I>&gt;<i> @@ -486,8 +533,8 @@ static int uvc_video_decode_start(struct uvc_streaming *stream,
+</I>&gt;<i>  	 * previous payload had the EOF bit set.
+</I>&gt;<i>  	 */
+</I>&gt;<i>  	if (fid != stream-&gt;last_fid &amp;&amp; buf-&gt;buf.bytesused != 0) {
+</I>&gt;<i> -		uvc_trace(UVC_TRACE_FRAME, &quot;Frame complete (FID bit &quot;
+</I>&gt;<i> -				&quot;toggled).\n&quot;);
+</I>&gt;<i> +		pr_debug(&quot;%s: Frame complete (FID bit &quot;
+</I>&gt;<i> +				&quot;toggled).&quot;, __func__);
+</I>&gt;<i>  		buf-&gt;state = UVC_BUF_STATE_READY;
+</I>&gt;<i>  		return -EAGAIN;
+</I>&gt;<i>  	}
+</I>&gt;<i> @@ -504,6 +551,8 @@ static void uvc_video_decode_data(struct uvc_streaming *stream,
+</I>&gt;<i>  	unsigned int maxlen, nbytes;
+</I>&gt;<i>  	void *mem;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	if (len &lt;= 0)
+</I>&gt;<i>  		return;
+</I>&gt;<i>  
+</I>&gt;<i> @@ -516,7 +565,7 @@ static void uvc_video_decode_data(struct uvc_streaming *stream,
+</I>&gt;<i>  
+</I>&gt;<i>  	/* Complete the current frame if the buffer size was exceeded. */
+</I>&gt;<i>  	if (len &gt; maxlen) {
+</I>&gt;<i> -		uvc_trace(UVC_TRACE_FRAME, &quot;Frame complete (overflow).\n&quot;);
+</I>&gt;<i> +		pr_debug(&quot;%s: Frame complete (overflow).&quot;, __func__);
+</I>&gt;<i>  		buf-&gt;state = UVC_BUF_STATE_READY;
+</I>&gt;<i>  	}
+</I>&gt;<i>  }
+</I>&gt;<i> @@ -524,11 +573,14 @@ static void uvc_video_decode_data(struct uvc_streaming *stream,
+</I>&gt;<i>  static void uvc_video_decode_end(struct uvc_streaming *stream,
+</I>&gt;<i>  		struct uvc_buffer *buf, const __u8 *data, int len)
+</I>&gt;<i>  {
+</I>&gt;<i> +
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	/* Mark the buffer as done if the EOF marker is set. */
+</I>&gt;<i>  	if (data[1] &amp; UVC_STREAM_EOF &amp;&amp; buf-&gt;buf.bytesused != 0) {
+</I>&gt;<i> -		uvc_trace(UVC_TRACE_FRAME, &quot;Frame complete (EOF found).\n&quot;);
+</I>&gt;<i> +		pr_debug(&quot;%s: Frame complete (EOF found).&quot;, __func__);
+</I>&gt;<i>  		if (data[0] == len)
+</I>&gt;<i> -			uvc_trace(UVC_TRACE_FRAME, &quot;EOF in empty payload.\n&quot;);
+</I>&gt;<i> +			pr_debug(&quot;%s: EOF in empty payload.&quot;, __func__);
+</I>&gt;<i>  		buf-&gt;state = UVC_BUF_STATE_READY;
+</I>&gt;<i>  		if (stream-&gt;dev-&gt;quirks &amp; UVC_QUIRK_STREAM_NO_FID)
+</I>&gt;<i>  			stream-&gt;last_fid ^= UVC_STREAM_FID;
+</I>&gt;<i> @@ -549,6 +601,8 @@ static void uvc_video_decode_end(struct uvc_streaming *stream,
+</I>&gt;<i>  static int uvc_video_encode_header(struct uvc_streaming *stream,
+</I>&gt;<i>  		struct uvc_buffer *buf, __u8 *data, int len)
+</I>&gt;<i>  {
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	data[0] = 2;	/* Header length */
+</I>&gt;<i>  	data[1] = UVC_STREAM_EOH | UVC_STREAM_EOF
+</I>&gt;<i>  		| (stream-&gt;last_fid &amp; UVC_STREAM_FID);
+</I>&gt;<i> @@ -562,6 +616,8 @@ static int uvc_video_encode_data(struct uvc_streaming *stream,
+</I>&gt;<i>  	unsigned int nbytes;
+</I>&gt;<i>  	void *mem;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	/* Copy video data to the URB buffer. */
+</I>&gt;<i>  	mem = queue-&gt;mem + buf-&gt;buf.m.offset + queue-&gt;buf_used;
+</I>&gt;<i>  	nbytes = min((unsigned int)len, buf-&gt;buf.bytesused - queue-&gt;buf_used);
+</I>&gt;<i> @@ -587,10 +643,13 @@ static void uvc_video_decode_isoc(struct urb *urb, struct uvc_streaming *stream,
+</I>&gt;<i>  	u8 *mem;
+</I>&gt;<i>  	int ret, i;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	for (i = 0; i &lt; urb-&gt;number_of_packets; ++i) {
+</I>&gt;<i>  		if (urb-&gt;iso_frame_desc[i].status &lt; 0) {
+</I>&gt;<i> -			uvc_trace(UVC_TRACE_FRAME, &quot;USB isochronous frame &quot;
+</I>&gt;<i> -				&quot;lost (%d).\n&quot;, urb-&gt;iso_frame_desc[i].status);
+</I>&gt;<i> +			pr_debug(&quot;%s: USB isochronous frame &quot;
+</I>&gt;<i> +				&quot;lost (%d).&quot;, __func__,
+</I>&gt;<i> +				urb-&gt;iso_frame_desc[i].status);
+</I>&gt;<i>  			/* Mark the buffer as faulty. */
+</I>&gt;<i>  			if (buf != NULL)
+</I>&gt;<i>  				buf-&gt;error = 1;
+</I>&gt;<i> @@ -635,6 +694,8 @@ static void uvc_video_decode_bulk(struct urb *urb, struct uvc_streaming *stream,
+</I>&gt;<i>  	u8 *mem;
+</I>&gt;<i>  	int len, ret;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	if (urb-&gt;actual_length == 0)
+</I>&gt;<i>  		return;
+</I>&gt;<i>  
+</I>&gt;<i> @@ -699,6 +760,8 @@ static void uvc_video_encode_bulk(struct urb *urb, struct uvc_streaming *stream,
+</I>&gt;<i>  	u8 *mem = urb-&gt;transfer_buffer;
+</I>&gt;<i>  	int len = stream-&gt;urb_size, ret;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	if (buf == NULL) {
+</I>&gt;<i>  		urb-&gt;transfer_buffer_length = 0;
+</I>&gt;<i>  		return;
+</I>&gt;<i> @@ -744,6 +807,8 @@ static void uvc_video_complete(struct urb *urb)
+</I>&gt;<i>  	unsigned long flags;
+</I>&gt;<i>  	int ret;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	switch (urb-&gt;status) {
+</I>&gt;<i>  	case 0:
+</I>&gt;<i>  		break;
+</I>&gt;<i> @@ -783,6 +848,8 @@ static void uvc_free_urb_buffers(struct uvc_streaming *stream)
+</I>&gt;<i>  {
+</I>&gt;<i>  	unsigned int i;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	for (i = 0; i &lt; UVC_URBS; ++i) {
+</I>&gt;<i>  		if (stream-&gt;urb_buffer[i]) {
+</I>&gt;<i>  			usb_free_coherent(stream-&gt;dev-&gt;udev, stream-&gt;urb_size,
+</I>&gt;<i> @@ -811,6 +878,8 @@ static int uvc_alloc_urb_buffers(struct uvc_streaming *stream,
+</I>&gt;<i>  	unsigned int npackets;
+</I>&gt;<i>  	unsigned int i;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	/* Buffers are already allocated, bail out. */
+</I>&gt;<i>  	if (stream-&gt;urb_size)
+</I>&gt;<i>  		return stream-&gt;urb_size / psize;
+</I>&gt;<i> @@ -836,15 +905,15 @@ static int uvc_alloc_urb_buffers(struct uvc_streaming *stream,
+</I>&gt;<i>  		}
+</I>&gt;<i>  
+</I>&gt;<i>  		if (i == UVC_URBS) {
+</I>&gt;<i> -			uvc_trace(UVC_TRACE_VIDEO, &quot;Allocated %u URB buffers &quot;
+</I>&gt;<i> -				&quot;of %ux%u bytes each.\n&quot;, UVC_URBS, npackets,
+</I>&gt;<i> -				psize);
+</I>&gt;<i> +			pr_debug(&quot;%s: Allocated %u URB buffers &quot;
+</I>&gt;<i> +				&quot;of %ux%u bytes each.&quot;, __func__,
+</I>&gt;<i> +				UVC_URBS, npackets, psize);
+</I>&gt;<i>  			return npackets;
+</I>&gt;<i>  		}
+</I>&gt;<i>  	}
+</I>&gt;<i>  
+</I>&gt;<i> -	uvc_trace(UVC_TRACE_VIDEO, &quot;Failed to allocate URB buffers (%u bytes &quot;
+</I>&gt;<i> -		&quot;per packet).\n&quot;, psize);
+</I>&gt;<i> +	pr_debug(&quot;%s: Failed to allocate URB buffers (%u bytes &quot;
+</I>&gt;<i> +		&quot;per packet).&quot;, __func__, psize);
+</I>&gt;<i>  	return 0;
+</I>&gt;<i>  }
+</I>&gt;<i>  
+</I>&gt;<i> @@ -856,6 +925,8 @@ static void uvc_uninit_video(struct uvc_streaming *stream, int free_buffers)
+</I>&gt;<i>  	struct urb *urb;
+</I>&gt;<i>  	unsigned int i;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	for (i = 0; i &lt; UVC_URBS; ++i) {
+</I>&gt;<i>  		urb = stream-&gt;urb[i];
+</I>&gt;<i>  		if (urb == NULL)
+</I>&gt;<i> @@ -882,6 +953,8 @@ static int uvc_init_video_isoc(struct uvc_streaming *stream,
+</I>&gt;<i>  	u16 psize;
+</I>&gt;<i>  	u32 size;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	psize = le16_to_cpu(ep-&gt;desc.wMaxPacketSize);
+</I>&gt;<i>  	psize = (psize &amp; 0x07ff) * (1 + ((psize &gt;&gt; 11) &amp; 3));
+</I>&gt;<i>  	size = stream-&gt;ctrl.dwMaxVideoFrameSize;
+</I>&gt;<i> @@ -934,6 +1007,8 @@ static int uvc_init_video_bulk(struct uvc_streaming *stream,
+</I>&gt;<i>  	u16 psize;
+</I>&gt;<i>  	u32 size;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	psize = le16_to_cpu(ep-&gt;desc.wMaxPacketSize) &amp; 0x07ff;
+</I>&gt;<i>  	size = stream-&gt;ctrl.dwMaxPayloadTransferSize;
+</I>&gt;<i>  	stream-&gt;bulk.max_payload_size = size;
+</I>&gt;<i> @@ -983,6 +1058,8 @@ static int uvc_init_video(struct uvc_streaming *stream, gfp_t gfp_flags)
+</I>&gt;<i>  	unsigned int i;
+</I>&gt;<i>  	int ret;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	stream-&gt;sequence = -1;
+</I>&gt;<i>  	stream-&gt;last_fid = -1;
+</I>&gt;<i>  	stream-&gt;bulk.header_size = 0;
+</I>&gt;<i> @@ -1000,12 +1077,12 @@ static int uvc_init_video(struct uvc_streaming *stream, gfp_t gfp_flags)
+</I>&gt;<i>  		bandwidth = stream-&gt;ctrl.dwMaxPayloadTransferSize;
+</I>&gt;<i>  
+</I>&gt;<i>  		if (bandwidth == 0) {
+</I>&gt;<i> -			uvc_trace(UVC_TRACE_VIDEO, &quot;Device requested null &quot;
+</I>&gt;<i> -				&quot;bandwidth, defaulting to lowest.\n&quot;);
+</I>&gt;<i> +			pr_debug(&quot;%s: Device requested null &quot;
+</I>&gt;<i> +				&quot;bandwidth, defaulting to lowest.&quot;, __func__);
+</I>&gt;<i>  			bandwidth = 1;
+</I>&gt;<i>  		} else {
+</I>&gt;<i> -			uvc_trace(UVC_TRACE_VIDEO, &quot;Device requested %u &quot;
+</I>&gt;<i> -				&quot;B/frame bandwidth.\n&quot;, bandwidth);
+</I>&gt;<i> +			pr_debug(&quot;%s: Device requested %u &quot;
+</I>&gt;<i> +				&quot;B/frame bandwidth.&quot;, __func__, bandwidth);
+</I>&gt;<i>  		}
+</I>&gt;<i>  
+</I>&gt;<i>  		for (i = 0; i &lt; intf-&gt;num_altsetting; ++i) {
+</I>&gt;<i> @@ -1029,13 +1106,14 @@ static int uvc_init_video(struct uvc_streaming *stream, gfp_t gfp_flags)
+</I>&gt;<i>  		}
+</I>&gt;<i>  
+</I>&gt;<i>  		if (best_ep == NULL) {
+</I>&gt;<i> -			uvc_trace(UVC_TRACE_VIDEO, &quot;No fast enough alt setting &quot;
+</I>&gt;<i> -				&quot;for requested bandwidth.\n&quot;);
+</I>&gt;<i> +			pr_debug(&quot;%s: No fast enough alt setting &quot;
+</I>&gt;<i> +				&quot;for requested bandwidth.&quot;, __func__);
+</I>&gt;<i>  			return -EIO;
+</I>&gt;<i>  		}
+</I>&gt;<i>  
+</I>&gt;<i> -		uvc_trace(UVC_TRACE_VIDEO, &quot;Selecting alternate setting %u &quot;
+</I>&gt;<i> -			&quot;(%u B/frame bandwidth).\n&quot;, altsetting, best_psize);
+</I>&gt;<i> +		pr_debug(&quot;%s: Selecting alternate setting %u &quot;
+</I>&gt;<i> +			&quot;(%u B/frame bandwidth).&quot;, __func__,
+</I>&gt;<i> +			altsetting, best_psize);
+</I>&gt;<i>  
+</I>&gt;<i>  		ret = usb_set_interface(stream-&gt;dev-&gt;udev, intfnum, altsetting);
+</I>&gt;<i>  		if (ret &lt; 0)
+</I>&gt;<i> @@ -1082,6 +1160,9 @@ static int uvc_init_video(struct uvc_streaming *stream, gfp_t gfp_flags)
+</I>&gt;<i>   */
+</I>&gt;<i>  int uvc_video_suspend(struct uvc_streaming *stream)
+</I>&gt;<i>  {
+</I>&gt;<i> +
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	if (!uvc_queue_streaming(&amp;stream-&gt;queue))
+</I>&gt;<i>  		return 0;
+</I>&gt;<i>  
+</I>&gt;<i> @@ -1103,6 +1184,8 @@ int uvc_video_resume(struct uvc_streaming *stream)
+</I>&gt;<i>  {
+</I>&gt;<i>  	int ret;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	stream-&gt;frozen = 0;
+</I>&gt;<i>  
+</I>&gt;<i>  	ret = uvc_commit_video(stream, &amp;stream-&gt;ctrl);
+</I>&gt;<i> @@ -1143,6 +1226,8 @@ int uvc_video_init(struct uvc_streaming *stream)
+</I>&gt;<i>  	unsigned int i;
+</I>&gt;<i>  	int ret;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	if (stream-&gt;nformats == 0) {
+</I>&gt;<i>  		uvc_printk(KERN_INFO, &quot;No supported video formats found.\n&quot;);
+</I>&gt;<i>  		return -EINVAL;
+</I>&gt;<i> @@ -1237,6 +1322,8 @@ int uvc_video_enable(struct uvc_streaming *stream, int enable)
+</I>&gt;<i>  {
+</I>&gt;<i>  	int ret;
+</I>&gt;<i>  
+</I>&gt;<i> +	pr_debug(&quot;%s&quot;, __func__);
+</I>&gt;<i> +
+</I>&gt;<i>  	if (!enable) {
+</I>&gt;<i>  		uvc_uninit_video(stream, 1);
+</I>&gt;<i>  		usb_set_interface(stream-&gt;dev-&gt;udev, stream-&gt;intfnum, 0);
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006335.html">[Linux-uvc-devel] [PATCH 0/0] description
+</A></li>
+	<LI>Next message: <A HREF="006336.html">[Linux-uvc-devel] Logitech C910 -- trying to run more than one.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6354">[ date ]</a>
+              <a href="thread.html#6354">[ thread ]</a>
+              <a href="subject.html#6354">[ subject ]</a>
+              <a href="author.html#6354">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

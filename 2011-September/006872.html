@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] 145f:015b no longer working
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20145f%3A015b%20no%20longer%20working&In-Reply-To=%3C4E62364B.6080906%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006871.html">
+   <LINK REL="Next"  HREF="006873.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] 145f:015b no longer working</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20145f%3A015b%20no%20longer%20working&In-Reply-To=%3C4E62364B.6080906%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] 145f:015b no longer working">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Sat Sep  3 16:14:35 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006871.html">[Linux-uvc-devel] 145f:015b no longer working
+</A></li>
+        <LI>Next message: <A HREF="006873.html">[Linux-uvc-devel] Sweex WC061 HD Webcam Sliver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6872">[ date ]</a>
+              <a href="thread.html#6872">[ thread ]</a>
+              <a href="subject.html#6872">[ subject ]</a>
+              <a href="author.html#6872">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+if it's and regression then it will be better to bisect it. Use:
+git bisect start
+
+for more informateion reed:
+man git bisect
+
+The reason for your error can be anything, inclusive usb subsystem. How 
+about disabling usbsuspend for this device?
+
+
+Am 03.09.2011 15:00, schrieb Ulrich Keller:
+&gt;<i> Hello,
+</I>&gt;<i>
+</I>&gt;<i> I have a Trust-branded webcam (device ID 145f:015b) that used to work
+</I>&gt;<i> perfectly with kernels up to 2.6.38 (I think), but now it doesn't even
+</I>&gt;<i> show up in lsusb after plugging it in. The webcam still works with a
+</I>&gt;<i> Windows XP system without problems.
+</I>&gt;<i>
+</I>&gt;<i> Here's what appears in dmesg after plugging it in:
+</I>&gt;<i>
+</I>&gt;<i> [  109.820062] usb 1-5: new high speed USB device number 2 using
+</I>&gt;<i> ehci_hcd
+</I>&gt;<i> [  110.246197] Linux media interface: v0.10
+</I>&gt;<i> [  110.337144] Linux video capture interface: v2.00
+</I>&gt;<i> [  111.753921] uvcvideo: Found UVC 1.00 device Trust 2MP Auto Focus
+</I>&gt;<i> Webcam  (145f:015b)
+</I>&gt;<i> [  111.754046] usbcore: registered new interface driver snd-usb-audio
+</I>&gt;<i> [  112.116121] input: Trust 2MP Auto Focus Webcam
+</I>&gt;<i> as /devices/pci0000:00/0000:00:1d.7/usb1/1-5/1-5:1.0/input/input9
+</I>&gt;<i> [  112.116257] usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> [  112.116262] USB Video Class driver (v1.1.0)
+</I>&gt;<i> [  112.594799] usb 1-5: USB disconnect, device number 2
+</I>&gt;<i> [  112.598627] uvcvideo: Failed to set UVC commit control : -71 (exp.
+</I>&gt;<i> 26).
+</I>&gt;<i> [  112.598637] uvcvideo 1-5:1.1: resume error -5
+</I>&gt;<i> [  112.598924] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.599043] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.599184] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.599783] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.600995] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.601650] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.601765] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.601903] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.602387] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.602899] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.603783] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.603944] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.604245] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.604845] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.605496] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.606821] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.606987] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.607308] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.607919] 2:3:7: usb_set_interface failed
+</I>&gt;<i> [  112.608585] 2:3:7: usb_set_interface failed
+</I>&gt;<i>
+</I>&gt;<i> I'm using Arch Linux 32-bit, Kernel 3.0.4.
+</I>&gt;<i>
+</I>&gt;<i> Kind regards,
+</I>&gt;<i>
+</I>&gt;<i> Uli
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006871.html">[Linux-uvc-devel] 145f:015b no longer working
+</A></li>
+	<LI>Next message: <A HREF="006873.html">[Linux-uvc-devel] Sweex WC061 HD Webcam Sliver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6872">[ date ]</a>
+              <a href="thread.html#6872">[ thread ]</a>
+              <a href="subject.html#6872">[ subject ]</a>
+              <a href="author.html#6872">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

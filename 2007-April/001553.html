@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] The source clock
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20The%20source%20clock&In-Reply-To=%3C200704021400.53287.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001551.html">
+   <LINK REL="Next"  HREF="001555.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] The source clock</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20The%20source%20clock&In-Reply-To=%3C200704021400.53287.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] The source clock">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Apr  2 14:00:53 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001551.html">[Linux-uvc-devel] V-Gear TalkCam MX6 AF
+</A></li>
+        <LI>Next message: <A HREF="001555.html">[Linux-uvc-devel] LQC Pro 5000 picture quality settings
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1553">[ date ]</a>
+              <a href="thread.html#1553">[ thread ]</a>
+              <a href="subject.html#1553">[ subject ]</a>
+              <a href="author.html#1553">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Paul,
+
+&gt;<i> &gt; The SCR value increases with each incoming isochronous packet, so it's
+</I>&gt;<i> &gt; not constant across a video frame.
+</I>&gt;<i>
+</I>&gt;<i> You are right, but this is the only field having device SOF counter value.
+</I>&gt;<i> It is needed to establish correspondence between device internal clock
+</I>&gt;<i> (STC) and device SOF counter.
+</I>
+Actually, the idea isn't to establish a correspondence between the device 
+internal clock and the SOF counter, but to allow the host to compensate for 
+the device internal clock drift (mostly for audio/video synchronisation in a 
+single USB device).
+
+&gt;<i> It is not needed every video frame, in fact, 
+</I>&gt;<i> single value should be sufficient assuming we know details about STC and
+</I>&gt;<i> SOF counter period/overflow/reload. Value of PTS is probably not a good
+</I>&gt;<i> alternative for synchronizing two devices, because it would be really
+</I>&gt;<i> surprising to see their internal clocks synchronized. All above concerns
+</I>&gt;<i> only experimental driver, it doesn't have to be a part of final driver.
+</I>&gt;<i>
+</I>&gt;<i> I went through section 5.12 twice and I don't see anything helpful there,
+</I>&gt;<i> in fact it is discouraging. UVC stipulates that compliant devices use
+</I>&gt;<i> Isochronous Asynchronous mode, which means that device internal clock (STC)
+</I>&gt;<i> is free running and doesn't synchronize with USB bus. It is perfectly
+</I>&gt;<i> reasonable, since most users don't care about camera pixel clock being
+</I>&gt;<i> synchronized with USB clock. They care about frame rate being stable and
+</I>&gt;<i> possibly synchronized with audio. It seems that what I described in
+</I>&gt;<i> previous paragraph is the only way to synchronize the device and USB
+</I>&gt;<i> clocks.
+</I>
+Synchronising multiple devices can only be achieved if their internal SOF 
+counter is synchronised with the host. This is possible with at least current 
+Logitech webcams.
+
+Both the PTS and SCR fields are needed to synchronise devices. The image 
+timestamp expressed in internal device clock units is available through PTS. 
+We need to convert that timestamp to host clock units. This is were SCR gets 
+helpful, as it reports a relation between the internal device clock and the 
+USB SOF counter. If you can find a way to get the relation between the USB 
+SOF counter and the host clock, you could convert the PTS field to a host 
+timestamp using some kind of (basic or advanced, I don't know) statistical 
+processing.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001551.html">[Linux-uvc-devel] V-Gear TalkCam MX6 AF
+</A></li>
+	<LI>Next message: <A HREF="001555.html">[Linux-uvc-devel] LQC Pro 5000 picture quality settings
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1553">[ date ]</a>
+              <a href="thread.html#1553">[ thread ]</a>
+              <a href="subject.html#1553">[ subject ]</a>
+              <a href="author.html#1553">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

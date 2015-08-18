@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Fix to the auto white balance temperature	problem
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Fix%20to%20the%20auto%20white%20balance%20temperature%0A%09problem&In-Reply-To=%3C33555F7B-9153-454F-99A0-0DD27569471D%40iki.fi%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004272.html">
+   <LINK REL="Next"  HREF="004251.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Fix to the auto white balance temperature	problem</H1>
+    <B>Juho V&#228;h&#228;-Herttua</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Fix%20to%20the%20auto%20white%20balance%20temperature%0A%09problem&In-Reply-To=%3C33555F7B-9153-454F-99A0-0DD27569471D%40iki.fi%3E"
+       TITLE="[Linux-uvc-devel] Fix to the auto white balance temperature	problem">juhovh at iki.fi
+       </A><BR>
+    <I>Fri Nov 28 15:10:14 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004272.html">[Linux-uvc-devel] Fix to the auto white balance temperature	problem
+</A></li>
+        <LI>Next message: <A HREF="004251.html">[Linux-uvc-devel] libv4l2 jpeg error with 05a9:2640 webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4302">[ date ]</a>
+              <a href="thread.html#4302">[ thread ]</a>
+              <a href="subject.html#4302">[ subject ]</a>
+              <a href="author.html#4302">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+First I have to say I'm sorry for a bit slow reply, the patch didn't  
+work out of the box and I had to check out where the problem was...
+
+On 26.11.2008, at 5.21, Laurent Pinchart wrote:
+&gt;<i> This is not completely true. Controls are added to the entity  
+</I>&gt;<i> controls list in
+</I>&gt;<i> ascending index order, so manual controls will always come before auto
+</I>&gt;<i> controls (at least for the processing unit).
+</I>
+Ah, in that case it is true because of how they are sorted. I didn't  
+dare to count on it though...
+
+&gt;&gt;<i> However it works again for me and that's what matters now. I hope  
+</I>&gt;&gt;<i> to get
+</I>&gt;&gt;<i> this thing resolved some day in the official version too though. :)
+</I>&gt;<i>
+</I>&gt;<i> Let's work on this then :-)
+</I>&gt;<i>
+</I>&gt;<i> The patch indeed looked a bit messy at first. I've been trying to  
+</I>&gt;<i> rework it
+</I>&gt;<i> for the past hour but ran into various issues and I now understand
+</I>&gt;<i> implementing a clean solution is not as easy as it might seem.
+</I>&gt;<i>
+</I>&gt;<i> There are several places where control blacklisting can be  
+</I>&gt;<i> implemented. If we
+</I>&gt;<i> want to use information taken from uvc_control_info (such as the  
+</I>&gt;<i> control
+</I>&gt;<i> selector) the location you picked is the right one. However, the  
+</I>&gt;<i> driver then
+</I>&gt;<i> needs to walk the entities and controls lists over again and free data
+</I>&gt;<i> allocated during the initialisation process.
+</I>&gt;<i>
+</I>&gt;<i> Another solution would be to blacklist controls before they are  
+</I>&gt;<i> allocated. We
+</I>&gt;<i> would then process the bmControls bitmask instead of the controls  
+</I>&gt;<i> list. This
+</I>&gt;<i> approach is more efficient, but probably less generic as it won't  
+</I>&gt;<i> allow the
+</I>&gt;<i> driver to blacklist controls based on advanced information taken from
+</I>&gt;<i> uvc_control_info.
+</I>&gt;<i>
+</I>&gt;<i> As both solutions have advantages and drawbacks let's remember  
+</I>&gt;<i> Linus Torvald
+</I>&gt;<i> and his famous quote about overdesign. Here's a simplified version  
+</I>&gt;<i> of the
+</I>&gt;<i> patch that optionally (based on a device quirk) removes processing  
+</I>&gt;<i> unit auto
+</I>&gt;<i> controls when no corresponding manual control is available.
+</I>&gt;<i>
+</I>&gt;<i> Could you please test the patch and report the results ?
+</I>
+I agree that this version is cleaner than mine, at least it doesn't  
+free memory blocks and hold the mutex while doing it. :) Also adding  
+the device quirk was something that I was thinking should be added  
+but wanted to ask for comments first.
+
+The latest patch had a small thinko though, you wrote &quot;entity- 
+ &gt;extension&quot; in the controls and size getting when it should be  
+&quot;entity-&gt;processing&quot; in this case. I'll attach a new tested version  
+of the patch where that is fixed, it should have no other changes.  
+Thanks again and tell let me know if there's something else I could/ 
+should do. :)
+
+
+Juho
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: auto_control_fixup.diff
+Type: application/octet-stream
+Size: 3691 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20081128/a542f65c/attachment.obj">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20081128/a542f65c/attachment.obj</A>&gt;
+-------------- next part --------------
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004272.html">[Linux-uvc-devel] Fix to the auto white balance temperature	problem
+</A></li>
+	<LI>Next message: <A HREF="004251.html">[Linux-uvc-devel] libv4l2 jpeg error with 05a9:2640 webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4302">[ date ]</a>
+              <a href="thread.html#4302">[ thread ]</a>
+              <a href="subject.html#4302">[ subject ]</a>
+              <a href="author.html#4302">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Minoru Webcam with python-opencv: VIDIOC_STREAMON	error 28, No space 	left on device
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Minoru%20Webcam%20with%20python-opencv%3A%20VIDIOC_STREAMON%0A%09error%2028%2C%20No%20space%20%09left%20on%20device&In-Reply-To=%3C1c62ab981001150356m573d6e79rde8109e8ad162aff%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005498.html">
+   <LINK REL="Next"  HREF="005496.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Minoru Webcam with python-opencv: VIDIOC_STREAMON	error 28, No space 	left on device</H1>
+    <B>Javier Candeira</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Minoru%20Webcam%20with%20python-opencv%3A%20VIDIOC_STREAMON%0A%09error%2028%2C%20No%20space%20%09left%20on%20device&In-Reply-To=%3C1c62ab981001150356m573d6e79rde8109e8ad162aff%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Minoru Webcam with python-opencv: VIDIOC_STREAMON	error 28, No space 	left on device">javier at candeira.com
+       </A><BR>
+    <I>Fri Jan 15 12:56:55 CET 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005498.html">[Linux-uvc-devel] AF on Syntek 174f:5271
+</A></li>
+        <LI>Next message: <A HREF="005496.html">[Linux-uvc-devel] Minoru Webcam with python-opencv:	VIDIOC_STREAMON error 28, No space left on device
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5494">[ date ]</a>
+              <a href="thread.html#5494">[ thread ]</a>
+              <a href="subject.html#5494">[ subject ]</a>
+              <a href="author.html#5494">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I am working with minoru3D, a dual-webcam that is really two z-star
+vimicro webcams and a usb hub in a single package.
+
+I can get images from either one of the cameras using python-opencv
+(Ubuntu 9.10, 32 bits), but when I try to capture from both cameras in
+sequence I get this error:
+
+&quot;VIDIOC_STREAMON error 28, No space left on device&quot;
+
+Here are the error (funnily, there is no traceback) and code I am using:
+
+####### Error from command line (not even a traceback):
+&quot;&quot;&quot;
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">kandinski at derive</A>:~/data/work/hack/pyralax$ python dualcam.py
+VIDIOC_STREAMON error 28, No space left on device
+&quot;&quot;&quot;
+
+####### CODE:
+
+import pygame
+import Image
+from pygame.locals import *
+import sys
+
+import opencv
+#this is important for capturing/displaying images
+from opencv import highgui
+
+cameras = []
+
+def create_camera(n):
+  camera = highgui.cvCreateCameraCapture(n)
+  highgui.cvSetCaptureProperty(camera, highgui.CV_CAP_PROP_FRAME_WIDTH, 640)
+  highgui.cvSetCaptureProperty(camera, highgui.CV_CAP_PROP_FRAME_HEIGHT, 480)
+  return camera
+
+def get_image(camera):
+    im = highgui.cvQueryFrame(camera)
+    # Add the line below if you need it (Ubuntu 8.04+)
+    im = opencv.cvGetMat(im)
+    #convert Ipl image to PIL image
+    return opencv.adaptors.Ipl2PIL(im)
+
+def blit_image(im, camera):
+    pg_img = pygame.image.frombuffer(im.tostring(), im.size, im.mode)
+    screen.blit(pg_img, (640*i,0))
+
+
+fps =  15.0
+pygame.init()
+window = pygame.display.set_mode((1280,480))
+pygame.display.set_caption(&quot;WebCam Demo&quot;)
+screen = pygame.display.get_surface()
+
+for i in (0, 1):
+    cameras.append(create_camera(i))
+
+while True:
+    events = pygame.event.get()
+    for event in events:
+        if event.type == QUIT or event.type == KEYDOWN:
+            sys.exit(0)
+
+    for i, camera in enumerate(cameras):
+        im = get_image(camera)
+        blit_image(im, i)
+
+    pygame.display.flip()
+    pygame.time.delay(int(1000 * 1.0/fps))
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005498.html">[Linux-uvc-devel] AF on Syntek 174f:5271
+</A></li>
+	<LI>Next message: <A HREF="005496.html">[Linux-uvc-devel] Minoru Webcam with python-opencv:	VIDIOC_STREAMON error 28, No space left on device
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5494">[ date ]</a>
+              <a href="thread.html#5494">[ thread ]</a>
+              <a href="subject.html#5494">[ subject ]</a>
+              <a href="author.html#5494">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20QC%20Fusion%20%28046d%3A08c1%29%20inconsistent%20buggyness%3F&In-Reply-To=%3C20080115055515.9352819d.rumi_ml%40rtfm.hu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002746.html">
+   <LINK REL="Next"  HREF="002786.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?</H1>
+    <B>RUMI Szabolcs</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20QC%20Fusion%20%28046d%3A08c1%29%20inconsistent%20buggyness%3F&In-Reply-To=%3C20080115055515.9352819d.rumi_ml%40rtfm.hu%3E"
+       TITLE="[Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?">rumi_ml at rtfm.hu
+       </A><BR>
+    <I>Tue Jan 15 05:55:15 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002746.html">[Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?
+</A></li>
+        <LI>Next message: <A HREF="002786.html">[Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2777">[ date ]</a>
+              <a href="thread.html#2777">[ thread ]</a>
+              <a href="subject.html#2777">[ subject ]</a>
+              <a href="author.html#2777">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+On Fri, 11 Jan 2008 21:38:56 +0100
+Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+
+&gt;<i> &gt; &gt; I plan to fix it, probably by disallowing frame rate changes while
+</I>&gt;<i> &gt; &gt; streaming.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I'd be more than happy to test that fix you are planning... ;-)
+</I>&gt;<i> 
+</I>&gt;<i> Then grab the latest SVN version. I've just committed a patch that
+</I>&gt;<i> disallows changing the frame format or the frame size while streaming.
+</I>
+I have tested svn version 166. The results are the following:
+
+- luvcview works after proper detection as almost always.
+
+- Skype turned on camera but failed to get picture when started after luvcview.
+
+- luvcview failed when started again after Skype failed as above.
+
+luvcview stderr: &quot;unable to set format: 5.&quot;
+dmesg:
+uvcvideo: Failed to query (130) UVC control 3 (unit 2) : -32 (exp. 2).
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32 (exp. 26).
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32 (exp. 26).
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -75 (exp. 26).
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+
+- after some rmmod/insmod cycles and proper redetection I've started
+Skype without starting any other programs in between. It started to
+work but the picture was distorted, to be more exact, it was stretched
+to about 120% of the original in the Y (vertical) direction from the
+center of the image but basically your code change seems to work! :)
+
+I have also tested what luvcview controls work and how:
+
+brightness - works
+contrast - works
+saturation - works
+gain - works
+sharpness - setting works but no apparent effect
+gamma - adjusted down with effect but then could not be adjusted up anymore
+reset to default - works sometimes (only when camera is in a workable state?)
+pan - ioctl querycontrol error 22
+tilt - ioctl querycontrol error 22
+pan/tilt reset - ioctl querycontrol error 22
+switch light freq filter - works
+exposure - ioctl set control error
+auto exposure - setting works but apparently always remains on
+white balance - ioctl set control error
+auto white balance - setting works but apparently always remains on
+
+&gt;<i> The driver already includes workarounds for various broken devices.
+</I>&gt;<i> Have a look at the UVC_QUIRK_* macros in uvcvideo.h and how they are
+</I>&gt;<i> associated with devices in uvc_driver.c.
+</I>&gt;<i> 
+</I>&gt;<i> For early Logitech devices, however, no satisfying workaround has
+</I>&gt;<i> been find so far.
+</I>
+I see, what I was suggesting wasn't device specific: it's about not having
+to dig up the sources to enable/disable a hack but to be able to control
+them on the module parameter level.
+
+I don't have a clue but what I can imagine as a solution for the QC Fusion
+in particular is that it should be detected somehow when the camera gets
+into an unworkable state (failed uvc control queries or failed initialization)
+and then it should be reset or reenumerated. Basically doing automatically
+what one is doing by hand using rmmod/insmod cycles when it's apparent
+from the dmesg that the camera is probably unworkable...
+
+By the way recently I have seen various cameras working under
+Windows and apparently several of them are buggy enough to freeze
+or get unworkable within a certain amount of time of submitting
+video. Even original OEM Windows drivers seem to reset these cams
+repeatedly (at least it seems like it) as a solution which results
+in temporary video breakages in a video enabled Skype connection.
+So it's not unique to the QC Fusion and Linux I guess...
+
+Thanks!
+
+Best regards,
+Sab
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002746.html">[Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?
+</A></li>
+	<LI>Next message: <A HREF="002786.html">[Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2777">[ date ]</a>
+              <a href="thread.html#2777">[ thread ]</a>
+              <a href="subject.html#2777">[ subject ]</a>
+              <a href="author.html#2777">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

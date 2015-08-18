@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech QuickCam Pro for Notebooks 046d:0991	not working
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20Pro%20for%20Notebooks%20046d%3A0991%0A%09not%20working&In-Reply-To=%3C200807280112.08179.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003912.html">
+   <LINK REL="Next"  HREF="003925.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech QuickCam Pro for Notebooks 046d:0991	not working</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20Pro%20for%20Notebooks%20046d%3A0991%0A%09not%20working&In-Reply-To=%3C200807280112.08179.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Logitech QuickCam Pro for Notebooks 046d:0991	not working">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Jul 28 01:12:08 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003912.html">[Linux-uvc-devel] Logitech QuickCam Pro for Notebooks 046d:0991 not	working
+</A></li>
+        <LI>Next message: <A HREF="003925.html">[Linux-uvc-devel] Logitech QuickCam Pro for Notebooks 046d:0991 not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3922">[ date ]</a>
+              <a href="thread.html#3922">[ thread ]</a>
+              <a href="subject.html#3922">[ subject ]</a>
+              <a href="author.html#3922">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Volker,
+
+On Saturday 26 July 2008, Dr. Volker Jaenisch wrote:
+&gt;<i> Hi UVC People!
+</I>&gt;<i>
+</I>&gt;<i> I try to run a new
+</I>&gt;<i>
+</I>&gt;<i> Logitech QuickCam Pro for Notebooks 046d:0991
+</I>&gt;<i>
+</I>&gt;<i> on my debian etch using a vanilla kernel 2.6.26.
+</I>&gt;<i>
+</I>&gt;<i> The device is found by UVC but refuses to work (ekiga, mplayer, xawtv).
+</I>&gt;<i>
+</I>&gt;<i> dmesg :
+</I>&gt;<i>
+</I>&gt;<i> Linux video capture interface: v2.00
+</I>&gt;<i> ACPI: Power Button (CM) [PWRB]
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:0991)
+</I>&gt;<i> input: UVC Camera (046d:0991) as /class/input/input6
+</I>&gt;<i> usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> USB Video Class driver (v0.1.0)
+</I>
+You should probably upgrade to a newer driver.
+
+&gt;<i> I am irritated a bit by the &quot;&lt;unnamed&gt;&quot;. Since lsusb says:
+</I>&gt;<i>
+</I>&gt;<i> # lsusb
+</I>&gt;<i> Bus 001 Device 002: ID 15ca:00c3 Textech International Ltd. Mini Optical
+</I>&gt;<i> Mouse
+</I>&gt;<i> Bus 001 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+</I>&gt;<i> Bus 002 Device 003: ID 04b8:011b Seiko Epson Corp. Perfection 2400 Photo
+</I>&gt;<i> Bus 002 Device 002: ID 046d:0991 Logitech, Inc. QuickCam Pro for Notebooks
+</I>&gt;<i> Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+</I>
+The driver relies on the name provided by the camera. The QC Pro for Notebooks 
+doesn't provide a device name in the USB descriptoes. lsusb queries a 
+userspace database (/usr/share/misc/usb.ids in Gentoo) that is not accessible 
+from the driver.
+
+&gt;<i> May be I did a stupid beginners error. Any help welcome.
+</I>&gt;<i>
+</I>&gt;<i> Volker Jaenisch
+</I>&gt;<i>
+</I>&gt;<i> Attached:
+</I>&gt;<i> * mplayer log
+</I>&gt;<i> * v4l-info
+</I>&gt;<i> * v4lctl
+</I>&gt;<i>
+</I>&gt;<i> mplayer:
+</I>&gt;<i>  mplayer  -tv mjpeg:driver=v4l2:width=640:height=480:outfmt=i420  -vo xv
+</I>&gt;<i> <A HREF="tv://">tv://</A>
+</I>&gt;<i> MPlayer 1.0rc1-4.1.2-DFSG-free (C) 2000-2006 MPlayer Team
+</I>&gt;<i> CPU: Dual-Core AMD Opteron(tm) Processor 2212 (Family: 15, Model: 65,
+</I>&gt;<i> Stepping: 2)
+</I>&gt;<i> CPUflags:  MMX: 1 MMX2: 1 3DNow: 1 3DNow2: 1 SSE: 1 SSE2: 1
+</I>&gt;<i> Compiled with runtime CPU detection.
+</I>&gt;<i> mplayer: could not connect to socket
+</I>&gt;<i> mplayer: No such file or directory
+</I>&gt;<i> Failed to open LIRC support. You will not be able to use your remote
+</I>&gt;<i> control.
+</I>&gt;<i>
+</I>&gt;<i> Playing <A HREF="tv://.">tv://.</A>
+</I>&gt;<i> TV file format detected.
+</I>&gt;<i> Selected driver: v4l2
+</I>&gt;<i>  name: Video 4 Linux 2 input
+</I>&gt;<i>  author: Martin Olschewski &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">olschewski at zpr.uni-koeln.de</A>&gt;
+</I>&gt;<i>  comment: first try, more to come ;-)
+</I>&gt;<i> v4l2: ioctl get standard failed: Invalid argument
+</I>&gt;<i> Selected device: UVC Camera (046d:0991)
+</I>&gt;<i>  Capabilites:  video capture  streaming
+</I>&gt;<i>  supported norms:
+</I>&gt;<i>  inputs: 0 = Camera 1;
+</I>&gt;<i>  Current input: 0
+</I>&gt;<i>  Current format: unknown (0x47504a4d)
+</I>&gt;<i> v4l2: ioctl set format failed: Invalid argument
+</I>&gt;<i> v4l2: ioctl enum norm failed: Invalid argument
+</I>&gt;<i> Error: Cannot set norm!
+</I>&gt;<i>   MJP: width 640 height 480
+</I>&gt;<i> Selected input hasn't got a tuner!
+</I>&gt;<i> v4l2: ioctl set mute failed: Invalid argument
+</I>&gt;<i> v4l2: ioctl query control failed: Invalid argument
+</I>&gt;<i> FPS not specified in the header or invalid, use the -fps option.
+</I>&gt;<i> No stream found.
+</I>&gt;<i>
+</I>&gt;<i> ===============================================================
+</I>&gt;<i>
+</I>&gt;<i> or with -fps 30:
+</I>&gt;<i> ..
+</I>&gt;<i> v4l2: ioctl dequeue buffer failed: Invalid argument, idx = 0
+</I>&gt;<i> v4l2: ioctl dequeue buffer failed: Invalid argument, idx = 0
+</I>&gt;<i> v4l2: ioctl dequeue buffer failed: Invalid argument, idx = 0
+</I>&gt;<i> v4l2: ioctl dequeue buffer failed: Invalid argument, idx = 0
+</I>&gt;<i> v4l2: ioctl dequeue buffer failed: Invalid argument, idx = 0
+</I>&gt;<i> v4l2: ioctl dequeue buffer failed: Invalid argument, idx = 0
+</I>&gt;<i> v4l2: ioctl dequeue buffer failed: Invalid argument, idx = 0
+</I>&gt;<i>
+</I>&gt;<i> ===============================================================
+</I>
+mplayer has a known bug, fixed in its SVN repository. Please try with a recent 
+mplayer snapshot.
+
+xawtv 3.95 has a known bug as well which will be fixed in the xawtv 4 release. 
+Ekiga should work though. Does it report any error ? Does the driver print 
+any message in the kernel log when you run Ekiga ?
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003912.html">[Linux-uvc-devel] Logitech QuickCam Pro for Notebooks 046d:0991 not	working
+</A></li>
+	<LI>Next message: <A HREF="003925.html">[Linux-uvc-devel] Logitech QuickCam Pro for Notebooks 046d:0991 not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3922">[ date ]</a>
+              <a href="thread.html#3922">[ thread ]</a>
+              <a href="subject.html#3922">[ subject ]</a>
+              <a href="author.html#3922">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

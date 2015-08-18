@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20QC%20Fusion%20%28046d%3A08c1%29%20inconsistent%20buggyness%3F&In-Reply-To=%3C200801112138.57032.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002737.html">
+   <LINK REL="Next"  HREF="002777.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20QC%20Fusion%20%28046d%3A08c1%29%20inconsistent%20buggyness%3F&In-Reply-To=%3C200801112138.57032.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Fri Jan 11 21:38:56 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002737.html">[Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?
+</A></li>
+        <LI>Next message: <A HREF="002777.html">[Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2746">[ date ]</a>
+              <a href="thread.html#2746">[ thread ]</a>
+              <a href="subject.html#2746">[ subject ]</a>
+              <a href="author.html#2746">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Sab,
+
+On Friday 11 January 2008, RUMI Szabolcs wrote:
+&gt;<i> Hi!
+</I>&gt;<i>
+</I>&gt;<i> On Thu, 10 Jan 2008 21:34:13 +0100
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+</I>&gt;<i> &gt; &gt; What makes this difference that it works while other apps don't?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Skype might be buggy ;-) I know that Skype tries to change the frame
+</I>&gt;<i> &gt; rate while streaming. The driver currently allows that but doesn't
+</I>&gt;<i> &gt; handle the request properly. It might make the webcam crash.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I plan to fix it, probably by disallowing frame rate changes while
+</I>&gt;<i> &gt; streaming.
+</I>&gt;<i>
+</I>&gt;<i> I'd be more than happy to test that fix you are planning... ;-)
+</I>
+Then grab the latest SVN version. I've just committed a patch that disallows 
+changing the frame format or the frame size while streaming.
+
+&gt;<i> I've read somewhere that there have been some people who tried to
+</I>&gt;<i> create various patches in order to get this camera to work but you
+</I>&gt;<i> refused to integrate them because you didn't wanted to taint your
+</I>&gt;<i> nice code with such ugly and/or occasionally working things which
+</I>&gt;<i> sounds reasonable.
+</I>
+The early UVC Logitech webcams were all buggy. Under some particular timing 
+conditions the firmware misses an interrupt which results in errors. Those 
+timing conditions, while very uncommon under Windows, happen quite often for 
+some Linux users. A few people tried various workarounds but no definitive 
+fix has been found.
+
+&gt;<i> I ain't got no clue about no nothing but I thought maybe there could
+</I>&gt;<i> be made an established interface for that like a &quot;workarounds=0x0000&quot;
+</I>&gt;<i> module parameter where 0x0000 is a bitmask that can be used to enable
+</I>&gt;<i> or disable the various kludges which iron out such bugs like the ones
+</I>&gt;<i> that the QC Fusion has. It might happen with various cameras even in
+</I>&gt;<i> the future that they've got a bug that is ugly to work around or it
+</I>&gt;<i> is no good for some reason to always work around them in the same way.
+</I>&gt;<i>
+</I>&gt;<i> Of course the default would be 0x0000 as in no workarounds enabled
+</I>&gt;<i> for the main driver to be nice and solid but any of them could be
+</I>&gt;<i> easily enabled and tested by those who need them to get their camera
+</I>&gt;<i> working. This way they could also get evolved within the broader
+</I>&gt;<i> linux-uvc community including people who are not able or willing
+</I>&gt;<i> to patch/hack their kernel sources on their own for example.
+</I>&gt;<i>
+</I>&gt;<i> What do you think?
+</I>
+The driver already includes workarounds for various broken devices. Have a 
+look at the UVC_QUIRK_* macros in uvcvideo.h and how they are associated with 
+devices in uvc_driver.c.
+
+For early Logitech devices, however, no satisfying workaround has been find so 
+far.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002737.html">[Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?
+</A></li>
+	<LI>Next message: <A HREF="002777.html">[Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2746">[ date ]</a>
+              <a href="thread.html#2746">[ thread ]</a>
+              <a href="subject.html#2746">[ subject ]</a>
+              <a href="author.html#2746">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

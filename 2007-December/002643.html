@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Divide error with MS vx-7000
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Divide%20error%20with%20MS%20vx-7000&In-Reply-To=%3C200712211155.05402.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002641.html">
+   <LINK REL="Next"  HREF="002644.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Divide error with MS vx-7000</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Divide%20error%20with%20MS%20vx-7000&In-Reply-To=%3C200712211155.05402.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Divide error with MS vx-7000">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Fri Dec 21 11:55:05 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002641.html">[Linux-uvc-devel] Divide error with MS vx-7000
+</A></li>
+        <LI>Next message: <A HREF="002644.html">[Linux-uvc-devel] Divide error with MS vx-7000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2643">[ date ]</a>
+              <a href="thread.html#2643">[ thread ]</a>
+              <a href="subject.html#2643">[ subject ]</a>
+              <a href="author.html#2643">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Timo,
+
+On Friday 21 December 2007 09:42, Timo H wrote:
+&gt;<i> I got a Microsoft VX-7000 camera as a gift and tried to get it working. It
+</I>&gt;<i> works fine with luvcview, but not with any other v4l2 sw. I even managed
+</I>&gt;<i> to change the luvcview-code so that it feeds vloopback and I get it
+</I>&gt;<i> working with v4l software (thats ugly but at least makes the camera
+</I>&gt;<i> usable to some extent).
+</I>
+Nice trick. I'm pretty sure other users might be interested in this.
+
+Could you please send me the output of lsusb -v (using usbutils 0.72 or 
+newer) ? Thanks.
+
+&gt;<i> The biggest problem is that the kopete crashes when the uvcvideo module
+</I>&gt;<i> is loaded and the camera is plugged. That is really annoying because the
+</I>&gt;<i> camera can't be plugged on when booting. Is there anything to do or is
+</I>&gt;<i> there some non-standard things in the camera? (That might be possible
+</I>&gt;<i> because it is MS after all). I could debug this more if you could give
+</I>&gt;<i> some hints what to do next?
+</I>
+The crash is caused by a bug in the v4l1 compat layer. I raised the issue on 
+the video4linux mailing list.
+
+&gt;<i> I added some debugging code from older threads and here is the dmesg
+</I>&gt;<i> output:
+</I>&gt;<i>
+</I>&gt;<i> [10750.400000] uvcvideo: Found UVC 1.00 device Microsoft&#65533; LifeCam
+</I>&gt;<i> VX-7000 (045e:0723)
+</I>&gt;<i> [10750.400000] uvcvideo: Failed to query (135) UVC control 1 (unit 0) :
+</I>&gt;<i> -32 (exp. 26).
+</I>
+This error is pretty normal. Most devices don't implement that function, and 
+the driver can work around this.
+
+[snip]
+
+&gt;<i> [10758.896000] divide error: 0000 [#10]
+</I>&gt;<i> [10758.896000] Modules linked in: uvcvideo usbvideo compat_ioctl32
+</I>[snip]
+&gt;<i> [10758.896000] CPU: 0
+</I>&gt;<i> [10758.896000] EIP: 0060:[&lt;e0d6b204&gt;] Not tainted VLI
+</I>&gt;<i> [10758.896000] EFLAGS: 00010256 (2.6.20-16-386 #2)
+</I>&gt;<i> [10758.896000] EIP is at get_v4l_control+0xa4/0xf0 [v4l1_compat]
+</I>[snip]
+
+Here's the offending v4l1 compat code (drivers/media/video/v4l1_compat.c).
+
+static int
+get_v4l_control(struct inode            *inode,
+                struct file             *file,
+                int                     cid,
+                v4l2_kioctl             drv)
+{
+        struct v4l2_queryctrl   qctrl2;
+        struct v4l2_control     ctrl2;
+        int                     err;
+
+        qctrl2.id = cid;
+        err = drv(inode, file, VIDIOC_QUERYCTRL, &amp;qctrl2);
+        if (err &lt; 0)
+                dprintk(&quot;VIDIOC_QUERYCTRL: %d\n&quot;,err);
+        if (err == 0 &amp;&amp;
+            !(qctrl2.flags &amp; V4L2_CTRL_FLAG_DISABLED))
+        {
+                ctrl2.id = qctrl2.id;
+                err = drv(inode, file, VIDIOC_G_CTRL, &amp;ctrl2);
+                if (err &lt; 0) {
+                        dprintk(&quot;VIDIOC_G_CTRL: %d\n&quot;,err);
+                        return 0;
+                }
+                return ((ctrl2.value - qctrl2.minimum) * 65535
+                         + (qctrl2.maximum - qctrl2.minimum) / 2)
+                        / (qctrl2.maximum - qctrl2.minimum);
+        }
+        return 0;
+}
+
+When qctrl2.maximum equals qctrl2.minimum the code will divide by zero and 
+crash.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002641.html">[Linux-uvc-devel] Divide error with MS vx-7000
+</A></li>
+	<LI>Next message: <A HREF="002644.html">[Linux-uvc-devel] Divide error with MS vx-7000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2643">[ date ]</a>
+              <a href="thread.html#2643">[ thread ]</a>
+              <a href="subject.html#2643">[ subject ]</a>
+              <a href="author.html#2643">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

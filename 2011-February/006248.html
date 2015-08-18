@@ -1,0 +1,191 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [new cam] 0408:1fc3 buildin webcam on fujisu lifebook a340
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5Bnew%20cam%5D%200408%3A1fc3%20buildin%20webcam%20on%20fujisu%0A%20lifebook%20a340&In-Reply-To=%3C1296662527.24948.8.camel%40zwerg%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006316.html">
+   <LINK REL="Next"  HREF="006249.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [new cam] 0408:1fc3 buildin webcam on fujisu lifebook a340</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5Bnew%20cam%5D%200408%3A1fc3%20buildin%20webcam%20on%20fujisu%0A%20lifebook%20a340&In-Reply-To=%3C1296662527.24948.8.camel%40zwerg%3E"
+       TITLE="[Linux-uvc-devel] [new cam] 0408:1fc3 buildin webcam on fujisu lifebook a340">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Wed Feb  2 17:02:07 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006316.html">[Linux-uvc-devel] HP Pavillion DV3 WebCam
+</A></li>
+        <LI>Next message: <A HREF="006249.html">[Linux-uvc-devel] XU architecture
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6248">[ date ]</a>
+              <a href="thread.html#6248">[ thread ]</a>
+              <a href="subject.html#6248">[ subject ]</a>
+              <a href="author.html#6248">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Am Dienstag, den 25.01.2011, 14:38 +0100 schrieb Laurent Pinchart:
+&gt;<i> Hi Alexey,
+</I>&gt;<i> 
+</I>&gt;<i> On Sunday 16 January 2011 09:57:53 Alexey Fisher wrote:
+</I>&gt;<i> &gt; Hi,
+</I>&gt;<i> &gt; i helping my friend to install linux on his new laptop &quot;fujisu lifebook
+</I>&gt;<i> &gt; a340&quot;. It is cheap one (350&#8364;) but seems to work good with linux. But web
+</I>&gt;<i> &gt; cam has some issues, which i will discuss with you.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; It is uvc webcam (0408:1fc3 Quanta Computer, Inc.).
+</I>&gt;<i> &gt; For most frame sizes it aims to support 10, 15,25, 30 fps. In real life it
+</I>&gt;<i> &gt; stream only with 30fps, if i try to set 10fps, it will silently ignore it.
+</I>&gt;<i> &gt; The real problem - there is no exposure control and autoexposure do not
+</I>&gt;<i> &gt; working with 30fps too. So with normal light the image will be dark and
+</I>&gt;<i> &gt; noisy.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; With frame sizes 1280x960 and 1280x1024, it has max frame rate 9fps
+</I>&gt;<i> &gt; (aims to support 9 and 5 fps). Interesting thing is, autoexposure seems
+</I>&gt;<i> &gt; to work here. If i close the cam, frame rate will drop to ~4fps, and if
+</I>&gt;<i> &gt; i add extra light it will go to ~9fps. The image with this framerate is
+</I>&gt;<i> &gt; better than with 30fps.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; By tracing i also found &quot;uvcvideo: Dropping payload (out of sync).&quot;
+</I>&gt;<i> &gt; messages. So i added two quirks for this cam: UVC_QUIRK_STREAM_NO_FID
+</I>&gt;<i> &gt; for out of sync;
+</I>&gt;<i> 
+</I>&gt;<i> Did UVC_QUIRK_STREAM_NO_FID make any difference ?
+</I>
+It remove all &quot;out of sync&quot; errors from trace. But i didn't noticed any
+stability or quality difference.
+
+&gt;<i> &gt; UVC_QUIRK_RESTRICT_FRAME_RATE for dummy frame rates.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Now my question: is it possible to pull/force some registers to test if
+</I>&gt;<i> &gt; auto exposure can work with 30fps too?
+</I>&gt;<i> 
+</I>&gt;<i> The camera doesn't report exposure/auto exposure controls in its descriptors. 
+</I>&gt;<i> You could hack the driver to make it think the camera supports those controls. 
+</I>&gt;<i> You should then be able to set them from userspace to see if they make any 
+</I>&gt;<i> difference.
+</I>&gt;<i> 
+</I>&gt;<i> The easiest way would be to modify uvc_ctrl_init_device() in uvc_ctrl.c. Add
+</I>&gt;<i> 
+</I>&gt;<i> static const u8 camera_controls[3] = { 0x0e, 0x00, 0x00 };
+</I>&gt;<i> 
+</I>&gt;<i> at the beginning of the function, and replace
+</I>&gt;<i> 
+</I>&gt;<i>                 } else if (UVC_ENTITY_TYPE(entity) == UVC_ITT_CAMERA) {
+</I>&gt;<i>                         bmControls = entity-&gt;camera.bmControls;
+</I>&gt;<i>                         bControlSize = entity-&gt;camera.bControlSize;
+</I>&gt;<i>                 }
+</I>&gt;<i> 
+</I>&gt;<i> with
+</I>&gt;<i> 
+</I>&gt;<i>                 } else if (UVC_ENTITY_TYPE(entity) == UVC_ITT_CAMERA) {
+</I>&gt;<i>                         bmControls = camera_controls;
+</I>&gt;<i>                         bControlSize = entity-&gt;camera.bControlSize;
+</I>&gt;<i>                 }
+</I>
+This is not working. I did other hack, i just allowed only high
+resolution. This is my last diff:
+
+
+&gt;<i> diff --git a/drivers/media/video/uvc/uvc_driver.c b/drivers/media/video/uvc/uvc_
+</I>&gt;<i> index a1e9dfb..e771530 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> @@ -495,7 +495,9 @@ static int uvc_parse_format(struct uvc_device *dev,
+</I>&gt;<i>                         10000000/frame-&gt;dwDefaultFrameInterval,
+</I>&gt;<i>                         (100000000/frame-&gt;dwDefaultFrameInterval)%10);
+</I>&gt;<i> -               format-&gt;nframes++;
+</I>&gt;<i> +               if (get_unaligned_le16(&amp;buffer[5]) == 1280)
+</I>&gt;<i> +                       format-&gt;nframes++;
+</I>&gt;<i> +
+</I>&gt;<i>                 buflen -= buffer[0];
+</I>&gt;<i>                 buffer += buffer[0];
+</I>&gt;<i>         }
+</I>&gt;<i> @@ -1957,6 +1959,16 @@ MODULE_PARM_DESC(timeout, &quot;Streaming control requests tim
+</I>&gt;<i>   * though they are compliant.
+</I>&gt;<i>   */
+</I>&gt;<i>  static struct usb_device_id uvc_ids[] = {
+</I>&gt;<i> +       /* (Quanta Computer, Inc.) Build in webcam found on Lifebook A530 */
+</I>&gt;<i> +       { .match_flags          = USB_DEVICE_ID_MATCH_DEVICE
+</I>&gt;<i> +                               | USB_DEVICE_ID_MATCH_INT_INFO,
+</I>&gt;<i> +         .idVendor             = 0x0408,
+</I>&gt;<i> +         .idProduct            = 0x1fc3,
+</I>&gt;<i> +         .bInterfaceClass      = USB_CLASS_VIDEO,
+</I>&gt;<i> +         .bInterfaceSubClass   = 1,
+</I>&gt;<i> +         .bInterfaceProtocol   = 0,
+</I>&gt;<i> +         .driver_info          = UVC_QUIRK_STREAM_NO_FID
+</I>&gt;<i> +                               | UVC_QUIRK_RESTRICT_FRAME_RATE },
+</I>&gt;<i>         /* Genius eFace 2025 */
+</I>&gt;<i>         { .match_flags          = USB_DEVICE_ID_MATCH_DEVICE
+</I>&gt;<i>                                 | USB_DEVICE_ID_MATCH_INT_INFO,
+</I>
+
+This i get before patch:
+uvcdynctrl -f
+Listing available frame formats for device video0:
+Pixel format: YUYV (YUV 4:2:2 (YUYV); MIME type: video/x-raw-yuv)
+  Frame size: 640x480
+    Frame rates: 30, 25, 15, 10
+  Frame size: 352x288
+    Frame rates: 30, 25, 15, 10
+  Frame size: 320x240
+    Frame rates: 30, 25, 15, 10
+  Frame size: 176x144
+    Frame rates: 30, 25, 15, 10
+  Frame size: 160x120
+    Frame rates: 30, 25, 15, 10
+  Frame size: 1280x960
+    Frame rates: 9, 5
+  Frame size: 1280x1024
+    Frame rates: 9, 5
+
+
+
+This is after patch:
+....
+Pixel format: YUYV (YUV 4:2:2 (YUYV); MIME type: video/x-raw-yuv)
+  Frame size: 1280x960
+    Frame rates: 9
+  Frame size: 1280x1024
+    Frame rates: 9
+
+
+-- 
+Regards,
+        Alexey
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006316.html">[Linux-uvc-devel] HP Pavillion DV3 WebCam
+</A></li>
+	<LI>Next message: <A HREF="006249.html">[Linux-uvc-devel] XU architecture
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6248">[ date ]</a>
+              <a href="thread.html#6248">[ thread ]</a>
+              <a href="subject.html#6248">[ subject ]</a>
+              <a href="author.html#6248">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

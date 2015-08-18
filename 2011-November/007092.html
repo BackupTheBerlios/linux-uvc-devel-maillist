@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20with%20H264%20encoder%20not%20in%20Devicelist&In-Reply-To=%3C201111251440.15354.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007091.html">
+   <LINK REL="Next"  HREF="007094.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20with%20H264%20encoder%20not%20in%20Devicelist&In-Reply-To=%3C201111251440.15354.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Fri Nov 25 14:40:14 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007091.html">[Linux-uvc-devel] Philips SPZ2000/00
+</A></li>
+        <LI>Next message: <A HREF="007094.html">[Linux-uvc-devel] Philips SPZ2000/00
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7092">[ date ]</a>
+              <a href="thread.html#7092">[ thread ]</a>
+              <a href="subject.html#7092">[ subject ]</a>
+              <a href="author.html#7092">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Robert,
+
+On Monday 21 November 2011 16:49:46 Robert Krakora wrote:
+&gt;<i> On Thu, Nov 10, 2011 at 3:34 PM, Robert Krakora wrote:
+</I>&gt;<i> &gt; On Thu, Nov 3, 2011 at 7:55 AM, Laurent Pinchart wrote:
+</I>&gt;<i> &gt;&gt; On Thursday 03 November 2011 12:34:55 Robert Krakora wrote:
+</I>&gt;<i> &gt;&gt; &gt; Hi Guys,
+</I>&gt;<i> &gt;&gt; &gt; 
+</I>&gt;<i> &gt;&gt; &gt; I did not see audio in the MPEG2 TS stream that I was able to get out
+</I>&gt;<i> &gt;&gt; &gt; of the FaceVsion camera. I purchased one for Laurent for development
+</I>&gt;<i> &gt;&gt; &gt; purposes.
+</I>&gt;<i> &gt;&gt; &gt;
+</I>&gt;<i> &gt;&gt; &gt; It sounds like he has been working with it some.
+</I>&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt;&gt; Yes I've finally started working on it. Thanks for the hardware.
+</I>&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt;&gt; I'll post prototype patches to the list. I've been able to get a video
+</I>&gt;<i> &gt;&gt; stream out of the device, but it looks pretty bad when played in mplayer.
+</I>&gt;<i> &gt;&gt; I'm not sure who is at fault that.
+</I>&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt;&gt; &gt; I wish these vendors would come to some kind of consensus on how to
+</I>&gt;<i> &gt;&gt; &gt; expose H.264 via USB interface.
+</I>&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt;&gt; The latest version of the UVC 1.1 specification includes an H.264
+</I>&gt;<i> &gt;&gt; payload format. Unfortunately Microsoft, Logitech and Skype designed
+</I>&gt;<i> &gt;&gt; something really horrible, without much input from anyone else.
+</I>&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt;&gt; &gt; It seems like it would make life easier for the UVC developers such as
+</I>&gt;<i> &gt;&gt; &gt; Laurent.
+</I>&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt;&gt; I should come up with my own H.264 UVC payload specification :-)
+</I>&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt;&gt; &gt; If Laurent needs any more makes/models of H.264 cameras for
+</I>&gt;<i> &gt;&gt; &gt; development, I will accommodate.
+</I>&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt;&gt; Thank you. I will first try to finish the Facevsion support.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Let me know when you have some patches available for FaceVsion.  In my
+</I>&gt;<i> &gt; hacking, I was able to get MPEG2 TS H.264, but the video looked very
+</I>&gt;<i> &gt; washed out although motion was fluid (not jerky).
+</I>&gt;<i> 
+</I>&gt;<i> Have you had time to work on the FaceVsion support lately?  ;-)
+</I>
+Not as much as I would have liked, but yes, I have :-)
+
+I've pushed patches to the uvcvideo-wip-mpeg branch in 
+<A HREF="git://linuxtv.org/pinchartl/uvcvideo.git.">git://linuxtv.org/pinchartl/uvcvideo.git.</A> The last patch is still work in 
+progress, and I'm not totally happy with the &quot;psize * 500&quot; heuristic.
+
+I've also updated yavta to support writing all frames to a single file. 
+Capturing 100 frames with yavta to a single file produces something I can play 
+with mplayer, but not without issues. The video doesn't look very good, and 
+mplayer prints lots of error messages:
+
+$ mplayer mpeg.bin 
+MPlayer SVN-r33094-4.4.5 (C) 2000-2011 MPlayer Team
+
+Playing mpeg.bin.
+TS file format detected.
+VIDEO H264(pid=68) NO AUDIO!  NO SUBS (yet)!  PROGRAM N. 1
+FPS seems to be: 29.970030
+Load subtitles in ./
+==========================================================================
+Opening video decoder: [ffmpeg] FFmpeg's libavcodec codec family
+Selected video codec: [ffh264] vfm: ffmpeg (FFmpeg H.264)
+==========================================================================
+Audio: no sound
+Starting playback...
+Movie-Aspect is 1.78:1 - prescaling to correct movie aspect.
+VO: [xv] 1280x720 =&gt; 1280x720 Planar YV12 
+V:   0.1   1/  1 ??% ??% ??,?% 0 0 
+[h264 @ 0xae68a0]out of range intra chroma pred mode at 28 19
+[h264 @ 0xae68a0]error while decoding MB 28 19
+[h264 @ 0xae68a0]concealing 2101 DC, 2101 AC, 2101 MV errors
+V:   0.1   3/  3 ??% ??% ??,?% 0 0 
+[h264 @ 0xae68a0]mb_type 109 in P slice too large at 19 16
+[h264 @ 0xae68a0]error while decoding MB 19 16
+[h264 @ 0xae68a0]concealing 2350 DC, 2350 AC, 2350 MV errors
+V:   0.2   5/  5 ??% ??% ??,?% 0 0 
+[h264 @ 0xae68a0]P sub_mb_type 22 out of range at 47 7
+[h264 @ 0xae68a0]error while decoding MB 47 7
+[h264 @ 0xae68a0]concealing 3042 DC, 3042 AC, 3042 MV errors
+V:   0.3   7/  7 ??% ??% ??,?% 0 0 
+[h264 @ 0xae68a0]out of range intra chroma pred mode at 60 3
+[h264 @ 0xae68a0]error while decoding MB 60 3
+[h264 @ 0xae68a0]concealing 3349 DC, 3349 AC, 3349 MV errors
+V:   0.3   9/  9 ??% ??% ??,?% 0 0 
+[h264 @ 0xae68a0]P sub_mb_type 28 out of range at 50 20
+[h264 @ 0xae68a0]error while decoding MB 50 20
+[h264 @ 0xae68a0]concealing 1999 DC, 1999 AC, 1999 MV errors
+[...]
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007091.html">[Linux-uvc-devel] Philips SPZ2000/00
+</A></li>
+	<LI>Next message: <A HREF="007094.html">[Linux-uvc-devel] Philips SPZ2000/00
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7092">[ date ]</a>
+              <a href="thread.html#7092">[ thread ]</a>
+              <a href="subject.html#7092">[ subject ]</a>
+              <a href="author.html#7092">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

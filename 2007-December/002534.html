@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] Apple iSight
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Apple%20iSight&In-Reply-To=%3C1196860815.15919.6.camel%40mirell0001.mirell%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002526.html">
+   <LINK REL="Next"  HREF="002537.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] Apple iSight</H1>
+    <B>M.S.</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Apple%20iSight&In-Reply-To=%3C1196860815.15919.6.camel%40mirell0001.mirell%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] Apple iSight">mactel at sukimashita.com
+       </A><BR>
+    <I>Wed Dec  5 14:20:15 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002526.html">[Linux-uvc-devel]  [PATCH] Apple iSight
+</A></li>
+        <LI>Next message: <A HREF="002537.html">[Linux-uvc-devel] [PATCH] Apple iSight
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2534">[ date ]</a>
+              <a href="thread.html#2534">[ thread ]</a>
+              <a href="subject.html#2534">[ subject ]</a>
+              <a href="author.html#2534">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>1. Does a reboot fix the issue? Do you have put the firmware
+in /lib/firmware/?
+
+2. If you replace this part out of isight.c, do you still get the crash?
+
+From:
+	if (success == 0)
+		isight_patch_usb_descriptor (dev);
+To:
+	if ((success == 0) &amp;&amp; (dev-&gt;descriptor.idProduct == 0x8501))
+		isight_patch_usb_descriptor (dev);
+
+--- M.S.
+
+On Tue, 2007-12-04 at 14:33 -0700, Se&#225;n de B&#250;rca wrote:
+&gt;<i> I just gave the new patch a shot and I'm still experiencing a problem 
+</I>&gt;<i> I've been seeing for some time. I get a segmentation fault in 
+</I>&gt;<i> isight_load_firmware but for what reason I'm unsure. I'm attaching the 
+</I>&gt;<i> dump I find in dmesg. I'd much appreciate any help anyone can give me. 
+</I>&gt;<i> Firmware is where it should be. I've tried with both the version from my 
+</I>&gt;<i> OSX drive and the version in the all-in-one bundle with the same results.
+</I>&gt;<i> 
+</I>&gt;<i> Sean Burke
+</I>&gt;<i> 
+</I>&gt;<i> BUG: unable to handle kernel NULL pointer dereference at virtual address 
+</I>&gt;<i> 00000002
+</I>&gt;<i> printing eip:
+</I>&gt;<i> f8bddbba
+</I>&gt;<i> *pde = 00000000
+</I>&gt;<i> Oops: 0000 [#1]
+</I>&gt;<i> PREEMPT SMP
+</I>&gt;<i> Modules linked in: cryptomgr crypto_algapi uvcvideo snd_pcm_oss 
+</I>&gt;<i> snd_mixer_oss snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device 
+</I>&gt;<i> hci_usb wlan_scan_sta ath_rate_sample(F) ath_pci(F) wlan ath_hal(P) sky2 
+</I>&gt;<i> usbhid appletouch evdev snd_hda_intel snd_pcm snd_timer snd soundcore 
+</I>&gt;<i> snd_page_alloc
+</I>&gt;<i> CPU:    0
+</I>&gt;<i> EIP:    0060:[&lt;f8bddbba&gt;]    Tainted: PF       VLI
+</I>&gt;<i> EFLAGS: 00210282   (2.6.23-gentoo-r3-mactel #1)
+</I>&gt;<i> EIP is at isight_load_firmware+0x1ba/0x570 [uvcvideo]
+</I>&gt;<i> eax: eaecbcdc   ebx: f7f79200   ecx: c189f4c0   edx: fffffffe
+</I>&gt;<i> esi: eaecbcdc   edi: eaecbccc   ebp: f78c4400   esp: eaecbc7c
+</I>&gt;<i> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+</I>&gt;<i> Process modprobe (pid: 6837, ti=eaeca000 task=f78b3550 task.ti=eaeca000)
+</I>&gt;<i> Stack: 00000001 c1563ba0 c015535c 00000002 00000044 eb1dc000 eaecbcb8 
+</I>&gt;<i> ea820000
+</I>&gt;<i>       00012ab0 c04bcb00 c04bca40 00000002 00000000 c17d3a14 c04bd150 
+</I>&gt;<i> 00000000
+</I>&gt;<i>       00000000 00000000 00000000 00000000 c1550400 00000000 c012165f 
+</I>&gt;<i> 00012ab0
+</I>&gt;<i> Call Trace:
+</I>&gt;<i> [&lt;c015535c&gt;] get_page_from_freelist+0x2ac/0x3a0
+</I>&gt;<i> [&lt;c012165f&gt;] enqueue_entity+0xbf/0x230
+</I>&gt;<i> [&lt;f8bd6dbb&gt;] uvc_delete+0x24b/0x1e50 [uvcvideo]
+</I>&gt;<i> [&lt;c0125c79&gt;] check_preempt_curr_fair+0x59/0x90
+</I>&gt;<i> [&lt;c0274caa&gt;] idr_get_empty_slot+0xea/0x270
+</I>&gt;<i> [&lt;c0274eb7&gt;] ida_get_new_above+0x87/0x180
+</I>&gt;<i> [&lt;c0182e5e&gt;] find_inode+0x3e/0x70
+</I>&gt;<i> [&lt;c01ac290&gt;] sysfs_ilookup_test+0x0/0x10
+</I>&gt;<i> [&lt;c0182fa6&gt;] ifind+0x46/0xa0
+</I>&gt;<i> [&lt;c0182c75&gt;] iput+0x35/0x70
+</I>&gt;<i> [&lt;c01ac8c4&gt;] sysfs_addrm_finish+0x34/0x200
+</I>&gt;<i> [&lt;c01adb36&gt;] sysfs_create_link+0x96/0x170
+</I>&gt;<i> [&lt;c0339517&gt;] usb_match_one_id+0x27/0xc0
+</I>&gt;<i> [&lt;c033a3a5&gt;] usb_probe_interface+0x75/0xd0
+</I>&gt;<i> [&lt;c02e82ce&gt;] driver_probe_device+0x8e/0x190
+</I>&gt;<i> [&lt;c03eb97d&gt;] klist_next+0x5d/0xa0
+</I>&gt;<i> [&lt;c02e8510&gt;] __driver_attach+0x80/0x90
+</I>&gt;<i> [&lt;c02e768a&gt;] bus_for_each_dev+0x3a/0x60
+</I>&gt;<i> [&lt;c02e8136&gt;] driver_attach+0x16/0x20
+</I>&gt;<i> [&lt;c02e8490&gt;] __driver_attach+0x0/0x90
+</I>&gt;<i> [&lt;c02e7a6b&gt;] bus_add_driver+0x8b/0x1b0
+</I>&gt;<i> [&lt;c033a330&gt;] usb_probe_interface+0x0/0xd0
+</I>&gt;<i> [&lt;c0339e25&gt;] usb_register_driver+0x95/0x110
+</I>&gt;<i> [&lt;f8a4106f&gt;] init_module+0x6f/0x86 [uvcvideo]
+</I>&gt;<i> [&lt;c014858f&gt;] sys_init_module+0x15f/0x18d0
+</I>&gt;<i> [&lt;c01554a7&gt;] __alloc_pages+0x57/0x2f0
+</I>&gt;<i> [&lt;f8bc5000&gt;] crypto_remove_final+0x0/0x50 [crypto_algapi]
+</I>&gt;<i> [&lt;c028f55d&gt;] tty_write+0x1bd/0x1d0
+</I>&gt;<i> [&lt;c010431e&gt;] sysenter_past_esp+0x5f/0x85
+</I>&gt;<i> =======================
+</I>&gt;<i> Code: 8b 44 24 20 89 44 24 5c b8 6f 01 be f8 e8 3f a6 68 c7 89 c2 89 44 
+</I>&gt;<i> 24 60 85 d2 b8 00 02 00 00 89 44 24 64 74 30 8d 74 24 60 89 f0 &lt;ff&gt; 52 
+</I>&gt;<i> 04 89 f0 8b 5c 24 60 8d 54 24 50 8b 4c 24 20 ff 53 08 89
+</I>&gt;<i> EIP: [&lt;f8bddbba&gt;] isight_load_firmware+0x1ba/0x570 [uvcvideo] SS:ESP 
+</I>&gt;<i> 0068:eaecbc7c
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i> 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002526.html">[Linux-uvc-devel]  [PATCH] Apple iSight
+</A></li>
+	<LI>Next message: <A HREF="002537.html">[Linux-uvc-devel] [PATCH] Apple iSight
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2534">[ date ]</a>
+              <a href="thread.html#2534">[ thread ]</a>
+              <a href="subject.html#2534">[ subject ]</a>
+              <a href="author.html#2534">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

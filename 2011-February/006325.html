@@ -1,0 +1,443 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] MS Lifecam disconnect event
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20MS%20Lifecam%20disconnect%20event&In-Reply-To=%3C1298529226.27937.10.camel%40zwerg%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006324.html">
+   <LINK REL="Next"  HREF="006247.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] MS Lifecam disconnect event</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20MS%20Lifecam%20disconnect%20event&In-Reply-To=%3C1298529226.27937.10.camel%40zwerg%3E"
+       TITLE="[Linux-uvc-devel] MS Lifecam disconnect event">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Thu Feb 24 07:33:46 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006324.html">[Linux-uvc-devel] MS Lifecam disconnect event
+</A></li>
+        <LI>Next message: <A HREF="006247.html">[Linux-uvc-devel] HP Pavillion DV3 WebCam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6325">[ date ]</a>
+              <a href="thread.html#6325">[ thread ]</a>
+              <a href="subject.html#6325">[ subject ]</a>
+              <a href="author.html#6325">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+suddenly i do not have complete log, but may be your cam do not send a
+FID bit. Try to reload the uvcvideo module with NO_FID quirk:
+
+rmmod uvcvideo &amp;&amp; modprobe uvcvideo trace=0xfff quirks=0x10
+
+You can find more quirks in source include/linux/uvcvideo.h or
+drivers/media/video/uvc/uvcvideo.h
+
+grep -R UVC_QUIRK_* uvcvideo.h | awk '{print $2&quot; &quot;$3}'
+UVC_QUIRK_STATUS_INTERVAL 0x00000001
+UVC_QUIRK_PROBE_MINMAX 0x00000002
+UVC_QUIRK_PROBE_EXTRAFIELDS 0x00000004
+UVC_QUIRK_BUILTIN_ISIGHT 0x00000008
+UVC_QUIRK_STREAM_NO_FID 0x00000010
+UVC_QUIRK_IGNORE_SELECTOR_UNIT 0x00000020
+UVC_QUIRK_FIX_BANDWIDTH 0x00000080
+UVC_QUIRK_PROBE_DEF 0x00000100
+UVC_QUIRK_RESTRICT_FRAME_RATE 0x00000200
+
+Am Donnerstag, den 24.02.2011, 14:54 +1100 schrieb linux newbie:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> Following is the debug message. My application code uses one mmap
+</I>&gt;<i> buffer. It queue's the buffer and then waits for one frame of data
+</I>&gt;<i> (using select), once the select breaks, it de-queue's the buffer and
+</I>&gt;<i> copies to application buffer and again re-queue's it. After some time
+</I>&gt;<i> (not consistent), disconnect event occurs.This happens only with MS
+</I>&gt;<i> life cam and not with Logitech cam.
+</I>&gt;<i> 
+</I>&gt;<i> # dmesg
+</I>&gt;<i> ).
+</I>&gt;<i> [  975.040000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.040000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.040000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.040000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.040000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.040000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.050000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.060000] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [  975.070000] uvcvideo: Frame complete (EOF found).
+</I>&gt;<i> [  975.070000] uvcvideo: EOF in empty payload.
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.070000] uvcvideo: USB isochronous frame lost (-18).
+</I>&gt;<i> [  975.080000] uvcvideo: uvc_v4l2_poll
+</I>&gt;<i> [  975.080000] uvcvideo: uvc_v4l2_ioctl
+</I>&gt;<i> [  975.080000] v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0445611)
+</I>&gt;<i> [  975.080000] uvcvideo: Dequeuing buffer 0 (3, 2048000 bytes).
+</I>&gt;<i> [  975.140000] hub 1-0:1.0: state 7 ports 2 chg 0000 evt 0004
+</I>&gt;<i> [  975.140000] str8100-ehci str8100-ehci: GetStatus port 2 status
+</I>&gt;<i> 001009 POWER sig=se0 PEC CONNECT
+</I>&gt;<i> [  975.140000] hub 1-0:1.0: port 2 enable change, status 00000501
+</I>&gt;<i> [  975.140000] hub 1-0:1.0: port 2 disabled by hub (EMI?), re-enabling...
+</I>&gt;<i> [  975.140000] hub 1-0:1.0: port 2, status 0501, change 0002, 480 Mb/s
+</I>&gt;<i> [  975.140000] usb 1-2: USB disconnect, address 2
+</I>&gt;<i> [  975.140000] usb 1-2: unregistering device
+</I>&gt;<i> [  975.140000] usb 1-2: usb_disable_device nuking all URBs
+</I>&gt;<i> [  975.140000] str8100-ehci str8100-ehci: shutdown urb c346c000 ep1in-iso
+</I>&gt;<i> [  975.140000] str8100-ehci str8100-ehci: shutdown urb c3fbf800 ep1in-iso
+</I>&gt;<i> [  975.140000] str8100-ehci str8100-ehci: shutdown urb c3fbf000 ep1in-iso
+</I>&gt;<i> [  975.140000] str8100-ehci str8100-ehci: shutdown urb c3fbe800 ep1in-iso
+</I>&gt;<i> [  975.140000] str8100-ehci str8100-ehci: shutdown urb c3fbe000 ep1in-iso
+</I>&gt;<i> [  975.170000] usb 1-2: unlink qh16-0001/ffc02100 start 15 [1/0 us]
+</I>&gt;<i> [  975.170000] str8100-ehci str8100-ehci: shutdown urb c3c5b540 ep3in-intr
+</I>&gt;<i> [  975.170000] usb 1-2: unregistering interface 1-2:1.0
+</I>&gt;<i> [  975.180000] usb 1-2:1.0: uevent
+</I>&gt;<i> [  975.180000] usb 1-2: unregistering interface 1-2:1.1
+</I>&gt;<i> [  975.180000] usb 1-2:1.1: uevent
+</I>&gt;<i> [  975.180000] uvcvideo: uvc_v4l2_ioctl
+</I>&gt;<i> [  975.180000] v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+</I>&gt;<i> [  975.180000] uvcvideo: Queuing buffer 0.
+</I>&gt;<i> [  975.180000] uvcvideo: uvc_v4l2_ioctl
+</I>&gt;<i> [  975.180000] v4l2 ioctl VIDIOC_STREAMOFF, dir=-w (0x40045613)
+</I>&gt;<i> [  975.190000] usb 1-2: unregistering interface 1-2:1.2
+</I>&gt;<i> [  975.190000] usb 1-2:1.2: uevent
+</I>&gt;<i> [  975.190000] usb 1-2: unregistering interface 1-2:1.3
+</I>&gt;<i> [  975.190000] usb 1-2:1.3: uevent
+</I>&gt;<i> [  975.190000] usb 1-2: uevent
+</I>&gt;<i> [  975.200000] uvcvideo: uvc_v4l2_release
+</I>&gt;<i> [  975.200000] usb 1-2: selecting invalid interface 1
+</I>&gt;<i> [  975.260000] str8100-ehci str8100-ehci: GetStatus port 2 status
+</I>&gt;<i> 001002 POWER sig=se0 CSC
+</I>&gt;<i> [  975.260000] hub 1-0:1.0: state 7 ports 2 chg 0000 evt 0004
+</I>&gt;<i> [  975.260000] str8100-ehci str8100-ehci: GetStatus port 2 status
+</I>&gt;<i> 001002 POWER sig=se0 CSC
+</I>&gt;<i> [  975.260000] hub 1-0:1.0: port 2, status 0100, change 0001, 12 Mb/s
+</I>&gt;<i> [  975.420000] hub 1-0:1.0: debounce: port 2: total 100ms stable 100ms
+</I>&gt;<i> status 0x100
+</I>&gt;<i> 
+</I>&gt;<i> On Thu, Feb 24, 2011 at 4:01 AM, Alexey Fisher
+</I>&gt;<i> &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt; wrote:
+</I>&gt;<i> &gt; in this log i see only the usb-host part. Can you please reload uvcvideo
+</I>&gt;<i> &gt; module with:
+</I>&gt;<i> &gt; rmmod uvcvideo &amp;&amp; modprobe uvcvideo trace=0xfff
+</I>&gt;<i> &gt; and attach the log again.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; on my logitech cam you can bring it to freeze if you starts the video
+</I>&gt;<i> &gt; and stop it before it actually starts. So may be your app send some
+</I>&gt;<i> &gt; command before other was finished.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Am Dienstag, den 22.02.2011, 11:53 +1100 schrieb linux newbie:
+</I>&gt;<i> &gt;&gt; [  515.220000] hub 1-0:1.0: state 7 ports 2 chg 0000 evt 0004
+</I>&gt;<i> &gt;&gt; [  515.220000] str8100-ehci str8100-ehci: GetStatus port 2 status
+</I>&gt;<i> &gt;&gt; 001009 POWER sig=se0 PEC CONNECT
+</I>&gt;<i> &gt;&gt; [  515.220000] hub 1-0:1.0: port 2 enable change, status 00000501
+</I>&gt;<i> &gt;&gt; [  515.220000] hub 1-0:1.0: port 2 disabled by hub (EMI?), re-enabling...
+</I>&gt;<i> &gt;&gt; [  515.220000] hub 1-0:1.0: port 2, status 0501, change 0002, 480 Mb/s
+</I>&gt;<i> &gt;&gt; [  515.220000] usb 1-2: USB disconnect, address 2
+</I>&gt;<i> &gt;&gt; [  515.220000] usb 1-2: unregistering device
+</I>&gt;<i> &gt;&gt; [  515.220000] usb 1-2: usb_disable_device nuking all URBs
+</I>&gt;<i> &gt;&gt; [  515.220000] str8100-ehci str8100-ehci: shutdown urb c3fbe000 ep1in-iso
+</I>&gt;<i> &gt;&gt; [  515.220000] str8100-ehci str8100-ehci: shutdown urb c3c4d000 ep1in-iso
+</I>&gt;<i> &gt;&gt; [  515.220000] str8100-ehci str8100-ehci: shutdown urb c3fbf800 ep1in-iso
+</I>&gt;<i> &gt;&gt; [  515.220000] str8100-ehci str8100-ehci: shutdown urb c3fbf000 ep1in-iso
+</I>&gt;<i> &gt;&gt; [  515.220000] str8100-ehci str8100-ehci: shutdown urb c3fbe800 ep1in-iso
+</I>&gt;<i> &gt;&gt; [  515.260000] usb 1-2: unlink qh16-0001/ffc02100 start 15 [1/0 us]
+</I>&gt;<i> &gt;&gt; [  515.260000] str8100-ehci str8100-ehci: shutdown urb c3c5b540 ep3in-intr
+</I>&gt;<i> &gt;&gt; [  515.260000] usb 1-2: unregistering interface 1-2:1.0
+</I>&gt;<i> &gt;&gt; [  515.270000] usb 1-2:1.0: uevent
+</I>&gt;<i> &gt;&gt; [  515.270000] usb 1-2: unregistering interface 1-2:1.1
+</I>&gt;<i> &gt;&gt; [  515.270000] usb 1-2:1.1: uevent
+</I>&gt;<i> &gt;&gt; [  515.280000] usb 1-2: unregistering interface 1-2:1.2
+</I>&gt;<i> &gt;&gt; [  515.280000] usb 1-2:1.2: uevent
+</I>&gt;<i> &gt;&gt; [  515.280000] usb 1-2: unregistering interface 1-2:1.3
+</I>&gt;<i> &gt;&gt; [  515.280000] usb 1-2:1.3: uevent
+</I>&gt;<i> &gt;&gt; [  515.280000] usb 1-2: uevent
+</I>&gt;<i> &gt;&gt; [  515.340000] str8100-ehci str8100-ehci: GetStatus port 2 status
+</I>&gt;<i> &gt;&gt; 001002 POWER sig=se0 CSC
+</I>&gt;<i> &gt;&gt; [  515.340000] hub 1-0:1.0: state 7 ports 2 chg 0000 evt 0004
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; On Wed, Feb 16, 2011 at 6:07 AM, Laurent Pinchart
+</I>&gt;<i> &gt;&gt; &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt; wrote:
+</I>&gt;<i> &gt;&gt; &gt; Hi,
+</I>&gt;<i> &gt;&gt; &gt;
+</I>&gt;<i> &gt;&gt; &gt; On Wednesday 02 February 2011 01:07:41 linux newbie wrote:
+</I>&gt;<i> &gt;&gt; &gt;&gt; I developed one application that keeps on reading one frame of data
+</I>&gt;<i> &gt;&gt; &gt;&gt; from camera. If I connect MS Lifecam, I am getting USB disconnect
+</I>&gt;<i> &gt;&gt; &gt;&gt; event randomly. But this is not happening in Logitech versions of
+</I>&gt;<i> &gt;&gt; &gt;&gt; Camera.
+</I>&gt;<i> &gt;&gt; &gt;&gt;
+</I>&gt;<i> &gt;&gt; &gt;&gt; Has anyone came across this sort of issue? Is there any solution worth
+</I>&gt;<i> &gt;&gt; &gt;&gt; trying it?
+</I>&gt;<i> &gt;&gt; &gt;
+</I>&gt;<i> &gt;&gt; &gt; Kernel log ?
+</I>&gt;<i> &gt;&gt; &gt;
+</I>&gt;<i> &gt;&gt; &gt; --
+</I>&gt;<i> &gt;&gt; &gt; Regards,
+</I>&gt;<i> &gt;&gt; &gt;
+</I>&gt;<i> &gt;&gt; &gt; Laurent Pinchart
+</I>&gt;<i> &gt;&gt; &gt;
+</I>&gt;<i> &gt;&gt; _______________________________________________
+</I>&gt;<i> &gt;&gt; Linux-uvc-devel mailing list
+</I>&gt;<i> &gt;&gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> &gt;&gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; --
+</I>&gt;<i> &gt; Regards,
+</I>&gt;<i> &gt;        Alexey
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>
+-- 
+Regards,
+        Alexey
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006324.html">[Linux-uvc-devel] MS Lifecam disconnect event
+</A></li>
+	<LI>Next message: <A HREF="006247.html">[Linux-uvc-devel] HP Pavillion DV3 WebCam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6325">[ date ]</a>
+              <a href="thread.html#6325">[ thread ]</a>
+              <a href="subject.html#6325">[ subject ]</a>
+              <a href="author.html#6325">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

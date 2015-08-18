@@ -1,0 +1,256 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Does the &quot;reset patch&quot; still work?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Does%20the%20%22reset%20patch%22%20still%20work%3F&In-Reply-To=%3C2eed5f740611041124p67e1afekdc9dae98b1f480dd%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000946.html">
+   <LINK REL="Next"  HREF="000948.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Does the &quot;reset patch&quot; still work?</H1>
+    <B>Vidar Normann</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Does%20the%20%22reset%20patch%22%20still%20work%3F&In-Reply-To=%3C2eed5f740611041124p67e1afekdc9dae98b1f480dd%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Does the &quot;reset patch&quot; still work?">vidarno at gmail.com
+       </A><BR>
+    <I>Sat Nov  4 20:24:44 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000946.html">[Linux-uvc-devel] Does the &quot;reset patch&quot; still work?
+</A></li>
+        <LI>Next message: <A HREF="000948.html">[Linux-uvc-devel] Does the &quot;reset patch&quot; still work?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#947">[ date ]</a>
+              <a href="thread.html#947">[ thread ]</a>
+              <a href="subject.html#947">[ subject ]</a>
+              <a href="author.html#947">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thank you for this patch, I am sure it will fix my problems with the webcam
+locking up. One question though, how is this patch used? I tried copying the
+text into a file (called reset-patch) and then running the command
+patch &lt; reset-patch
+this results in the following output:
+
+patch &lt; reset-patch
+patching file uvc_driver.c
+Hunk #1 succeeded at 147 with fuzz 2.
+Hunk #2 FAILED at 1244.
+1 out of 2 hunks FAILED -- saving rejects to file uvc_driver.c.rej
+patching file uvc_v4l2.c
+Hunk #1 FAILED at 434.
+1 out of 1 hunk FAILED -- saving rejects to file uvc_v4l2.c.rej
+patching file uvc_video.c
+Hunk #1 FAILED at 45.
+1 out of 1 hunk FAILED -- saving rejects to file uvc_video.c.rej
+patching file uvcvideo.h
+Hunk #1 FAILED at 511.
+Hunk #2 succeeded at 665 with fuzz 2.
+1 out of 2 hunks FAILED -- saving rejects to file uvcvideo.h.rej
+
+Note also that I do not have any folders called new or old when downloading
+the split branch, when getting the last revision with this command:
+
+svn checkout <A HREF="svn://svn.berlios.de/linux-uvc/linux-uvc/branches/split">svn://svn.berlios.de/linux-uvc/linux-uvc/branches/split</A>
+
+The files I get are:
+split/uvc_ctrl.c
+split/uvc_queue.c
+split/uvc_video.c
+split/uvc_v4l2.c
+split/uvc_compat.h
+split/uvc_driver.c
+split/uvcvideo.h
+split/Makefile
+
+Again, thank you for your work :)
+
+Regards,
+Vidar
+
+On 11/4/06, Evgeny &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">evgeny at indent.ru</A>&gt; wrote:
+&gt;<i>
+</I>&gt;<i> I'd like to present so-called &quot;reset patch&quot; for revision 64 of
+</I>&gt;<i> split-branch.
+</I>&gt;<i> Enjoy
+</I>&gt;<i>
+</I>&gt;<i> diff -u old/uvc_driver.c new/uvc_driver.c
+</I>&gt;<i> --- old/uvc_driver.c    2006-11-04 22:14:32.000000000 +0300
+</I>&gt;<i> +++ new/uvc_driver.c    2006-11-04 02:17:08.000000000 +0300
+</I>&gt;<i> @@ -147,6 +147,52 @@
+</I>&gt;<i>         return 0;
+</I>&gt;<i> }
+</I>&gt;<i>
+</I>&gt;<i> +
+</I>&gt;<i> +/*
+</I>&gt;<i> + * Reset and Re-Initialize video device
+</I>&gt;<i> + */
+</I>&gt;<i> +int uvc_video_reinit(struct uvc_video_device *video)
+</I>&gt;<i> +{
+</I>&gt;<i> +       int ret;
+</I>&gt;<i> +
+</I>&gt;<i> +       if ((ret = uvc_usb_reset(video-&gt;dev)) &lt; 0)
+</I>&gt;<i> +               return ret;
+</I>&gt;<i> +
+</I>&gt;<i> +       if ((ret = uvc_set_video_ctrl(video, &amp;video-&gt;streaming-&gt;ctrl, 0))
+</I>&gt;<i> &lt; 0) {
+</I>&gt;<i> +               uvc_printk(KERN_DEBUG, &quot;uvc_video_reinit: Unable to commit
+</I>&gt;<i> format &quot;
+</I>&gt;<i> +                          &quot;(%d).\n&quot;, ret);
+</I>&gt;<i> +               return ret;
+</I>&gt;<i> +       }
+</I>&gt;<i> +
+</I>&gt;<i> +       return 0;
+</I>&gt;<i> +}
+</I>&gt;<i> +
+</I>&gt;<i> +
+</I>&gt;<i> +int uvc_usb_reset(struct uvc_device *dev)
+</I>&gt;<i> +{
+</I>&gt;<i> +       int l, ret;
+</I>&gt;<i> +
+</I>&gt;<i> +       l = usb_lock_device_for_reset(dev-&gt;udev, dev-&gt;intf);
+</I>&gt;<i> +
+</I>&gt;<i> +       if (l &gt;= 0) {
+</I>&gt;<i> +               ret = usb_reset_device(dev-&gt;udev);
+</I>&gt;<i> +               if (l)
+</I>&gt;<i> +                       usb_unlock_device(dev-&gt;udev);
+</I>&gt;<i> +       }
+</I>&gt;<i> +       else
+</I>&gt;<i> +               ret = -EBUSY;
+</I>&gt;<i> +
+</I>&gt;<i> +       if (ret)
+</I>&gt;<i> +               uvc_printk(KERN_DEBUG, &quot;uvc_usb_reset: Unable to reset usb
+</I>&gt;<i> device&quot;
+</I>&gt;<i> +                          &quot;(%d).\n&quot;, ret);
+</I>&gt;<i> +       else
+</I>&gt;<i> +               dev-&gt;state &amp;= ~UVC_DEV_IOERROR;
+</I>&gt;<i> +
+</I>&gt;<i> +       return ret;
+</I>&gt;<i> +}
+</I>&gt;<i> +
+</I>&gt;<i> +
+</I>&gt;<i> +
+</I>&gt;<i> /* Simplify a fraction using a simple continued fraction decomposition.
+</I>&gt;<i> The
+</I>&gt;<i>   * idea here is to convert fractions such as 333333/10000000 to 1/30
+</I>&gt;<i> using
+</I>&gt;<i>   * 32 bit arithmetic only. The algorithm is not perfect and relies upon
+</I>&gt;<i> two
+</I>&gt;<i> @@ -1198,9 +1244,19 @@
+</I>&gt;<i>          * parameters.
+</I>&gt;<i>          */
+</I>&gt;<i>         if ((ret = uvc_video_init(&amp;dev-&gt;video)) &lt; 0) {
+</I>&gt;<i> -               uvc_printk(KERN_ERR, &quot;Failed to initialize the device &quot;
+</I>&gt;<i> -                       &quot;(%d).\n&quot;, ret);
+</I>&gt;<i> -               return ret;
+</I>&gt;<i> +
+</I>&gt;<i> +               uvc_printk(KERN_ERR, &quot;Failed to initialize the device, &quot;
+</I>&gt;<i> +                          &quot;(%d). trying to reset ...\n&quot;, ret);
+</I>&gt;<i> +
+</I>&gt;<i> +               if ((ret = uvc_usb_reset(dev)))
+</I>&gt;<i> +                       return ret;
+</I>&gt;<i> +
+</I>&gt;<i> +               if ((ret = uvc_video_init(&amp;dev-&gt;video)) &lt; 0) {
+</I>&gt;<i> +                       uvc_printk(KERN_ERR, &quot;Failed to initialize the
+</I>&gt;<i> device &quot;
+</I>&gt;<i> +                                  &quot;(%d).\n&quot;, ret);
+</I>&gt;<i> +                       return ret;
+</I>&gt;<i> +               }
+</I>&gt;<i> +
+</I>&gt;<i>         }
+</I>&gt;<i>
+</I>&gt;<i>         /* Register the device with V4L. */
+</I>&gt;<i> diff -u old/uvc_v4l2.c new/uvc_v4l2.c
+</I>&gt;<i> --- old/uvc_v4l2.c      2006-11-04 22:14:32.000000000 +0300
+</I>&gt;<i> +++ new/uvc_v4l2.c      2006-11-04 21:30:52.000000000 +0300
+</I>&gt;<i> @@ -434,6 +434,10 @@
+</I>&gt;<i>                 mutex_unlock(&amp;video-&gt;queue.mutex);
+</I>&gt;<i>         }
+</I>&gt;<i>
+</I>&gt;<i> +       /* leave usb device in a clean state */
+</I>&gt;<i> +       if (video-&gt;dev-&gt;state &amp; UVC_DEV_IOERROR)
+</I>&gt;<i> +               uvc_video_reinit(video);
+</I>&gt;<i> +
+</I>&gt;<i>         /* Release the file handle. */
+</I>&gt;<i>         uvc_dismiss_privileges(handle);
+</I>&gt;<i>         kfree(handle);
+</I>&gt;<i> diff -u old/uvc_video.c new/uvc_video.c
+</I>&gt;<i> --- old/uvc_video.c     2006-11-04 22:14:32.000000000 +0300
+</I>&gt;<i> +++ new/uvc_video.c     2006-11-04 22:22:42.000000000 +0300
+</I>&gt;<i> @@ -45,6 +45,7 @@
+</I>&gt;<i>                 uvc_printk(KERN_ERR, &quot;Failed to query (%u) UVC control %u
+</I>&gt;<i> &quot;
+</I>&gt;<i>                         &quot;(unit %u) : %d (exp. %u).\n&quot;, query, cs, unit,
+</I>&gt;<i> ret,
+</I>&gt;<i>                         size);
+</I>&gt;<i> +               dev-&gt;state |= UVC_DEV_IOERROR;
+</I>&gt;<i>                 return -EIO;
+</I>&gt;<i>         }
+</I>&gt;<i>
+</I>&gt;<i> diff -u old/uvcvideo.h new/uvcvideo.h
+</I>&gt;<i> --- old/uvcvideo.h      2006-11-04 22:14:32.000000000 +0300
+</I>&gt;<i> +++ new/uvcvideo.h      2006-11-04 02:16:51.000000000 +0300
+</I>&gt;<i> @@ -511,6 +511,7 @@
+</I>&gt;<i>
+</I>&gt;<i> enum uvc_device_state {
+</I>&gt;<i>         UVC_DEV_DISCONNECTED = 1,
+</I>&gt;<i> +       UVC_DEV_IOERROR = 2,
+</I>&gt;<i> };
+</I>&gt;<i>
+</I>&gt;<i> struct uvc_device {
+</I>&gt;<i> @@ -664,6 +665,10 @@
+</I>&gt;<i> extern struct usb_host_endpoint *uvc_find_endpoint(
+</I>&gt;<i>                 struct usb_host_interface *alts, __u8 epaddr);
+</I>&gt;<i>
+</I>&gt;<i> +
+</I>&gt;<i> +extern int uvc_video_reinit(struct uvc_video_device *video);
+</I>&gt;<i> +extern int uvc_usb_reset(struct uvc_device *dev);
+</I>&gt;<i> +
+</I>&gt;<i> #endif /* __KERNEL__ */
+</I>&gt;<i>
+</I>&gt;<i> #endif
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Regards, Evgeny
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061104/37e1b969/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061104/37e1b969/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000946.html">[Linux-uvc-devel] Does the &quot;reset patch&quot; still work?
+</A></li>
+	<LI>Next message: <A HREF="000948.html">[Linux-uvc-devel] Does the &quot;reset patch&quot; still work?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#947">[ date ]</a>
+              <a href="thread.html#947">[ thread ]</a>
+              <a href="subject.html#947">[ subject ]</a>
+              <a href="author.html#947">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [RFC] Video probe control refactoring
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Video%20probe%20control%20refactoring&In-Reply-To=%3C200810300150.27134.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004153.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [RFC] Video probe control refactoring</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Video%20probe%20control%20refactoring&In-Reply-To=%3C200810300150.27134.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] [RFC] Video probe control refactoring">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Thu Oct 30 01:50:27 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004153.html">[Linux-uvc-devel] [RFC] Video probe control refactoring
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4155">[ date ]</a>
+              <a href="thread.html#4155">[ thread ]</a>
+              <a href="subject.html#4155">[ subject ]</a>
+              <a href="author.html#4155">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Herton,
+
+On Tuesday 28 October 2008, Herton Ronaldo Krzesinski wrote:
+&gt;<i> On Tuesday 28 October 2008 18:46:58 Herton Ronaldo Krzesinski wrote:
+</I>&gt;<i> &gt; Hi Laurent, I tested here today:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; ALi M5606 (Clevo M540SR)	(0402:5606)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I also saw that you commited the patch in svn, so far so good here, found
+</I>&gt;<i> &gt; no problems testing with ucview/ekiga, here is kernel log after ucview
+</I>&gt;<i> &gt; run:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; uvcvideo: Found UVC 1.00 device USB2.0 Camera (0402:5606)
+</I>&gt;<i> &gt; uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling
+</I>&gt;<i> &gt; workaround. input: USB2.0 Camera as /class/input/input13
+</I>&gt;<i> &gt; usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> &gt; USB Video Class driver (SVN r262)
+</I>&gt;<i> &gt; uvcvideo: UVC non compliance - GET_MIN/MAX(PROBE) incorrectly supported.
+</I>&gt;<i> &gt; Enabling workaround. uvcvideo: wCompQuality(130) : 0
+</I>&gt;<i> &gt; uvcvideo: wCompQuality(131) : 100
+</I>&gt;<i> &gt; uvcvideo: wCompQuality(130) : 0
+</I>&gt;<i> &gt; uvcvideo: wCompQuality(131) : 100
+</I>&gt;<i> &gt; uvcvideo: wCompQuality(130) : 0
+</I>&gt;<i> &gt; uvcvideo: wCompQuality(131) : 100
+</I>&gt;<i> &gt; uvcvideo: wCompQuality(130) : 0
+</I>&gt;<i> &gt; uvcvideo: wCompQuality(131) : 100
+</I>&gt;<i> &gt; uvcvideo: wCompQuality(130) : 0
+</I>&gt;<i> &gt; uvcvideo: wCompQuality(131) : 100
+</I>&gt;<i> &gt; uvcvideo: wCompQuality(130) : 0
+</I>&gt;<i> &gt; uvcvideo: wCompQuality(131) : 100
+</I>&gt;<i> &gt; uvcvideo: wCompQuality(130) : 0
+</I>&gt;<i> &gt; uvcvideo: wCompQuality(131) : 100
+</I>&gt;<i> &gt; uvcvideo: device USB2.0 Camera requested null bandwidth, defaulting to
+</I>&gt;<i> &gt; lowest.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; If you want more tests, with other applications, please drop a note.
+</I>&gt;<i>
+</I>&gt;<i> Found another one on a msi wind here that was also on the list, working ok
+</I>&gt;<i> too: uvcvideo: Found UVC 1.00 device BisonCam, NB Pro (5986:0203)
+</I>&gt;<i> uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling
+</I>&gt;<i> workaround. input: BisonCam, NB Pro as /class/input/input11
+</I>&gt;<i> usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> USB Video Class driver (v0.1.0)
+</I>&gt;<i> uvcvideo: UVC non compliance - GET_MIN/MAX(PROBE) incorrectly supported.
+</I>&gt;<i> Enabling workaround. uvcvideo: wCompQuality(130) : 0
+</I>&gt;<i> uvcvideo: wCompQuality(131) : 100
+</I>&gt;<i> uvcvideo: wCompQuality(130) : 0
+</I>&gt;<i> uvcvideo: wCompQuality(131) : 100
+</I>&gt;<i> uvcvideo: wCompQuality(130) : 0
+</I>&gt;<i> uvcvideo: wCompQuality(131) : 100
+</I>&gt;<i> uvcvideo: wCompQuality(130) : 0
+</I>&gt;<i> uvcvideo: wCompQuality(131) : 100
+</I>&gt;<i> uvcvideo: wCompQuality(130) : 0
+</I>&gt;<i> uvcvideo: wCompQuality(131) : 100
+</I>&gt;<i> uvcvideo: wCompQuality(130) : 0
+</I>&gt;<i> uvcvideo: wCompQuality(131) : 100
+</I>&gt;<i> uvcvideo: wCompQuality(130) : 0
+</I>&gt;<i> uvcvideo: wCompQuality(131) : 100
+</I>&gt;<i> uvcvideo: device BisonCam, NB Pro requested null bandwidth, defaulting to
+</I>&gt;<i> lowest. uvcvideo: Failed to query (129) UVC control 2 (unit 5) : -110 (exp.
+</I>&gt;<i> 2).
+</I>
+Thanks a lot for both reports. I've indeed committed the change to SVN after 
+getting a successful report of a Bison webcam user.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004153.html">[Linux-uvc-devel] [RFC] Video probe control refactoring
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4155">[ date ]</a>
+              <a href="thread.html#4155">[ thread ]</a>
+              <a href="subject.html#4155">[ subject ]</a>
+              <a href="author.html#4155">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

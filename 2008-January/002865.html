@@ -1,0 +1,486 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech QuickCam Sphere MP patch
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20Sphere%20MP%20patch&In-Reply-To=%3C001501c861b9%24d2baca40%243ec2fea9%40compaq6710b%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002871.html">
+   <LINK REL="Next"  HREF="002867.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech QuickCam Sphere MP patch</H1>
+    <B>Michel Stempin</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20Sphere%20MP%20patch&In-Reply-To=%3C001501c861b9%24d2baca40%243ec2fea9%40compaq6710b%3E"
+       TITLE="[Linux-uvc-devel] Logitech QuickCam Sphere MP patch">michel.stempin at wanadoo.fr
+       </A><BR>
+    <I>Mon Jan 28 15:26:50 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002871.html">[Linux-uvc-devel] Little questions about	uvcvideos...	And	possible solutions to my problem.
+</A></li>
+        <LI>Next message: <A HREF="002867.html">[Linux-uvc-devel] Logitech QuickCam Sphere MP patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2865">[ date ]</a>
+              <a href="thread.html#2865">[ thread ]</a>
+              <a href="subject.html#2865">[ subject ]</a>
+              <a href="author.html#2865">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi J&#246;rg,
+
+Enclosed you will find the patch. This time, I did a safe &quot;diff -Naur&quot;
+patch. It applies to the latest rev 173 without a glitch, using:
+$ cd source_dir
+$ patch -p1 &lt; path_to/timing-mp.diff
+
+This patch corrects the problems related in:
+<A HREF="http://www.quickcamteam.net/documentation/faq/logitech-webcam-linux-usb-inco">http://www.quickcamteam.net/documentation/faq/logitech-webcam-linux-usb-inco</A>
+mpatibilities
+
+I am using a Logitech QuickCam Sphere MP, id: 046d:08cc.
+
+Without the patch, the camera hangs randomly, with the following messages in
+the logs:
+
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32
+
+I also experience errors -110, -71 and -75.
+I have to unload the driver and reload it to recover the camera.
+
+Since I applied the given patch, I have no more problems, the camera works
+like a charm!
+
+I just had some trouble getting the PTZ to work, as the documentation on the
+dynamic ioctl() API is sparse (no example):)
+
+Don't forget to define UVC_RESET_ON_TIMEOUT in uvcvideo.h or in CFLAGS if
+you want the reset feature, in case resending the faulty URB is not
+sufficient.
+
+Regards,
+Michel Stempin
+
+________________________________________
+De&#160;: J&#246;rg Hermsdorf [mailto:<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">funtasyspace at yahoo.com</A>] 
+Envoy&#233;&#160;: lundi 28 janvier 2008 14:01
+&#192;&#160;: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel at lists.berlios.de</A>
+Cc&#160;: Michel Stempin
+Objet&#160;: AW: [Linux-uvc-devel] Logitech QuickCam Sphere MP patch
+
+I tried to apply your patch to revision 173, but I get the following errors:
+
+# patch &lt; timing-mp.diff
+patching file uvc_status.c
+Hunk #1 FAILED at 96.
+Hunk #2 FAILED at 111.
+Hunk #3 FAILED at 134.
+Hunk #4 FAILED at 160.
+4 out of 4 hunks FAILED -- saving rejects to file uvc_status.c.rej
+patching file uvc_video.c
+Hunk #1 FAILED at 38.
+Hunk #2 FAILED at 547.
+Hunk #3 FAILED at 773.
+3 out of 3 hunks FAILED -- saving rejects to file uvc_video.c.rej
+patching file uvc_v4l2.c
+Hunk #1 FAILED at 461.
+1 out of 1 hunk FAILED -- saving rejects to file uvc_v4l2.c.rej
+patching file uvc_driver.c
+Hunk #1 succeeded at 156 with fuzz 1.
+Hunk #2 FAILED at 1459.
+Hunk #3 FAILED at 1594.
+2 out of 3 hunks FAILED -- saving rejects to file uvc_driver.c.rej
+patching file uvcvideo.h
+Hunk #1 succeeded at 324 with fuzz 2.
+Hunk #2 FAILED at 611.
+Hunk #3 FAILED at 625.
+Hunk #4 succeeded at 786 with fuzz 2.
+2 out of 4 hunks FAILED -- saving rejects to file uvcvideo.h.rej
+
+What am I doing wrong? Was your patch code garbled while sent over this
+mailing list? Could you send me your patch as a separate patch.diff text
+file as an attachment, please? Thanks.
+
+Best Regards,
+J&#246;rg
+
+----- Urspr&#252;ngliche Mail ----
+Von: Michel Stempin &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">michel.stempin at wanadoo.fr</A>&gt;
+An: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel at lists.berlios.de</A>
+Gesendet: Mittwoch, den 23. Januar 2008, 12:14:59 Uhr
+Betreff: [Linux-uvc-devel] Logitech QuickCam Sphere MP patch
+
+Hi list,
+
+I stumbled upon the timing problem with the QuickCam Sphere MP.
+
+Fortunately, I found Evgeny's patch. It was rather outdated, since code has
+undergone a lot of code refactoring since then. So, I had to adapt it to the
+last code (rev 173) in SVN.
+
+I had to modify it a little, since I was blocked before submitting the first
+URB, as dev-&gt;last_urb was initialized to 0. I also added some code to resend
+all URBs.
+
+Don't forget to define UVC_RESET_ON_TIMEOUT if you want the reset feature.
+
+I hope this will be useful to someone.
+
+Regards,
+
+-- 
+Michel Stempin
+
+Index: uvc_status.c
+===================================================================
+--- uvc_status.c&#160; &#160; &#160; &#160; (r&#233;vision 173)
++++ uvc_status.c&#160; &#160; &#160; &#160; (copie de travail)
+@@ -96,9 +96,14 @@
+&#160; &#160; &#160; &#160; /* Resubmit the URB. */
+&#160; &#160; &#160; &#160; urb-&gt;interval = dev-&gt;int_ep-&gt;desc.bInterval;
+&#160; &#160; &#160; &#160; if ((ret = usb_submit_urb(urb, GFP_ATOMIC)) &lt; 0) {
+-&#160; &#160; &#160; &#160; &#160; &#160; &#160; uvc_printk(KERN_ERR, &quot;Failed to resubmit status URB (%d).\n&quot;,
+-&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; ret);
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; if (ret == -EL2NSYNC) {
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; if ((ret = usb_submit_urb(urb, GFP_ATOMIC)) &lt; 0) {
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; uvc_printk(KERN_ERR, &quot;Failed to resubmit
+status URB (%d).\n&quot;,
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; ret);
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; }
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; }
+&#160; &#160; &#160; &#160; }
++&#160; &#160; &#160; dev-&gt;last_urb = jiffies;
+}
+
+int uvc_status_init(struct uvc_device *dev)
+@@ -106,6 +111,7 @@
+&#160; &#160; &#160; &#160; struct usb_host_endpoint *ep = dev-&gt;int_ep;
+&#160; &#160; &#160; &#160; unsigned int pipe;
+&#160; &#160; &#160; &#160; int interval;
++&#160; &#160; &#160; int ret = 0;
+
+&#160; &#160; &#160; &#160; if (ep == NULL)
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; return 0;
+@@ -128,7 +134,16 @@
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; dev-&gt;status, sizeof dev-&gt;status, uvc_status_complete,
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; dev, interval);
+
+-&#160; &#160; &#160; return usb_submit_urb(dev-&gt;int_urb, GFP_KERNEL);
++&#160; &#160; &#160; if ((ret = usb_submit_urb(dev-&gt;int_urb, GFP_KERNEL)) &lt; 0) {
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; if (ret == -EL2NSYNC) {
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; if ((ret = usb_submit_urb(dev-&gt;int_urb, GFP_KERNEL))
+&lt; 0) {
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; uvc_printk(KERN_ERR, &quot;Failed to resubmit
+status URB (%d).\n&quot;,
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; ret);
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; }
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; }
++&#160; &#160; &#160; }
++&#160; &#160; &#160; dev-&gt;last_urb = jiffies;
++&#160; &#160; &#160; return ret;
+}
+
+void uvc_status_cleanup(struct uvc_device *dev)
+@@ -145,9 +160,19 @@
+
+int uvc_status_resume(struct uvc_device *dev)
+{
++&#160; &#160; &#160; int ret = 0;
+&#160; &#160; &#160; &#160; if (dev-&gt;int_urb == NULL)
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; return 0;
+
+-&#160; &#160; &#160; return usb_submit_urb(dev-&gt;int_urb, GFP_KERNEL);
++&#160; &#160; &#160; if ((ret = usb_submit_urb(dev-&gt;int_urb, GFP_KERNEL)) &lt; 0) {
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; if (ret == -EL2NSYNC) {
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; if ((ret = usb_submit_urb(dev-&gt;int_urb, GFP_KERNEL))
+&lt; 0) {
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; uvc_printk(KERN_ERR, &quot;Failed to resubmit
+status URB (%d).\n&quot;,
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; ret);
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; }
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; }
++&#160; &#160; &#160; }
++&#160; &#160; &#160; dev-&gt;last_urb = jiffies;
++&#160; &#160; &#160; return ret;
+}
+
+Index: uvc_video.c
+===================================================================
+--- uvc_video.c (r&#233;vision 173)
++++ uvc_video.c (copie de travail)
+@@ -38,18 +38,37 @@
+&#160; &#160; &#160; &#160; __u8 type = USB_TYPE_CLASS | USB_RECIP_INTERFACE;
+&#160; &#160; &#160; &#160; unsigned int pipe;
+&#160; &#160; &#160; &#160; int ret;
++&#160; &#160; &#160; int delayed = 0;
+
+&#160; &#160; &#160; &#160; pipe = (query &amp; 0x80) ? usb_rcvctrlpipe(dev-&gt;udev, 0)
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; : usb_sndctrlpipe(dev-&gt;udev, 0);
+&#160; &#160; &#160; &#160; type |= (query &amp; 0x80) ? USB_DIR_IN : USB_DIR_OUT;
+
++&#160; &#160; &#160; if (dev-&gt;last_urb) {
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; while (time_before(jiffies,dev-&gt;last_urb + 2)) {
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; schedule();
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; delayed = 1;
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; }
++&#160; &#160; &#160; }
++
+&#160; &#160; &#160; &#160; ret = usb_control_msg(dev-&gt;udev, pipe, query, type, cs &lt;&lt; 8,
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; unit &lt;&lt; 8 | intfnum, data, size, timeout);
++&#160; &#160; &#160; dev-&gt;last_urb = jiffies;
+
+&#160; &#160; &#160; &#160; if (ret != size) {
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; uvc_printk(KERN_ERR, &quot;Failed to query (%u) UVC control %u &quot;
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &quot;(unit %u) : %d (exp. %u).\n&quot;, query, cs, unit, ret,
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; size);
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; if (delayed) {
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; uvc_printk(KERN_ERR,&quot;usb_control_msg was delayed\n&quot;);
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; } else {
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; uvc_printk(KERN_ERR,&quot;usb_control_msg was NOT
+delayed\n&quot;);
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; }
++#ifdef UVC_RESET_ON_TIMEOUT
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; if (ret == -ETIMEDOUT) // reset the device in case of -110
+error
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; dev-&gt;state |= UVC_DEV_IOERROR;
++#endif
++
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; return -EIO;
+&#160; &#160; &#160; &#160; }
+
+@@ -528,9 +547,15 @@
+&#160; &#160; &#160; &#160; video-&gt;decode(urb, video, buf);
+
+&#160; &#160; &#160; &#160; if ((ret = usb_submit_urb(urb, GFP_ATOMIC)) &lt; 0) {
+-&#160; &#160; &#160; &#160; &#160; &#160; &#160; uvc_printk(KERN_ERR, &quot;Failed to resubmit video URB (%d).\n&quot;,
+-&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; ret);
+-&#160; &#160; &#160; &#160; }
++
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; if (ret == -EL2NSYNC) {
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; if ((ret = usb_submit_urb(urb, GFP_ATOMIC)) &lt; 0) {
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; uvc_printk(KERN_ERR, &quot;Failed to resubmit
+video URB (%d).\n&quot;,
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; ret);
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; }
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; }
++&#160; &#160; &#160; }
++&#160; &#160; &#160; video-&gt;dev-&gt;last_urb = jiffies;
+}
+
+/*
+@@ -748,6 +773,7 @@
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; return ret;
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; }
+&#160; &#160; &#160; &#160; }
++&#160; &#160; &#160; video-&gt;dev-&gt;last_urb = jiffies;
+
+&#160; &#160; &#160; &#160; return 0;
+}
+Index: uvc_v4l2.c
+===================================================================
+--- uvc_v4l2.c&#160; (r&#233;vision 173)
++++ uvc_v4l2.c&#160; (copie de travail)
+@@ -461,6 +461,12 @@
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; mutex_unlock(&amp;video-&gt;queue.mutex);
+&#160; &#160; &#160; &#160; }
+
++#ifdef UVC_RESET_ON_TIMEOUT
++&#160; &#160; &#160; /* leave usb device in a clean state */
++&#160; &#160; &#160; if (video-&gt;dev-&gt;state &amp; UVC_DEV_IOERROR)
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; uvc_video_reinit(video);
++#endif
++
+&#160; &#160; &#160; &#160; /* Release the file handle. */
+&#160; &#160; &#160; &#160; uvc_dismiss_privileges(handle);
+&#160; &#160; &#160; &#160; kfree(handle);
+Index: uvc_driver.c
+===================================================================
+--- uvc_driver.c&#160; &#160; &#160; &#160; (r&#233;vision 173)
++++ uvc_driver.c&#160; &#160; &#160; &#160; (copie de travail)
+@@ -156,6 +156,52 @@
+&#160; &#160; &#160; &#160; return 0;
+}
+
++#ifdef UVC_RESET_ON_TIMEOUT
++/* 
++ * Reset and Re-Initialize video device
++ */
++int uvc_video_reinit(struct uvc_video_device *video)
++{
++&#160; &#160; &#160; int ret;
++
++&#160; &#160; &#160; if ((ret = uvc_usb_reset(video-&gt;dev)) &lt; 0)
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; return ret;
++
++&#160; &#160; &#160; if ((ret = uvc_set_video_ctrl(video, &amp;video-&gt;streaming-&gt;ctrl, 0)) &lt;
+0) {
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; uvc_printk(KERN_DEBUG, &quot;uvc_video_reinit: Unable to commit
+format &quot;
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &quot;(%d).\n&quot;, ret);
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; return ret;
++&#160; &#160; &#160; }
++
++&#160; &#160; &#160; return 0;
++}
++
++
++int uvc_usb_reset(struct uvc_device *dev)
++{
++&#160; &#160; &#160; int l, ret;
++
++&#160; &#160; &#160; l = usb_lock_device_for_reset(dev-&gt;udev, dev-&gt;intf);
++
++&#160; &#160; &#160; if (l &gt;= 0) {
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; ret = usb_reset_device(dev-&gt;udev);
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; if (l)
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; usb_unlock_device(dev-&gt;udev);
++&#160; &#160; &#160; }
++&#160; &#160; &#160; else
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; ret = -EBUSY;
++
++&#160; &#160; &#160; if (ret)
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; uvc_printk(KERN_DEBUG, &quot;uvc_usb_reset: Unable to reset usb
+device&quot;
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &quot;(%d).\n&quot;, ret);
++&#160; &#160; &#160; else
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; dev-&gt;state &amp;= ~UVC_DEV_IOERROR;
++
++&#160; &#160; &#160; return ret;
++}
++#endif
++
++
+/* Simplify a fraction using a simple continued fraction decomposition. The
+&#160; * idea here is to convert fractions such as 333333/10000000 to 1/30 using
+&#160; * 32 bit arithmetic only. The algorithm is not perfect and relies upon two
+@@ -1413,9 +1459,23 @@
+&#160; &#160; &#160; &#160; * parameters.
+&#160; &#160; &#160; &#160; */
+&#160; &#160; &#160; &#160; if ((ret = uvc_video_init(&amp;dev-&gt;video)) &lt; 0) {
++#ifdef UVC_RESET_ON_TIMEOUT
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; uvc_printk(KERN_ERR, &quot;Failed to initialize the device, &quot;
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &quot;(%d). trying to reset ...\n&quot;, ret);
++
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; if ((ret = uvc_usb_reset(dev)))
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; return ret;
++
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; if ((ret = uvc_video_init(&amp;dev-&gt;video)) &lt; 0) {
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; uvc_printk(KERN_ERR, &quot;Failed to initialize the device
+&quot;
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &quot;(%d).\n&quot;, ret);
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; return ret;
++&#160; &#160; &#160; &#160; &#160; &#160; &#160; }
++#else
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; uvc_printk(KERN_ERR, &quot;Failed to initialize the device &quot;
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &quot;(%d).\n&quot;, ret);
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; return ret;
++#endif
+&#160; &#160; &#160; &#160; }
+
+&#160; &#160; &#160; &#160; /* Register the device with V4L. */
+@@ -1534,6 +1594,7 @@
+&#160; &#160; &#160; &#160; dev-&gt;udev = usb_get_dev(udev);
+&#160; &#160; &#160; &#160; dev-&gt;intf = usb_get_intf(intf);
+&#160; &#160; &#160; &#160; dev-&gt;intfnum = intf-&gt;cur_altsetting-&gt;desc.bInterfaceNumber;
++&#160; &#160; &#160; dev-&gt;last_urb = 0;
+&#160; &#160; &#160; &#160; dev-&gt;quirks = id-&gt;driver_info;
+
+&#160; &#160; &#160; &#160; /* Parse the Video Class control descriptor */
+Index: uvcvideo.h
+===================================================================
+--- uvcvideo.h&#160; (r&#233;vision 173)
++++ uvcvideo.h&#160; (copie de travail)
+@@ -324,6 +324,9 @@
+#define UVC_FMT_FLAG_COMPRESSED&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0x00000001
+#define UVC_FMT_FLAG_STREAM&#160; &#160; &#160; &#160; &#160; &#160; 0x00000002
+
++/* Uncomment this to enable reset-on-timeout*/
++//#define UVC_RESET_ON_TIMEOUT
++
+/* ------------------------------------------------------------------------
+&#160; * Structures.
+&#160; */
+@@ -608,6 +611,11 @@
+
+enum uvc_device_state {
+&#160; &#160; &#160; &#160; UVC_DEV_DISCONNECTED = 1,
++
++#ifdef UVC_RESET_ON_TIMEOUT
++&#160; &#160; &#160; UVC_DEV_IOERROR = 2,
++#endif
++
+};
+
+struct uvc_device {
+@@ -617,6 +625,7 @@
+&#160; &#160; &#160; &#160; int intfnum;
+
+&#160; &#160; &#160; &#160; enum uvc_device_state state;
++&#160; &#160; &#160; unsigned long last_urb;
+&#160; &#160; &#160; &#160; struct kref kref;
+&#160; &#160; &#160; &#160; struct list_head list;
+
+@@ -777,6 +786,14 @@
+extern struct usb_host_endpoint *uvc_find_endpoint(
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; struct usb_host_interface *alts, __u8 epaddr);
+
++
++#ifdef UVC_RESET_ON_TIMEOUT
++
++extern int uvc_video_reinit(struct uvc_video_device *video);
++extern int uvc_usb_reset(struct uvc_device *dev);
++
++#endif
++
+/* Quirks support */
+void uvc_video_decode_isight (struct urb *urb, struct uvc_video_device
+*video, 
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; struct uvc_buffer *buf);
+
+
+_______________________________________________
+Linux-uvc-devel mailing list
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+
+
+________________________________________
+Ihre erste Baustelle? Wissenswertes f&#252;r Bastler und Hobby Handwerker. 
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: timing-mp.diff
+Type: application/octet-stream
+Size: 7443 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080128/8736bb34/attachment.obj">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080128/8736bb34/attachment.obj</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002871.html">[Linux-uvc-devel] Little questions about	uvcvideos...	And	possible solutions to my problem.
+</A></li>
+	<LI>Next message: <A HREF="002867.html">[Linux-uvc-devel] Logitech QuickCam Sphere MP patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2865">[ date ]</a>
+              <a href="thread.html#2865">[ thread ]</a>
+              <a href="subject.html#2865">[ subject ]</a>
+              <a href="author.html#2865">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

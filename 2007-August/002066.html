@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] lsusb.c: Fix video class output and input	headers
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20lsusb.c%3A%20Fix%20video%20class%20output%20and%20input%0A%09headers&In-Reply-To=%3C20070828185411.GA1325%40ifup.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002067.html">
+   <LINK REL="Next"  HREF="002072.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] lsusb.c: Fix video class output and input	headers</H1>
+    <B>Brandon Philips</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20lsusb.c%3A%20Fix%20video%20class%20output%20and%20input%0A%09headers&In-Reply-To=%3C20070828185411.GA1325%40ifup.org%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] lsusb.c: Fix video class output and input	headers">brandon at ifup.org
+       </A><BR>
+    <I>Tue Aug 28 20:54:11 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002067.html">[Linux-uvc-devel] Creative Live! Cam Optia AF
+</A></li>
+        <LI>Next message: <A HREF="002072.html">[Linux-uvc-devel] [PATCH] lsusb.c: Fix video class output and	input headers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2066">[ date ]</a>
+              <a href="thread.html#2066">[ thread ]</a>
+              <a href="subject.html#2066">[ subject ]</a>
+              <a href="author.html#2066">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Fix the offsets in the printf for the video class output and input
+headers.  Tested with UVC device 046d:08cb by Logitech, Inc.
+
+Copied from USB_Video_Class_1.1.pdf Table 3.9.2.1 for reference:
+
+Offset	Field			Size	Value
+0	bLength			1	Number	
+1	bDescriptorType		1	Constant
+2	bDescriptorSubtype	1	Constant
+3	bNumFormats		1	Number	
+4	wTotalLength		2	Number	
+6	bEndpointAddress	1	Endpoint
+7	bmInfo			1	Bitmap	
+8	bTerminalLink		1	Constant
+9	bStillCaptureMethod	1	Number	
+10	bTriggerSupport		1	Number
+11	bTriggerUsage		1	Number
+12	bControlSize		1	Number
+
+Output from instrumented uvcvideo.ko:
+
+        bNumFormats                        3
+        wTotalLength                      742
+        bEndPointAddress                  129
+        bmInfo                              0
+        bTerminalLink                       5
+        bStillCaptureMethod                 2
+        bTriggerSupport                     1
+        bTriggerUsage                       0
+        bControlSize                        1
+
+Output from corrected lsusb:
+
+        bNumFormats                        3
+        wTotalLength                      742
+        bEndPointAddress                  129
+        bmInfo                              0
+        bTerminalLink                       5
+        bStillCaptureMethod                 2
+        bTriggerSupport                     1
+        bTriggerUsage                       0
+        bControlSize                        1
+
+
+Signed-off-by: Brandon Philips &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bphilips at suse.de</A>&gt;
+
+---
+ lsusb.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+Index: usbutils-0.72/lsusb.c
+===================================================================
+--- usbutils-0.72.orig/lsusb.c
++++ usbutils-0.72/lsusb.c
+@@ -1497,7 +1497,7 @@ static void dump_videostreaming_interfac
+ 		n = buf[12];
+ 		if (buf[0] &lt; 13+p*n)
+ 			printf(&quot;      Warning: Descriptor too short\n&quot;);
+-		printf(&quot;        bNumFormarts                    %5u\n&quot;
++		printf(&quot;        bNumFormats                    %5u\n&quot;
+ 		       &quot;        wTotalLength                    %5u\n&quot;
+ 		       &quot;        bEndPointAddress                %5u\n&quot;
+ 		       &quot;        bmInfo                          %5u\n&quot;
+@@ -1506,8 +1506,8 @@ static void dump_videostreaming_interfac
+ 		       &quot;        bTriggerSupport                 %5u\n&quot;
+ 		       &quot;        bTriggerUsage                   %5u\n&quot;
+ 		       &quot;        bControlSize                    %5u\n&quot;,
+-		       p, buf[5] | (buf[6] &lt;&lt; 8), buf[7], buf[8], buf[9],
+-		       buf[10], buf[11], buf[12], n);
++		       p, buf[4] | (buf[5] &lt;&lt; 8), buf[6], buf[7], buf[8],
++		       buf[9], buf[10], buf[11], n);
+ 		for(i = 0; i &lt; p; i++)
+ 			printf(&quot;        bmaControls(%2u)                 %5u\n&quot;, i, buf[13+p*n]);
+ 		dump_junk(buf, &quot;        &quot;, 13+p*n);
+@@ -1524,7 +1524,7 @@ static void dump_videostreaming_interfac
+ 		       &quot;        bEndpointAddress            %5u\n&quot;
+ 		       &quot;        bTerminalLink               %5u\n&quot;
+ 		       &quot;        bControlSize                %5u\n&quot;,
+-		       p, buf[4] | (buf[5] &lt;&lt; 8), buf[6], buf[8], n);
++		       p, buf[4] | (buf[5] &lt;&lt; 8), buf[6], buf[7], n);
+ 		for(i = 0; i &lt; p; i++)
+ 			printf(&quot;        bmaControls(%2u)             %5u\n&quot;, i, buf[9+p*n]);
+ 		dump_junk(buf, &quot;        &quot;, 9+p*n);
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002067.html">[Linux-uvc-devel] Creative Live! Cam Optia AF
+</A></li>
+	<LI>Next message: <A HREF="002072.html">[Linux-uvc-devel] [PATCH] lsusb.c: Fix video class output and	input headers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2066">[ date ]</a>
+              <a href="thread.html#2066">[ thread ]</a>
+              <a href="subject.html#2066">[ subject ]</a>
+              <a href="author.html#2066">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

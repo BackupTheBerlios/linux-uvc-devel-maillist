@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Discard%20overrun%20%28corrupted%29%20RX%20images&In-Reply-To=%3C248490.27824.qm%40web120004.mail.ne1.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005833.html">
+   <LINK REL="Next"  HREF="005838.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images</H1>
+    <B>P F</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Discard%20overrun%20%28corrupted%29%20RX%20images&In-Reply-To=%3C248490.27824.qm%40web120004.mail.ne1.yahoo.com%3E"
+       TITLE="[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images">public_filter at yahoo.com
+       </A><BR>
+    <I>Fri Jul  9 22:08:53 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005833.html">[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+</A></li>
+        <LI>Next message: <A HREF="005838.html">[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5836">[ date ]</a>
+              <a href="thread.html#5836">[ thread ]</a>
+              <a href="subject.html#5836">[ subject ]</a>
+              <a href="author.html#5836">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+--- On Wed, 7/7/10, Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt; wrote:
+&gt;<i>
+</I>&gt;<i> In that case the corruption probably happens on the camera
+</I>&gt;<i> side. Have you 
+</I>&gt;<i> enabled the UVC_TRACE_FRAME trace level ? If so, do you get
+</I>&gt;<i> any &quot;Dropping 
+</I>&gt;<i> payload (error bit set)&quot; message being printed to the
+</I>&gt;<i> kernel log ?
+</I>&gt;<i>
+</I>When I enable UVC_TRACE_FRAME, I get a lot of these:
+ uvcvideo: Dropping payload (out of sync).
+
+And of course sometimes these:
+ uvcvideo: Frame complete (EOF found).
+
+And very rarely this:
+ uvcvideo: USB isochronous frame lost (-70).
+
+Interestingly, if syslogd is active along with the tracing, then I see no
+corrupted frames.  However, if I disable syslog and just extract the log
+from dmesg, then the corruption is present.  The logged messages are the
+same in both cases.  This behavior is consistent with what I've seen
+before (more CPU available yields more corruption) and what leads me to
+suspect a cache aliasing/coherency issue.
+
+Also, the two cameras I have seen this corruption with use different ASICs
+(SPCA2211 and PAC7332), so that is the reason I am leaning towards the
+platform rather than camera-side corruption.
+
+I have ordered a camera which uses the gspca driver (Logitech QuickCam
+Communicate STX), so hopefully that should give me something to compare
+against.  The gscpa maintainer long ago noted memory corruption on ARM
+platforms (<A HREF="http://sourceforge.net/mailarchive/forum.php?thread_name=200512301104.13088.mxhaard%40magic.fr&amp;forum_name=spca50x-devs">http://sourceforge.net/mailarchive/forum.php?thread_name=200512301104.13088.mxhaard%40magic.fr&amp;forum_name=spca50x-devs</A>),
+so maybe he will have some insight.
+
+Regards,
+
+Filter
+
+
+      
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005833.html">[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+</A></li>
+	<LI>Next message: <A HREF="005838.html">[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5836">[ date ]</a>
+              <a href="thread.html#5836">[ thread ]</a>
+              <a href="subject.html#5836">[ subject ]</a>
+              <a href="author.html#5836">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

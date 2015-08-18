@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Has anybody implemented UVC bulk transfer on	a device? Some doubts need clarification.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Has%20anybody%20implemented%20UVC%20bulk%20transfer%20on%0A%09a%20device%3F%20Some%20doubts%20need%20clarification.&In-Reply-To=%3Cabc44c8d0911242043t1020c892pb2c66381de47001b%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005335.html">
+   <LINK REL="Next"  HREF="005337.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Has anybody implemented UVC bulk transfer on	a device? Some doubts need clarification.</H1>
+    <B>Ramesh Rajagopal</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Has%20anybody%20implemented%20UVC%20bulk%20transfer%20on%0A%09a%20device%3F%20Some%20doubts%20need%20clarification.&In-Reply-To=%3Cabc44c8d0911242043t1020c892pb2c66381de47001b%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Has anybody implemented UVC bulk transfer on	a device? Some doubts need clarification.">shmera at gmail.com
+       </A><BR>
+    <I>Wed Nov 25 05:43:37 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005335.html">[Linux-uvc-devel] Has anybody implemented UVC bulk transfer on	a device? Some doubts need clarification.
+</A></li>
+        <LI>Next message: <A HREF="005337.html">[Linux-uvc-devel] Has anybody implemented UVC bulk transfer on	a device? Some doubts need clarification.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5336">[ date ]</a>
+              <a href="thread.html#5336">[ thread ]</a>
+              <a href="subject.html#5336">[ subject ]</a>
+              <a href="author.html#5336">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+
+&gt;<i> sorry for the late reply.
+</I>&gt;<i>
+</I>
+ Thats fine.
+
+&gt;<i>
+</I>&gt;<i> On Wednesday 11 November 2009 12:43:38 Ramesh Rajagopal wrote:
+</I>&gt;<i> &gt; Hi Laurent,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thank you for the reply. The webcam  is linux based and I am using the
+</I>&gt;<i> &gt; UVC gadget driver of linux kernel 2.6.10.
+</I>&gt;<i> &gt; In this kernel I don't see any example doing UVC bulk transfer. It is
+</I>&gt;<i> &gt; working perfectly with ISOC.
+</I>&gt;<i> &gt; Can you please let me know, if there is any example code that does UVC
+</I>&gt;<i> bulk
+</I>&gt;<i> &gt; transfer ? I couldn't find it any.
+</I>&gt;<i>
+</I>&gt;<i> The UVC gadget driver I wrote uses isochronous transfers. It should be
+</I>&gt;<i> possible to use bulk transfers by modifying the driver, but there's no code
+</I>&gt;<i> sample that I'm aware of.
+</I>&gt;<i>
+</I>
+Does this mean, I have to change the musb gadget driver code? I changed my
+driver
+which registers with musb. I didn't chane anything on the musb gadget
+driver.
+
+
+&gt;<i>
+</I>&gt;<i> &gt; The uvc specification is not clear enough to distinguish ISOC and BULK
+</I>&gt;<i> &gt; transfer atleast from my understanding.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; While doing ISOC transfer, we have an alternate Interface Setting, when
+</I>&gt;<i> we
+</I>&gt;<i> &gt; get a SET_INTERFACE we start transferring the UVC header first alone to
+</I>&gt;<i> &gt; start the transfer. There after each IN token from host will carry the
+</I>&gt;<i> &gt; frames if any, otherwise header alone goes.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; In case of BULK, with alternate settings, the host machine hangs.
+</I>&gt;<i> &gt; SET_INTERFACE (alternateSetting set 1), Why is it like that?
+</I>&gt;<i>
+</I>&gt;<i> According to the UVC specification, streaming interfaces with bulk
+</I>&gt;<i> endpoints
+</I>&gt;<i> don't use alternate settings.
+</I>&gt;<i>
+</I>&gt;<i> This is actually a problem, as the UVC specification doesn't provide any
+</I>&gt;<i> way
+</I>&gt;<i> for bulk devices to detect when the host starts and stops streaming.
+</I>&gt;<i>
+</I>
+Do you aware when do I start sending packets to the host? In case of ISOC,
+we start sending packets
+when get SET_INTERFACE (enabling the alternate setting) request. Please let
+me know.
+
+
+&gt;<i>
+</I>&gt;<i> &gt; So I removed alternate settings and till enumeration it is proper. Then
+</I>&gt;<i> &gt; After I get VS_PROBE_COMMIT from the host, I start transferring exactly
+</I>&gt;<i> &gt;  same like ISOC, but
+</I>&gt;<i> &gt; I don't see any video on the host and no more proceedings from here. The
+</I>&gt;<i> &gt; data is not going from the FIFO, hence I am not getting any more TX
+</I>&gt;<i> &gt; interrupt from my device.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I am attaching my devices descriptor as well as host side logs. Please
+</I>&gt;<i> find
+</I>&gt;<i> &gt; the attachment. Please let me know, is there any link talk about BULK
+</I>&gt;<i> &gt; transfer or example.
+</I>&gt;<i>
+</I>&gt;<i> The descriptors look correct at first glance. The log shows that the driver
+</I>&gt;<i> doesn't receive any bulk packet (assuming the trace parameter has been set
+</I>&gt;<i> to
+</I>&gt;<i> 255). This seems to indicate a low-level problem, probably on the device
+</I>&gt;<i> side.
+</I>&gt;<i> My guess is that the device doesn't sent bulk packets. That would be easy
+</I>&gt;<i> to
+</I>&gt;<i> verify if you have access to a USB analyzer. If the assumption is correct,
+</I>&gt;<i> the
+</I>&gt;<i> problem is on the device side.
+</I>&gt;<i>
+</I>
+I see the packets are on the wire. USB Analyzer  shows me the data and even
+I verified the header data,
+it looks correct, Now I am not getting back the ACK from the host. Thanks
+for your Reply.
+
+&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Regards,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i>
+</I>
+Regards,
+Ramesh.
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091125/9bddd6d2/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091125/9bddd6d2/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005335.html">[Linux-uvc-devel] Has anybody implemented UVC bulk transfer on	a device? Some doubts need clarification.
+</A></li>
+	<LI>Next message: <A HREF="005337.html">[Linux-uvc-devel] Has anybody implemented UVC bulk transfer on	a device? Some doubts need clarification.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5336">[ date ]</a>
+              <a href="thread.html#5336">[ thread ]</a>
+              <a href="subject.html#5336">[ subject ]</a>
+              <a href="author.html#5336">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

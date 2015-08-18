@@ -1,0 +1,582 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Patch: Read support
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Patch%3A%20Read%20support&In-Reply-To=%3C200707182152.39298.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001886.html">
+   <LINK REL="Next"  HREF="001894.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Patch: Read support</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Patch%3A%20Read%20support&In-Reply-To=%3C200707182152.39298.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Patch: Read support">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Jul 18 21:52:39 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001886.html">[Linux-uvc-devel] Patch: Read support
+</A></li>
+        <LI>Next message: <A HREF="001894.html">[Linux-uvc-devel] Patch: Read support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1893">[ date ]</a>
+              <a href="thread.html#1893">[ thread ]</a>
+              <a href="subject.html#1893">[ subject ]</a>
+              <a href="author.html#1893">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Chris,
+
+On Friday 13 July 2007, Christopher HORLER wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> Here's a first attempt at supporting read - I'm sure there's bits to iron
+</I>&gt;<i> out, but it works for me.
+</I>
+I already applied whitespace cleanup and other cosmetic changes. I'll comment 
+on the rest.
+
+&gt;<i> Index: uvc_queue.c
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvc_queue.c	(revision 111)
+</I>&gt;<i> +++ uvc_queue.c	(working copy)
+</I>&gt;<i> @@ -63,6 +63,8 @@
+</I>&gt;<i>   *    At that point, any process waiting on the buffer will be woken up.
+</I>&gt;<i> If a *    process tries to dequeue a buffer after it has been marked ready,
+</I>&gt;<i> the *    dequeing will succeed immediately.
+</I>&gt;<i> +
+</I>&gt;<i> + *    Note: During the read operation the user / client is the driver
+</I>&gt;<i> itself. *
+</I>&gt;<i>   * 2. Buffers are queued, user is waiting on a buffer and the device gets
+</I>&gt;<i>   *    disconnected.
+</I>&gt;<i> @@ -91,11 +93,11 @@
+</I>&gt;<i>   *
+</I>&gt;<i>   * Pages are reserved to make sure they will not be swaped, as they will
+</I>&gt;<i> be * filled in URB completion handler.
+</I>&gt;<i> - *
+</I>&gt;<i> + *
+</I>&gt;<i>   * Buffers will be individually mapped, so they must all be page aligned.
+</I>&gt;<i>   */
+</I>&gt;<i>  int uvc_alloc_buffers(struct uvc_video_queue *queue, unsigned int
+</I>&gt;<i> nbuffers, -		unsigned int buflength)
+</I>&gt;<i> +		      unsigned int buflength, int memtype)
+</I>&gt;<i>  {
+</I>&gt;<i>  	unsigned int bufsize = PAGE_ALIGN(buflength);
+</I>&gt;<i>  	unsigned int i;
+</I>&gt;<i> @@ -108,7 +110,7 @@
+</I>&gt;<i>  	mutex_lock(&amp;queue-&gt;mutex);
+</I>&gt;<i>
+</I>&gt;<i>  	if ((ret = uvc_free_buffers(queue)) &lt; 0)
+</I>&gt;<i> -		goto done;
+</I>&gt;<i> +	  goto done;
+</I>&gt;<i>
+</I>&gt;<i>  	/* Decrement the number of buffers until allocation succeeds. */
+</I>&gt;<i>  	for (; nbuffers &gt; 0; --nbuffers) {
+</I>&gt;<i> @@ -131,7 +133,8 @@
+</I>&gt;<i>  		queue-&gt;buffer[i].buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+</I>&gt;<i>  		queue-&gt;buffer[i].buf.sequence = 0;
+</I>&gt;<i>  		queue-&gt;buffer[i].buf.field = V4L2_FIELD_NONE;
+</I>&gt;<i> -		queue-&gt;buffer[i].buf.memory = V4L2_MEMORY_MMAP;
+</I>&gt;<i> +		if (memtype == V4L2_MEMORY_MMAP)
+</I>&gt;<i> +		  queue-&gt;buffer[i].buf.memory = memtype;
+</I>&gt;<i>  		queue-&gt;buffer[i].buf.flags = 0;
+</I>&gt;<i>  		init_waitqueue_head(&amp;queue-&gt;buffer[i].wait);
+</I>&gt;<i>  	}
+</I>&gt;<i> @@ -154,6 +157,8 @@
+</I>&gt;<i>  {
+</I>&gt;<i>  	unsigned int i;
+</I>&gt;<i>
+</I>&gt;<i> +	uvc_trace(UVC_TRACE_CAPTURE, &quot;Freeing buffers\n&quot;);
+</I>&gt;<i> +
+</I>&gt;<i>  	for (i = 0; i &lt; queue-&gt;count; ++i) {
+</I>&gt;<i>  		if (queue-&gt;buffer[i].vma_use_count != 0)
+</I>&gt;<i>  			return -EBUSY;
+</I>&gt;<i> @@ -171,19 +176,20 @@
+</I>&gt;<i>  #endif
+</I>&gt;<i>  		vfree(queue-&gt;mem);
+</I>&gt;<i>  		queue-&gt;count = 0;
+</I>&gt;<i> +		queue-&gt;mem = NULL;
+</I>
+This is not required, as queue alloc/free operations use queue-&gt;count to track 
+the free/allocated state.
+
+&gt;<i>  	}
+</I>&gt;<i>
+</I>&gt;<i>  	return 0;
+</I>&gt;<i>  }
+</I>&gt;<i>
+</I>&gt;<i>  void uvc_query_buffer(struct uvc_buffer *buf,
+</I>&gt;<i> -		struct v4l2_buffer *v4l2_buf)
+</I>&gt;<i> +		      struct v4l2_buffer *v4l2_buf)
+</I>&gt;<i>  {
+</I>&gt;<i>  	memcpy(v4l2_buf, &amp;buf-&gt;buf, sizeof *v4l2_buf);
+</I>&gt;<i>
+</I>&gt;<i>  	if(buf-&gt;vma_use_count)
+</I>&gt;<i>  		v4l2_buf-&gt;flags |= V4L2_BUF_FLAG_MAPPED;
+</I>&gt;<i> -
+</I>&gt;<i> +
+</I>&gt;<i>  	switch (buf-&gt;state) {
+</I>&gt;<i>  	case UVC_BUF_STATE_ERROR:
+</I>&gt;<i>  	case UVC_BUF_STATE_DONE:
+</I>&gt;<i> @@ -199,6 +205,7 @@
+</I>&gt;<i>  	}
+</I>&gt;<i>  }
+</I>&gt;<i>
+</I>&gt;<i> +
+</I>&gt;<i>  /*
+</I>&gt;<i>   * Queue a video buffer. Attempting to queue a buffer that has already
+</I>&gt;<i> been * queued will return -EINVAL.
+</I>&gt;<i> @@ -211,11 +218,9 @@
+</I>&gt;<i>
+</I>&gt;<i>  	uvc_trace(UVC_TRACE_CAPTURE, &quot;Queuing buffer %u.\n&quot;, v4l2_buf-&gt;index);
+</I>&gt;<i>
+</I>&gt;<i> -	if (v4l2_buf-&gt;type != V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+</I>&gt;<i> -	    v4l2_buf-&gt;memory != V4L2_MEMORY_MMAP) {
+</I>&gt;<i> -		uvc_trace(UVC_TRACE_CAPTURE, &quot;[E] Invalid buffer type (%u) &quot;
+</I>&gt;<i> -			&quot;and/or memory (%u).\n&quot;, v4l2_buf-&gt;type,
+</I>&gt;<i> -			v4l2_buf-&gt;memory);
+</I>&gt;<i> +	if (v4l2_buf-&gt;type != V4L2_BUF_TYPE_VIDEO_CAPTURE ) {
+</I>&gt;<i> +		uvc_trace(UVC_TRACE_CAPTURE, &quot;[E] Invalid buffer type (%u) &quot;,
+</I>&gt;<i> +			  v4l2_buf-&gt;type);
+</I>&gt;<i>  		return -EINVAL;
+</I>&gt;<i>  	}
+</I>&gt;<i>
+</I>&gt;<i> @@ -254,9 +259,12 @@
+</I>&gt;<i>  			? 0 : -EAGAIN;
+</I>&gt;<i>  	}
+</I>&gt;<i>
+</I>&gt;<i> -	return wait_event_interruptible(buf-&gt;wait,
+</I>&gt;<i> -		buf-&gt;state != UVC_BUF_STATE_QUEUED &amp;&amp;
+</I>&gt;<i> -		buf-&gt;state != UVC_BUF_STATE_ACTIVE);
+</I>&gt;<i> +	if (wait_event_interruptible(buf-&gt;wait,
+</I>&gt;<i> +				     buf-&gt;state != UVC_BUF_STATE_QUEUED &amp;&amp;
+</I>&gt;<i> +				     buf-&gt;state != UVC_BUF_STATE_ACTIVE))
+</I>&gt;<i> +	  return -ERESTARTSYS;
+</I>&gt;<i> +
+</I>&gt;<i> +	return 0;
+</I>
+wait_event_interruptible returns -ERESTARTSYS directly, there's no need for an 
+additional check.
+
+&gt;<i>  }
+</I>&gt;<i>
+</I>&gt;<i>  /*
+</I>&gt;<i> @@ -269,11 +277,9 @@
+</I>&gt;<i>  	struct uvc_buffer *buf;
+</I>&gt;<i>  	int ret = 0;
+</I>&gt;<i>
+</I>&gt;<i> -	if (v4l2_buf-&gt;type != V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+</I>&gt;<i> -	    v4l2_buf-&gt;memory != V4L2_MEMORY_MMAP) {
+</I>&gt;<i> -		uvc_trace(UVC_TRACE_CAPTURE, &quot;[E] Invalid buffer type (%u) &quot;
+</I>&gt;<i> -			&quot;and/or memory (%u).\n&quot;, v4l2_buf-&gt;type,
+</I>&gt;<i> -			v4l2_buf-&gt;memory);
+</I>&gt;<i> +	if (v4l2_buf-&gt;type != V4L2_BUF_TYPE_VIDEO_CAPTURE ) {
+</I>&gt;<i> +		uvc_trace(UVC_TRACE_CAPTURE, &quot;[E] Invalid buffer type (%u) &quot;,
+</I>&gt;<i> +			  v4l2_buf-&gt;type);
+</I>&gt;<i>  		return -EINVAL;
+</I>&gt;<i>  	}
+</I>&gt;<i>
+</I>&gt;<i> @@ -286,7 +292,7 @@
+</I>&gt;<i>
+</I>&gt;<i>  	buf = list_entry(queue-&gt;mainqueue.next, struct uvc_buffer, stream);
+</I>&gt;<i>  	uvc_trace(UVC_TRACE_CAPTURE, &quot;Dequeuing buffer %u.\n&quot;, buf-&gt;buf.index);
+</I>&gt;<i> -	if ((ret = uvc_queue_waiton(buf, nonblocking)) &lt; 0)
+</I>&gt;<i> +	if ((ret = uvc_queue_waiton(buf, nonblocking)))
+</I>
+This is not needed.
+
+&gt;<i>  		goto done;
+</I>&gt;<i>
+</I>&gt;<i>  	switch (buf-&gt;state) {
+</I>&gt;<i> Index: uvc_v4l2.c
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvc_v4l2.c	(revision 111)
+</I>&gt;<i> +++ uvc_v4l2.c	(working copy)
+</I>&gt;<i> @@ -241,6 +241,7 @@
+</I>&gt;<i>
+</I>&gt;<i>  static int uvc_v4l2_set_format(struct uvc_video_device *video, struct
+</I>&gt;<i> v4l2_format *fmt) {
+</I>&gt;<i> +
+</I>&gt;<i>  	struct uvc_streaming_control probe;
+</I>&gt;<i>  	struct uvc_format *format;
+</I>&gt;<i>  	struct uvc_frame *frame;
+</I>&gt;<i> @@ -401,7 +402,10 @@
+</I>&gt;<i>  	struct video_device *vdev;
+</I>&gt;<i>  	struct uvc_video_device *video;
+</I>&gt;<i>  	struct uvc_fh *handle;
+</I>&gt;<i> +	struct v4l2_requestbuffers req;
+</I>&gt;<i> +	unsigned int bufsize;
+</I>&gt;<i>  	int ret = 0;
+</I>&gt;<i> +	int i;
+</I>&gt;<i>
+</I>&gt;<i>  	uvc_trace(UVC_TRACE_CALLS, &quot;uvc_v4l2_open\n&quot;);
+</I>&gt;<i>  	mutex_lock(&amp;uvc_driver.open_mutex);
+</I>&gt;<i> @@ -426,8 +430,43 @@
+</I>&gt;<i>
+</I>&gt;<i>  	kref_get(&amp;video-&gt;dev-&gt;kref);
+</I>&gt;<i>
+</I>&gt;<i> -done:
+</I>&gt;<i>  	mutex_unlock(&amp;uvc_driver.open_mutex);
+</I>&gt;<i> +
+</I>&gt;<i> +	if ((ret = uvc_acquire_privileges(handle)) &lt; 0) {
+</I>&gt;<i> +		return ret;
+</I>&gt;<i> +	}
+</I>&gt;<i> +
+</I>&gt;<i> +	bufsize = video-&gt;streaming-&gt;ctrl.dwMaxVideoFrameSize;
+</I>&gt;<i> +	memset(&amp;req, 0, sizeof req);
+</I>&gt;<i> +        req.count = 4;
+</I>&gt;<i> +        req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+</I>&gt;<i> +
+</I>&gt;<i> +	if ((ret = uvc_alloc_buffers(&amp;video-&gt;queue, req.count, bufsize,
+</I>&gt;<i> req.memory)) &lt; 0) { +		uvc_trace(UVC_TRACE_CALLS, &quot;failed to allocate
+</I>&gt;<i> buffers\n&quot;);
+</I>&gt;<i> +		return ret;
+</I>&gt;<i> +	}
+</I>&gt;<i> +
+</I>&gt;<i> +	/* check stream is on */
+</I>&gt;<i> +	if (!video-&gt;stream) {
+</I>&gt;<i> +		uvc_trace(UVC_TRACE_CALLS, &quot;enabling stream\n&quot;);
+</I>&gt;<i> +		if ((ret = uvc_video_enable(video, 1)) &lt; 0)
+</I>&gt;<i> +			return ret;
+</I>&gt;<i> +		video-&gt;stream = UVC_STREAM_ON;
+</I>&gt;<i> +	}
+</I>&gt;<i> +
+</I>&gt;<i> +	uvc_trace(UVC_TRACE_CALLS, &quot;queueing buffers\n&quot;);
+</I>&gt;<i> +	for (i = 0; i &lt; video-&gt;queue.count; ++i) {
+</I>&gt;<i> +		struct v4l2_buffer v4l2_buf;
+</I>&gt;<i> +		memset(&amp;v4l2_buf, 0, sizeof v4l2_buf);
+</I>&gt;<i> +		v4l2_buf.type        = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+</I>&gt;<i> +		v4l2_buf.index       = i;
+</I>&gt;<i> +		uvc_queue_buffer(&amp;video-&gt;queue, &amp;v4l2_buf);
+</I>&gt;<i> +	}
+</I>&gt;<i> +
+</I>&gt;<i> +
+</I>&gt;<i> +	return 0;
+</I>&gt;<i> + done:
+</I>&gt;<i> +	mutex_unlock(&amp;uvc_driver.open_mutex);
+</I>
+Start streaming the first time read() is called, not when the device is 
+opened. The queue should be allocated at the first read() call as well. Don't 
+hardcode the buffer count to 4, use the value set by VIDIOC_S_PARM (with 
+sensible limits).
+
+&gt;<i>  	return ret;
+</I>&gt;<i>  }
+</I>&gt;<i>
+</I>&gt;<i> @@ -442,6 +481,7 @@
+</I>&gt;<i>  	/* Only free resources if this is a privileged handle. */
+</I>&gt;<i>  	if (uvc_has_privileges(handle)) {
+</I>&gt;<i>  		uvc_video_enable(video, 0);
+</I>&gt;<i> +		video-&gt;stream = UVC_STREAM_OFF;
+</I>&gt;<i>
+</I>&gt;<i>  		mutex_lock(&amp;video-&gt;queue.mutex);
+</I>&gt;<i>  		if (uvc_free_buffers(&amp;video-&gt;queue) &lt; 0)
+</I>
+video-&gt;stream was a leftover of some old idea I can't really remember. I 
+committed a change to remove it.
+
+&gt;<i> @@ -483,7 +523,7 @@
+</I>&gt;<i>  			sizeof cap-&gt;bus_info);
+</I>&gt;<i>  		cap-&gt;version = DRIVER_VERSION_NUMBER;
+</I>&gt;<i>  		cap-&gt;capabilities = V4L2_CAP_VIDEO_CAPTURE
+</I>&gt;<i> -				  | V4L2_CAP_STREAMING;
+</I>&gt;<i> +			| V4L2_CAP_STREAMING | V4L2_CAP_READWRITE;
+</I>&gt;<i>  	}
+</I>&gt;<i>  		break;
+</I>&gt;<i>
+</I>&gt;<i> @@ -591,7 +631,7 @@
+</I>&gt;<i>  			if (index != 0)
+</I>&gt;<i>  				return -EINVAL;
+</I>&gt;<i>  			iterm = list_entry(video-&gt;iterms.next,
+</I>&gt;<i> -					struct uvc_entity, chain);
+</I>&gt;<i> +					   struct uvc_entity, chain);
+</I>&gt;<i>  			pin = iterm-&gt;id;
+</I>&gt;<i>  		} else if (pin &lt; selector-&gt;selector.bNrInPins) {
+</I>&gt;<i>  			pin = selector-&gt;selector.baSourceID[index];
+</I>&gt;<i> @@ -815,6 +855,11 @@
+</I>&gt;<i>  		struct v4l2_requestbuffers *rb = arg;
+</I>&gt;<i>  		unsigned int bufsize = video-&gt;streaming-&gt;ctrl.dwMaxVideoFrameSize;
+</I>&gt;<i>
+</I>&gt;<i> +		/* overcome the open function allocation */
+</I>&gt;<i> +		uvc_queue_cancel(&amp;video-&gt;queue);
+</I>&gt;<i> +		INIT_LIST_HEAD(&amp;video-&gt;queue.mainqueue);
+</I>&gt;<i> +
+</I>&gt;<i> +		/* TODO: User pointer */
+</I>&gt;<i>  		if (rb-&gt;type != V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+</I>&gt;<i>  		    rb-&gt;memory != V4L2_MEMORY_MMAP)
+</I>&gt;<i>  			return -EINVAL;
+</I>&gt;<i> @@ -822,10 +867,13 @@
+</I>&gt;<i>  		if ((ret = uvc_acquire_privileges(handle)) &lt; 0)
+</I>&gt;<i>  			return ret;
+</I>&gt;<i>
+</I>&gt;<i> -		if ((ret = uvc_alloc_buffers(&amp;video-&gt;queue, rb-&gt;count, bufsize)) &lt; 0)
+</I>&gt;<i> +		if ((ret = uvc_alloc_buffers(&amp;video-&gt;queue, rb-&gt;count, bufsize,
+</I>&gt;<i> rb-&gt;memory)) &lt; 0) return ret;
+</I>&gt;<i>
+</I>&gt;<i>  		rb-&gt;count = ret;
+</I>&gt;<i> +
+</I>&gt;<i> +
+</I>&gt;<i> +
+</I>&gt;<i>  	}
+</I>&gt;<i>  		break;
+</I>&gt;<i>
+</I>&gt;<i> @@ -887,13 +935,23 @@
+</I>&gt;<i>  		if (!uvc_has_privileges(handle))
+</I>&gt;<i>  			return -EBUSY;
+</I>&gt;<i>
+</I>&gt;<i> -		return uvc_video_enable(video, 0);
+</I>&gt;<i> +		if ((ret = uvc_video_enable(video, 0)) &lt; 0)
+</I>&gt;<i> +		  return ret;
+</I>&gt;<i> +
+</I>&gt;<i> +		video-&gt;stream = UVC_STREAM_OFF;
+</I>
+Old leftover, can be removed.
+
+&gt;<i> +		return ret;
+</I>&gt;<i>  	}
+</I>&gt;<i>
+</I>&gt;<i>  	/* Analog video standards make no sense for digital cameras. */
+</I>&gt;<i> +	case VIDIOC_G_STD:
+</I>&gt;<i> +	{
+</I>&gt;<i> +		v4l2_std_id *sidp = arg;
+</I>&gt;<i> +		*sidp = V4L2_STD_UNKNOWN;
+</I>&gt;<i> +	}
+</I>&gt;<i> +		break;
+</I>&gt;<i> +
+</I>&gt;<i>  	case VIDIOC_ENUMSTD:
+</I>&gt;<i>  	case VIDIOC_QUERYSTD:
+</I>&gt;<i> -	case VIDIOC_G_STD:
+</I>
+This has nothing to do with read() support. VIDIOC_G_STD has been discussed a 
+lot in the v4l mailing list in the past, and I still believe it makes no 
+sense for webcams.
+
+&gt;<i>  	case VIDIOC_S_STD:
+</I>&gt;<i>
+</I>&gt;<i>  	case VIDIOC_OVERLAY:
+</I>&gt;<i> @@ -922,11 +980,109 @@
+</I>&gt;<i>  	return video_usercopy(inode, file, cmd, arg, uvc_v4l2_do_ioctl);
+</I>&gt;<i>  }
+</I>&gt;<i>
+</I>&gt;<i> +
+</I>&gt;<i>  static ssize_t uvc_v4l2_read(struct file *file, char __user *data,
+</I>&gt;<i> -		    size_t count, loff_t *ppos)
+</I>&gt;<i> +			     size_t count, loff_t *ppos)
+</I>&gt;<i>  {
+</I>&gt;<i> -	uvc_trace(UVC_TRACE_CALLS, &quot;uvc_v4l2_read: not implemented.\n&quot;);
+</I>&gt;<i> -	return -ENODEV;
+</I>&gt;<i> +
+</I>&gt;<i> +	static struct uvc_buffer *buf = NULL;
+</I>&gt;<i> +	struct video_device *vdev = video_devdata(file);
+</I>&gt;<i> +	struct uvc_video_device *video = video_get_drvdata(vdev);
+</I>&gt;<i> +	struct uvc_fh *handle = (struct uvc_fh *)file-&gt;private_data;
+</I>&gt;<i> +	int nonblock = file-&gt;f_flags &amp; O_NONBLOCK;
+</I>&gt;<i> +	ssize_t ret = 0;
+</I>&gt;<i> +	struct v4l2_buffer v4l2_b;
+</I>&gt;<i> +	ssize_t len;
+</I>&gt;<i> +	void *mem;
+</I>&gt;<i> +
+</I>&gt;<i> +	memset(&amp;v4l2_b, 0, sizeof v4l2_b);
+</I>&gt;<i> +	v4l2_b.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+</I>&gt;<i> +
+</I>&gt;<i> +	uvc_trace(UVC_TRACE_READ, &quot;uvc_v4l2_read\n&quot;);
+</I>&gt;<i> +	uvc_trace(UVC_TRACE_READ, &quot;size requested: %u\n&quot;, count);
+</I>&gt;<i> +
+</I>&gt;<i> +
+</I>&gt;<i> +	if (!uvc_has_privileges(handle)) {
+</I>&gt;<i> +		uvc_trace(UVC_TRACE_READ, &quot;no privileges returning EBUSY\n&quot;);
+</I>&gt;<i> +		return -EBUSY;
+</I>&gt;<i> +	}
+</I>
+As stated above, streaming shouldn't be started in uvc_v4l2_open(). You should 
+acquire privileges here instead of testing for them.
+
+&gt;<i> +
+</I>&gt;<i> +	if (!data) {
+</I>&gt;<i> +		return -EINVAL;
+</I>&gt;<i> +	}
+</I>
+Checking for NULL doesn't make sense. Issues will be caught by copy_to_user.
+
+&gt;<i> +
+</I>&gt;<i> +	if (!video-&gt;stream) {
+</I>&gt;<i> +		int i;
+</I>&gt;<i> +		uvc_trace(UVC_TRACE_READ, &quot;enabling stream\n&quot;);
+</I>&gt;<i> +		if ((ret = uvc_video_enable(video, 1)) &lt; 0)
+</I>&gt;<i> +			return ret;
+</I>&gt;<i> +		video-&gt;stream = UVC_STREAM_ON;
+</I>&gt;<i> +		uvc_trace(UVC_TRACE_READ, &quot;stream on\n&quot;);
+</I>&gt;<i> +		uvc_trace(UVC_TRACE_READ, &quot;queueing buffers\n&quot;);
+</I>&gt;<i> +		for (i = 0; i &lt; video-&gt;queue.count; ++i) {
+</I>&gt;<i> +			struct v4l2_buffer v4l2_buf;
+</I>&gt;<i> +			memset(&amp;v4l2_buf, 0, sizeof v4l2_buf);
+</I>&gt;<i> +			v4l2_buf.type	   = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+</I>&gt;<i> +			v4l2_buf.index	   = i;
+</I>&gt;<i> +			uvc_queue_buffer(&amp;video-&gt;queue, &amp;v4l2_buf);
+</I>&gt;<i> +		}
+</I>&gt;<i> +	}
+</I>&gt;<i> +
+</I>&gt;<i> +	/* it's all mine, nobody else can have it:-) */
+</I>&gt;<i> +	if(mutex_lock_interruptible(&amp;video-&gt;queue.mutex)) {
+</I>&gt;<i> +		return -ERESTARTSYS;
+</I>&gt;<i> +	}
+</I>&gt;<i> +
+</I>&gt;<i> +	/* valid queue? */
+</I>&gt;<i> +	if (list_empty(&amp;video-&gt;queue.mainqueue)) {
+</I>&gt;<i> +		uvc_trace(UVC_TRACE_READ, &quot;internal driver error, queue is empty -
+</I>&gt;<i> aborting\n&quot;); +		ret = -ERESTARTSYS;
+</I>&gt;<i> +		goto done;
+</I>&gt;<i> +	}
+</I>
+Why would the queue be empty ?
+
+&gt;<i> +
+</I>&gt;<i> +	buf = list_entry(video-&gt;queue.mainqueue.next, struct uvc_buffer, stream);
+</I>
+Don't access the queue directly. Use the information returned by 
+uvc_dequeue_buffer().
+
+&gt;<i> +
+</I>&gt;<i> +	mutex_unlock(&amp;video-&gt;queue.mutex);
+</I>&gt;<i> +	if ((ret = uvc_dequeue_buffer(&amp;video-&gt;queue, &amp;v4l2_b, nonblock)) &lt; 0) {
+</I>&gt;<i> +		return ret;
+</I>&gt;<i> +	}
+</I>&gt;<i> +
+</I>&gt;<i> +	len = v4l2_b.bytesused;
+</I>&gt;<i> +	if (len &gt; count || len == 0) {
+</I>&gt;<i> +		uvc_trace(UVC_TRACE_READ, &quot;invalid length - aborting\n&quot;
+</I>&gt;<i> +			  &quot;\tlen: %u\n\tbufsize: %u\n\tcount: %u\n&quot;,
+</I>&gt;<i> +			  len, buf-&gt;buf.length, count);
+</I>&gt;<i> +		ret = -EINVAL;
+</I>&gt;<i> +		goto done;
+</I>&gt;<i> +	}
+</I>&gt;<i> +
+</I>&gt;<i> +	if (mutex_lock_interruptible(&amp;video-&gt;queue.mutex)) {
+</I>&gt;<i> +		uvc_trace(UVC_TRACE_READ, &quot;failed to keep mutex - interrupted,
+</I>&gt;<i> requeueing buffer\n&quot;); +		uvc_queue_buffer(&amp;video-&gt;queue, &amp;v4l2_b);
+</I>&gt;<i> +		return -ERESTARTSYS;
+</I>&gt;<i> +	}
+</I>
+No need to lock the queue here.
+
+&gt;<i> +
+</I>&gt;<i> +	/* copy the frame */
+</I>&gt;<i> +	mem = video-&gt;queue.mem + buf-&gt;buf.m.offset;
+</I>&gt;<i> +	if (copy_to_user(data, mem, len)) {
+</I>&gt;<i> +		uvc_trace(UVC_TRACE_READ, &quot;copy_to_user error\n&quot;);
+</I>&gt;<i> +		mutex_unlock(&amp;video-&gt;queue.mutex);
+</I>&gt;<i> +		uvc_queue_buffer(&amp;video-&gt;queue, &amp;v4l2_b);
+</I>&gt;<i> +		return -EFAULT;
+</I>&gt;<i> +	}
+</I>
+This won't work. read() can be called with data buffers smaller than a video 
+frame. You should not assume that a read() call will read a whole buffer at 
+once.
+
+&gt;<i> +
+</I>&gt;<i> +	mutex_unlock(&amp;video-&gt;queue.mutex);
+</I>
+And no need to unlock it here.
+
+&gt;<i> +	if (uvc_queue_buffer(&amp;video-&gt;queue, &amp;v4l2_b) &lt; 0) {
+</I>&gt;<i> +		uvc_trace(UVC_TRACE_READ, &quot;problem queueing?\n&quot;);
+</I>&gt;<i> +	}
+</I>&gt;<i> +
+</I>&gt;<i> +	uvc_trace(UVC_TRACE_READ, &quot;success: %u\n&quot;, len);
+</I>&gt;<i> +	return len;
+</I>&gt;<i> +
+</I>&gt;<i> + done:
+</I>&gt;<i> +	uvc_trace(UVC_TRACE_READ, &quot;probable error condition, or interrupted\n&quot;);
+</I>&gt;<i> +	mutex_unlock(&amp;video-&gt;queue.mutex);
+</I>&gt;<i> +	return ret;
+</I>&gt;<i>  }
+</I>&gt;<i>
+</I>&gt;<i>  /*
+</I>&gt;<i> Index: uvcvideo.h
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvcvideo.h	(revision 111)
+</I>&gt;<i> +++ uvcvideo.h	(working copy)
+</I>&gt;<i> @@ -235,7 +235,7 @@
+</I>&gt;<i>  /* Maximum number of video buffers. */
+</I>&gt;<i>  #define UVC_MAX_VIDEO_BUFFERS	32
+</I>&gt;<i>
+</I>&gt;<i> -#define UVC_CTRL_TIMEOUT	300
+</I>&gt;<i> +#define UVC_CTRL_TIMEOUT	600
+</I>
+This is part of another fix. I'll work on it.
+
+&gt;<i>
+</I>&gt;<i>  /* Devices quirks */
+</I>&gt;<i>  #define UVC_QUIRK_STATUS_INTERVAL	0x00000001
+</I>&gt;<i> @@ -581,11 +581,11 @@
+</I>&gt;<i>  };
+</I>&gt;<i>
+</I>&gt;<i>  struct uvc_driver {
+</I>&gt;<i> -        struct usb_driver driver;
+</I>&gt;<i> +	struct usb_driver driver;
+</I>&gt;<i>
+</I>&gt;<i>  	struct mutex open_mutex;	/* protects from open/disconnect race */
+</I>&gt;<i>
+</I>&gt;<i> -        struct list_head devices;	/* struct uvc_device list */
+</I>&gt;<i> +	struct list_head devices;	/* struct uvc_device list */
+</I>&gt;<i>  	struct list_head controls;	/* struct uvc_control_info list */
+</I>&gt;<i>  	struct mutex ctrl_mutex;	/* protects controls and devices lists */
+</I>&gt;<i>  };
+</I>&gt;<i> @@ -602,6 +602,7 @@
+</I>&gt;<i>  #define UVC_TRACE_CALLS		(1 &lt;&lt; 5)
+</I>&gt;<i>  #define UVC_TRACE_IOCTL		(1 &lt;&lt; 6)
+</I>&gt;<i>  #define UVC_TRACE_FRAME		(1 &lt;&lt; 7)
+</I>&gt;<i> +#define UVC_TRACE_READ  	(1 &lt;&lt; 8)
+</I>&gt;<i>
+</I>&gt;<i>  extern unsigned int uvc_trace_param;
+</I>&gt;<i>
+</I>&gt;<i> @@ -634,7 +635,7 @@
+</I>&gt;<i>  /* Video buffers queue management. */
+</I>&gt;<i>  extern void uvc_queue_init(struct uvc_video_queue *queue);
+</I>&gt;<i>  extern int uvc_alloc_buffers(struct uvc_video_queue *queue,
+</I>&gt;<i> -		unsigned int nbuffers, unsigned int buflength);
+</I>&gt;<i> +			     unsigned int nbuffers, unsigned int buflength, int memtype);
+</I>&gt;<i>  extern int uvc_free_buffers(struct uvc_video_queue *queue);
+</I>&gt;<i>  extern void uvc_query_buffer(struct uvc_buffer *buf,
+</I>&gt;<i>  		struct v4l2_buffer *v4l2_buf);
+</I>
+I might have forgotten a few comments, so feel free to ask if anything seems 
+unclear, or if you need help.
+
+Cheers, and thanks for the work.
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001886.html">[Linux-uvc-devel] Patch: Read support
+</A></li>
+	<LI>Next message: <A HREF="001894.html">[Linux-uvc-devel] Patch: Read support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1893">[ date ]</a>
+              <a href="thread.html#1893">[ thread ]</a>
+              <a href="subject.html#1893">[ subject ]</a>
+              <a href="author.html#1893">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

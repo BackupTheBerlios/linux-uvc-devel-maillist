@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] MPEG4 live stream howto?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20MPEG4%20live%20stream%20howto%3F&In-Reply-To=%3C744642.88488.qm%40web50012.mail.re2.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002193.html">
+   <LINK REL="Next"  HREF="002174.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] MPEG4 live stream howto?</H1>
+    <B>J&#246;rg Hermsdorf</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20MPEG4%20live%20stream%20howto%3F&In-Reply-To=%3C744642.88488.qm%40web50012.mail.re2.yahoo.com%3E"
+       TITLE="[Linux-uvc-devel] MPEG4 live stream howto?">funtasyspace at yahoo.com
+       </A><BR>
+    <I>Wed Sep 26 17:55:57 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002193.html">[Linux-uvc-devel] webcam on LG R400: module loads but does not	work
+</A></li>
+        <LI>Next message: <A HREF="002174.html">[Linux-uvc-devel] MPEG4 live stream howto?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2164">[ date ]</a>
+              <a href="thread.html#2164">[ thread ]</a>
+              <a href="subject.html#2164">[ subject ]</a>
+              <a href="author.html#2164">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Today I tried to use ffmpeg to capture and live transcode the stream. It seems like ffmpeg is supposed to capture from v4l2 devices, here is the result of my attempts so far.
+
+I tried to capture at different sizes and to different output formats, capturing starts always fine but after some time (varies, sometimes after just 2 seconds, sometimes after 2 minutes) I always get the same error:
+
+# ffmpeg -v 100 -f video4linux2 -s 320x240 -i /dev/video0 -f audio_device -i /dev/dsp2 -f m4v test.m4v
+FFmpeg version SVN-r9778, Copyright (c) 2000-2007 Fabrice Bellard, et al.
+  configuration: --prefix=/usr --mandir=/usr/share/man --libdir=/usr/lib64 --shlibdir=/usr/lib64 --enable-pthreads --enable-libogg --enable-libvorbis --enable-libmp3lame --enable-libfaad --enable-libfaadbin --enable-libfaac --enable-libxvid --enable-libx264 --enable-liba52 --enable-liba52bin --enable-pp --enable-shared --enable-dc1394 --enable-libtheora --enable-gpl
+  libavutil version: 49.4.1
+  libavcodec version: 51.40.4
+  libavformat version: 51.12.1
+  built on Jul 29 2007 17:41:31, gcc: 4.2.1 20070705 (prerelease) (SUSE Linux)
+[video4linux2 @ 0x2b8bb4a4f220][3]Capabilities: 4000001
+[video4linux2 @ 0x2b8bb4a4f220]The V4L2 driver set input_id: 0, input: Camera 1
+Input #0, video4linux2, from '/dev/video0':
+  Duration: N/A, bitrate: 30720 kb/s
+  Stream #0.0, 1/1000000: Video: rawvideo, yuyv422, 320x240, 1/25, 30720 kb/s, 25.00 fps(r)
+File 'Downloads/uvc/test.m4v' already exists. Overwrite ? [y/N] y
+Output #0, m4v, to 'Downloads/uvc/test.m4v':
+  Stream #0.0, 1/90000: Video: mpeg4, yuv420p, 320x240, 1/25, q=2-31, 200 kb/s, 25.00 fps(c)
+Stream mapping:
+  Stream #0.0 -&gt; #0.0
+Press [q] to stop encoding
+....
+[video4linux2 @ 0x2b91704f3220]The v4l2 frame is 25600 bytes, but 153600 bytes are expected
+....
+[video4linux2 @ 0x2b8bb4a4f220]The v4l2 frame is 32000 bytes, but 153600 bytes are expected
+
+It's always the same error, ffmpeg aborts because at some point it receives a v4l2 frame that has a smaller size than expected. The actual frame size of the erroneous frame is always different (I posted two examples above) . So it seems to me, that's a problem with uvcvideo, which at some point just delivers a corrupt/incomplete frame. ffmpeg can't handle that and aborts. But the file that has been captured so far (until ffmpeg aborts) looks good and can be played with vlc, so I have hope that this issue can be fixed and that piping ffmpeg's output to vlc should be possible to stream my cam mpeg4 encoded via http.
+
+Regards,
+J&#246;rg
+
+
+
+
+----- Urspr&#252;ngliche Mail ----
+Von: J&#246;rg Hermsdorf &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">funtasyspace at yahoo.com</A>&gt;
+An: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel at lists.berlios.de</A>
+Gesendet: Mittwoch, den 26. September 2007, 02:08:25 Uhr
+Betreff: [Linux-uvc-devel] MPEG4 live stream howto?
+
+Hi all,
+
+well seems like streaming from uvcvideo/v4l2 is harder than I first imagined. With my old 4vl webcam I just needed vlc to live stream my webcam mpeg4 encoded. So far I found no application that I can use to live stream with my new Logitech QuickCam Sphere MP. uvc_streamer works, but the MJPEG bitrate is not suitable for the limited upstream bandwith of my ADSL connection. 
+
+a) VLC seems not to be able to access v4l2 devices, although I found this link <A HREF="http://wiki.videolan.org/V4l">http://wiki.videolan.org/V4l</A> which suggests that v4l2 is supported.
+
+b) I tried MPEG4IP (mp4live), but the settings this program uses to capture the cam, result in a very bad image quality and strange colors. There's no way to change that.
+
+c) Now, my latest idea is to use transcode (which is supposed to handle v4l2 devices) and pipe it's output to VLC and stream it as usual (<A HREF="http://wiki.videolan.org/index.php/Uncommon_uses">http://wiki.videolan.org/index.php/Uncommon_uses</A>). But if I try to access the cam with transcode, I get the following error:
+
+# transcode -x v4l2,v4l2 -g 640x480 -i /dev/video -p /dev/dsp2 -e 32000,16,2 -w 4000 -y ffmpeg -F mjpeg -o test.avi
+
+transcode v1.0.4 (C) 2001-2003 Thomas Oestreich, 2003-2004 T. Bitterberg, 2004-2007 Transcode Team
+[transcode] auto-probing source /dev/video (failed)
+[transcode] V: import format    | unknown  (V=v4l2|A=v4l2)
+[transcode] V: import frame     | 640x480  1.33:1
+[transcode] V: bits/pixel       | 0.521
+[transcode] V: decoding fps,frc | 25.000,0
+[transcode] V: Y'CbCr           | YV12/I420
+[transcode] A: import format    | 0x2001  AC3/A52      [32000,16,2]
+[transcode] A: export format    | 0x55    MPEG layer-3 [32000,16,2]  128 kbps
+[transcode] V: encoding fps,frc | 25.000,3
+[transcode] A: bytes per frame  | 5120 (5120.000000)
+[transcode] A: adjustment       | <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">0 at 1000</A>
+[transcode] V: IA32/AMD64 accel | sse2 (sse2 sse 3dnowext 3dnow mmxext mmx asm C)
+tc_memcpy: using amd64 for memcpy
+[transcode] V: video buffer     | 10 @ 640x480
+[import_v4l2.so] v1.3.5 (2005-03-11) (video) v4l2 | (audio) pcm
+[export_ffmpeg.so] v0.3.13 (2004-08-03) (video) Lavc51.42.0 | (audio) MPEG/AC3/PCM
+[import_v4l2.so]: v4l2 audio grabbing
+[import_v4l2.so]: v4l2 video grabbing
+[import_v4l2.so]: resync disabled
+[import_v4l2.so]: video grabbing, driver = uvcvideo, card = UVC Camera (046d:08cc)
+[import_v4l2.so]: VIDIOC_S_FMT: : Invalid argument
+[import_v4l2.so]: VIDIOC_S_FMT: : Invalid argument
+[import_v4l2.so]: VIDIOC_S_FMT: : Invalid argument
+[import_v4l2.so]: no usable pixel format supported by card
+video import module error: OPEN failed
+[transcode] critical: failed to open input source
+
+I don't know if the problem is on the transcode side or on the uvcvideo side. AFAIK the QuickCam Sphere uses the YUYV pixel format, does this error mean, that transcode cannot handle YUYV?
+
+Whatever, this approach fails too. Seems like I'm running out of options. Has anybody here another idea how to establish an MPEG4 live stream?
+
+Regards,
+J&#246;rg.
+
+
+
+
+       __________________________________ 
+Yahoo! Clever - Der einfachste Weg, Fragen zu stellen und Wissenswertes mit Anderen zu teilen. www.yahoo.de/clever
+
+_______________________________________________
+Linux-uvc-devel mailing list
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+
+
+
+
+
+      Machen Sie Yahoo! zu Ihrer Startseite. Los geht's: 
+<A HREF="http://de.yahoo.com/set">http://de.yahoo.com/set</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002193.html">[Linux-uvc-devel] webcam on LG R400: module loads but does not	work
+</A></li>
+	<LI>Next message: <A HREF="002174.html">[Linux-uvc-devel] MPEG4 live stream howto?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2164">[ date ]</a>
+              <a href="thread.html#2164">[ thread ]</a>
+              <a href="subject.html#2164">[ subject ]</a>
+              <a href="author.html#2164">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

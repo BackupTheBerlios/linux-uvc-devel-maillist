@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] adding max ISO packet size and high bandwidth	support
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20adding%20max%20ISO%20packet%20size%20and%20high%20bandwidth%0A%09support&In-Reply-To=%3CBANLkTikE%3DzhpmCfZ8%3DXEYH_mRkQ%3DSH_g6Q%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006536.html">
+   <LINK REL="Next"  HREF="006538.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] adding max ISO packet size and high bandwidth	support</H1>
+    <B>Chandrashekhar Lavania</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20adding%20max%20ISO%20packet%20size%20and%20high%20bandwidth%0A%09support&In-Reply-To=%3CBANLkTikE%3DzhpmCfZ8%3DXEYH_mRkQ%3DSH_g6Q%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] adding max ISO packet size and high bandwidth	support">chandrashekharla at gmail.com
+       </A><BR>
+    <I>Fri May 27 07:57:30 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006536.html">[Linux-uvc-devel] adding max ISO packet size and high bandwidth support
+</A></li>
+        <LI>Next message: <A HREF="006538.html">[Linux-uvc-devel] Fix potential oops &amp; rollback after camera fails	to start
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6537">[ date ]</a>
+              <a href="thread.html#6537">[ thread ]</a>
+              <a href="subject.html#6537">[ subject ]</a>
+              <a href="author.html#6537">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Andrew,
+
+I am using custom board which uses Analog Device's Blackfin Processor BF527.
+The OS running is the uClinux provided by the blackfin guys :
+
+<A HREF="http://blackfin.uclinux.org/gf/">http://blackfin.uclinux.org/gf/</A>
+
+&lt;<A HREF="http://blackfin.uclinux.org/gf/">http://blackfin.uclinux.org/gf/</A>&gt;The musb controller driver with the
+distribution does not support high bandwidth transfer.
+
+So, now I tried to modify the ISOC_PACKET_SIZE in the logitech quickcam
+messenger driver, and brought it down to 64.
+
+VGA still didn't work with YUV. Also, I tried to capture a still image at 1
+frame per second ( VGA + YUV) . Still no success.
+
+Regards,
+Shekhar
+
+On Fri, May 27, 2011 at 6:17 AM, Andrew Leech &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">coronasensei at gmail.com</A>&gt;wrote:
+
+&gt;<i> On 26/05/2011 6:11 PM, Chandrashekhar Lavania wrote:
+</I>&gt;<i>
+</I>&gt;&gt;<i> Hi,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I am using linux kernel 2.6.34. I needed to capture VGA frames in YUV
+</I>&gt;&gt;<i> format with my Logitech E3500 camera. When I try to do that then I get the
+</I>&gt;&gt;<i> following error::
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> uvcvideo: Failed to submit URB 0 (-90).
+</I>&gt;&gt;<i> VIDIOC_STREAMON: Message too long
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> This is apparently because the musb does not support high bandwith
+</I>&gt;&gt;<i> transfer.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Hence I was trying to reduce the max packet size for ISO transfer. Any
+</I>&gt;&gt;<i> idea how this can be done.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I tried to limit the wMaxPacketSize in the uvc_parse_control of
+</I>&gt;&gt;<i> uvc_deriver.c file, but it did not work.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;<i> The host does not have any control over packet size with uvc, this is
+</I>&gt;<i> decided entirely by the device, this is why gadget has these settings,
+</I>&gt;<i> gadget is a device driver, not a host driver.
+</I>&gt;<i>
+</I>&gt;<i> The only control a host can have is it can request/limit total bandwidth,
+</I>&gt;<i> but this is only if the device is set up to allow this, for example some
+</I>&gt;<i> devices will have different bandwidth configurations that it can switch
+</I>&gt;<i> between if the host gives a bandwidth limit.
+</I>&gt;<i> For YUV (uncompressed) however the bandwidth is tied directly to the frame
+</I>&gt;<i> size &amp; rate, so there's no way to change bandwidth without compromising on
+</I>&gt;<i> frame rate or size, and again these can only be set to settings that the
+</I>&gt;<i> camera explicitly supports. Even then, for each setting, the packet size is
+</I>&gt;<i> still up to the camera, there's a good chance at lower bandwidths it'll
+</I>&gt;<i> still send the same size packets, just doing it less often.
+</I>&gt;<i>
+</I>&gt;<i> What hardware are you using for the host? I would look at why it's not
+</I>&gt;<i> supporting the high bandwidth transfer?
+</I>&gt;<i>
+</I>&gt;<i> Andrew
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110527/256fbe1d/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110527/256fbe1d/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006536.html">[Linux-uvc-devel] adding max ISO packet size and high bandwidth support
+</A></li>
+	<LI>Next message: <A HREF="006538.html">[Linux-uvc-devel] Fix potential oops &amp; rollback after camera fails	to start
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6537">[ date ]</a>
+              <a href="thread.html#6537">[ thread ]</a>
+              <a href="subject.html#6537">[ subject ]</a>
+              <a href="author.html#6537">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

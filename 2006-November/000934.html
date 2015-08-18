@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Maximum framerate with multiple USB 2 cameras?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Maximum%20framerate%20with%20multiple%20USB%202%20cameras%3F&In-Reply-To=%3C74e91400611030544w3425bc20h4a9b97ed67b988ec%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000921.html">
+   <LINK REL="Next"  HREF="000935.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Maximum framerate with multiple USB 2 cameras?</H1>
+    <B>Denis McLaughlin</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Maximum%20framerate%20with%20multiple%20USB%202%20cameras%3F&In-Reply-To=%3C74e91400611030544w3425bc20h4a9b97ed67b988ec%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Maximum framerate with multiple USB 2 cameras?">mclaughlin.denis at gmail.com
+       </A><BR>
+    <I>Fri Nov  3 14:44:10 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000921.html">[Linux-uvc-devel] Maximum framerate with multiple USB 2 cameras?
+</A></li>
+        <LI>Next message: <A HREF="000935.html">[Linux-uvc-devel] Jitter during multiple camera (Fusion) capture [Re:Maximum framerate with multiple USB 2 cameras?]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#934">[ date ]</a>
+              <a href="thread.html#934">[ thread ]</a>
+              <a href="subject.html#934">[ subject ]</a>
+              <a href="author.html#934">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 11/3/06, Pablo d'Angelo &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">pablo.dangelo at web.de</A>&gt; wrote:
+&gt;<i>
+</I>&gt;<i> Denis McLaughlin wrote:
+</I>&gt;<i> &gt;  - While the USB 2 bus can support 8 streaming cams, there seems to be a
+</I>&gt;<i> &gt; fair bit of jitter in capture time.  The capture utility I wrote
+</I>&gt;<i> &gt; time-stamps each frame as it receives it, but while the frames are
+</I>&gt;<i> &gt; generally uniformly spaced 0.066s, there are occasional dropouts and
+</I>&gt;<i> &gt; periods where frames are snapped very quickly one after another.  I
+</I>&gt;<i> &gt; haven't done enough testing to know whether this jitter gets worse with
+</I>&gt;<i> &gt; more web cams or not.
+</I>&gt;<i>
+</I>&gt;<i> That doesn't sound very good for my application, since I need synchronised
+</I>&gt;<i> images (audio is not so important for me). Is the timestamp you recorded
+</I>&gt;<i> an
+</I>&gt;<i> accurate indicator for the capture time, or is it independent from that?
+</I>
+
+  The timestamp is just gettimeofday() called from the program doing the
+capture, so it's an accurate upper bound on the frame capture time (ie. the
+frame can't have been captured any later than the time stamp).although it's
+unclear when in the preceding interval the picture actually came from.  I
+don't want to overstate the problem: by and large, the cameras do hit 15 fps
+quite accurately, it's just that there is some jitter.
+
+  To back this up with a little data, you can see the capture times for a
+single camera here: <A HREF="http://denism.homeip.net/stuff/capture-times,">http://denism.homeip.net/stuff/capture-times,</A> the
+differences between consecutive frames here:
+<A HREF="http://denism.homeip.net/stuff/capture-differences,">http://denism.homeip.net/stuff/capture-differences,</A> and I've generated a
+histogram of those differences here:
+<A HREF="http://denism.homeip.net/stuff/interframe-histogram.png">http://denism.homeip.net/stuff/interframe-histogram.png</A> against a
+logarithmic Y axis.  The histogram shows that the vast majority of the
+inter-frame differences are in the 0.06-ish area, but there are a number
+faster and slower than that.
+
+  Whether or not this jitter is big enough to cause a problem depends on how
+synchronized you need frames from the cameras to be: the jitter I show above
+is quite tolerable for my purposes.
+
+
+&gt;<i>  - Likely as a consequence of the time jitter in the USB bus (or maybe a
+</I>&gt;<i> &gt; problem with the cams?  or maybe my capture program?), I'm having a lot
+</I>&gt;<i> &gt; of trouble trying to synchronize the video streams from the fusions with
+</I>&gt;<i> &gt; the audio I recorded.  I'm still working on a solution to this one... :(
+</I>&gt;<i>
+</I>&gt;<i> If the timestamp itself is a reliable measure for the jitter, it might be
+</I>&gt;<i> possible to leave out or duplicate some frames in post processing.
+</I>
+
+  Yeah, I have a script that massages the frames, selecting the right ones
+and duping to fill in gaps as needed.  I actually had a breakthrough last
+night, when I realized my audio/visual synch wasn't caused by the video
+frames being non-uniform, but rather that the audio I recorded from the USB
+mics isn't correct.  When I matched the video up against the audio from a DV
+video camera filming the same scene, everything looked fine (wrt synch).
+Yay!  So my audio-visual synch problem was actually caused by a problem with
+my USB audio recording (though there is still some variability in frame
+capture times, as shown above).
+
+Denis
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061103/a0c8793a/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061103/a0c8793a/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000921.html">[Linux-uvc-devel] Maximum framerate with multiple USB 2 cameras?
+</A></li>
+	<LI>Next message: <A HREF="000935.html">[Linux-uvc-devel] Jitter during multiple camera (Fusion) capture [Re:Maximum framerate with multiple USB 2 cameras?]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#934">[ date ]</a>
+              <a href="thread.html#934">[ thread ]</a>
+              <a href="subject.html#934">[ subject ]</a>
+              <a href="author.html#934">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

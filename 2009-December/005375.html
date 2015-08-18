@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Timestamp Accuracy Patch
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Timestamp%20Accuracy%20Patch&In-Reply-To=%3C833B0B09C5041D42A9924A3BA6A12B9A02950AEEE4%40CALMAIL-CMS.smarttech.inc%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005371.html">
+   <LINK REL="Next"  HREF="005369.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Timestamp Accuracy Patch</H1>
+    <B>Jacob Fehr</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Timestamp%20Accuracy%20Patch&In-Reply-To=%3C833B0B09C5041D42A9924A3BA6A12B9A02950AEEE4%40CALMAIL-CMS.smarttech.inc%3E"
+       TITLE="[Linux-uvc-devel] Timestamp Accuracy Patch">JacobFehr at smarttech.com
+       </A><BR>
+    <I>Fri Dec  4 17:12:15 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005371.html">[Linux-uvc-devel] Timestamp Accuracy Patch
+</A></li>
+        <LI>Next message: <A HREF="005369.html">[Linux-uvc-devel] [UVC] Resuming: What are controls necessary	resume when I suspend and resume video streaming?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5375">[ date ]</a>
+              <a href="thread.html#5375">[ thread ]</a>
+              <a href="subject.html#5375">[ subject ]</a>
+              <a href="author.html#5375">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey Laurent,
+
+Thanks for your feedback. I didn't see it at first. :-) It looks like I have some more work to do.
+
+Jake
+
+-----Original Message-----
+From: Laurent Pinchart [mailto:<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>] 
+Sent: Thursday, December 03, 2009 12:40 PM
+To: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel at lists.berlios.de</A>
+Cc: Paulo Assis; Jacob Fehr
+Subject: Re: [Linux-uvc-devel] Timestamp Accuracy Patch
+
+Hi,
+
+On Tuesday 01 December 2009 23:20:08 Paulo Assis wrote:
+&gt;<i> 2009/12/1 Jacob Fehr &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">JacobFehr at smarttech.com</A>&gt;:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I posted another patch a while ago that is somewhat related to what you
+</I>&gt;<i> &gt; are doing. It removes the latency that happens as a result of USB IO (+/-
+</I>&gt;<i> &gt; 4ms) and takes advantages of the PTS and STC values that are carried in
+</I>&gt;<i> &gt; the stream.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Not sure if you need your timestamps _that_ accurate but I thought I'd
+</I>&gt;<i> &gt; let you know about it. I submitted it to the mailing list a little while.
+</I>&gt;<i> &gt; Laurent is in the process of reviewing the changes that I made.
+</I>
+I've reviewed the patch and sent a reply to the mailing list. Have you 
+received it ?
+
+&gt;<i> The problem with latency is the sync between audio and video, also since
+</I>&gt;<i> regular audio frames don't have timestamps, these must be added in the
+</I>&gt;<i> application side and an error is also introduced here, fortunately this is
+</I>&gt;<i> only really noticeable above some tens of miliseconds, so unless you
+</I>&gt;<i> capturing at very low frame rates it won't be much of an issue.
+</I>&gt;<i> The real problem is the variation in time between frames (frame duration),
+</I>&gt;<i> for 30 fps, this would yield an average of 33.333 ms, with a monotonic clock
+</I>&gt;<i> like ktime_get, the frame duration is quite stable (ms)
+</I>&gt;<i> 32-32-36-32-32-36-... (3 frames in 100 ms = 30 fps) but the same is not true
+</I>&gt;<i> for do_gettimeofday in some multicore processors where the frame duration is
+</I>&gt;<i> a bit random, so some players will have a hard time trying to play a video
+</I>&gt;<i> with this random frame durations specially when they expect a steady frame
+</I>&gt;<i> rate.
+</I>&gt;<i> Also non-monotonic based timestamps are subject to big errors in case the
+</I>&gt;<i> system time changes, this is especially true if you are running a ntp
+</I>&gt;<i> server.
+</I>&gt;<i> Anyway gstreamer based applications, like totem, don't seem to have
+</I>&gt;<i> any problems with random frame duration and xine also seems to work
+</I>&gt;<i> without much problems, so the big issue here is the use of a
+</I>&gt;<i> non-monotonic timer, that can cause a negative/future timestamps (this
+</I>&gt;<i> would break any media player).
+</I>
+I've discussed the issue with Mauro Carvalho Chehab and Devin Heitmueller, and 
+both agree that moving to a monotonic clock is the right solution. However, 
+this could break applications that rely on the realtime clock. Testing is thus 
+required.
+
+I could easily create a test tree on linuxtv.org, but the issue is to get 
+people to test the driver with their applications, as building and using a 
+linuxtv.org mercurial tree is rather difficult for many users.
+
+I will thus commit the change to the uvcvideo driver and push that to mainline 
+in order to get a bigger user base for testing. I'm pretty confident few 
+applications (if any) will break, but to be on the safe side I could add a 
+module parameter to select the clock and use the realtime clock by default.
+
+What's the general opinion regarding adding a module parameter for clock 
+selection vs. replacing the realtime clock by a monotonic clock completely ? 
+Is anyone here concerned about application breakage ?
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005371.html">[Linux-uvc-devel] Timestamp Accuracy Patch
+</A></li>
+	<LI>Next message: <A HREF="005369.html">[Linux-uvc-devel] [UVC] Resuming: What are controls necessary	resume when I suspend and resume video streaming?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5375">[ date ]</a>
+              <a href="thread.html#5375">[ thread ]</a>
+              <a href="subject.html#5375">[ subject ]</a>
+              <a href="author.html#5375">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

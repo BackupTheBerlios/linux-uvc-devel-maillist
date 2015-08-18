@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Issues with the Linux UVC driver (Was &quot;Where	is V4L headed ?&quot;)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Issues%20with%20the%20Linux%20UVC%20driver%20%28Was%20%22Where%0A%09is%20V4L%20headed%20%3F%22%29&In-Reply-To=%3C200705081049.30654.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001726.html">
+   <LINK REL="Next"  HREF="001710.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Issues with the Linux UVC driver (Was &quot;Where	is V4L headed ?&quot;)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Issues%20with%20the%20Linux%20UVC%20driver%20%28Was%20%22Where%0A%09is%20V4L%20headed%20%3F%22%29&In-Reply-To=%3C200705081049.30654.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Issues with the Linux UVC driver (Was &quot;Where	is V4L headed ?&quot;)">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue May  8 10:49:30 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001726.html">[Linux-uvc-devel] Some success with a Fujifilm FinePix A330
+</A></li>
+        <LI>Next message: <A HREF="001710.html">[Linux-uvc-devel] Issues with the Linux UVC driver (Was &quot;Where	is V4L headed ?&quot;)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1709">[ date ]</a>
+              <a href="thread.html#1709">[ thread ]</a>
+              <a href="subject.html#1709">[ subject ]</a>
+              <a href="author.html#1709">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Greg,
+
+On Tuesday 08 May 2007, Greg KH wrote:
+&gt;<i> On Mon, May 07, 2007 at 09:53:18AM +0200, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; On Sunday 06 May 2007, Markus Rechberger wrote:
+</I>&gt;<i> &gt; &gt; I defined the boundaries by looking at the packet size, there was no
+</I>&gt;<i> &gt; &gt; packet which had the length 0, since I had to do a fast solution I
+</I>&gt;<i> &gt; &gt; just looked at the packet size which was smaller than the average
+</I>&gt;<i> &gt; &gt; packets, this indicated a new frame for me.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I don't like heuristics. This is certainly not a proper solution. Either
+</I>&gt;<i> &gt; all URBs except the last one are full (with possibly a zero sized URB if
+</I>&gt;<i> &gt; the payload size is a multiple of the URB size), or they are not.
+</I>&gt;<i> &gt; According to the USB 2.0 specification this should be the case. I'll test
+</I>&gt;<i> &gt; this on the only bulk device I own.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; However this doesn't work well with 176x144 the driver cuts around 20
+</I>&gt;<i> &gt; &gt; lines ontop of the video.
+</I>&gt;<i> &gt; &gt; I'll also have a closer look at it tomorrow.
+</I>&gt;<i> &gt; &gt; Regarding the specs every frame should start with some frameheaders.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Every payload starts with a payload header. This is why I need a reliable
+</I>&gt;<i> &gt; way to detect payload boundaries.
+</I>&gt;<i>
+</I>&gt;<i> I don't understand why you need to know this.  The USB host controller
+</I>&gt;<i> will handle the zero length packets for you, if needed, and it will also
+</I>&gt;<i> divide up your bulk urb into the proper sizes for you, depending on the
+</I>&gt;<i> hardware size of the endpoint.
+</I>&gt;<i>
+</I>&gt;<i> And you also already know the size of the bulk endpoint in your driver,
+</I>&gt;<i> if you want to restrict your urb size to that, however, for decent
+</I>&gt;<i> speeds, I would not recommend doing this, but instead, letting the
+</I>&gt;<i> hardware divide up the urb for you into smaller pieces, filling the
+</I>&gt;<i> hardware pipeline up properly.
+</I>
+The issue here is memory usage. The device which triggered all this discussion 
+is a webcam using bulk payloads of 2.7MB, which is quite a lot for memory 
+constrained hosts. Instead of submitting a 2.7MB URB which would then be 
+divided in 512 bytes packets by the USB host controller, Markus adviced to 
+use smaller URBs (a few tens or hundreds of kilobytes). Those URBs would also 
+be divided in 512 bytes packets by the USB host controller.
+
+When submitting URBs smaller than the maximum payload size, the problem that 
+arises is that I need a way to detect payload boundaries. This was easy with 
+payload-sized URBs, as a complete payload would be containted in a single 
+URB, but becomes a bit more complex for smaller URBs. If the payload actual 
+size (which can be smaller than the payload maximum size reported by the 
+device for variable size payloads) is not a multiple of the URB size, the 
+last URB of a payload will have a smaller size. In the other case, I was 
+wondering if the driver we would receive an empty URB at the end of the 
+payload.
+
+I know that drivers usually submit URBs big enough to contain a single 
+payload. However, with this buggy device, the payload size is too big for 
+some memory constrained hosts.
+
+Do you think the device should be considered broken in that it does require 
+lots of memory, or is the &quot;split bulk URB&quot; approach viable ?
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001726.html">[Linux-uvc-devel] Some success with a Fujifilm FinePix A330
+</A></li>
+	<LI>Next message: <A HREF="001710.html">[Linux-uvc-devel] Issues with the Linux UVC driver (Was &quot;Where	is V4L headed ?&quot;)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1709">[ date ]</a>
+              <a href="thread.html#1709">[ thread ]</a>
+              <a href="subject.html#1709">[ subject ]</a>
+              <a href="author.html#1709">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

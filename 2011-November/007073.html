@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Send some bytes to device
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Send%20some%20bytes%20to%20device&In-Reply-To=%3C4EC9AEC8.6010301%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007072.html">
+   <LINK REL="Next"  HREF="007076.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Send some bytes to device</H1>
+    <B>DIXLOR</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Send%20some%20bytes%20to%20device&In-Reply-To=%3C4EC9AEC8.6010301%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Send some bytes to device">dixlor at gmail.com
+       </A><BR>
+    <I>Mon Nov 21 02:52:08 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007072.html">[Linux-uvc-devel] Chicony webcam report
+</A></li>
+        <LI>Next message: <A HREF="007076.html">[Linux-uvc-devel] Send some bytes to device
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7073">[ date ]</a>
+              <a href="thread.html#7073">[ thread ]</a>
+              <a href="subject.html#7073">[ subject ]</a>
+              <a href="author.html#7073">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Good day All!
+
+How and where in your uvc driver code to be inserted,
+&#1090;o pass in the USB a few bytes?
+
+With libusb this string looks like:
+
+#define ON_LED  &quot;\x00\x00\x01\xc2\x00\x00\x00&quot;
+memcpy(buf, ON_LED, 0x7);
+usb_control_msg(devh, USB_TYPE_CLASS + USB_RECIP_INTERFACE,  1, 0x600, 0x400,
+buf, 0x7, 1000);
+
+The problem is that this code works only when the camera is turned on.
+
+---
+In kernel code with looks like
+
+#define ON_LED  &quot;\x00\x00\x01\xc2\x00\x00\x00&quot;
+
+buff = kmalloc(0x7, GFP_KERNEL);
+memcpy(buff, ON_LED, 0x7);
+ret = usb_control_msg(udev, usb_sndctrlpipe(udev, 0x83), 0x21, 0x1, 0x600,
+0x400, buff, 0x7, 1000);
+
+uvc_printk(KERN_ERR, &quot;retval = %d\n&quot;, ret);
+
+But where to insert this code?
+And it should be sent only after the start the video.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007072.html">[Linux-uvc-devel] Chicony webcam report
+</A></li>
+	<LI>Next message: <A HREF="007076.html">[Linux-uvc-devel] Send some bytes to device
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7073">[ date ]</a>
+              <a href="thread.html#7073">[ thread ]</a>
+              <a href="subject.html#7073">[ subject ]</a>
+              <a href="author.html#7073">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

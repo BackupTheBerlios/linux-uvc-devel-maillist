@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Camera stopped working
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Camera%20stopped%20working&In-Reply-To=%3C20080828140456.9E5BC4E362%40cork.irdesign.cypress.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003994.html">
+   <LINK REL="Next"  HREF="003996.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Camera stopped working</H1>
+    <B>lhecking at users.sourceforge.net</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Camera%20stopped%20working&In-Reply-To=%3C20080828140456.9E5BC4E362%40cork.irdesign.cypress.com%3E"
+       TITLE="[Linux-uvc-devel] Camera stopped working">lhecking at users.sourceforge.net
+       </A><BR>
+    <I>Thu Aug 28 16:04:56 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003994.html">[Linux-uvc-devel] Turn off status LED on Logitech Sphere MP
+</A></li>
+        <LI>Next message: <A HREF="003996.html">[Linux-uvc-devel] Turn off status LED on Logitech Sphere MP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3995">[ date ]</a>
+              <a href="thread.html#3995">[ thread ]</a>
+              <a href="subject.html#3995">[ subject ]</a>
+              <a href="author.html#3995">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+ Hi all,
+
+ My laptop camera stopped working recently, I presume when I upgraded to
+ kernel version 2.6.25. I then tried 2.6.26 with the integrated uvc driver,
+ but with the same result; the camera LED flashes twice during boot (udev
+ and hald), yet it doesn't work in e.g. skype. Tested the current version
+ in gentoo stable (233?) and svn.
+
+ dmesg:
+...
+Linux video capture interface: v2.00
+usbcore: registered new interface driver uvcvideo
+USB Video Class driver (v0.1.0)
+...
+uvcvideo: Found UVC 1.00 device Laptop Integrated Webcam (05a9:2640)
+uvcvideo: Failed to query (135) UVC control 1 (unit 0) : -32 (exp. 26).
+input: Laptop Integrated Webcam as /class/input/input5
+
+ Running mplayer (yes, I read the comments about mplayer in the archives :)
+ gives ioctl related errors:
+
+|<i> $ mplayer <A HREF="tv://">tv://</A> -tv driver=v4l2:device=/dev/video0:mjpeg:fps=30
+</I>|<i> MPlayer dev-SVN-r26753-4.1.2 (C) 2000-2008 MPlayer Team
+</I>|<i> CPU: Intel(R) Core(TM)2 Duo CPU     T7300  @ 2.00GHz (Family: 6, Model: 15, Stepping: 10)
+</I>|<i> CPUflags:  MMX: 1 MMX2: 1 3DNow: 0 3DNow2: 0 SSE: 1 SSE2: 1
+</I>|<i> Compiled for x86 CPU with extensions: MMX MMX2 SSE SSE2
+</I>|<i> 
+</I>|<i> Playing <A HREF="tv://.">tv://.</A>
+</I>|<i> TV file format detected.
+</I>|<i> Selected driver: v4l2
+</I>|<i>  name: Video 4 Linux 2 input
+</I>|<i>  author: Martin Olschewski &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">olschewski at zpr.uni-koeln.de</A>&gt;
+</I>|<i>  comment: first try, more to come ;-)
+</I>|<i> v4l2: ioctl get standard failed: Invalid argument
+</I>|<i> Selected device: Laptop Integrated Webcam
+</I>|<i>  Capabilites:  video capture  streaming
+</I>|<i>  supported norms:
+</I>|<i>  inputs: 0 = Camera 1;
+</I>|<i>  Current input: 0
+</I>|<i>  Current format: MJPEG
+</I>|<i> v4l2: ioctl set format failed: Invalid argument
+</I>|<i> v4l2: ioctl set format failed: Invalid argument
+</I>|<i> v4l2: ioctl set format failed: Invalid argument
+</I>|<i> v4l2: ioctl set format failed: Invalid argument
+</I>|<i> v4l2: ioctl set format failed: Invalid argument
+</I>|<i> v4l2: ioctl set format failed: Invalid argument
+</I>|<i> v4l2: ioctl set format failed: Invalid argument
+</I>|<i> v4l2: ioctl set format failed: Invalid argument
+</I>|<i> tv.c: norm_from_string(pal): Bogus norm parameter, setting default.
+</I>|<i> v4l2: ioctl enum norm failed: Invalid argument
+</I>|<i> Error: Cannot set norm!
+</I>|<i>   MJP: width 352 height 288
+</I>|<i> Selected input hasn't got a tuner!
+</I>|<i> v4l2: ioctl set mute failed: Invalid argument
+</I>|<i> ==========================================================================
+</I>|<i> Opening video decoder: [ffmpeg] FFmpeg's libavcodec codec family
+</I>|<i> Selected video codec: [ffmjpeg] vfm: ffmpeg (FFmpeg MJPEG decoder)
+</I>|<i> ==========================================================================
+</I>|<i> Audio: no sound
+</I>|<i> Starting playback...
+</I>|<i> VDec: vo config request - 160 x 120 (preferred colorspace: Planar 422P)
+</I>|<i> Could not find matching colorspace - retrying with -vf scale...
+</I>|<i> Opening video filter: [scale]
+</I>|<i> VDec: using Planar 422P as output csp (no 1)
+</I>|<i> Movie-Aspect is nan:1 - prescaling to correct movie aspect.
+</I>|<i> SwScaler: reducing / aligning filtersize 1 -&gt; 4
+</I>|<i> SwScaler: reducing / aligning filtersize 1 -&gt; 4
+</I>|<i> SwScaler: reducing / aligning filtersize 1 -&gt; 1
+</I>|<i> SwScaler: reducing / aligning filtersize 9 -&gt; 8
+</I>|<i> [swscaler @ 0x8762018]BICUBIC scaler, from yuv422p to yuv420p using MMX2
+</I>|<i> [swscaler @ 0x8762018]using 4-tap MMX scaler for horizontal luminance scaling
+</I>|<i> [swscaler @ 0x8762018]using 4-tap MMX scaler for horizontal chrominance scaling
+</I>|<i> [swscaler @ 0x8762018]using 1-tap MMX &quot;scaler&quot; for vertical scaling (YV12 like)
+</I>|<i> [swscaler @ 0x8762018]160x120 -&gt; 160x120
+</I>|<i> VO: invalid dimensions!
+</I>|<i> FATAL: Cannot initialize video driver.
+</I>|<i> VDec: vo config request - 160 x 120 (preferred colorspace: Planar 422P)
+</I>|<i> VDec: using Planar 422P as output csp (no 1)
+</I>|<i> Movie-Aspect is nan:1 - prescaling to correct movie aspect.
+</I>|<i> VO: invalid dimensions!
+</I>|<i> FATAL: Cannot initialize video driver.
+</I>|<i> 
+</I>|<i> FATAL: Could not initialize video filters (-vf) or video output (-vo).
+</I>|<i> 
+</I>|<i> 
+</I>|<i> 
+</I>|<i> MPlayer interrupted by signal 8 in module: free_demuxer
+</I>|<i> - MPlayer crashed by bad usage of CPU/FPU/RAM.
+</I>|<i>   Recompile MPlayer with --enable-debug and make a 'gdb' backtrace and
+</I>|<i>   disassembly. Details in DOCS/HTML/en/bugreports_what.html#bugreports_crash.
+</I>|<i> - MPlayer crashed. This shouldn't happen.
+</I>|<i>   It can be a bug in the MPlayer code _or_ in your drivers _or_ in your
+</I>|<i>   gcc version. If you think it's MPlayer's fault, please read
+</I>|<i>   DOCS/HTML/en/bugreports.html and follow the instructions there. We can't and
+</I>|<i>   won't help unless you provide this information when reporting a possible bug.
+</I>
+ Any ideas?
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003994.html">[Linux-uvc-devel] Turn off status LED on Logitech Sphere MP
+</A></li>
+	<LI>Next message: <A HREF="003996.html">[Linux-uvc-devel] Turn off status LED on Logitech Sphere MP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3995">[ date ]</a>
+              <a href="thread.html#3995">[ thread ]</a>
+              <a href="subject.html#3995">[ subject ]</a>
+              <a href="author.html#3995">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

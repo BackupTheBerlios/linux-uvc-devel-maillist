@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvc revision 132 and iSight
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvc%20revision%20132%20and%20iSight&In-Reply-To=%3C200710090120.30533.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002260.html">
+   <LINK REL="Next"  HREF="002222.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvc revision 132 and iSight</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvc%20revision%20132%20and%20iSight&In-Reply-To=%3C200710090120.30533.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] uvc revision 132 and iSight">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Oct  9 01:20:30 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002260.html">[Linux-uvc-devel] uvc revision 132 and iSight
+</A></li>
+        <LI>Next message: <A HREF="002222.html">[Linux-uvc-devel] driver installation in Debian
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2264">[ date ]</a>
+              <a href="thread.html#2264">[ thread ]</a>
+              <a href="subject.html#2264">[ subject ]</a>
+              <a href="author.html#2264">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Felix,
+
+On Sunday 07 October 2007, Felix M&#246;ller wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> &gt; On Thursday 04 October 2007 16:33, Stefan Schweizer wrote:
+</I>[snip]
+&gt;<i> &gt; I can't apply the patch as-is. It must be ported to the SVN head first,
+</I>&gt;<i> &gt; and some hardcoded assumptions must be removed. If someone wants to do
+</I>&gt;<i> &gt; the job, and if we can find a way to integrate the patch without
+</I>&gt;<i> &gt; disturbing too much the driver (other UVC devices must still work :-) ),
+</I>&gt;<i> &gt; I could apply it.
+</I>&gt;<i>
+</I>&gt;<i> Laruent: That sounds good but unfortunately I am not a C programmer. The
+</I>&gt;<i> attached patch certainly is nothing to apply as is.
+</I>&gt;<i>
+</I>&gt;<i> Could you please comment on this oops. Is it a bug in the patch or in
+</I>&gt;<i> the uvcvideo svn as &quot;if (intf-&gt;cur_altsetting-&gt;desc.bInterfaceSubClass
+</I>&gt;<i> != SC_VIDEOSTREAMING)&quot; is never hit? To fix it I commented out
+</I>&gt;<i> &quot;continue&quot; around line 854.
+</I>
+It's definitely a bug in the patch. You can't comment lines at random and 
+expect everything to work :-)
+
+[snip]
+
+&gt;<i> How should the occurrences of &quot;if
+</I>&gt;<i> (intf-&gt;cur_altsetting-&gt;desc.bInterfaceSubClass == SC_VIDEOSTREAMING)&quot; be
+</I>&gt;<i> modified?
+</I>
+For a UVC device bInterfaceSubclass should be either SC_VIDEOCONTROL or 
+SC_VIDEOSTREAMING. The driver uses that field to differentiate between the 
+control interface and the streaming interface(s).
+
+If I remember well, the iSight sets bInterfaceSubclass to 0xff for all 
+interfaces. This makes the Linux UVC probe fail. You commented the related 
+tests to stop the probe from failing, but that confuses the driver.
+
+A proper fix would be to change the iSight descriptors :-) This could actually 
+be done by locating the descriptors in the firmware and patching them. Not 
+sure if that's a viable long-term solution though, as next firmware versions 
+won't work out of the box. On the other hand, newer firmwares might be even 
+less UVC compatible...
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002260.html">[Linux-uvc-devel] uvc revision 132 and iSight
+</A></li>
+	<LI>Next message: <A HREF="002222.html">[Linux-uvc-devel] driver installation in Debian
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2264">[ date ]</a>
+              <a href="thread.html#2264">[ thread ]</a>
+              <a href="subject.html#2264">[ subject ]</a>
+              <a href="author.html#2264">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo: Failed to submit URB 0 (-28) on ARM	target.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%3A%20Failed%20to%20submit%20URB%200%20%28-28%29%20on%20ARM%0A%09target.&In-Reply-To=%3Ch2y59cf47a81004060544s4b90fa47v6f90f6a0452c338f%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005654.html">
+   <LINK REL="Next"  HREF="005656.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo: Failed to submit URB 0 (-28) on ARM	target.</H1>
+    <B>Paulo Assis</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%3A%20Failed%20to%20submit%20URB%200%20%28-28%29%20on%20ARM%0A%09target.&In-Reply-To=%3Ch2y59cf47a81004060544s4b90fa47v6f90f6a0452c338f%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo: Failed to submit URB 0 (-28) on ARM	target.">pj.assis at gmail.com
+       </A><BR>
+    <I>Tue Apr  6 14:44:05 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005654.html">[Linux-uvc-devel] uvcvideo: Failed to submit URB 0 (-28) on ARM	target.
+</A></li>
+        <LI>Next message: <A HREF="005656.html">[Linux-uvc-devel] uvcvideo: Failed to submit URB 0 (-28) on ARM	target.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5655">[ date ]</a>
+              <a href="thread.html#5655">[ thread ]</a>
+              <a href="subject.html#5655">[ subject ]</a>
+              <a href="author.html#5655">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Franz Hi,
+
+2010/4/6 Franz TRIERWEILER &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">franz.trierweiler.ingenieur at gmail.com</A>&gt;:
+&gt;<i> Hello,
+</I>&gt;<i>
+</I>&gt;<i> I am trying to make jpeg/png still encoded picture from a uvcvideo
+</I>&gt;<i> compatible webcam with gstreamer. I do this on a Freescale iMX25 evalboard
+</I>&gt;<i> featuring support for the uvcvideo driver.
+</I>&gt;<i>
+</I>&gt;<i> I configured the gstreamer package and v4l2 / uvc support properly through
+</I>&gt;<i> LTIB.
+</I>&gt;<i>
+</I>&gt;<i> My webcam is officialy supported (0c45:62c0) by the Linux UVC driver.
+</I>&gt;<i> indeed, here is what I get when plugging the device:
+</I>&gt;<i>
+</I>&gt;<i> usb 1-1.5: new full speed USB device using fsl-ehci and address 5
+</I>&gt;<i> usb 1-1.5: not running at top speed; connect to a high speed hub
+</I>&gt;<i> usb 1-1.5: New USB device found, idVendor=0c45, idProduct=62c0
+</I>&gt;<i> usb 1-1.5: New USB device strings: Mfr=2, Product=1, SerialNumber=0
+</I>&gt;<i> usb 1-1.5: Product: USB 2.0 Camera
+</I>&gt;<i> usb 1-1.5: Manufacturer: Sonix Technology Co., Ltd.
+</I>&gt;<i> usb 1-1.5: configuration #1 chosen from 1 choice
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device USB 2.0 Camera (0c45:62c0)
+</I>&gt;<i> input: USB 2.0 Camera as /class/input/input3
+</I>&gt;<i>
+</I>
+Everything looks good here.
+
+
+&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> When i just try to launch the following command, then I get the following
+</I>&gt;<i> error:
+</I>&gt;<i>
+</I>&gt;<i> gst-launch-0.10 v4l2src
+</I>&gt;<i>
+</I>&gt;<i> Setting pipeline to PAUSED ...
+</I>&gt;<i> uvcvideo: Failed to submit URB 0 (-28).
+</I>&gt;<i> Pipeline is live and does not need PREROLL ...
+</I>&gt;<i> ERROR: from element /GstPipeline:pipeline0/GstV4l2Src:v4l2src0: Error
+</I>&gt;<i> starting .
+</I>&gt;<i> Additional debug info:
+</I>&gt;<i> gstv4l2object.c(1886): gst_v4l2_object_start_streaming ():
+</I>&gt;<i> /GstPipeline:pipelin:
+</I>&gt;<i> system error: No space left on device
+</I>
+This looks like a bandwidth issue, I get a similar error if I try to
+open two or three devices at the same time and the request bandwidth
+is too much for the usb pipe to handle.
+
+Are you using a usb1 or usb2 port?
+Most of these ARM boards use have usb1 ports, so you can't use the
+full camera capabilities (resolution/fps).
+
+
+&gt;<i> ERROR: pipeline doesn't want to preroll.
+</I>&gt;<i> Setting pipeline to PAUSED ...
+</I>&gt;<i> Setting pipeline to READY ...
+</I>&gt;<i> Setting pipeline to NULL ...
+</I>&gt;<i> Freeing pipeline ...
+</I>&gt;<i>
+</I>&gt;<i> The error seems to come from the device/uvcvideo layer since this error
+</I>&gt;<i> clearly relates to the driver endpoints.
+</I>&gt;<i>
+</I>&gt;<i> My final goal is to submit such a command (with the right jpeg/png encoder):
+</I>&gt;<i> gst-launch-0.10 v4l2src ! pngenc ! filesink location=test.png
+</I>&gt;<i>
+</I>&gt;<i> Were there recent fixes to the uvcdriver (which Freescale did not report)?
+</I>&gt;<i> My driver version is 0.1.0. I read this in the uvc_driver.c file (from
+</I>&gt;<i> /linux/drivers/media/video/uvc) provided with my evalboard BSP.
+</I>&gt;<i>
+</I>&gt;<i> I noticed that what I want to do works fine on Ubuntu 09.04 (the kernel
+</I>
+Maybe you are using a usb2 port here ?
+
+
+&gt;<i> features the uvcvideo). If I type modinfo
+</I>&gt;<i> /lib/modules/2.6.28-11-generic/kernel/drivers/media/video/uvc/uvcvideo.ko I
+</I>&gt;<i> get the following driver version:
+</I>&gt;<i>
+</I>
+Don't believe the reported uvc version, use the kernel version
+instead, uvc is built-in the kernel since 2.6.27
+
+
+&gt;<i> filename:
+</I>&gt;<i> /lib/modules/2.6.28-11-generic/kernel/drivers/media/video/uvc/uvcvideo.ko
+</I>&gt;<i> version:&#160;&#160;&#160;&#160;&#160;&#160;&#160; v0.1.0
+</I>&gt;<i> license:&#160;&#160;&#160;&#160;&#160;&#160;&#160; GPL
+</I>&gt;<i>
+</I>&gt;<i> Thus I guess that Freescale BSP uses the same driver version as Ubuntu 09.04
+</I>&gt;<i> does.
+</I>&gt;<i>
+</I>&gt;<i> If required I can send more information to help solve this issue.
+</I>&gt;<i>
+</I>&gt;<i> Best Regards,
+</I>&gt;<i> Franz
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005654.html">[Linux-uvc-devel] uvcvideo: Failed to submit URB 0 (-28) on ARM	target.
+</A></li>
+	<LI>Next message: <A HREF="005656.html">[Linux-uvc-devel] uvcvideo: Failed to submit URB 0 (-28) on ARM	target.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5655">[ date ]</a>
+              <a href="thread.html#5655">[ thread ]</a>
+              <a href="subject.html#5655">[ subject ]</a>
+              <a href="author.html#5655">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

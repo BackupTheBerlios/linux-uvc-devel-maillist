@@ -1,0 +1,270 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech Orbit on 64-bit kernel
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20Orbit%20on%2064-bit%20kernel&In-Reply-To=%3C87bqllvz5f.fsf%40arbol.wsrcc.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001123.html">
+   <LINK REL="Next"  HREF="001125.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech Orbit on 64-bit kernel</H1>
+    <B>Wolfgang S. Rupprecht</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20Orbit%20on%2064-bit%20kernel&In-Reply-To=%3C87bqllvz5f.fsf%40arbol.wsrcc.com%3E"
+       TITLE="[Linux-uvc-devel] Logitech Orbit on 64-bit kernel">wolfgang.rupprecht+gnus200612 at gmail.com
+       </A><BR>
+    <I>Sat Dec 30 22:42:36 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001123.html">[Linux-uvc-devel] Creating new /dev/video?
+</A></li>
+        <LI>Next message: <A HREF="001125.html">[Linux-uvc-devel] Logitech Orbit on 64-bit kernel
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1124">[ date ]</a>
+              <a href="thread.html#1124">[ thread ]</a>
+              <a href="subject.html#1124">[ subject ]</a>
+              <a href="author.html#1124">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Is anyone using the Logitech Orbit on a 64-bit linux kernel such as
+current fedora fc6 (2.6.18-1.2868.fc6 x86_64)?
+
+With linux-uvc (svn Revision: 74, 2006-12-13 14:34:57) and
+luvcview-20060920 I can get a picture and can pan in both directions,
+but the tilt is non-functional.  In fact, the &quot;reset&quot; button in
+luvcview caused the tilt to go to the lower extreme and now I'm stuck
+with it there and now way to raise the tilt back to horizontal.
+
+At first it looked like a problem with one of the uvc structs changing
+and luvcview was using the old version.  More things seemed to work
+once I did change luvcview to use the current uvc include files, but
+the tilt was still non-functional.  Appended is what I did.  (Quite a
+few fixes were just to quiet down gcc.)
+
+-wolfgang
+
+diff -ru luvcview-20060920-dist/avilib.h luvcview-20060920/avilib.h
+--- luvcview-20060920-dist/avilib.h	2006-09-20 08:47:36.000000000 -0700
++++ luvcview-20060920/avilib.h	2006-12-23 20:13:18.000000000 -0800
+@@ -310,8 +310,8 @@
+                                long *len);
+ 
+ void AVI_print_error(char *str);
+-char *AVI_strerror();
+-char *AVI_syserror();
++char *AVI_strerror(void);
++char *AVI_syserror(void);
+ 
+ int AVI_scan(char *name);
+ int AVI_dump(char *name, int mode);
+@@ -320,7 +320,7 @@
+ int AVI_file_check(char *import_file);
+ 
+ void AVI_info(avi_t *avifile);
+-uint64_t AVI_max_size();
++uint64_t AVI_max_size(void);
+ int avi_update_header(avi_t *AVI);
+ 
+ int AVI_set_audio_track(avi_t *AVI, int track);
+diff -ru luvcview-20060920-dist/frmfmtenum.c luvcview-20060920/frmfmtenum.c
+--- luvcview-20060920-dist/frmfmtenum.c	2006-09-20 08:47:36.000000000 -0700
++++ luvcview-20060920/frmfmtenum.c	2006-12-23 20:08:57.000000000 -0800
+@@ -32,8 +32,11 @@
+ #include &lt;sys/ioctl.h&gt;
+ 
+ #include &lt;linux/videodev.h&gt;
+-#include &quot;uvcvideo.h&quot;
+-#include &quot;v4l2_enumfrmfmt.h&quot;
++
++// #include &quot;uvcvideo.h&quot;
++// #include &quot;v4l2_enumfrmfmt.h&quot;
++
++#include &quot;../linux-uvc/trunk/uvcvideo.h&quot;
+ 
+ void usage(const char *argv0)
+ {
+diff -ru luvcview-20060920-dist/luvcview.c luvcview-20060920/luvcview.c
+--- luvcview-20060920-dist/luvcview.c	2006-09-20 09:55:29.000000000 -0700
++++ luvcview-20060920/luvcview.c	2006-12-23 20:17:09.000000000 -0800
+@@ -209,7 +209,6 @@
+     Uint32 currtime;
+     Uint32 lasttime;
+     unsigned char *p = NULL;
+-    int bpp = 3;
+     int hwaccel = 0;
+     const char *videodevice = NULL;
+     const char *mode = NULL;
+@@ -218,7 +217,7 @@
+     int grabmethod = 1;
+     int width = 320;
+     int height = 240;
+-    unsigned char frmrate;
++    unsigned char frmrate = 0;
+     char *avifilename = NULL;
+     int queryformats = 0;
+     
+@@ -612,7 +611,7 @@
+ 		if ((value =v4L2UpDownPan(videoIn, -incpantilt)) &lt; 0)
+ 		    printf(&quot;Set Pan up error\n&quot;);
+ 	    break;
+-	    case A_TILT_UP:
++        case A_TILT_UP:
+ 		if ((value =v4L2UpDownTilt(videoIn, -incpantilt)) &lt; 0)
+ 		    printf(&quot;Set Tilt up error\n&quot;);
+ 	    break;
+diff -ru luvcview-20060920-dist/Makefile luvcview-20060920/Makefile
+--- luvcview-20060920-dist/Makefile	2006-09-20 08:47:36.000000000 -0700
++++ luvcview-20060920/Makefile	2006-12-23 20:12:38.000000000 -0800
+@@ -9,7 +9,7 @@
+ INSTALL=install
+ APP_BINARY=luvcview
+ BIN=/usr/local/bin
+-SDLLIBS = $(shell sdl-config --libs) 
++SDLLIBS = $(shell sdl-config --libs)
+ SDLFLAGS = $(shell sdl-config --cflags)
+ #LIBX11FLAGS= -I/usr/X11R6/include -L/usr/X11R6/lib
+ VERSION = 0.1.7
+@@ -27,11 +27,11 @@
+ #           -Wno-unused
+ #           -Wunused
+ 
+-CFLAGS = -DUSE_SDL -O2 -DLINUX -DVERSION=\&quot;$(VERSION)\&quot; -I$(UVCINC) $(SDLFLAGS) $(WARNINGS)
++CFLAGS += -DUSE_SDL -O2 -DLINUX -DVERSION=\&quot;$(VERSION)\&quot; -I$(UVCINC) $(SDLFLAGS) $(WARNINGS)
+ CPPFLAGS = $(CFLAGS)
+ 
+ OBJECTS= luvcview.o utils.o v4l2uvc.o gui.o avilib.o frmfmtenum.o
+-		
++
+ 
+ all:	luvcview
+ 
+@@ -49,5 +49,5 @@
+ 
+ 
+ install: luvcview
+-	$(INSTALL) -s -m 755 -g root -o root $(APP_BINARY) $(BIN) 
++	$(INSTALL) -s -m 755 -g root -o root $(APP_BINARY) $(BIN)
+ 	rm -f $(BIN)/uvcview
+diff -ru luvcview-20060920-dist/utils.c luvcview-20060920/utils.c
+--- luvcview-20060920-dist/utils.c	2006-07-06 06:53:21.000000000 -0700
++++ luvcview-20060920/utils.c	2006-12-23 20:25:06.000000000 -0800
+@@ -108,9 +108,9 @@
+ 
+ inline static void idct(int *in, int *out, int *quant, long off, int max);
+ 
+-/*********************************/
++int is_huffman(unsigned char *buf);
+ 
+-static void col221111 __P((int *, unsigned char *, int));
++/*********************************/
+ 
+ static void yuv420pto422(int * out,unsigned char *pic,int width);
+ static void yuv422pto422(int * out,unsigned char *pic,int width);
+@@ -546,7 +546,7 @@
+ /****************************************************************/
+ static int huffman_init(void)
+ {    	int tc, th, tt;
+- 	unsigned char *ptr= (unsigned char *) JPEGHuffmanTable ;
++ 	const unsigned char *ptr= JPEGHuffmanTable ;
+ 	int i, j, l;
+ 	l = JPG_HUFFMAN_TABLE_LENGTH ;
+ 	    while (l &gt; 0) {
+@@ -1144,6 +1144,7 @@
+ 	}
+     
+ }
++
+ int 
+ is_huffman(unsigned char *buf)
+ {
+@@ -1163,7 +1164,7 @@
+ get_picture(unsigned char *buf,int size)
+ {
+ FILE *file;
+-unsigned char *ptdeb,*ptcur;
++unsigned char *ptdeb,*ptcur = buf;
+ int sizein;
+ file = fopen(&quot;quickcam.jpg&quot;, &quot;wb&quot;);
+ if (file != NULL) {
+@@ -1178,7 +1179,7 @@
+ 		DHT_SIZE, 1, file);
+ 	fwrite(ptcur,size-sizein,1,file); 
+ 	} else {
+-	fwrite(ptcur,size,1,file); 
++	fwrite(ptcur,size,1,file); /* ptcur was uninit -wsr */
+ 	}     
+ 	fclose(file);
+ 	}
+diff -ru luvcview-20060920-dist/v4l2uvc.c luvcview-20060920/v4l2uvc.c
+--- luvcview-20060920-dist/v4l2uvc.c	2006-09-20 09:39:30.000000000 -0700
++++ luvcview-20060920/v4l2uvc.c	2006-12-23 20:39:50.000000000 -0800
+@@ -36,8 +36,6 @@
+ init_videoIn(struct vdIn *vd, char *device, int width, int height,
+ 	     int format, int grabmethod, char *avifilename)
+ {
+-    int ret = -1;
+-    int i;
+     if (vd == NULL || device == NULL)
+ 	return -1;
+     if (width == 0 || height == 0)
+@@ -437,7 +435,7 @@
+ {
+     struct v4l2_control control_s;
+     struct v4l2_queryctrl queryctrl;
+-    int min, max, current, step, val_def;
++    int min, max, step, val_def;
+     int err;
+     if (isv4l2Control(vd, control, &amp;queryctrl) &lt; 0)
+ 	return -1;
+@@ -564,7 +562,7 @@
+ 		short tilt;
+ 	} s16;
+ 	int value;
+-} pantilt;
++} __attribute__((packed)) ;
+ 	
+ int v4L2UpDownPan(struct vdIn *vd, short inc)
+ {   int control = V4L2_CID_PANTILT_RELATIVE;
+
+
+
+
+
+
+-- 
+Wolfgang S. Rupprecht                <A HREF="http://www.wsrcc.com/wolfgang/">http://www.wsrcc.com/wolfgang/</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001123.html">[Linux-uvc-devel] Creating new /dev/video?
+</A></li>
+	<LI>Next message: <A HREF="001125.html">[Linux-uvc-devel] Logitech Orbit on 64-bit kernel
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1124">[ date ]</a>
+              <a href="thread.html#1124">[ thread ]</a>
+              <a href="subject.html#1124">[ subject ]</a>
+              <a href="author.html#1124">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

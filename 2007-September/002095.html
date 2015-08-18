@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20Xbox%20Live%20Vision%20Cam%20%28045e%3A0294%29&In-Reply-To=%3C200709122319.06773.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002086.html">
+   <LINK REL="Next"  HREF="002097.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20Xbox%20Live%20Vision%20Cam%20%28045e%3A0294%29&In-Reply-To=%3C200709122319.06773.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Sep 12 23:19:06 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002086.html">[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+</A></li>
+        <LI>Next message: <A HREF="002097.html">[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2095">[ date ]</a>
+              <a href="thread.html#2095">[ thread ]</a>
+              <a href="subject.html#2095">[ subject ]</a>
+              <a href="author.html#2095">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Felix,
+
+On Monday 10 September 2007, Felix Domke wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> i've spent some time on the Microsoft Xbox Live Vision cam (it's pretty
+</I>&gt;<i> cheap, USB 2.0, nearly uvc 1.0 compliant, has a pretty good image
+</I>&gt;<i> quality, manual focus, allegedly a 1280x960 sensor (i haven't checked,
+</I>&gt;<i> it might just upscale, but i don't think so), and supports MJPG and YUYV).
+</I>
+*nearly* UVC compliant ? *sigh*... Can't they test their hardware with 
+Linux ? :-)
+
+&gt;<i> Out of the box, the cam didn't work with linux-uvc - the cam crashed
+</I>&gt;<i> after the initial SET_CUR on the VideoStreaming ctrl, and didn't
+</I>&gt;<i> responded to any USB control packets anymore (not even a simple,
+</I>&gt;<i> non-video related GET_DESCRIPTOR etc.).
+</I>&gt;<i>
+</I>&gt;<i> I've compared what the UVC driver did (not much, as the cam crashed
+</I>&gt;<i> really early) with what the Xbox 360 did (using a USB sniffer), and
+</I>&gt;<i> found out the following two things:
+</I>&gt;<i>
+</I>&gt;<i> a.) you need to SET_INTERFACE before doing any SET_CUR, or the cam will
+</I>&gt;<i> crash. (I don't know the USB specs good enough, but I think the cam is
+</I>&gt;<i> correct here - the cam offers multiple interfaces, because it supports
+</I>&gt;<i> some &quot;Authentication Mechanism&quot;, so you need to select the video part
+</I>&gt;<i> first. Of course the cam should not crash, rather STALL or whatever.)
+</I>
+SET_INTERFACE shouldn't be required. Upon being plugged in, the webcam should 
+select the default alternate setting.
+
+Selecting the default alternate setting when initialising the camera shouldn't 
+hurt. I'll experiment with a few devices and commit a patch afterwards.
+
+&gt;<i> b.) The cam requires about ~3sec time after the initial SET_INTERFACE.
+</I>
+Now this is bad news. What happens if you query controls during those ~3sec ? 
+Those the webcam timeout but stay functional, or does it crash ?
+
+&gt;<i> I've added the two hacks (not meant for inclusion, just to describe the
+</I>&gt;<i> problem):
+</I>&gt;<i>
+</I>&gt;<i> Index: uvc_driver.c
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvc_driver.c        (revision 125)
+</I>&gt;<i> +++ uvc_driver.c        (working copy)
+</I>&gt;<i> @@ -1530,6 +1530,8 @@
+</I>&gt;<i>         dev-&gt;intf = usb_get_intf(intf);
+</I>&gt;<i>         dev-&gt;intfnum = intf-&gt;cur_altsetting-&gt;desc.bInterfaceNumber;
+</I>&gt;<i>         dev-&gt;quirks = id-&gt;driver_info;
+</I>&gt;<i> +
+</I>&gt;<i> +       usb_set_interface(udev, 1, 0);
+</I>&gt;<i>
+</I>&gt;<i>         /* Parse the Video Class control descriptor */
+</I>&gt;<i>         if (uvc_parse_control(dev) &lt; 0) {
+</I>&gt;<i>
+</I>&gt;<i> Index: uvcvideo.h
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvcvideo.h  (revision 125)
+</I>&gt;<i> +++ uvcvideo.h  (working copy)
+</I>&gt;<i> @@ -241,8 +241,8 @@
+</I>&gt;<i>  /* Maximum number of video buffers. */
+</I>&gt;<i>  #define UVC_MAX_VIDEO_BUFFERS  32
+</I>&gt;<i>
+</I>&gt;<i> -#define UVC_CTRL_CONTROL_TIMEOUT       300
+</I>&gt;<i> -#define UVC_CTRL_STREAMING_TIMEOUT     1000
+</I>&gt;<i> +#define UVC_CTRL_CONTROL_TIMEOUT       5000
+</I>&gt;<i> +#define UVC_CTRL_STREAMING_TIMEOUT     5000
+</I>&gt;<i>
+</I>&gt;<i>  /* Devices quirks */
+</I>&gt;<i>  #define UVC_QUIRK_STATUS_INTERVAL      0x00000001
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> With those two changes, the cam works really nice with luvcview.
+</I>&gt;<i> uvccapture made some trouble, but that might be caused by something else.
+</I>&gt;<i>
+</I>&gt;<i> Maybe someone a little more intimate could see if this can be added in a
+</I>&gt;<i>  nice way. But I think increasing the timeouts shouldn't hurt (you could
+</I>&gt;<i> still add a dummy GET_CUR after the set_interface with an increased
+</I>&gt;<i> timeout, if you don't want to change the timeout globally), and i
+</I>&gt;<i> believe the set_interface should be done in any way.
+</I>
+I'll test the SET_INTERFACE part and commit it soon. Regarding the timeouts, 
+what happens if you modify the streaming timeout only ?
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002086.html">[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+</A></li>
+	<LI>Next message: <A HREF="002097.html">[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2095">[ date ]</a>
+              <a href="thread.html#2095">[ thread ]</a>
+              <a href="subject.html#2095">[ subject ]</a>
+              <a href="author.html#2095">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

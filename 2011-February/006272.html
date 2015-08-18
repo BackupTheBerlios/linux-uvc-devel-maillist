@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] HP Pavillion DV3 WebCam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20HP%20Pavillion%20DV3%20WebCam&In-Reply-To=%3CAANLkTinxAR%3DYQZB352AS4TnY3BO0LZVHpKX3qmY%2BykTA%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006247.html">
+   <LINK REL="Next"  HREF="006286.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] HP Pavillion DV3 WebCam</H1>
+    <B>Carlos Silva</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20HP%20Pavillion%20DV3%20WebCam&In-Reply-To=%3CAANLkTinxAR%3DYQZB352AS4TnY3BO0LZVHpKX3qmY%2BykTA%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] HP Pavillion DV3 WebCam">r3pek at r3pek.org
+       </A><BR>
+    <I>Tue Feb 15 18:46:52 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006247.html">[Linux-uvc-devel] HP Pavillion DV3 WebCam
+</A></li>
+        <LI>Next message: <A HREF="006286.html">[Linux-uvc-devel] HP Pavillion DV3 WebCam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6272">[ date ]</a>
+              <a href="thread.html#6272">[ thread ]</a>
+              <a href="subject.html#6272">[ subject ]</a>
+              <a href="author.html#6272">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>No help on this? :(
+
+On Tue, Feb 1, 2011 at 23:32, Carlos Silva &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">r3pek at r3pek.org</A>&gt; wrote:
+
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> I recently bought an HP Pavillion DV3 laptop that has an integrated webcam.
+</I>&gt;<i> After searching a while I found out that the webcam is an UVC webcam but it
+</I>&gt;<i> isn't on the list of supported cams.
+</I>&gt;<i>
+</I>&gt;<i> This is the usb entry of lsusb:
+</I>&gt;<i> Bus 002 Device 004: ID 174f:1118 Syntek
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> I added the usb vendor + product id to the driver like this:
+</I>&gt;<i>          /* Syntek (HP Pavillion dv3) */
+</I>&gt;<i>         { .match_flags          = USB_DEVICE_ID_MATCH_DEVICE
+</I>&gt;<i>                                 | USB_DEVICE_ID_MATCH_INT_INFO,
+</I>&gt;<i>           .idVendor             = 0x174f,
+</I>&gt;<i>           .idProduct            = 0x1118,
+</I>&gt;<i>           .bInterfaceClass      = USB_CLASS_VIDEO,
+</I>&gt;<i>           .bInterfaceSubClass   = 1,
+</I>&gt;<i>           .bInterfaceProtocol   = 0,
+</I>&gt;<i>           .driver_info          = UVC_QUIRK_STREAM_NO_FID },
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> The device is recognized by the driver:
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device HP Webcam (174f:1118)
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Now I have a problem. When I try to use it, the &quot;in use&quot; led from the
+</I>&gt;<i> camera lights up, but software doesn't receive any image (stays black all
+</I>&gt;<i> the time).
+</I>&gt;<i> Here is my dmesg:
+</I>&gt;<i> uvcvideo: Failed to resubmit video URB (-1).
+</I>&gt;<i> uvcvideo: Trying format 0x56595559 (YUYV): 640x480.
+</I>&gt;<i> uvcvideo: Using default frame interval 41666.6 us (24.0 fps).
+</I>&gt;<i> uvcvideo: Setting frame interval to 1/24 (416666).
+</I>&gt;<i> uvcvideo: Trying format 0x56595559 (YUYV): 640x480.
+</I>&gt;<i> ^^ This last 2 lines repeat themself several times (the first one has got
+</I>&gt;<i> my attention but I don't know what's the problem)
+</I>&gt;<i>
+</I>&gt;<i> Attached is a log of &quot;guvcview&quot; program starting and closing. After it
+</I>&gt;<i> starts, it starts printing the errors:
+</I>&gt;<i>  Could not grab image (select timeout): Resource temporarily unavailable
+</I>&gt;<i>  Could not grab image (select timeout): Resource temporarily unavailable
+</I>&gt;<i>  Could not grab image (select timeout): Resource temporarily unavailable
+</I>&gt;<i>  Could not grab image (select timeout): Resource temporarily unavailable
+</I>&gt;<i>  Could not grab image (select timeout): Resource temporarily unavailable
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Any pointers on how can I help getting this camera supported on the driver?
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110215/f11fba78/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110215/f11fba78/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006247.html">[Linux-uvc-devel] HP Pavillion DV3 WebCam
+</A></li>
+	<LI>Next message: <A HREF="006286.html">[Linux-uvc-devel] HP Pavillion DV3 WebCam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6272">[ date ]</a>
+              <a href="thread.html#6272">[ thread ]</a>
+              <a href="subject.html#6272">[ subject ]</a>
+              <a href="author.html#6272">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

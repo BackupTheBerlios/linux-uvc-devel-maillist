@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Problem with using two Logitech Pro9000 in	the highest resolution
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problem%20with%20using%20two%20Logitech%20Pro9000%20in%0A%09the%20highest%20resolution&In-Reply-To=%3C200911102334.45564.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005287.html">
+   <LINK REL="Next"  HREF="005297.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Problem with using two Logitech Pro9000 in	the highest resolution</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problem%20with%20using%20two%20Logitech%20Pro9000%20in%0A%09the%20highest%20resolution&In-Reply-To=%3C200911102334.45564.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Problem with using two Logitech Pro9000 in	the highest resolution">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Tue Nov 10 23:34:45 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005287.html">[Linux-uvc-devel] Problem with using two Logitech Pro9000 in	the highest resolution
+</A></li>
+        <LI>Next message: <A HREF="005297.html">[Linux-uvc-devel] Problem with using two Logitech Pro9000 in the highest resolution
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5292">[ date ]</a>
+              <a href="thread.html#5292">[ thread ]</a>
+              <a href="subject.html#5292">[ subject ]</a>
+              <a href="author.html#5292">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Monday 09 November 2009 00:04:36 Paulo Assis wrote:
+&gt;<i> Hi,
+</I>&gt;<i> I tested this in my system and was able to grab two simultaneous YUYV
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">1600x1200 at 5fps</A> video streams.
+</I>&gt;<i> The cameras are two different uvc logitech models connected to two
+</I>&gt;<i> separate usb controllers, my board has plenty of them :)
+</I>&gt;<i> Connecting both cameras to the same controler (e.g. the two front
+</I>&gt;<i> ports) will cause the second stream to fail.
+</I>&gt;<i> 
+</I>&gt;<i> I don't know about windows since I don't use it, but are you sure you
+</I>&gt;<i> aren't getting a zoomed (1600x1200) image from a lower resolution?
+</I>&gt;<i> maybe the windows driver is playing a trick on you.
+</I>
+That's one possibility.
+
+If I remember correctly Windows might be violating the USB spec by allowing 
+devices to use more than 80% of the available bandwidth for periodic 
+(isochronous and interrupt) transfers. Or it might calculate the bandwith 
+slightly differently than Linux.
+
+In any case, the problem under Linux comes from the fact that the USB core 
+rejects the uvcvideo driver's request to allocate bandwidth for the second 
+camera because not enough bandwidth is available. The uvcvideo driver can't do 
+much about it.
+
+Now, the camera might lie about the bandwidth it really requires, and it might 
+be possible to hack the driver to request less bandwidth and still get away 
+with it. I have some doubts that this would work though, but it might be worth 
+a try.
+
+As you've written your own userspace software I assume you're familiar with C 
+programming so I'll just give you a few pointers to hack on the driver :-)
+
+USB bandwidth allocation is done in the uvc_init_video() function 
+(uvc_video.c) by a call to usb_set_interface(). You can check which alternate 
+setting the driver requests by printing the value of variable 'i'.
+
+A look at the camera's USB descriptors (lsusb -v) will show you a list of 
+alternate settings for the video streaming interface. Each alternate setting 
+has different packet sizes for the isochronous endpoint. Locate the alternate 
+setting with the biggest packet size below the one requested by the driver, 
+and modify uvc_init_video() to hardcode that alternate setting. If that's 
+still too much bandwidth, repeat the procedure until you can start streaming 
+on both cameras.
+
+The driver will then probably get corrupted data (lost packets), but it could 
+be worth a try.
+
+&gt;<i> BTW with some new camera models that support MJPG in high resolution
+</I>&gt;<i> you should able to squeeze two MJPG <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">1600x1200 at 10fps</A> video streams from
+</I>&gt;<i> the same usb controller.
+</I>
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005287.html">[Linux-uvc-devel] Problem with using two Logitech Pro9000 in	the highest resolution
+</A></li>
+	<LI>Next message: <A HREF="005297.html">[Linux-uvc-devel] Problem with using two Logitech Pro9000 in the highest resolution
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5292">[ date ]</a>
+              <a href="thread.html#5292">[ thread ]</a>
+              <a href="subject.html#5292">[ subject ]</a>
+              <a href="author.html#5292">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

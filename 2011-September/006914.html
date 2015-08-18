@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Problem booting with kernel 3.0 and ASUS UVC webcams
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problem%20booting%20with%20kernel%203.0%20and%20ASUS%20UVC%0A%20webcams&In-Reply-To=%3CGo.bDL%40r78.nl%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006892.html">
+   <LINK REL="Next"  HREF="006918.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Problem booting with kernel 3.0 and ASUS UVC webcams</H1>
+    <B>Remco Rijnders</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problem%20booting%20with%20kernel%203.0%20and%20ASUS%20UVC%0A%20webcams&In-Reply-To=%3CGo.bDL%40r78.nl%3E"
+       TITLE="[Linux-uvc-devel] Problem booting with kernel 3.0 and ASUS UVC webcams">remco at webconquest.com
+       </A><BR>
+    <I>Tue Sep 20 03:29:20 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006892.html">[Linux-uvc-devel] Problem booting with kernel 3.0 and ASUS UVC webcams
+</A></li>
+        <LI>Next message: <A HREF="006918.html">[Linux-uvc-devel] Problem booting with kernel 3.0 and ASUS UVC webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6914">[ date ]</a>
+              <a href="thread.html#6914">[ thread ]</a>
+              <a href="subject.html#6914">[ subject ]</a>
+              <a href="author.html#6914">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thu, Sep 08, 2011 at 08:53:19AM +0200, Alexey wrote in 
+&lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">4E68665F.3090200 at fisher-privat.net</A>&gt;:
+&gt;<i>Am 08.09.2011 08:07, schrieb Remco Rijnders:
+</I>&gt;&gt;<i>On Thu, Sep 08, 2011 at 07:49:00AM +0200, Alexey wrote in
+</I>&gt;&gt;<i>&lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">4E68574C.6020908 at fisher-privat.net</A>&gt;:
+</I>&gt;&gt;&gt;<i>Hi,
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>to get the idea of what is wrong here, we need at least dmesg. If you
+</I>&gt;&gt;&gt;<i>can't provide dmesg, but you can compile kernel, do git bisect.
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>You can use netconsole:
+</I>&gt;<i><A HREF="http://www.tocpcs.com/howto-log-a-kernel-panic-it-can-be-done/">http://www.tocpcs.com/howto-log-a-kernel-panic-it-can-be-done/</A>
+</I>&gt;<i>
+</I>&gt;<i>or attach usb-serial adapter and log the dmegs over serial on other computer
+</I>&gt;<i>For both his methods you need  second computer.
+</I>&gt;<i>
+</I>&gt;<i>or boot in verbose mode, no splash screen or so, and make a photo of 
+</I>&gt;<i>log from display.  Here you will need only one computer.
+</I>
+Hi,
+
+Apologies for the late revert. I've been busy with other things and spent 
+too much time on trying to get netconsole working without luck. Anyways, 
+using git bisect I came to the following result:
+
+[<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">remmy at ketelbinkie</A> uvcvideo]$ git bisect bad
+a96aa5342d575980e5b572cde88036f3a878ebee is the first bad commit                                                                                                                                                   
+commit a96aa5342d575980e5b572cde88036f3a878ebee                                                                                                                                                                    
+Author: Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt;                                                                                                                                                       
+Date:   Tue Jun 28 18:17:48 2011 -0300                                                                                                                                                                             
+                                                                                                                                                                                                                    
+     [media] uvcvideo: Ignore entities for terminals with no supported 
+format                                                                                                                                       
+                                                                                                                                                                                                                    
+     If a streaming interface has no supported format, the driver won't                                                                                                                                             
+     create a video device for the associated terminal. Fix an oops by                                                                                                                                              
+     ignoring that terminal when creating links between entities.                                                                                                                                                   
+                                                                                                                                                                                                                    
+     Signed-off-by: Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt;                                                                                                                                            
+     Signed-off-by: Mauro Carvalho Chehab &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">mchehab at redhat.com</A>&gt;                                                                                                                                                      
+                                                                                                                                                                                                                    
+:<i>040000 040000 0296cc04d3923f1f93205ac6164802b514ad3162 
+</I>b4753a4e36122dc9605bcb44caa4aa1328146d0d M      drivers   
+
+
+I'm not 100% sure that this is the proper commit as the kernel crashes at 
+a later point (at the KDM login screen) than in my initial observation 
+where it would not even complete booting.
+
+Furthermore, while doing the git bisect good thing, at the last point I 
+had to do &quot;make CONFIG_DEBUG_SECTION_MISMATCH=y&quot; as the kernel would not 
+compile without it anymore.
+
+That said, I notice that the kernel panic this kernel resulted in is very 
+similar to that which gudvinr reported on the 11th, also with an ASUS 
+system so I am beginning to see a pattern there.
+
+Some fuzzy screenshots:
+
+<A HREF="http://milkzilla.webconquest.com/~remmy/UVC/1.jpg">http://milkzilla.webconquest.com/~remmy/UVC/1.jpg</A>
+<A HREF="http://milkzilla.webconquest.com/~remmy/UVC/2.jpg">http://milkzilla.webconquest.com/~remmy/UVC/2.jpg</A>
+
+Please let me know if I can do anything further to help debug this. For 
+now I have disabled the camera in the bios which allows me to otherwise 
+use the computer as normal but I suspect there are quite a few people out 
+there who bump into similar issues.
+
+Thanks and regards,
+
+Remco
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 836 bytes
+Desc: Digital signature
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110920/0fa255af/attachment.pgp">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110920/0fa255af/attachment.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006892.html">[Linux-uvc-devel] Problem booting with kernel 3.0 and ASUS UVC webcams
+</A></li>
+	<LI>Next message: <A HREF="006918.html">[Linux-uvc-devel] Problem booting with kernel 3.0 and ASUS UVC webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6914">[ date ]</a>
+              <a href="thread.html#6914">[ thread ]</a>
+              <a href="subject.html#6914">[ subject ]</a>
+              <a href="author.html#6914">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

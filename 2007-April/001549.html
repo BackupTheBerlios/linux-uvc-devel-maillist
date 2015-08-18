@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] How to reset Quickcam Fusion if it locks up	(USB timing bug in hardware)?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20How%20to%20reset%20Quickcam%20Fusion%20if%20it%20locks%20up%0A%09%28USB%20timing%20bug%20in%20hardware%29%3F&In-Reply-To=%3C200704021331.12125.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001548.html">
+   <LINK REL="Next"  HREF="001556.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] How to reset Quickcam Fusion if it locks up	(USB timing bug in hardware)?</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20How%20to%20reset%20Quickcam%20Fusion%20if%20it%20locks%20up%0A%09%28USB%20timing%20bug%20in%20hardware%29%3F&In-Reply-To=%3C200704021331.12125.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] How to reset Quickcam Fusion if it locks up	(USB timing bug in hardware)?">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Apr  2 13:31:11 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001548.html">[Linux-uvc-devel] LQC Pro 5000 picture quality settings
+</A></li>
+        <LI>Next message: <A HREF="001556.html">[Linux-uvc-devel] How to reset Quickcam Fusion if it locks up	(USB timing bug in hardware)?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1549">[ date ]</a>
+              <a href="thread.html#1549">[ thread ]</a>
+              <a href="subject.html#1549">[ subject ]</a>
+              <a href="author.html#1549">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Stefan,
+
+&gt;<i> &gt;&gt; <A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/2007-March/001476.htm">https://lists.berlios.de/pipermail/linux-uvc-devel/2007-March/001476.htm</A>
+</I>&gt;<i> &gt;&gt;l
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; .. the reset functionality is a part of a patch that is applied against
+</I>&gt;<i> &gt;&gt; the UVC Module that get compiled and included in the kernel.  From
+</I>&gt;<i> &gt;&gt; my reading of the code, it automatically resets the USB device (without
+</I>&gt;<i> &gt;&gt; user intervention).  Thus no command is required.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; But, to my understanding, this patch is not included by default in UVC.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; That's right.  The patch helped a few people, but failed to fix the bug
+</I>&gt;<i> &gt; for others.  As this is a pretty intrusive workaround, I'm not really
+</I>&gt;<i> &gt; keen on including it by default if it can't fix the problem for most
+</I>&gt;<i> &gt; users.
+</I>&gt;<i>
+</I>&gt;<i> Hmm... I'm not sure what you mean by &quot;intrusive&quot; here (I don't understand
+</I>&gt;<i> the UVC code, really, but when I applied the patch by hand, it seemed
+</I>&gt;<i> reasonably conceptually clean and unintrusive in that it just hooks into
+</I>&gt;<i> a few places that are not performance sensitive;  Its behavior is obviously
+</I>&gt;<i> an ugly hack).
+</I>&gt;<i>
+</I>&gt;<i> I wouldn't want to have the patch included as-is, and especially the hack
+</I>&gt;<i> shouldn't be enabled by default, but I'm wondering: what changes would you
+</I>&gt;<i> want to see before such a patch could be considered as acceptable.
+</I>&gt;<i> I'd obviously start with adding a module argument named something like
+</I>&gt;<i> &quot;use_reset_hack&quot;, but what else?
+</I>&gt;<i> Would you want the whole hack to be carefully wrapped in #ifdefs?
+</I>
+Before including such hacks in the driver, I want to make sure they are 
+actually helpful for more than a few users. If the patch can solve timeout 
+issues for more than 50% of the user base (which does not mean preventing 
+timeouts once every other time, but really preventing all timeouts to happen 
+for most users), I would considering including it. A friend of mine has a 
+laptop which suffers a lot from the hardware bug. Until now no patch has been 
+able to help him.
+
+The other issue is that such a fix would better be made in the USB core, not 
+in the UVC driver. Basically, I'd like a &quot;this works because...&quot; patch better 
+than a &quot;this seems to work but I don't know why&quot; patch.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001548.html">[Linux-uvc-devel] LQC Pro 5000 picture quality settings
+</A></li>
+	<LI>Next message: <A HREF="001556.html">[Linux-uvc-devel] How to reset Quickcam Fusion if it locks up	(USB timing bug in hardware)?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1549">[ date ]</a>
+              <a href="thread.html#1549">[ thread ]</a>
+              <a href="subject.html#1549">[ subject ]</a>
+              <a href="author.html#1549">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

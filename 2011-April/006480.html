@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH v3] media:uvc_driver: add uvc support	on no-mmu arch
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%20v3%5D%20media%3Auvc_driver%3A%20add%20uvc%20support%0A%09on%20no-mmu%20arch&In-Reply-To=%3CBANLkTimHX8aYoeSU1ES0Tw0Swaz9xYLt%3DQ%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006479.html">
+   <LINK REL="Next"  HREF="006481.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH v3] media:uvc_driver: add uvc support	on no-mmu arch</H1>
+    <B>Bob Liu</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%20v3%5D%20media%3Auvc_driver%3A%20add%20uvc%20support%0A%09on%20no-mmu%20arch&In-Reply-To=%3CBANLkTimHX8aYoeSU1ES0Tw0Swaz9xYLt%3DQ%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] [PATCH v3] media:uvc_driver: add uvc support	on no-mmu arch">lliubbo at gmail.com
+       </A><BR>
+    <I>Thu Apr 21 10:20:36 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006479.html">[Linux-uvc-devel] [PATCH v3] media:uvc_driver: add uvc support on	no-mmu arch
+</A></li>
+        <LI>Next message: <A HREF="006481.html">[Linux-uvc-devel] [PATCH v3] media:uvc_driver: add uvc support	on no-mmu arch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6480">[ date ]</a>
+              <a href="thread.html#6480">[ thread ]</a>
+              <a href="subject.html#6480">[ subject ]</a>
+              <a href="author.html#6480">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thu, Apr 21, 2011 at 3:59 PM, Daniel Gl&#246;ckner &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">daniel-gl at gmx.net</A>&gt; wrote:
+&gt;<i> Hi Bob,
+</I>&gt;<i>
+</I>&gt;<i> On Thu, Apr 21, 2011 at 11:17:42AM +0800, Bob Liu wrote:
+</I>&gt;&gt;<i> +#ifdef CONFIG_MMU
+</I>&gt;&gt;<i> &#160; &#160; &#160; if (i == queue-&gt;count || size != queue-&gt;buf_size) {
+</I>&gt;&gt;<i> +#else
+</I>&gt;&gt;<i> + &#160; &#160; if (i == queue-&gt;count || PAGE_ALIGN(size) != queue-&gt;buf_size) {
+</I>&gt;&gt;<i> +#endif
+</I>&gt;<i>
+</I>&gt;<i> on mmu systems do_mmap_pgoff contains a len = PAGE_ALIGN(len); line.
+</I>&gt;<i> If we depend on this behavior, why not do it here as well and get rid
+</I>&gt;<i> of the #ifdef?
+</I>&gt;<i>
+</I>
+If do it in do_mmap_pgoff() the whole system will be effected, I am
+not sure whether
+it's correct and needed for other subsystem.
+
+&gt;&gt;<i> +unsigned long uvc_queue_get_unmapped_area(struct uvc_video_queue *queue,
+</I>&gt;&gt;<i> + &#160; &#160; &#160; &#160; &#160; &#160; unsigned long addr, unsigned long len, unsigned long pgoff)
+</I>&gt;&gt;<i> +{
+</I>&gt;&gt;<i> + &#160; &#160; struct uvc_buffer *buffer;
+</I>&gt;&gt;<i> + &#160; &#160; unsigned int i;
+</I>&gt;&gt;<i> + &#160; &#160; int ret = 0;
+</I>&gt;<i>
+</I>&gt;<i> You still didn't change ret to unsigned long.
+</I>&gt;<i>
+</I>
+Oh, Sorry. My fault.
+
+&gt;&gt;<i> + &#160; &#160; addr = (unsigned long)queue-&gt;mem + buffer-&gt;buf.m.offset;
+</I>&gt;&gt;<i> + &#160; &#160; ret = addr;
+</I>&gt;<i>
+</I>&gt;<i> Why the intermediate step using addr?
+</I>&gt;<i>
+</I>
+If don't return addr, do_mmap_pgoff() will return failure and we can't
+setup vma correctly.
+See mm/nommu.c line 1386(add = file-&gt;f_op-&gt;get_unmmapped_area() ).
+
+&gt;&gt;<i> diff --git a/drivers/media/video/v4l2-dev.c b/drivers/media/video/v4l2-dev.c
+</I>&gt;&gt;<i> index 498e674..221e73f 100644
+</I>&gt;&gt;<i> --- a/drivers/media/video/v4l2-dev.c
+</I>&gt;&gt;<i> +++ b/drivers/media/video/v4l2-dev.c
+</I>&gt;&gt;<i> @@ -368,6 +368,23 @@ static int v4l2_mmap(struct file *filp, struct vm_area_struct *vm)
+</I>&gt;&gt;<i> &#160; &#160; &#160; return ret;
+</I>&gt;&gt;<i> &#160;}
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> +#ifdef CONFIG_MMU
+</I>&gt;&gt;<i> +#define v4l2_get_unmapped_area NULL
+</I>&gt;&gt;<i> +#else
+</I>&gt;&gt;<i> +static unsigned long v4l2_get_unmapped_area(struct file *filp,
+</I>&gt;&gt;<i> + &#160; &#160; &#160; &#160; &#160; &#160; unsigned long addr, unsigned long len, unsigned long pgoff,
+</I>&gt;&gt;<i> + &#160; &#160; &#160; &#160; &#160; &#160; unsigned long flags)
+</I>&gt;&gt;<i> +{
+</I>&gt;&gt;<i> + &#160; &#160; struct video_device *vdev = video_devdata(filp);
+</I>&gt;&gt;<i> +
+</I>&gt;&gt;<i> + &#160; &#160; if (!vdev-&gt;fops-&gt;get_unmapped_area)
+</I>&gt;&gt;<i> + &#160; &#160; &#160; &#160; &#160; &#160; return -ENOSYS;
+</I>&gt;&gt;<i> + &#160; &#160; if (!video_is_registered(vdev))
+</I>&gt;&gt;<i> + &#160; &#160; &#160; &#160; &#160; &#160; return -ENODEV;
+</I>&gt;&gt;<i> + &#160; &#160; return vdev-&gt;fops-&gt;get_unmapped_area(filp, addr, len, pgoff, flags);
+</I>&gt;&gt;<i> +}
+</I>&gt;&gt;<i> +#endif
+</I>&gt;&gt;<i> +
+</I>&gt;&gt;<i> &#160;/* Override for the open function */
+</I>&gt;&gt;<i> &#160;static int v4l2_open(struct inode *inode, struct file *filp)
+</I>&gt;&gt;<i> &#160;{
+</I>&gt;&gt;<i> @@ -452,6 +469,7 @@ static const struct file_operations v4l2_fops = {
+</I>&gt;&gt;<i> &#160; &#160; &#160; .write = v4l2_write,
+</I>&gt;&gt;<i> &#160; &#160; &#160; .open = v4l2_open,
+</I>&gt;&gt;<i> &#160; &#160; &#160; .mmap = v4l2_mmap,
+</I>&gt;&gt;<i> + &#160; &#160; .get_unmapped_area = v4l2_get_unmapped_area,
+</I>&gt;&gt;<i> &#160; &#160; &#160; .unlocked_ioctl = v4l2_ioctl,
+</I>&gt;&gt;<i> &#160;#ifdef CONFIG_COMPAT
+</I>&gt;&gt;<i> &#160; &#160; &#160; .compat_ioctl = v4l2_compat_ioctl32,
+</I>&gt;&gt;<i> diff --git a/include/media/v4l2-dev.h b/include/media/v4l2-dev.h
+</I>&gt;&gt;<i> index 8266d5a..0616a43 100644
+</I>&gt;&gt;<i> --- a/include/media/v4l2-dev.h
+</I>&gt;&gt;<i> +++ b/include/media/v4l2-dev.h
+</I>&gt;&gt;<i> @@ -63,6 +63,8 @@ struct v4l2_file_operations {
+</I>&gt;&gt;<i> &#160; &#160; &#160; long (*ioctl) (struct file *, unsigned int, unsigned long);
+</I>&gt;&gt;<i> &#160; &#160; &#160; long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
+</I>&gt;&gt;<i> &#160; &#160; &#160; int (*mmap) (struct file *, struct vm_area_struct *);
+</I>&gt;&gt;<i> + &#160; &#160; unsigned long (*get_unmapped_area) (struct file *, unsigned long,
+</I>&gt;&gt;<i> + &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; unsigned long, unsigned long, unsigned long);
+</I>&gt;&gt;<i> &#160; &#160; &#160; int (*open) (struct file *);
+</I>&gt;&gt;<i> &#160; &#160; &#160; int (*release) (struct file *);
+</I>&gt;&gt;<i> &#160;};
+</I>&gt;<i>
+</I>&gt;<i> I'd prefer a git revert c29fcff3daafbf46d64a543c1950bbd206ad8c1c for
+</I>&gt;<i> this block instead of reverting it together with the UVC changes.
+</I>&gt;<i>
+</I>
+Okay, I will confirm that and do it.
+
+Thanks a lot for your review.
+
+-- 
+Regards,
+--Bob
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006479.html">[Linux-uvc-devel] [PATCH v3] media:uvc_driver: add uvc support on	no-mmu arch
+</A></li>
+	<LI>Next message: <A HREF="006481.html">[Linux-uvc-devel] [PATCH v3] media:uvc_driver: add uvc support	on no-mmu arch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6480">[ date ]</a>
+              <a href="thread.html#6480">[ thread ]</a>
+              <a href="subject.html#6480">[ subject ]</a>
+              <a href="author.html#6480">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] [uvcvideo] Add a testquirk module	param
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20%5Buvcvideo%5D%20Add%20a%20testquirk%20module%0A%09param&In-Reply-To=%3C200802200120.34960.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003060.html">
+   <LINK REL="Next"  HREF="003086.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] [uvcvideo] Add a testquirk module	param</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20%5Buvcvideo%5D%20Add%20a%20testquirk%20module%0A%09param&In-Reply-To=%3C200802200120.34960.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] [uvcvideo] Add a testquirk module	param">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Feb 20 01:20:34 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003060.html">[Linux-uvc-devel] [PATCH] [uvcvideo] Add a testquirk module param
+</A></li>
+        <LI>Next message: <A HREF="003086.html">[Linux-uvc-devel] [PATCH] [uvcvideo] Add a testquirk	module	param
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3081">[ date ]</a>
+              <a href="thread.html#3081">[ thread ]</a>
+              <a href="subject.html#3081">[ subject ]</a>
+              <a href="author.html#3081">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Bradon,
+
+On Saturday 16 February 2008, Brandon Philips wrote:
+&gt;<i> Allow people to test quirks without recompiling but strongly discourage
+</I>&gt;<i> the use with a kernel log message.  Example:
+</I>&gt;<i>
+</I>&gt;<i>   modprobe uvcvideo testquirk=10 # UVC_QUIRK_STREAM_NO_FID
+</I>
+Thanks for the patch. I applied a slightly different version with a modified 
+kernel log message.
+
+&gt;<i> Signed-off-by: Brandon Philips &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bphilips at suse.de</A>&gt;
+</I>&gt;<i>
+</I>&gt;<i> ---
+</I>&gt;<i>  uvc_driver.c |   14 +++++++++++++-
+</I>&gt;<i>  1 file changed, 13 insertions(+), 1 deletion(-)
+</I>&gt;<i>
+</I>&gt;<i> Index: uvc/uvc_driver.c
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvc.orig/uvc_driver.c
+</I>&gt;<i> +++ uvc/uvc_driver.c
+</I>&gt;<i> @@ -51,6 +51,8 @@
+</I>&gt;<i>  #define DRIVER_VERSION		&quot;v0.1.0&quot;
+</I>&gt;<i>  #endif
+</I>&gt;<i>
+</I>&gt;<i> +static unsigned int uvc_testquirk_param;
+</I>&gt;<i> +
+</I>&gt;<i>  /*
+</I>&gt;<i> ------------------------------------------------------------------------ *
+</I>&gt;<i> Control, formats, ...
+</I>&gt;<i>   */
+</I>&gt;<i> @@ -1539,7 +1541,7 @@ static int uvc_probe(struct usb_interfac
+</I>&gt;<i>  	dev-&gt;udev = usb_get_dev(udev);
+</I>&gt;<i>  	dev-&gt;intf = usb_get_intf(intf);
+</I>&gt;<i>  	dev-&gt;intfnum = intf-&gt;cur_altsetting-&gt;desc.bInterfaceNumber;
+</I>&gt;<i> -	dev-&gt;quirks = id-&gt;driver_info;
+</I>&gt;<i> +	dev-&gt;quirks = id-&gt;driver_info | uvc_testquirk_param;
+</I>&gt;<i>
+</I>&gt;<i>  	/* Parse the Video Class control descriptor */
+</I>&gt;<i>  	if (uvc_parse_control(dev) &lt; 0) {
+</I>&gt;<i> @@ -1553,6 +1555,14 @@ static int uvc_probe(struct usb_interfac
+</I>&gt;<i>  		le16_to_cpu(udev-&gt;descriptor.idVendor),
+</I>&gt;<i>  		le16_to_cpu(udev-&gt;descriptor.idProduct));
+</I>&gt;<i>
+</I>&gt;<i> +	if (uvc_testquirk_param != 0) {
+</I>&gt;<i> +		uvc_printk(KERN_INFO, &quot;WARNING: testquirk param (%d) is set, &quot;
+</I>&gt;<i> +					&quot;this is for testing only.\nPlease &quot;
+</I>&gt;<i> +					&quot;report required quirks to the &quot;
+</I>&gt;<i> +					&quot;linux-uvc mailing list.\n&quot;,
+</I>&gt;<i> +					uvc_testquirk_param);
+</I>
+'\n' in log messages will confuse printk. The log level will be lost. A patch 
+has been sent in January on the LKML to fix that. In the meantime I'll use 
+two printk statements.
+
+&gt;<i> +	}
+</I>&gt;<i> +
+</I>&gt;<i>  	/* Initialize controls */
+</I>&gt;<i>  	if (uvc_ctrl_init_device(dev) &lt; 0)
+</I>&gt;<i>  		goto error;
+</I>&gt;<i> @@ -1877,6 +1887,8 @@ module_exit(uvc_cleanup);
+</I>&gt;<i>  unsigned int uvc_trace_param = 0;
+</I>&gt;<i>  module_param_named(trace, uvc_trace_param, uint, S_IRUGO|S_IWUSR);
+</I>&gt;<i>
+</I>&gt;<i> +module_param_named(testquirk, uvc_testquirk_param, uint, S_IRUGO|S_IWUSR);
+</I>&gt;<i> +
+</I>&gt;<i>  MODULE_AUTHOR(DRIVER_AUTHOR);
+</I>&gt;<i>  MODULE_DESCRIPTION(DRIVER_DESC);
+</I>&gt;<i>  MODULE_LICENSE(&quot;GPL&quot;);
+</I>
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003060.html">[Linux-uvc-devel] [PATCH] [uvcvideo] Add a testquirk module param
+</A></li>
+	<LI>Next message: <A HREF="003086.html">[Linux-uvc-devel] [PATCH] [uvcvideo] Add a testquirk	module	param
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3081">[ date ]</a>
+              <a href="thread.html#3081">[ thread ]</a>
+              <a href="subject.html#3081">[ subject ]</a>
+              <a href="author.html#3081">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

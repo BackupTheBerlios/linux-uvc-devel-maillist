@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Issue with recent uvcvideo
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Issue%20with%20recent%20uvcvideo&In-Reply-To=%3C200811121138.03764.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004206.html">
+   <LINK REL="Next"  HREF="004210.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Issue with recent uvcvideo</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Issue%20with%20recent%20uvcvideo&In-Reply-To=%3C200811121138.03764.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Issue with recent uvcvideo">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Nov 12 11:38:03 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004206.html">[Linux-uvc-devel] Issue with recent uvcvideo
+</A></li>
+        <LI>Next message: <A HREF="004210.html">[Linux-uvc-devel] Issue with recent uvcvideo
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4208">[ date ]</a>
+              <a href="thread.html#4208">[ thread ]</a>
+              <a href="subject.html#4208">[ subject ]</a>
+              <a href="author.html#4208">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Filippo,
+
+On Wednesday 12 November 2008, Filippo Argiolas wrote:
+&gt;<i> On mer, 2008-11-12 at 02:03 +0100, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; What do you mean by &quot;something happens&quot; ? Did the camera stop streaming ?
+</I>&gt;<i> &gt; I can't see any hint in the log.
+</I>&gt;<i>
+</I>&gt;<i> I mean that something not noticeable happens with the camera: everything
+</I>&gt;<i> seems fine, I can see the video stream but any subsequent run of that
+</I>&gt;<i> gst-launch command fails, hence I believe something happened in the
+</I>&gt;<i> first run.
+</I>
+Or something doesn't happen in the second run.
+
+&gt;<i> I applied your patch in current svn (r262) and did the same test again.
+</I>&gt;<i> Note that the second gst-launch run doesn't exit cleanly, I have to
+</I>&gt;<i> press Ctrl+C 2 times, the first one tries to correctly stop the pipeline
+</I>&gt;<i> but hangs, the second actually forces quit.
+</I>
+Not really surprising, the driver waits in VIDIOC_DQBUF for a video buffer to 
+be ready. This is supposed to be interruptible though.
+
+&gt;<i> The webcam light never turns on, maybe something is failing with webcam
+</I>&gt;<i> initialization.
+</I>
+I've compared the two traces (both kernel log messages and libv4l) and they 
+are identical for the initialisation part.
+
+Two things bother me. First of all, libv4l spams the the driver (and thus the 
+camera) with VIDIOC_TRY_FMT requests. Given the fragile state of many webcam 
+firmwares, I wouldn't be surprised if some of them would simply crash.
+
+Then, and this might be the real issue here, the application calls 
+VIDIOC_S_FMT but libv4l doesn't relay that to the driver. I suppose there's a 
+check in the library that compares the requested format with the current 
+format and returns immediately if they are identical. This means the camera 
+doesn't receive any set format request between the two runs. I wouldn't be 
+surprised if camera developers never expected that.
+
+As a quick workaround, could you please try the attached patch ? It modifies 
+device initialisation to make sure a set format request is send right before 
+starting the video stream.
+
+&gt;<i> Another thing, I'm a bit confused about the place uvcvideo development
+</I>&gt;<i> is going on at the moment. I see you sent me a patch against svn but I
+</I>&gt;<i> believed uvc was included upstream so development was going on on
+</I>&gt;<i> linuxtv mercurial repos.. isn't it so?
+</I>
+I'm moving from the SVN repository on Berlios to Mercurial on linuxtv.org. It 
+was easier for me yesterday to generate the patch against SVN.
+
+Best regards,
+
+Laurent Pinchart
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: uc20-commit.diff
+Type: text/x-diff
+Size: 1423 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20081112/08fa9405/attachment.diff">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20081112/08fa9405/attachment.diff</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004206.html">[Linux-uvc-devel] Issue with recent uvcvideo
+</A></li>
+	<LI>Next message: <A HREF="004210.html">[Linux-uvc-devel] Issue with recent uvcvideo
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4208">[ date ]</a>
+              <a href="thread.html#4208">[ thread ]</a>
+              <a href="subject.html#4208">[ subject ]</a>
+              <a href="author.html#4208">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,251 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvcvideo%3A%20workaround%20invalid%20formats%0A%09exposed%20by%20buggy%20webcam&In-Reply-To=%3C200906041423.18804.herton%40mandriva.com.br%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004840.html">
+   <LINK REL="Next"  HREF="004854.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam</H1>
+    <B>Herton Ronaldo Krzesinski</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvcvideo%3A%20workaround%20invalid%20formats%0A%09exposed%20by%20buggy%20webcam&In-Reply-To=%3C200906041423.18804.herton%40mandriva.com.br%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam">herton at mandriva.com.br
+       </A><BR>
+    <I>Thu Jun  4 19:23:17 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004840.html">[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam
+</A></li>
+        <LI>Next message: <A HREF="004854.html">[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4847">[ date ]</a>
+              <a href="thread.html#4847">[ thread ]</a>
+              <a href="subject.html#4847">[ subject ]</a>
+              <a href="author.html#4847">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Em Quinta-feira 04 Junho 2009, &#224;s 07:41:03, Laurent Pinchart escreveu:
+&gt;<i> Hi Herton,
+</I>&gt;<i> 
+</I>&gt;<i> On Wednesday 03 June 2009 23:02:33 Herton Ronaldo Krzesinski wrote:
+</I>&gt;<i> &gt; Fix this by not failing entirely if we have found an invalid format, as
+</I>&gt;<i> &gt; we can still have a valid format. The initial problem and solution
+</I>&gt;<i> &gt; (patch) was debugged and done by Clevo (probably by Michael Wang),
+</I>&gt;<i> &gt; which uses the affected webcam in one of their laptops. I'm forwarding
+</I>&gt;<i> &gt; their fix plus additional code that I noticed to be needed for generic
+</I>&gt;<i> &gt; cases that decrements properly streaming-&gt;nformats and checks later if
+</I>&gt;<i> &gt; we really found at least one valid format, and if there were really no
+</I>&gt;<i> &gt; valid formats we make sure then to return with error.
+</I>&gt;<i> 
+</I>&gt;<i> What about modifying uvc_parse_streaming() to stop parsing the interface
+</I>&gt;<i> descriptors when it encounters a non CS Interface descriptor instead ?
+</I>&gt;<i> Something like
+</I>
+Yep, it works for me too and it's better since then we don't allocate extra
+memory that we don't use for streaming-&gt;format
+
+But your solution stops to count formats at the first buffer[1] !=
+CS_INTERFACE, is it possible that CS_INTERFACE and ! CS_INTERFACE are mixed?
+(!= CS_INTERFACE not always the last one) In this case is better to continue,
+like patch below:
+
+diff -p -up linux/drivers/media/video/uvc/uvc_driver.c.orig linux/drivers/media/video/uvc/uvc_driver.c
+--- linux/drivers/media/video/uvc/uvc_driver.c.orig	2009-06-03 12:49:50.000000000 -0300
++++ linux/drivers/media/video/uvc/uvc_driver.c	2009-06-04 11:11:34.000000000 -0300
+@@ -645,42 +645,49 @@ static int uvc_parse_streaming(struct uv
+ 
+ 	/* Count the format and frame descriptors. */
+ 	while (_buflen &gt; 2) {
+-		switch (_buffer[2]) {
+-		case VS_FORMAT_UNCOMPRESSED:
+-		case VS_FORMAT_MJPEG:
+-		case VS_FORMAT_FRAME_BASED:
+-			nformats++;
+-			break;
++		if (_buffer[1] == CS_INTERFACE) {
++			switch (_buffer[2]) {
++			case VS_FORMAT_UNCOMPRESSED:
++			case VS_FORMAT_MJPEG:
++			case VS_FORMAT_FRAME_BASED:
++				nformats++;
++				break;
+ 
+-		case VS_FORMAT_DV:
+-			/* DV format has no frame descriptor. We will create a
+-			 * dummy frame descriptor with a dummy frame interval.
+-			 */
+-			nformats++;
+-			nframes++;
+-			nintervals++;
+-			break;
++			case VS_FORMAT_DV:
++				/* DV format has no frame descriptor. We will
++				 * create a dummy frame descriptor with a dummy
++				 * frame interval.
++				 */
++				nformats++;
++				nframes++;
++				nintervals++;
++				break;
+ 
+-		case VS_FORMAT_MPEG2TS:
+-		case VS_FORMAT_STREAM_BASED:
+-			uvc_trace(UVC_TRACE_DESCR, &quot;device %d videostreaming &quot;
+-				&quot;interface %d FORMAT %u is not supported.\n&quot;,
+-				dev-&gt;udev-&gt;devnum,
+-				alts-&gt;desc.bInterfaceNumber, _buffer[2]);
+-			break;
++			case VS_FORMAT_MPEG2TS:
++			case VS_FORMAT_STREAM_BASED:
++				uvc_trace(UVC_TRACE_DESCR, &quot;device %d &quot;
++					&quot;videostreaming interface %d FORMAT &quot;
++					&quot;%u is not supported.\n&quot;,
++					dev-&gt;udev-&gt;devnum,
++					alts-&gt;desc.bInterfaceNumber,
++					_buffer[2]);
++				break;
+ 
+-		case VS_FRAME_UNCOMPRESSED:
+-		case VS_FRAME_MJPEG:
+-			nframes++;
+-			if (_buflen &gt; 25)
+-				nintervals += _buffer[25] ? _buffer[25] : 3;
+-			break;
++			case VS_FRAME_UNCOMPRESSED:
++			case VS_FRAME_MJPEG:
++				nframes++;
++				if (_buflen &gt; 25)
++					nintervals += _buffer[25] ?
++						      _buffer[25] : 3;
++				break;
+ 
+-		case VS_FRAME_FRAME_BASED:
+-			nframes++;
+-			if (_buflen &gt; 21)
+-				nintervals += _buffer[21] ? _buffer[21] : 3;
+-			break;
++			case VS_FRAME_FRAME_BASED:
++				nframes++;
++				if (_buflen &gt; 21)
++					nintervals += _buffer[21] ?
++						      _buffer[21] : 3;
++				break;
++			}
+ 		}
+ 
+ 		_buflen -= _buffer[0];
+@@ -710,26 +717,28 @@ static int uvc_parse_streaming(struct uv
+ 
+ 	/* Parse the format descriptors. */
+ 	while (buflen &gt; 2) {
+-		switch (buffer[2]) {
+-		case VS_FORMAT_UNCOMPRESSED:
+-		case VS_FORMAT_MJPEG:
+-		case VS_FORMAT_DV:
+-		case VS_FORMAT_FRAME_BASED:
+-			format-&gt;frame = frame;
+-			ret = uvc_parse_format(dev, streaming, format,
+-				&amp;interval, buffer, buflen);
+-			if (ret &lt; 0)
+-				goto error;
++		if (buffer[1] == CS_INTERFACE) {
++			switch (buffer[2]) {
++			case VS_FORMAT_UNCOMPRESSED:
++			case VS_FORMAT_MJPEG:
++			case VS_FORMAT_DV:
++			case VS_FORMAT_FRAME_BASED:
++				format-&gt;frame = frame;
++				ret = uvc_parse_format(dev, streaming, format,
++					&amp;interval, buffer, buflen);
++				if (ret &lt; 0)
++					goto error;
+ 
+-			frame += format-&gt;nframes;
+-			format++;
++				frame += format-&gt;nframes;
++				format++;
+ 
+-			buflen -= ret;
+-			buffer += ret;
+-			continue;
++				buflen -= ret;
++				buffer += ret;
++				continue;
+ 
+-		default:
+-			break;
++			default:
++				break;
++			}
+ 		}
+ 
+ 		buflen -= buffer[0];
+
+
+&gt;<i> 
+</I>&gt;<i> diff -r 66a270023c26 linux/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> --- a/linux/drivers/media/video/uvc/uvc_driver.c	Sun May 31 22:05:55 2009 +0200
+</I>&gt;<i> +++ b/linux/drivers/media/video/uvc/uvc_driver.c	Thu Jun 04 12:40:09 2009 +0200
+</I>&gt;<i> @@ -644,7 +644,7 @@
+</I>&gt;<i>  	_buflen = buflen;
+</I>&gt;<i>  
+</I>&gt;<i>  	/* Count the format and frame descriptors. */
+</I>&gt;<i> -	while (_buflen &gt; 2) {
+</I>&gt;<i> +	while (_buflen &gt; 2 &amp;&amp; _buffer[1] == CS_INTERFACE) {
+</I>&gt;<i>  		switch (_buffer[2]) {
+</I>&gt;<i>  		case VS_FORMAT_UNCOMPRESSED:
+</I>&gt;<i>  		case VS_FORMAT_MJPEG:
+</I>&gt;<i> @@ -709,7 +709,7 @@
+</I>&gt;<i>  	streaming-&gt;nformats = nformats;
+</I>&gt;<i>  
+</I>&gt;<i>  	/* Parse the format descriptors. */
+</I>&gt;<i> -	while (buflen &gt; 2) {
+</I>&gt;<i> +	while (buflen &gt; 2 &amp;&amp; buffer[1] == CS_INTERFACE) {
+</I>&gt;<i>  		switch (buffer[2]) {
+</I>&gt;<i>  		case VS_FORMAT_UNCOMPRESSED:
+</I>&gt;<i>  		case VS_FORMAT_MJPEG:
+</I>&gt;<i> 
+</I>&gt;<i> Best regards,
+</I>&gt;<i> 
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>
+--
+[]'s
+Herton
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004840.html">[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam
+</A></li>
+	<LI>Next message: <A HREF="004854.html">[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4847">[ date ]</a>
+              <a href="thread.html#4847">[ thread ]</a>
+              <a href="subject.html#4847">[ subject ]</a>
+              <a href="author.html#4847">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

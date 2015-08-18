@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Driver improvement suggestion: Prefer device node,	and more	consistant messaging
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Driver%20improvement%20suggestion%3A%20Prefer%20device%20node%2C%0A%09and%20more%09consistant%20messaging&In-Reply-To=%3C20080323230120.GC8394%40sunshine.barsnick.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003314.html">
+   <LINK REL="Next"  HREF="003299.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Driver improvement suggestion: Prefer device node,	and more	consistant messaging</H1>
+    <B>Moritz Barsnick</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Driver%20improvement%20suggestion%3A%20Prefer%20device%20node%2C%0A%09and%20more%09consistant%20messaging&In-Reply-To=%3C20080323230120.GC8394%40sunshine.barsnick.net%3E"
+       TITLE="[Linux-uvc-devel] Driver improvement suggestion: Prefer device node,	and more	consistant messaging">barsnick at gmx.net
+       </A><BR>
+    <I>Mon Mar 24 00:01:20 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003314.html">[Linux-uvc-devel] linux-uvc is now packed with Fedora
+</A></li>
+        <LI>Next message: <A HREF="003299.html">[Linux-uvc-devel] Driver improvement suggestion: Prefer device node, and more	consistant messaging
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3263">[ date ]</a>
+              <a href="thread.html#3263">[ thread ]</a>
+              <a href="subject.html#3263">[ subject ]</a>
+              <a href="author.html#3263">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent, UVCers,
+
+I have a small suggestion for the linux-uvc driver. Currently, the
+driver lets V4L2 automatically select the device node (/dev/videoX).
+But we all know that order of loading modules, init times, et.al. may
+influence the order, therefore I thought it might by practical to
+introduce a module option to request a specific device node.
+
+Caveat: My implementation is by all means incomplete. It will only work
+for one device (and actually fail for any subsequent ones AFAICT,
+unless you reset the parameter in /sys/), and is totally unflexible. On
+the other hand. it doesn't intrude if you don't provide a parameter.
+
+I forsee flexible functionality as you can find e.g. in the pwc webcam
+driver[*]. Their implementation also fails if the requested node is not
+available, but it provides a type and serial number dependant
+selection.
+
+
+Furthermore, while quick-hacking this code, I noticed that linux-uvc
+a) doesn't report its version -&gt; use macro MODULE_VERSION()
+b) doesn't provide parameter descriptions (which can be queried with
+   &quot;modinfo uvcvideo&quot;) -&gt; use macro MODULE_PARM_DESC()
+c) doesn't report which device node it actually assigns to the device,
+   which is very useful in dmesg (and which other drivers tend to do).
+
+So please consider the attached patch two seperate suggestions:
+- general messaging and API documentation improvements
+- a stub for requesting a particular device node.
+
+Please let me know if you consider it useful, or have something better
+to suggest.
+
+Thanks for listening, and thanks for the ever so valuable driver!
+
+Patch is against SVN r195.
+I've tested with Logitech QuickCam Fusion on two machines.
+
+Kind regards,
+Moritz
+
+[*] called device hints in pwc-if.c
+-------------- next part --------------
+diff -ur linux-uvc-trunk-r195/uvc_driver.c linux-uvc-trunk-r195-device_request/uvc_driver.c
+--- linux-uvc-trunk-r195/uvc_driver.c	2008-03-20 10:59:20.000000000 +0100
++++ linux-uvc-trunk-r195-device_request/uvc_driver.c	2008-03-20 19:47:41.000000000 +0100
+@@ -52,6 +52,7 @@
+ #endif
+ 
+ static unsigned int uvc_quirks_param = 0;
++static unsigned int uvc_dev_req_param = -1;
+ unsigned int uvc_trace_param = 0;
+ 
+ /* ------------------------------------------------------------------------
+@@ -1470,11 +1471,16 @@
+ 	dev-&gt;video.vdev = vdev;
+ 	video_set_drvdata(vdev, &amp;dev-&gt;video);
+ 
+-	if (video_register_device(vdev, VFL_TYPE_GRABBER, -1) &lt; 0) {
++	if (uvc_dev_req_param != -1) {
++		uvc_printk(KERN_INFO, &quot;Explicitly requesting device /dev/video%d.\n&quot;, uvc_dev_req_param);
++	}
++
++	if (video_register_device(vdev, VFL_TYPE_GRABBER, uvc_dev_req_param) &lt; 0) {
+ 		dev-&gt;video.vdev = NULL;
+ 		video_device_release(vdev);
+ 		return -1;
+ 	}
++	uvc_printk(KERN_INFO, &quot;Registered as /dev/video%d.\n&quot;, vdev-&gt;minor &amp; 0x3F);
+ 
+ 	return 0;
+ }
+@@ -1902,15 +1908,20 @@
+ static void __exit uvc_cleanup(void)
+ {
+ 	usb_deregister(&amp;uvc_driver.driver);
++	uvc_printk(KERN_INFO, &quot;Deregistered driver.\n&quot;);
+ }
+ 
+ module_init(uvc_init);
+ module_exit(uvc_cleanup);
+ 
+ module_param_named(quirks, uvc_quirks_param, uint, S_IRUGO|S_IWUSR);
++MODULE_PARM_DESC(quirks, &quot;Forced quirks mask&quot;);
+ module_param_named(trace, uvc_trace_param, uint, S_IRUGO|S_IWUSR);
++MODULE_PARM_DESC(trace, &quot;Trace level mask&quot;);
++module_param_named(dev_req, uvc_dev_req_param, int, S_IRUGO|S_IWUSR);
++MODULE_PARM_DESC(dev_req, &quot;Requested device /dev/videoX instead of automatic selection&quot;);
+ 
+ MODULE_AUTHOR(DRIVER_AUTHOR);
+ MODULE_DESCRIPTION(DRIVER_DESC);
+ MODULE_LICENSE(&quot;GPL&quot;);
+-
++MODULE_VERSION(DRIVER_VERSION);
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003314.html">[Linux-uvc-devel] linux-uvc is now packed with Fedora
+</A></li>
+	<LI>Next message: <A HREF="003299.html">[Linux-uvc-devel] Driver improvement suggestion: Prefer device node, and more	consistant messaging
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3263">[ date ]</a>
+              <a href="thread.html#3263">[ thread ]</a>
+              <a href="subject.html#3263">[ subject ]</a>
+              <a href="author.html#3263">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

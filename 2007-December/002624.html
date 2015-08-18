@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Debugging UVC + Sanyo Xacti cameras
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Debugging%20UVC%20%2B%20Sanyo%20Xacti%20cameras&In-Reply-To=%3C44759.130.60.75.225.1198150630.squirrel%40bela.ifi.unizh.ch%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002634.html">
+   <LINK REL="Next"  HREF="002660.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Debugging UVC + Sanyo Xacti cameras</H1>
+    <B>Thomas Netter</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Debugging%20UVC%20%2B%20Sanyo%20Xacti%20cameras&In-Reply-To=%3C44759.130.60.75.225.1198150630.squirrel%40bela.ifi.unizh.ch%3E"
+       TITLE="[Linux-uvc-devel] Debugging UVC + Sanyo Xacti cameras">tnetter at ifi.uzh.ch
+       </A><BR>
+    <I>Thu Dec 20 12:37:10 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002634.html">[Linux-uvc-devel] HP dv6000 Webcam Ricoh
+</A></li>
+        <LI>Next message: <A HREF="002660.html">[Linux-uvc-devel] Debugging UVC + Sanyo Xacti cameras
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2624">[ date ]</a>
+              <a href="thread.html#2624">[ thread ]</a>
+              <a href="subject.html#2624">[ subject ]</a>
+              <a href="author.html#2624">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent and UVC developers,
+
+I'm starting to give a close look at luvcview failures when using Xacti
+cameras with UVC. I'm new to UVC so any help would be greatly appreciated.
+The problem was initially described by Lars T&#228;uber with the Sanyo HD 1000:
+<A HREF="../2007-September/002145.html">http://lists.berlios.de/pipermail/linux-uvc-devel/2007-September/002145.html</A>
+To summarize: luvcview works on the first execute-quit sequence but fails if
+you try to execute luvcview again. I tried plugging Lars T&#228;uber's code
+snippet into uvc_driver.c but that had no visible effect.
+
+I'm experiencing the same problem with a Xacti C6. I also have access to
+Xacti C4, HD 1000, and HD 2 cameras to test on other models.
+
+Device numbers:
+Xacti HD 1000: 0474:0238
+Xacti C6:      0474:0241
+
+Below are logs obtained with SnoopyPro-022 while starting AMCap video
+capture on Windows XP ( <A HREF="http://noeld.com/programs.asp?cat=video">http://noeld.com/programs.asp?cat=video</A> )
+These logs track the following sequence:
+- Start Amcap
+- Capture 2 to 3 seconds of 320x240 video
+- Quit Amcap
+- Wait a few seconds
+- Start Amcap
+- Capture 2 to 3 seconds of 320x240 video
+- Quit Amcap
+
+Log from &quot;video device&quot;:
+Snoopy binary log: <A HREF="http://www.ailab.ch/~tnetter/USBLog12.usblog">http://www.ailab.ch/~tnetter/USBLog12.usblog</A>
+Text version: <A HREF="http://www.ailab.ch/~tnetter/log12.txt.gz">http://www.ailab.ch/~tnetter/log12.txt.gz</A>
+
+Simultaneous log from &quot;composite device&quot;:
+Snoopy binary log: <A HREF="http://www.ailab.ch/~tnetter/USBLog13.usblog">http://www.ailab.ch/~tnetter/USBLog13.usblog</A>
+Text version: <A HREF="http://www.ailab.ch/~tnetter/log13.txt.gz">http://www.ailab.ch/~tnetter/log13.txt.gz</A>
+
+Here's what happens in Ubuntu 7.10, linux 2.6.22-14-generic,
+uvcvideo-r104, luvcview-20070512 (tried both from SVN and from deb
+package).
+
+First attempt works:
+sudo ./luvcview
+luvcview version 0.2.1
+Video driver: x11
+A window manager is available
+video /dev/video0
+Stop asked
+ Clean Up done Quit
+
+Second attempt fails:
+sudo ./luvcview
+luvcview version 0.2.1
+Video driver: x11
+A window manager is available
+video /dev/video0
+Unable to set format: 5.
+ Init v4L2 failed !! exit fatal
+
+If I unplug and replug the camera into the USB port then luvcview
+works again for one more attempt.
+
+Any help / hints are welcome.
+
+-Thomas
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002634.html">[Linux-uvc-devel] HP dv6000 Webcam Ricoh
+</A></li>
+	<LI>Next message: <A HREF="002660.html">[Linux-uvc-devel] Debugging UVC + Sanyo Xacti cameras
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2624">[ date ]</a>
+              <a href="thread.html#2624">[ thread ]</a>
+              <a href="subject.html#2624">[ subject ]</a>
+              <a href="author.html#2624">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

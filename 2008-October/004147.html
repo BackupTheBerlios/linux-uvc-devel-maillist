@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [BUG] NULL pointer dereference caused by uvcvideo stress test
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BBUG%5D%20NULL%20pointer%20dereference%20caused%20by%0A%20uvcvideo%20stress%20test&In-Reply-To=%3C20081024123129.3c373b90%40pedra.chehab.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004148.html">
+   <LINK REL="Next"  HREF="004149.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [BUG] NULL pointer dereference caused by uvcvideo stress test</H1>
+    <B>Mauro Carvalho Chehab</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BBUG%5D%20NULL%20pointer%20dereference%20caused%20by%0A%20uvcvideo%20stress%20test&In-Reply-To=%3C20081024123129.3c373b90%40pedra.chehab.org%3E"
+       TITLE="[Linux-uvc-devel] [BUG] NULL pointer dereference caused by uvcvideo stress test">mchehab at infradead.org
+       </A><BR>
+    <I>Fri Oct 24 16:31:29 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004148.html">[Linux-uvc-devel] Report: Working HP Webcam ID 04f2:b082
+</A></li>
+        <LI>Next message: <A HREF="004149.html">[Linux-uvc-devel] [BUG] NULL pointer dereference caused by	uvcvideo stress test
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4147">[ date ]</a>
+              <a href="thread.html#4147">[ thread ]</a>
+              <a href="subject.html#4147">[ subject ]</a>
+              <a href="author.html#4147">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thu, 16 Oct 2008 11:01:27 +0100
+Alan Jenkins &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">alan-jenkins at tuffmail.co.uk</A>&gt; wrote:
+
+&gt;<i> Laurent Pinchart wrote:
+</I>&gt;<i> &gt; Hi Alan,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Wednesday 15 October 2008, Alan Jenkins wrote:
+</I>&gt;<i> &gt;   
+</I>&gt;<i> &gt;&gt; Laurent Pinchart wrote:
+</I>&gt;<i> &gt;&gt;     
+</I>&gt;<i> &gt;&gt;&gt; On Wednesday 15 October 2008, Alan Jenkins wrote:
+</I>&gt;<i> &gt;&gt;&gt;       
+</I>&gt;<i> &gt;&gt;&gt;&gt; If you look at the trace, it happens as &quot;hald-probe-video&quot; opens the
+</I>&gt;<i> &gt;&gt;&gt;&gt; video device.  This is from Ubuntu 8.04.  Possibly it's significant that
+</I>&gt;<i> &gt;&gt;&gt;&gt; I use the camera first, to make sure it works (I use Kopete, the
+</I>&gt;<i> &gt;&gt;&gt;&gt; settings dialogue includes a video test).
+</I>&gt;<i> &gt;&gt;&gt;&gt;         
+</I>&gt;<i> &gt;&gt;&gt; The NULL pointer (or rather 0x00000030 pointer) dereference happens in
+</I>&gt;<i> &gt;&gt;&gt; video_open:
+</I>&gt;<i> &gt;&gt;&gt;
+</I>&gt;<i> &gt;&gt;&gt;         file-&gt;f_op = fops_get(vfl-&gt;fops);
+</I>&gt;<i> &gt;&gt;&gt;         if (file-&gt;f_op-&gt;open)
+</I>&gt;<i> &gt;&gt;&gt;                 err = file-&gt;f_op-&gt;open(inode, file);
+</I>&gt;<i> &gt;&gt;&gt;
+</I>&gt;<i> &gt;&gt;&gt; file-&gt;f_op ends up being NULL. Either vfl-&gt;fops is NULL to begin with, or
+</I>&gt;<i> &gt;&gt;&gt; fops_get failed to get a reference to the file_operations structure.
+</I>&gt;<i> &gt;&gt;&gt;
+</I>&gt;<i> &gt;&gt;&gt; I'd be surprised if vfl-&gt;fops was NULL. To rule out that case, can you
+</I>&gt;<i> &gt;&gt;&gt; add a BUG_ON(vfl-&gt;fops == NULL) before the call to fops_get ?
+</I>&gt;<i> &gt;&gt;&gt;
+</I>&gt;<i> &gt;&gt;&gt; I'm not too familiar with the module loader, but a quick look at the code
+</I>&gt;<i> &gt;&gt;&gt; shows that the module could be marked as being unloaded
+</I>&gt;<i> &gt;&gt;&gt; (MODULE_STATE_GOING) before its exit function is called. If this is the
+</I>&gt;<i> &gt;&gt;&gt; case video_open would still be called, as the video device would still be
+</I>&gt;<i> &gt;&gt;&gt; registered, but fops_get would fail in try_module_get and return a NULL
+</I>&gt;<i> &gt;&gt;&gt; pointer. It seems the pointer returned by fops_get should be tested in
+</I>&gt;<i> &gt;&gt;&gt; video_open.
+</I>&gt;<i> &gt;&gt;&gt;
+</I>&gt;<i> &gt;&gt;&gt; I've CC'ed the v4l maintainer to get his opinion on this.
+</I>
+Sorry for being late with this. Too much work here...
+
+I suspect that you only hit this bug due to BKL removal from open/close fops.
+maybe you're calling open() before having the device fully initialized?
+
+Anyway, I think that the proposed check is interesting on other places where
+there are similar code.
+
+Cheers,
+Mauro
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004148.html">[Linux-uvc-devel] Report: Working HP Webcam ID 04f2:b082
+</A></li>
+	<LI>Next message: <A HREF="004149.html">[Linux-uvc-devel] [BUG] NULL pointer dereference caused by	uvcvideo stress test
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4147">[ date ]</a>
+              <a href="thread.html#4147">[ thread ]</a>
+              <a href="subject.html#4147">[ subject ]</a>
+              <a href="author.html#4147">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

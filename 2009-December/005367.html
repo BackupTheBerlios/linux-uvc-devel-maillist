@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Has anybody implemented UVC bulk transfer ona	device? Some doubts need clarification.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Has%20anybody%20implemented%20UVC%20bulk%20transfer%20ona%0A%09device%3F%20Some%20doubts%20need%20clarification.&In-Reply-To=%3CC3C930591D7B9D4083B73AC7CB7A5FF364F44C%40nl-exc-02.intra.local%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005366.html">
+   <LINK REL="Next"  HREF="005359.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Has anybody implemented UVC bulk transfer ona	device? Some doubts need clarification.</H1>
+    <B>Robert Lukassen</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Has%20anybody%20implemented%20UVC%20bulk%20transfer%20ona%0A%09device%3F%20Some%20doubts%20need%20clarification.&In-Reply-To=%3CC3C930591D7B9D4083B73AC7CB7A5FF364F44C%40nl-exc-02.intra.local%3E"
+       TITLE="[Linux-uvc-devel] Has anybody implemented UVC bulk transfer ona	device? Some doubts need clarification.">Robert.Lukassen at tomtom.com
+       </A><BR>
+    <I>Wed Dec  2 09:30:36 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005366.html">[Linux-uvc-devel] Has anybody implemented UVC bulk transfer on	a device? Some doubts need clarification.
+</A></li>
+        <LI>Next message: <A HREF="005359.html">[Linux-uvc-devel] Microsoft Lifecam NX-6000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5367">[ date ]</a>
+              <a href="thread.html#5367">[ thread ]</a>
+              <a href="subject.html#5367">[ subject ]</a>
+              <a href="author.html#5367">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+&gt;<i>Hi Laurent,
+</I>&gt;<i> During enumeration the device is sending the proper
+</I>&gt;<i>dwMaxpayloadTransferSize to the host.
+</I>&gt;<i>In the host side also, it is refelecting. But when we start streaming, the
+</I>&gt;<i>host application is doing
+</I>&gt;<i>SET_CUR call of PROBE which is sending &quot;0&quot; to the device and device is
+</I>&gt;<i>sending back the same
+</I>&gt;<i>value to host. In case of ISOC also this value is being reset to &quot;0&quot; where
+</I>&gt;<i>as ISOC consider dwMaxFrameSize
+</I>&gt;<i>which it got from the host application and sending the same to the device.
+</I>&gt;<i>Due to this, ISOC doesn't fail.
+</I>
+Laurent replied:
+
+&gt;<i> The dwMaxPayloadTransferSize field should be filled by the device when
+</I>&gt;<i> queried
+</I>&gt;<i> for the current video streaming probe or commit parameters. If the device
+</I>&gt;<i> returns 0, that's a device bug. In that case you should fix the device to
+</I>&gt;<i> return the correct value.
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Regards,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>
+
+Laurent is correct.
+
+In revision 1.1 of the UVC specification (page 109) you can read that the dwMaxPayloadTransferSize is set by the DEVICE, and read-only by the HOST. When the device returns the data (in response to a GET_CUR, for example), it will need to include the proper value for the control requested (probe or commit). The host can inspect this, and make changes to some values which are not read only. It can send the data back (with a SET_CUR). Typically it needs to do this on the probe control until it has reached some acceptable values. Then it can commit those values by doing a SET_CUR on the commit control.
+
+On page 112 of the same specification, you may find a justification for the host setting the dwMaxPayloadTransferSize to 0. It clearly states that the host is expected to set only certain values, and have &quot;all the remaining fields set to zero&quot;.
+
+I believe in your case, the device is accepting the payload size value that has been reset by the host to 0. This it should not do. You probably will find that on a SET_CUR, the device simply accepts the value as send by the host and uses it in further probe/commit requests as the 'actual' value. 
+
+You can fix this by only selectively copy fields from the data provided by the host on a SET_CUR request. Have your device accept only those values  that the host is allowed to change (read the specification) and reflect the consequences of these in the other fields (those that are read-only by the host).
+
+Regards,
+
+Robert Lukassen 
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091202/ac1109da/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091202/ac1109da/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005366.html">[Linux-uvc-devel] Has anybody implemented UVC bulk transfer on	a device? Some doubts need clarification.
+</A></li>
+	<LI>Next message: <A HREF="005359.html">[Linux-uvc-devel] Microsoft Lifecam NX-6000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5367">[ date ]</a>
+              <a href="thread.html#5367">[ thread ]</a>
+              <a href="subject.html#5367">[ subject ]</a>
+              <a href="author.html#5367">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,274 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20SOLVED%3A%20upside-down%20image%20from%20SONIX%20laptop%0A%09embedded%20webcam&In-Reply-To=%3C879e1f2b0807010316x6621cf4dy1168a6602962df34%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003697.html">
+   <LINK REL="Next"  HREF="003741.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam</H1>
+    <B>Marco Argiolas</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20SOLVED%3A%20upside-down%20image%20from%20SONIX%20laptop%0A%09embedded%20webcam&In-Reply-To=%3C879e1f2b0807010316x6621cf4dy1168a6602962df34%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam">arjos85 at gmail.com
+       </A><BR>
+    <I>Tue Jul  1 12:16:21 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003697.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+        <LI>Next message: <A HREF="003741.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3698">[ date ]</a>
+              <a href="thread.html#3698">[ thread ]</a>
+              <a href="subject.html#3698">[ subject ]</a>
+              <a href="author.html#3698">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Other two questions:
+my patches just works with YUYV format and Memory Mapped streaming method.
+I'd like to make them more flexible!!
+1) Are the following all the supported image formats? (I took them from
+videodev2.h)
+
+/*      Pixel format         FOURCC                        depth
+Description  */
+#define V4L2_PIX_FMT_RGB332
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-RGB332">http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-RGB332</A>&gt;
+v4l2_fourcc('R','G','B','1') /*  8  RGB-3-3-2     */
+#define V4L2_PIX_FMT_RGB444
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-RGB444">http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-RGB444</A>&gt;
+v4l2_fourcc('R','4','4','4') /* 16  xxxxrrrr ggggbbbb */
+#define V4L2_PIX_FMT_RGB555
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-RGB555">http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-RGB555</A>&gt;
+v4l2_fourcc('R','G','B','O') /* 16  RGB-5-5-5     */
+#define V4L2_PIX_FMT_RGB565
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-RGB565">http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-RGB565</A>&gt;
+v4l2_fourcc('R','G','B','P') /* 16  RGB-5-6-5     */
+#define V4L2_PIX_FMT_RGB555X
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-RGB555X">http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-RGB555X</A>&gt;
+v4l2_fourcc('R','G','B','Q') /* 16  RGB-5-5-5 BE  */
+#define V4L2_PIX_FMT_RGB565X
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-RGB565X">http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-RGB565X</A>&gt;
+v4l2_fourcc('R','G','B','R') /* 16  RGB-5-6-5 BE  */
+#define V4L2_PIX_FMT_BGR24
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-BGR24">http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-BGR24</A>&gt;
+v4l2_fourcc('B','G','R','3') /* 24  BGR-8-8-8     */
+#define V4L2_PIX_FMT_RGB24
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-RGB24">http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-RGB24</A>&gt;
+v4l2_fourcc('R','G','B','3') /* 24  RGB-8-8-8     */
+#define V4L2_PIX_FMT_BGR32
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-BGR32">http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-BGR32</A>&gt;
+v4l2_fourcc('B','G','R','4') /* 32  BGR-8-8-8-8   */
+#define V4L2_PIX_FMT_RGB32
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-RGB32">http://v4l2spec.bytesex.org/spec/r2492.htm#V4L2-PIX-FMT-RGB32</A>&gt;
+v4l2_fourcc('R','G','B','4') /* 32  RGB-8-8-8-8   */
+#define V4L2_PIX_FMT_GREY &lt;<A HREF="http://v4l2spec.bytesex.org/spec/r4185.htm">http://v4l2spec.bytesex.org/spec/r4185.htm</A>&gt;
+   v4l2_fourcc('G','R','E','Y') /*  8  Greyscale     */
+#define V4L2_PIX_FMT_Y16 &lt;<A HREF="http://v4l2spec.bytesex.org/spec/r4246.htm">http://v4l2spec.bytesex.org/spec/r4246.htm</A>&gt;
+   v4l2_fourcc('Y','1','6',' ') /* 16  Greyscale     */
+#define V4L2_PIX_FMT_PAL8
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/x2428.htm#V4L2-PIX-FMT-PAL8">http://v4l2spec.bytesex.org/spec/x2428.htm#V4L2-PIX-FMT-PAL8</A>&gt;
+v4l2_fourcc('P','A','L','8') /*  8  8-bit palette */
+#define V4L2_PIX_FMT_YVU410
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r5016.htm#V4L2-PIX-FMT-YVU410">http://v4l2spec.bytesex.org/spec/r5016.htm#V4L2-PIX-FMT-YVU410</A>&gt;
+v4l2_fourcc('Y','V','U','9') /*  9  YVU 4:1:0     */
+#define V4L2_PIX_FMT_YVU420
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r4850.htm#V4L2-PIX-FMT-YVU420">http://v4l2spec.bytesex.org/spec/r4850.htm#V4L2-PIX-FMT-YVU420</A>&gt;
+v4l2_fourcc('Y','V','1','2') /* 12  YVU 4:2:0     */
+#define V4L2_PIX_FMT_YUYV &lt;<A HREF="http://v4l2spec.bytesex.org/spec/r4339.htm">http://v4l2spec.bytesex.org/spec/r4339.htm</A>&gt;
+   v4l2_fourcc('Y','U','Y','V') /* 16  YUV 4:2:2     */
+#define V4L2_PIX_FMT_UYVY &lt;<A HREF="http://v4l2spec.bytesex.org/spec/r4484.htm">http://v4l2spec.bytesex.org/spec/r4484.htm</A>&gt;
+   v4l2_fourcc('U','Y','V','Y') /* 16  YUV 4:2:2     */
+#define V4L2_PIX_FMT_YUV422P
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r5154.htm">http://v4l2spec.bytesex.org/spec/r5154.htm</A>&gt;
+v4l2_fourcc('4','2','2','P') /* 16  YVU422 planar */
+#define V4L2_PIX_FMT_YUV411P
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r5319.htm">http://v4l2spec.bytesex.org/spec/r5319.htm</A>&gt;
+v4l2_fourcc('4','1','1','P') /* 16  YVU411 planar */
+#define V4L2_PIX_FMT_Y41P &lt;<A HREF="http://v4l2spec.bytesex.org/spec/r4629.htm">http://v4l2spec.bytesex.org/spec/r4629.htm</A>&gt;
+   v4l2_fourcc('Y','4','1','P') /* 12  YUV 4:1:1     */
+#define V4L2_PIX_FMT_YUV444
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r3896.htm#V4L2-PIX-FMT-YUV444">http://v4l2spec.bytesex.org/spec/r3896.htm#V4L2-PIX-FMT-YUV444</A>&gt;
+v4l2_fourcc('Y','4','4','4') /* 16  xxxxyyyy uuuuvvvv */
+#define V4L2_PIX_FMT_YUV555
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r3896.htm#V4L2-PIX-FMT-YUV555">http://v4l2spec.bytesex.org/spec/r3896.htm#V4L2-PIX-FMT-YUV555</A>&gt;
+v4l2_fourcc('Y','U','V','O') /* 16  YUV-5-5-5     */
+#define V4L2_PIX_FMT_YUV565
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r3896.htm#V4L2-PIX-FMT-YUV565">http://v4l2spec.bytesex.org/spec/r3896.htm#V4L2-PIX-FMT-YUV565</A>&gt;
+v4l2_fourcc('Y','U','V','P') /* 16  YUV-5-6-5     */
+#define V4L2_PIX_FMT_YUV32
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r3896.htm#V4L2-PIX-FMT-YUV32">http://v4l2spec.bytesex.org/spec/r3896.htm#V4L2-PIX-FMT-YUV32</A>&gt;
+v4l2_fourcc('Y','U','V','4') /* 32  YUV-8-8-8-8   */
+
+/* two planes -- one Y, one Cr + Cb interleaved  */
+#define V4L2_PIX_FMT_NV12
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r5470.htm#V4L2-PIX-FMT-NV12">http://v4l2spec.bytesex.org/spec/r5470.htm#V4L2-PIX-FMT-NV12</A>&gt;
+v4l2_fourcc('N','V','1','2') /* 12  Y/CbCr 4:2:0  */
+#define V4L2_PIX_FMT_NV21
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r5470.htm#V4L2-PIX-FMT-NV21">http://v4l2spec.bytesex.org/spec/r5470.htm#V4L2-PIX-FMT-NV21</A>&gt;
+v4l2_fourcc('N','V','2','1') /* 12  Y/CrCb 4:2:0  */
+
+/*  The following formats are not defined in the V4L2 specification */
+#define V4L2_PIX_FMT_YUV410
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r5016.htm#V4L2-PIX-FMT-YUV410">http://v4l2spec.bytesex.org/spec/r5016.htm#V4L2-PIX-FMT-YUV410</A>&gt;
+v4l2_fourcc('Y','U','V','9') /*  9  YUV 4:1:0     */
+#define V4L2_PIX_FMT_YUV420
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r4850.htm#V4L2-PIX-FMT-YUV420">http://v4l2spec.bytesex.org/spec/r4850.htm#V4L2-PIX-FMT-YUV420</A>&gt;
+v4l2_fourcc('Y','U','1','2') /* 12  YUV 4:2:0     */
+#define V4L2_PIX_FMT_YYUV
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-YYUV">http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-YYUV</A>&gt;
+v4l2_fourcc('Y','Y','U','V') /* 16  YUV 4:2:2     */
+#define V4L2_PIX_FMT_HI240
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-HI240">http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-HI240</A>&gt;
+v4l2_fourcc('H','I','2','4') /*  8  8-bit color   */
+#define V4L2_PIX_FMT_HM12
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-HM12">http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-HM12</A>&gt;
+v4l2_fourcc('H','M','1','2') /*  8  YUV 4:2:0 16x16 macroblocks */
+
+/* see <A HREF="http://www.siliconimaging.com/RGB%20Bayer.htm">http://www.siliconimaging.com/RGB%20Bayer.htm</A> */
+#define V4L2_PIX_FMT_SBGGR8
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r3735.htm">http://v4l2spec.bytesex.org/spec/r3735.htm</A>&gt;
+v4l2_fourcc('B','A','8','1') /*  8  BGBG.. GRGR.. */
+#define V4L2_PIX_FMT_SBGGR16
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/r3796.htm">http://v4l2spec.bytesex.org/spec/r3796.htm</A>&gt;
+v4l2_fourcc('B','Y','R','2') /* 16  BGBG.. GRGR.. */
+
+/* compressed formats */
+#define V4L2_PIX_FMT_MJPEG
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-MJPEG">http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-MJPEG</A>&gt;
+v4l2_fourcc('M','J','P','G') /* Motion-JPEG   */
+#define V4L2_PIX_FMT_JPEG
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/x5634.htm#V4L2-PIX-FMT-JPEG">http://v4l2spec.bytesex.org/spec/x5634.htm#V4L2-PIX-FMT-JPEG</A>&gt;
+v4l2_fourcc('J','P','E','G') /* JFIF JPEG     */
+#define V4L2_PIX_FMT_DV
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-DV">http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-DV</A>&gt;
+v4l2_fourcc('d','v','s','d') /* 1394          */
+#define V4L2_PIX_FMT_MPEG
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/x5634.htm#V4L2-PIX-FMT-MPEG">http://v4l2spec.bytesex.org/spec/x5634.htm#V4L2-PIX-FMT-MPEG</A>&gt;
+v4l2_fourcc('M','P','E','G') /* MPEG-1/2/4    */
+
+/*  Vendor-specific formats   */
+#define V4L2_PIX_FMT_WNVA
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-WNVA">http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-WNVA</A>&gt;
+v4l2_fourcc('W','N','V','A') /* Winnov hw compress */
+#define V4L2_PIX_FMT_SN9C10X
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-SN9C10X">http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-SN9C10X</A>&gt;
+v4l2_fourcc('S','9','1','0') /* SN9C10x compression */
+#define V4L2_PIX_FMT_PWC1
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-PWC1">http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-PWC1</A>&gt;
+v4l2_fourcc('P','W','C','1') /* pwc older webcam */
+#define V4L2_PIX_FMT_PWC2
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-PWC2">http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-PWC2</A>&gt;
+v4l2_fourcc('P','W','C','2') /* pwc newer webcam */
+#define V4L2_PIX_FMT_ET61X251
+&lt;<A HREF="http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-ET61X251">http://v4l2spec.bytesex.org/spec/x5665.htm#V4L2-PIX-FMT-ET61X251</A>&gt;
+v4l2_fourcc('E','6','2','5') /* ET61X251 compression */
+
+
+2) If I'd like to make a patch for the User Pointer streaming method, which
+is the function that does the same of &quot;
+
+uvc_video_decode_data
+
+()&quot; in &quot;uvc_video.c&quot;?
+
+Thank you very much,
+
+Marco Argiolas
+
+ps.
+what do you think about this kind of patch? do you think these adds are only
+a loss of time?
+
+2008/7/1 Marco Argiolas &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">arjos85 at gmail.com</A>&gt;:
+
+&gt;<i> Hi Laurent,
+</I>&gt;<i> just one question:
+</I>&gt;<i> I didn't understand why it is not possible to add my patch to the driver.
+</I>&gt;<i> You said because it's a userspace job...
+</I>&gt;<i> yes I know...but I also know there are also other driver that do this kind
+</I>&gt;<i> of job!!
+</I>&gt;<i>
+</I>&gt;<i> Let me know,
+</I>&gt;<i> thank you very much.
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i>
+</I>&gt;<i> Marco Argiolas
+</I>&gt;<i>
+</I>&gt;<i> 2008/6/26 Marco Argiolas &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">arjos85 at gmail.com</A>&gt;:
+</I>&gt;<i>
+</I>&gt;<i> Hey Laurent,
+</I>&gt;&gt;<i> I've tried to follow all your suggestion, I hope I didn't any mistakes.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> However you can find the updated HOW-TO always here:
+</I>&gt;&gt;<i> <A HREF="http://ubuntuforums.org/showthread.php?t=838210">http://ubuntuforums.org/showthread.php?t=838210</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I did the following changes:
+</I>&gt;&gt;<i> - used PATCHES instead of the source of the modded function;
+</I>&gt;&gt;<i> - I've tried to speed up for the solutions with memory allocation, just
+</I>&gt;&gt;<i> allocating half the size of a frame;
+</I>&gt;&gt;<i> - I've rolled back the last &quot;if (len &gt;= maxlen)&quot; to &quot;if (len &gt; maxlen)&quot;;
+</I>&gt;&gt;<i> - I've deleted some variable that where not needed;
+</I>&gt;&gt;<i> - in the solutions without allocation, I've modified a little bit the
+</I>&gt;&gt;<i> &quot;filosofy&quot; on counting the offset where to copy data. In this way it should
+</I>&gt;&gt;<i> be more clear to understand;
+</I>&gt;&gt;<i> - added a complete explaination of the code with a lot of comments (I hope
+</I>&gt;&gt;<i> they are clear and meaningful).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I hope all these changes can help the final users and make the code more
+</I>&gt;&gt;<i> clear!!  ;)
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> If you have any other suggestions...please let me know!!
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Thank you,
+</I>&gt;&gt;<i> Regards
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Marco Argiolas
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+
+-- 
+Marco Argiolas
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">marco.argiolas at studenti.polito.it</A>
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">arjos85 at gmail.com</A>
+skype: arjos85
+msn: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">sarace2003 at libero.it</A>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080701/b30b9791/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080701/b30b9791/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003697.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+	<LI>Next message: <A HREF="003741.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3698">[ date ]</a>
+              <a href="thread.html#3698">[ thread ]</a>
+              <a href="subject.html#3698">[ subject ]</a>
+              <a href="author.html#3698">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

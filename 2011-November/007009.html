@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Microsoft Lifecam Studio catch button
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20Lifecam%20Studio%20catch%20button&In-Reply-To=%3C4EB242DC.80206%40redhat.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007007.html">
+   <LINK REL="Next"  HREF="006994.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Microsoft Lifecam Studio catch button</H1>
+    <B>Hans de Goede</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20Lifecam%20Studio%20catch%20button&In-Reply-To=%3C4EB242DC.80206%40redhat.com%3E"
+       TITLE="[Linux-uvc-devel] Microsoft Lifecam Studio catch button">hdegoede at redhat.com
+       </A><BR>
+    <I>Thu Nov  3 08:29:32 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007007.html">[Linux-uvc-devel] Microsoft Lifecam Studio catch button
+</A></li>
+        <LI>Next message: <A HREF="006994.html">[Linux-uvc-devel] Mark Microsoft LifeCam Studio as having the	usb bandwidth bug
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7009">[ date ]</a>
+              <a href="thread.html#7009">[ thread ]</a>
+              <a href="subject.html#7009">[ subject ]</a>
+              <a href="author.html#7009">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On 11/03/2011 03:33 AM, Patrick R. Michaud wrote:
+&gt;<i> On Wed, Nov 02, 2011 at 05:41:26PM +0100, Laurent Pinchart wrote:
+</I>&gt;&gt;<i> On Friday 14 October 2011 17:57:02 Max Lapshin wrote:
+</I>&gt;&gt;&gt;<i> Hi. Is it possible to capture button press on microsoft lifecam studio?
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> There is small button on top of camera and it would be nice to be able
+</I>&gt;&gt;&gt;<i> to catch pressing on it. It there any way?
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> The first thing to check is whether the button is detected by the uvcvideo
+</I>&gt;&gt;<i> driver and registered as an input device. Here's what dmesg reports when I
+</I>&gt;&gt;<i> plug a Logitech webcam with a button:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> [27583.858330] uvcvideo: Found UVC 1.00 device&lt;unnamed&gt;  (046d:080a)
+</I>&gt;&gt;<i> [27583.898843] input: UVC Camera (046d:080a) as
+</I>&gt;&gt;<i> /devices/pci0000:00/0000:00:1d.7/usb2/2-3/2-3:1.0/input/input10
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Does the uvcvideo driver print a line starting with 'input' when you plug your
+</I>&gt;&gt;<i> camera in ?
+</I>&gt;<i>
+</I>&gt;<i> For the Lifecam Studio, my system gives:
+</I>&gt;<i>
+</I>&gt;<i>    [33604.108093] usb 1-5: new high speed USB device number 4 using ehci_hcd
+</I>&gt;<i>    [33604.276241] uvcvideo: Found UVC 1.00 device Microsoft&#174; LifeCam Studio(TM) (045e:0772)
+</I>&gt;<i>    [33604.334468] input: Microsoft&#174; LifeCam Studio(TM) as /devices/pci0000:00/0000:00:12.2/usb1/1-5/1-5:1.0/input/input7
+</I>&gt;<i>
+</I>&gt;<i> For the Lifecam Cinema, I get:
+</I>&gt;<i>
+</I>&gt;<i>    [33729.476089] usb 1-5: new high speed USB device number 5 using ehci_hcd
+</I>&gt;<i>    [33729.626964] uvcvideo: Found UVC 1.00 device Microsoft&#174; LifeCam Cinema(TM) (045e:075d)
+</I>&gt;<i>    [33729.633068] input: Microsoft&#174; LifeCam Cinema(TM) as /devices/pci0000:00/0000:00:12.2/usb1/1-5/1-5:1.0/input/input8
+</I>&gt;<i>
+</I>&gt;<i> On my system the button works for the Cinema but not for the Studio.
+</I>&gt;<i>
+</I>
+I'ev a studio too and I investigated this a while back, the studio does not use the standard
+uvc method for reporting button events, but instead has a separate usb hid interface for this,
+by catting the rawhid device created one can see that this is hooked up to the button. Unfortunately
+it seems to not be standard usb hid, so even with the hid driver loaded it does not work
+out of the box. It looks like someone will need to write a kernel driver for it translating
+the raw hid stuff to button events.
+
+Regards,
+
+Hans
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007007.html">[Linux-uvc-devel] Microsoft Lifecam Studio catch button
+</A></li>
+	<LI>Next message: <A HREF="006994.html">[Linux-uvc-devel] Mark Microsoft LifeCam Studio as having the	usb bandwidth bug
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7009">[ date ]</a>
+              <a href="thread.html#7009">[ thread ]</a>
+              <a href="subject.html#7009">[ subject ]</a>
+              <a href="author.html#7009">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

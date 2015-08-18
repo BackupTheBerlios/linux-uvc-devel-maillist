@@ -1,0 +1,175 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Webcam stops other USB devices (ehci_hcd: HC died;	cleaning up)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20stops%20other%20USB%20devices%20%28ehci_hcd%3A%20HC%20died%3B%0A%09cleaning%20up%29&In-Reply-To=%3C1322763710.3955.35.camel%40ossietzky%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="007108.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Webcam stops other USB devices (ehci_hcd: HC died;	cleaning up)</H1>
+    <B>Michael Below</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20stops%20other%20USB%20devices%20%28ehci_hcd%3A%20HC%20died%3B%0A%09cleaning%20up%29&In-Reply-To=%3C1322763710.3955.35.camel%40ossietzky%3E"
+       TITLE="[Linux-uvc-devel] Webcam stops other USB devices (ehci_hcd: HC died;	cleaning up)">below at judiz.de
+       </A><BR>
+    <I>Thu Dec  1 19:21:50 CET 2011</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="007108.html">[Linux-uvc-devel] Webcam stops other USB devices (ehci_hcd: HC died; cleaning up)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7107">[ date ]</a>
+              <a href="thread.html#7107">[ thread ]</a>
+              <a href="subject.html#7107">[ subject ]</a>
+              <a href="author.html#7107">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+today I decided to get a webcam and got the above mentioned error with
+two different uvc-supported models (Logitech C270, MS HD 5000).
+
+I have a HP dc5850 microtower, it has an AMD Phenom II with AMD780
+chipset (Radeon 3100 integrated graphics). I am running Debian testing,
+kernel 3.1. Each time I plugged the Logitech C270 into the system, two
+other USB devices (Samsung Printer, DLink wireless) stopped working. I
+only got the other devices working again through a reboot, simple
+unloading/reloading of the modules wouldn't help. Most of the times also
+the USB mouse (MS Wireless 5000) would quit (the keyboard is PS/2). I
+installed the webcam successfully on Windows 7, but when booting into
+Linux the USB devices stopped working.
+
+I returned the Logitech and got a Microsoft HD-5000 webcam instead. I
+installed it in Windows 7 and rebooted to Linux. I was able to make a
+test call with Skype on Linux and see my test image there, but when I
+quit Skype the USB devices stopped working, and rebooting with the
+webcam attached didn't help, i had to reboot again without the webcam.
+
+There is a similar problem described here, but without a solution:
+<A HREF="http://lkml.org/lkml/2011/4/25/22">http://lkml.org/lkml/2011/4/25/22</A>
+
+Looking at the logs I suspect this might be some kind of interaction
+between my wireless adapter (D-Link DWL-G122, Ralink RT73-based) and the
+webcams, maybe involving the EHCI platform? Is there somebody else I
+should tell about this?
+
+I am attaching parts of my kern.log. If you need more info, I am glad to
+give it...
+
+Cheers
+
+Michael
+
+Attaching the Logitech C270:
+
+Dec  1 15:55:22 ossietzky kernel: [  352.973454] usb 1-4: New USB device found, idVendor=046d, idProduct=0825
+Dec  1 15:55:22 ossietzky kernel: [  352.973465] usb 1-4: New USB device strings: Mfr=0, Product=0, SerialNumber=2
+Dec  1 15:55:22 ossietzky kernel: [  352.973473] usb 1-4: SerialNumber: 8D2C8ED0
+Dec  1 15:55:23 ossietzky kernel: [  354.218816] Linux media interface: v0.10
+Dec  1 15:55:23 ossietzky kernel: [  354.229217] Linux video capture interface: v2.00
+Dec  1 15:55:24 ossietzky kernel: [  355.264233] 5:3:3: cannot get freq at ep 0x86
+Dec  1 15:55:24 ossietzky kernel: [  355.403959] usbcore: registered new interface driver snd-usb-audio
+Dec  1 15:55:24 ossietzky kernel: [  355.403999] uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:0825)
+Dec  1 15:55:24 ossietzky kernel: [  355.419004] input: UVC Camera (046d:0825) as /devices/pci0000:00/0000:00:12.2/usb1/1-4/1-4:1.0/input/input9
+Dec  1 15:55:24 ossietzky kernel: [  355.419162] usbcore: registered new interface driver uvcvideo
+Dec  1 15:55:24 ossietzky kernel: [  355.419168] USB Video Class driver (1.1.1)
+Dec  1 15:55:24 ossietzky kernel: [  355.610354] ehci_hcd 0000:00:12.2: force halt; handshake ffffc90000326424 00004000 00000000 -&gt; -110
+Dec  1 15:55:24 ossietzky kernel: [  355.610366] ehci_hcd 0000:00:12.2: HC died; cleaning up
+Dec  1 15:55:24 ossietzky kernel: [  355.610430] usb 1-2: USB disconnect, device number 3
+Dec  1 15:55:24 ossietzky kernel: [  355.610894] wlan0: deauthenticating from 00:c0:02:1a:80:bc by local choice (reason=3)
+Dec  1 15:55:24 ossietzky kernel: [  355.732203] cfg80211: Calling CRDA to update world regulatory domain
+Dec  1 15:55:26 ossietzky kernel: [  357.152254] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.152370] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.152445] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.152488] usb 1-3: USB disconnect, device number 4
+Dec  1 15:55:26 ossietzky kernel: [  357.152857] usb 1-4: USB disconnect, device number 5
+Dec  1 15:55:26 ossietzky kernel: [  357.153172] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.153865] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.154647] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.154687] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.154751] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.155342] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.155978] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.156948] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.157033] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.157274] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.158023] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.158847] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.160317] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.160404] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.160666] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.161445] 5:3:4: usb_set_interface failed
+Dec  1 15:55:26 ossietzky kernel: [  357.162302] 5:3:4: usb_set_interface failed
+
+Etc.
+
+Microsoft HD-5000 loads successfully, turns bad:
+
+Dec  1 16:57:47 ossietzky kernel: [ 1459.700093] usb 1-5: new high speed USB device number 5 using ehci_hcd
+Dec  1 16:57:47 ossietzky kernel: [ 1459.848657] usb 1-5: New USB device found, idVendor=045e, idProduct=076d
+Dec  1 16:57:47 ossietzky kernel: [ 1459.848661] usb 1-5: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+Dec  1 16:57:47 ossietzky kernel: [ 1459.848664] usb 1-5: Product: Microsoft&#174; LifeCam HD-5000
+Dec  1 16:57:47 ossietzky kernel: [ 1459.848666] usb 1-5: Manufacturer: Microsoft
+Dec  1 16:57:48 ossietzky kernel: [ 1460.465318] Linux media interface: v0.10
+Dec  1 16:57:48 ossietzky kernel: [ 1460.476086] Linux video capture interface: v2.00
+Dec  1 16:57:49 ossietzky kernel: [ 1461.584177] 5:3:1: cannot get freq at ep 0x82
+Dec  1 16:57:49 ossietzky kernel: [ 1461.587036] usbcore: registered new interface driver snd-usb-audio
+Dec  1 16:57:49 ossietzky kernel: [ 1461.587042] uvcvideo: Found UVC 1.00 device Microsoft&#174; LifeCam HD-5000 (045e:076d)
+Dec  1 16:57:49 ossietzky kernel: [ 1461.592307] input: Microsoft&#174; LifeCam HD-5000 as /devices/pci0000:00/0000:00:12.2/usb1/1-5/1-5:1.0/input/input9
+Dec  1 16:57:49 ossietzky kernel: [ 1461.592388] usbcore: registered new interface driver uvcvideo
+Dec  1 16:57:49 ossietzky kernel: [ 1461.592390] USB Video Class driver (1.1.1)
+Dec  1 16:57:50 ossietzky kernel: [ 1462.784195] 5:3:1: cannot get freq at ep 0x82
+Dec  1 16:57:51 ossietzky kernel: [ 1463.908198] 5:3:1: cannot get freq at ep 0x82
+
+...
+
+Dec  1 17:00:02 ossietzky kernel: [ 1594.705830] wlan0: associate with 00:c0:02:1a:80:bc (try 1)
+Dec  1 17:00:02 ossietzky kernel: [ 1594.708637] wlan0: RX AssocResp from 00:c0:02:1a:80:bc (capab=0x471 status=0 aid=3)
+Dec  1 17:00:02 ossietzky kernel: [ 1594.708641] wlan0: associated
+Dec  1 17:00:02 ossietzky kernel: [ 1594.721821] ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
+Dec  1 17:00:13 ossietzky kernel: [ 1605.728012] wlan0: no IPv6 routers present
+Dec  1 17:00:25 ossietzky kernel: [ 1617.612006] ehci_hcd 0000:00:12.2: force halt; handshake ffffc90000326424 00004000 00000000 -&gt; -110
+Dec  1 17:00:25 ossietzky kernel: [ 1617.612006] ehci_hcd 0000:00:12.2: HC died; cleaning up
+Dec  1 17:00:25 ossietzky kernel: [ 1617.612284] usb 1-2: USB disconnect, device number 6
+Dec  1 17:00:25 ossietzky kernel: [ 1617.628461] wlan0: deauthenticating from 00:c0:02:1a:80:bc by local choice (reason=3)
+Dec  1 17:00:25 ossietzky kernel: [ 1617.680162] cfg80211: Calling CRDA to update world regulatory domain
+Dec  1 17:00:26 ossietzky kernel: [ 1619.080244] usb 1-3: USB disconnect, device number 4
+Dec  1 17:00:26 ossietzky kernel: [ 1619.080377] usb 1-5: USB disconnect, device number 5
+
+
+-- 
+Michael Below &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">below at judiz.de</A>&gt;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="007108.html">[Linux-uvc-devel] Webcam stops other USB devices (ehci_hcd: HC died; cleaning up)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7107">[ date ]</a>
+              <a href="thread.html#7107">[ thread ]</a>
+              <a href="subject.html#7107">[ subject ]</a>
+              <a href="author.html#7107">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

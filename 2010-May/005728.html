@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Multiple camera framerate.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multiple%20camera%20framerate.&In-Reply-To=%3C201005071710.23554.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005721.html">
+   <LINK REL="Next"  HREF="005730.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Multiple camera framerate.</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multiple%20camera%20framerate.&In-Reply-To=%3C201005071710.23554.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Multiple camera framerate.">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Fri May  7 17:10:23 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005721.html">[Linux-uvc-devel] Multiple camera framerate.
+</A></li>
+        <LI>Next message: <A HREF="005730.html">[Linux-uvc-devel] Multiple camera framerate.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5728">[ date ]</a>
+              <a href="thread.html#5728">[ thread ]</a>
+              <a href="subject.html#5728">[ subject ]</a>
+              <a href="author.html#5728">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Denis,
+
+On Tuesday 04 May 2010 17:37:13 Dennis Muhlestein wrote:
+&gt;<i> On 04/29/2010 12:40 PM, Dennis Muhlestein wrote:
+</I>&gt;<i> &gt; One idea I've been toying with is to add a semaphore around submitting
+</I>&gt;<i> &gt; the URBs.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; In uvc_video.c, where the URBs are submitted, I'd acquire a semephore
+</I>&gt;<i> &gt; for each device currently submitting URBs. The semaphore would limit the
+</I>&gt;<i> &gt; number of devices to whatever number I decide can safely submit URBs
+</I>&gt;<i> &gt; simultaneously on the bus without throwing out of space errors.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I did an initial test of this and it looks promising. I can configure
+</I>&gt;<i> &gt; all the cameras. As long as I don't submit the URBs for the number of
+</I>&gt;<i> &gt; devices beyond that which will work at the same time, the other cameras
+</I>&gt;<i> &gt; simply drop the data.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I'm not sure the best places to control the locking and unlocking of the
+</I>&gt;<i> &gt; semaphore are. Right now, I lock it before submitting URBs in
+</I>&gt;<i> &gt; uvc_init_video. In uvc_video_complete, I unlock it and relock it if the
+</I>&gt;<i> &gt; buffer is complete (allowing another camera to acquire it and capture a
+</I>&gt;<i> &gt; frame).
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Anyway, it isn't working perfectly yet but I think I can debug it and at
+</I>&gt;<i> &gt; least get to a point where I know if it's worth pursuing. I'm curious if
+</I>&gt;<i> &gt; anyone can provide thoughts or alternatives.
+</I>&gt;<i> 
+</I>&gt;<i> I have two solutions that I've come up with this so far.
+</I>&gt;<i> 1) Modify the uvc_video.c to queue urbs in a list in the urb completion
+</I>&gt;<i> handler.  A driver level semaphore controls the number of currently
+</I>&gt;<i> submitting cameras.  You can adjust the initial sem_count in
+</I>&gt;<i> uvc_driver.c.  Ideally, that would be a module parameter but I'm just
+</I>&gt;<i> getting things to work.
+</I>&gt;<i> 
+</I>&gt;<i> I found capture speeds quite a bit slower than I'd like with this method
+</I>&gt;<i> though.  I can capture with 8 cameras at 10 FPS without overwhelming the
+</I>&gt;<i> ISO bus but if I change to 15 FPS I can only capture with 3 cameras at a
+</I>&gt;<i> time.  Adding the patch, I then can configure and capture from all 8
+</I>&gt;<i> cameras running at 15 FPS but only submitting URBs for 3 at a time.
+</I>&gt;<i> Depending on how many frames I let those cameras capture I got captured
+</I>&gt;<i> frame rates from around 4 to 6.
+</I>&gt;<i> 
+</I>&gt;<i> I'm attaching the patch in case anyone wants to play with this or
+</I>&gt;<i> suggest ways to improve it.
+</I>
+Interesting approach, but definitely a hack. I'm not sure if it has a chance 
+to make it to the driver.
+
+&gt;<i> One thing I had a problem with is that it seems some of the capture images
+</I>&gt;<i> are corrupted. This patch was against 2.6.27.2. A little old I know but I'm
+</I>&gt;<i> working on an embedded device.
+</I>&gt;<i> 
+</I>&gt;<i> 2) I modified ehci-sched.c to not raise the ENOSPC error.  That solution
+</I>&gt;<i> actually lets me capture on all 8 cameras at 15 FPS.  This has other
+</I>&gt;<i> implications though and I'm not sure it is a very good solution.  It
+</I>&gt;<i> does tell me that perhaps the Linux ISO scheduler could perhaps use look
+</I>&gt;<i> through.  One major discrepancy is that bandwidth is allocated based on
+</I>&gt;<i> the max packet size I think but for my compressed images (MJPG) each
+</I>&gt;<i> frame is only a fraction of the max allocated bandwidth.
+</I>
+That might be the real culprit. Maybe the camera is simply requesting too much 
+bandwidth compared to its real requirements.
+
+Can you check whether the video streaming interface has multiple alternate 
+settings ? If so, which one does the uvcvideo driver chose ? You can get the 
+information from the kernel log if you set the UVC_TRACE_VIDEO flag.
+
+If the camera request an alternate setting that isn't the smallest, you might 
+try to experiment with hardcoding a lower bandwidth in uvc_video_init.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005721.html">[Linux-uvc-devel] Multiple camera framerate.
+</A></li>
+	<LI>Next message: <A HREF="005730.html">[Linux-uvc-devel] Multiple camera framerate.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5728">[ date ]</a>
+              <a href="thread.html#5728">[ thread ]</a>
+              <a href="subject.html#5728">[ subject ]</a>
+              <a href="author.html#5728">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

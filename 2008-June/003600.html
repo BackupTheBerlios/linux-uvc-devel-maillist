@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20PATCH%3A%20Acer%20Crystal%20Eye%20WebCam%20%28064e%3Aa101%0A%09Suyin%20Corp.%29&In-Reply-To=%3C200806062347.30696.sparks.m%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003595.html">
+   <LINK REL="Next"  HREF="003601.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)</H1>
+    <B>MIchael Sparks</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20PATCH%3A%20Acer%20Crystal%20Eye%20WebCam%20%28064e%3Aa101%0A%09Suyin%20Corp.%29&In-Reply-To=%3C200806062347.30696.sparks.m%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)">sparks.m at gmail.com
+       </A><BR>
+    <I>Sat Jun  7 00:47:30 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003595.html">[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)
+</A></li>
+        <LI>Next message: <A HREF="003601.html">[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3600">[ date ]</a>
+              <a href="thread.html#3600">[ thread ]</a>
+              <a href="subject.html#3600">[ subject ]</a>
+              <a href="author.html#3600">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+
+Many thanks for getting back to me :)
+
+On Friday 06 June 2008 23:12:50 Laurent Pinchart wrote:
+..
+&gt;<i> *sigh*. I hate protocol errors. They are most of the time caused by buggy
+</I>&gt;<i> devices, and buggy devices mean I have to find a software workaround :-S
+</I>
+I guessed that might be the case :-/
+
+&gt;<i> Could you please try to blindly ignore the usb_set_interface return value ?
+</I>&gt;<i> I'd like to know if the second call is really required.
+</I>
+I've tried changing it to specifically ignore that error:
+Index: uvc_video.c
+===================================================================
+--- uvc_video.c (revision 213)
++++ uvc_video.c (working copy)
+@@ -750,8 +750,10 @@
+                if (i &gt;= intf-&gt;num_altsetting)
+                        return -EIO;
+
+-               if ((ret = usb_set_interface(video-&gt;dev-&gt;udev, intfnum, i)) &lt; 0)
+-                       return ret;
++               if ((ret = usb_set_interface(video-&gt;dev-&gt;udev, intfnum, i)) &lt; 0) {
++                       if (ret != -71)  // Let's try blindly ignoring protocol errors as requested
++                               return ret;
++               }
+
+                ret = uvc_init_video_isoc(video, ep);
+        } else {
+
+Any when I now retry, I get the following error:
+
+~/&gt; ./WebCam.py
+Traceback (most recent call last):
+  File &quot;./WebCam.py&quot;, line 214, in &lt;module&gt;
+    VideoCapturePlayer().run() # Runs at full speed - basic test case
+  File &quot;./WebCam.py&quot;, line 27, in __init__
+    self.camera.start()
+EnvironmentError: ioctl(VIDIOC_STREAMON) failure : 90, Message too long
+
+For good measure I also tried this ...
+
+Index: uvc_video.c
+===================================================================
+--- uvc_video.c (revision 213)
++++ uvc_video.c (working copy)
+@@ -749,10 +749,13 @@
+
+                if (i &gt;= intf-&gt;num_altsetting)
+                        return -EIO;
++
++                ret = usb_set_interface(video-&gt;dev-&gt;udev, intfnum, i);
++//             if ((ret = usb_set_interface(video-&gt;dev-&gt;udev, intfnum, i)) &lt; 0) {
++//                     if (ret != -71)  // Let's try blindly ignoring protocol errors as requested
++//                             return ret;
++//             }
+
+-               if ((ret = usb_set_interface(video-&gt;dev-&gt;udev, intfnum, i)) &lt; 0)
+-                       return ret;
+-
+                ret = uvc_init_video_isoc(video, ep);
+        } else {
+                /* Bulk endpoint, proceed to URB initialization. */
+
+... ie completely ignoring the return code, and again I get this error:
+
+~/&gt; ./WebCam.py
+Traceback (most rcall last):
+  File &quot;./WebCam.py&quot;, line 214, in &lt;module&gt;
+    VideoCapturePlayer().run() # Runs at full speed - basic test case
+  File &quot;./WebCam.py&quot;, line 27, in __init__
+    self.camera.start()
+EnvironmentError: ioctl(VIDIOC_STREAMON) failure : 90, Message too long
+
+Making it simply retry just seems to work. 
+
+&gt;<i> What kernel version are you running ?
+</I>
+This is the output from uname -a &amp; /proc/version
+
+~/&gt; uname -a
+Linux kamaelia-NG 2.6.22.17-0.1-default #1 SMP 2008/02/10 20:01:04 UTC i686 i686 i386 GNU/Linux
+
+~/&gt; more /proc/version
+Linux version 2.6.22.17-0.1-default (<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">geeko at buildhost</A>) (gcc version 4.2.1 (SUSE Linux)) #1 SMP 2008/02/10 20:01:04 UTC
+
+&gt;<i> &gt; BTW, many thanks for writing this module - it's great/really useful :-)
+</I>&gt;<i>
+</I>&gt;<i> You're welcome. Now if we could convince webcam manufacturers to use the
+</I>&gt;<i> Linux driver for testing purpose I'd be much happier :-)
+</I>
+:<i>-)
+</I>
+Many thanks,
+
+
+Michael
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003595.html">[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)
+</A></li>
+	<LI>Next message: <A HREF="003601.html">[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3600">[ date ]</a>
+              <a href="thread.html#3600">[ thread ]</a>
+              <a href="subject.html#3600">[ subject ]</a>
+              <a href="author.html#3600">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] about number of packets inside URB..
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20about%20number%20of%20packets%20inside%20URB..&In-Reply-To=%3C200712282342.59542.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002646.html">
+   <LINK REL="Next"  HREF="002691.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] about number of packets inside URB..</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20about%20number%20of%20packets%20inside%20URB..&In-Reply-To=%3C200712282342.59542.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] about number of packets inside URB..">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Fri Dec 28 23:42:59 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002646.html">[Linux-uvc-devel] about number of packets inside URB..
+</A></li>
+        <LI>Next message: <A HREF="002691.html">[Linux-uvc-devel] about number of packets inside URB..
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2664">[ date ]</a>
+              <a href="thread.html#2664">[ thread ]</a>
+              <a href="subject.html#2664">[ subject ]</a>
+              <a href="author.html#2664">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Brian,
+
+On Saturday 22 December 2007, Brian Pin wrote:
+&gt;<i> In uvc_video.c:
+</I>&gt;<i>
+</I>&gt;<i> uvc_init_video_isoc(...) {
+</I>&gt;<i>
+</I>&gt;<i>  npackets = (size + psize - 1) / psize;
+</I>&gt;<i>  if (npackets &gt; UVC_MAX_ISO_PACKETS)
+</I>&gt;<i>   npackets = UVC_MAX_ISO_PACKETS;
+</I>&gt;<i>
+</I>&gt;<i> }
+</I>&gt;<i> in mycase I originally have npackets = 199, and after the 3 lines there, it
+</I>&gt;<i> becomes 40, which is UVC_MAX_ISO_PACKETS.
+</I>&gt;<i> My question is if there is a frame that needs more than 40 packets to
+</I>&gt;<i> transfer, how is the data going to be not lost?
+</I>&gt;<i> Is it because we send multiple URBs (I set UVC_URBS to 1)?
+</I>
+The driver resubmits URBs after they complete. Even with a small number of 
+packets and a small number of URBs, if the device is able to buffer enough 
+data and if the host is fast enough to resubmit, data won't be lost.
+
+In practice the number of packets and the number of URBs is a compromise 
+between the memory footprint and the ability to handle delays in URB 
+resubmission.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002646.html">[Linux-uvc-devel] about number of packets inside URB..
+</A></li>
+	<LI>Next message: <A HREF="002691.html">[Linux-uvc-devel] about number of packets inside URB..
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2664">[ date ]</a>
+              <a href="thread.html#2664">[ thread ]</a>
+              <a href="subject.html#2664">[ subject ]</a>
+              <a href="author.html#2664">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

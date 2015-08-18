@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] ubuntu 5.10 install problems and solutions
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20ubuntu%205.10%20install%20problems%20and%20solutions&In-Reply-To=%3C9d7797b40606041540s28c3cdads6b78591bcb38ac77%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000529.html">
+   <LINK REL="Next"  HREF="000531.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] ubuntu 5.10 install problems and solutions</H1>
+    <B>David Cameron</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20ubuntu%205.10%20install%20problems%20and%20solutions&In-Reply-To=%3C9d7797b40606041540s28c3cdads6b78591bcb38ac77%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] ubuntu 5.10 install problems and solutions">dave.bc at gmail.com
+       </A><BR>
+    <I>Mon Jun  5 00:40:59 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000529.html">[Linux-uvc-devel] problems with video capture
+</A></li>
+        <LI>Next message: <A HREF="000531.html">[Linux-uvc-devel] ubuntu 5.10 install problems and solutions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#530">[ date ]</a>
+              <a href="thread.html#530">[ thread ]</a>
+              <a href="subject.html#530">[ subject ]</a>
+              <a href="author.html#530">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I installed uvcvideo-36 on a laptop running ubuntu 5.10 (Breezy
+Badger) today. There were two small hurdles, but I thought I would
+document the solutions here.
+
+Problem 1: make dies with the error
+/usr/src/linux-headers-2.6.12-10-686/scripts/gcc-version.sh: line 11:
+gcc-3.4: command not found
+/usr/src/linux-headers-2.6.12-10-686/scripts/gcc-version.sh: line 12:
+gcc-3.4: command not found
+
+Solution 1: Use Synaptic to install gcc-3.4. I'm not sure why it
+insists on version 3.4. This may be standard for the 2.6.12-10 kernel
+used with ubuntu 5.10.
+
+
+Problem 2: After a seeming successful install the 'modprobe uvcvideo'
+command returns the error
+FATAL: Module uvcvideo not found.
+
+Solution 2: The 'make install' command misplaces the module, so copy
+it to the correct place. Then, rerun depmod. The following commands
+should work.
+
+sudo mkdir /lib/modules/`uname -r`/usb
+sudo mkdir /lib/modules/`uname -r`/usb/media
+sudo cp /lib/modules/2.6.12/usb/media/uvcvideo.ko /lib/modules/`uname
+-r`/usb/media
+sudo depmod -a -e -F /boot/System.map-`uname -r`
+
+Exact paths may differ, but this worked for me. Again, it's not clear
+to me what the problem is. The Makefile appears to be written
+correctly to handle the situation. The depmod command has switches to
+report errors. If the command does anything other than complete
+successfully, you may have a problem that needs more investigation.
+
+
+After that, I got my Quickcam Fusion working wonderfully with LUVCview.
+
+Thanks to the devs for the great work,
+Dave
+
+Now to find something that will stream to disk. Time to check out gstreamer...
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000529.html">[Linux-uvc-devel] problems with video capture
+</A></li>
+	<LI>Next message: <A HREF="000531.html">[Linux-uvc-devel] ubuntu 5.10 install problems and solutions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#530">[ date ]</a>
+              <a href="thread.html#530">[ thread ]</a>
+              <a href="subject.html#530">[ subject ]</a>
+              <a href="author.html#530">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

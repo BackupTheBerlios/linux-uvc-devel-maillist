@@ -1,0 +1,227 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Quickcam fusion
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quickcam%20fusion&In-Reply-To=%3C20060223083022.GA4875%40student.physik.uni-mainz.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000313.html">
+   <LINK REL="Next"  HREF="000315.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Quickcam fusion</H1>
+    <B>Thomas Reifferscheid</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quickcam%20fusion&In-Reply-To=%3C20060223083022.GA4875%40student.physik.uni-mainz.de%3E"
+       TITLE="[Linux-uvc-devel] Quickcam fusion">reiffert at student.physik.uni-mainz.de
+       </A><BR>
+    <I>Thu Feb 23 09:30:22 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000313.html">[Linux-uvc-devel] Quickcam fusion
+</A></li>
+        <LI>Next message: <A HREF="000315.html">[Linux-uvc-devel] Quickcam fusion
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#314">[ date ]</a>
+              <a href="thread.html#314">[ thread ]</a>
+              <a href="subject.html#314">[ subject ]</a>
+              <a href="author.html#314">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Sorry for the mime encoded patch.
+
+Here is it again.
+
+-------------- next part --------------
+diff -Naur -x entries trunk/uvcvideo.c current/uvcvideo.c
+--- trunk/uvcvideo.c	2006-02-23 08:58:54.000000000 +0100
++++ current/uvcvideo.c	2006-02-23 08:48:50.000000000 +0100
+@@ -320,6 +320,7 @@
+ 
+ enum uvc_device_state {
+ 	UVC_DEV_DISCONNECTED = 1,
++	UVC_DEV_IOERROR = 2,
+ };
+ 
+ struct uvc_device {
+@@ -889,8 +890,8 @@
+ 	uvc_trace(UVC_TRACE_CAPTURE, &quot;Dequeuing buffer %u.\n&quot;,
+ 		v4l2_buf-&gt;index);
+ 
+-	if (v4l2_buf-&gt;type != V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+-	    v4l2_buf-&gt;memory != V4L2_MEMORY_MMAP) {
++	if (v4l2_buf-&gt;type != V4L2_BUF_TYPE_VIDEO_CAPTURE
++/*	    v4l2_buf-&gt;memory != V4L2_MEMORY_MMAP */ ) {
+ 		uvc_trace(UVC_TRACE_CAPTURE, &quot;[E] Invalid buffer type (%u) &quot;
+ 			&quot;and/or memory (%u).\n&quot;, v4l2_buf-&gt;type,
+ 			v4l2_buf-&gt;memory);
+@@ -1342,6 +1343,31 @@
+ 	return 0;
+ }
+ 
++
++static int uvc_usb_reset(struct uvc_device *dev)
++{
++	int l, ret;
++
++	l = usb_lock_device_for_reset(dev-&gt;udev, dev-&gt;intf);
++
++	if (l &gt;= 0) {
++		ret = usb_reset_device(dev-&gt;udev);
++		if (l)
++			usb_unlock_device(dev-&gt;udev);
++	}
++	else
++		ret = -EBUSY;
++
++	if (ret)
++		uvc_printk(KERN_DEBUG, &quot;uvc_usb_reset: Unable to reset usb device&quot;
++			   &quot;(%d).\n&quot;, ret);
++	else
++		dev-&gt;state &amp;= ~UVC_DEV_IOERROR;
++
++	return ret;
++}
++
++
+ /* ------------------------------------------------------------------------
+  * UVC Controls
+  */
+@@ -1363,6 +1389,7 @@
+ 	if (ret != size) {
+ 		uvc_printk(KERN_ERR, &quot;Failed to query (%u) UVC control %u &quot;
+ 			&quot;(unit %u) : %d.\n&quot;, query, cs, unit, ret);
++		dev-&gt;state |= UVC_DEV_IOERROR;
+ 		return -EIO;
+ 	}
+ 
+@@ -1577,6 +1604,26 @@
+  * Video device
+  */
+ 
++/* 
++ * Reset and Re-Initialize video device
++ */
++static int uvc_video_reinit(struct uvc_video_device *video)
++{
++	int ret;
++
++	if ((ret = uvc_usb_reset(video-&gt;dev)) &lt; 0)
++		return ret;
++
++	if ((ret = uvc_set_video_ctrl(video, &amp;video-&gt;streaming-&gt;ctrl, 0)) &lt; 0) {
++		uvc_printk(KERN_DEBUG, &quot;uvc_video_reinit: Unable to commit format &quot;
++			   &quot;(%d).\n&quot;, ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++
+ /*
+  * Initialize the UVC video device.
+  *
+@@ -1970,6 +2017,9 @@
+ 	if (uvc_free_buffers(&amp;video-&gt;queue) &lt; 0)
+ 		uvc_printk(KERN_ERR, &quot;uvc_v4l2_release: Unable to free buffers.\n&quot;);
+ 	up(&amp;video-&gt;queue.lock);
++	/* leave usb device in a clean state */
++	if (video-&gt;dev-&gt;state &amp; UVC_DEV_IOERROR)
++		uvc_video_reinit(video);
+ 
+ 	atomic_inc(&amp;video-&gt;count);
+ 	kref_put(&amp;video-&gt;dev-&gt;kref, uvc_delete);
+@@ -2148,11 +2198,38 @@
+ 		return uvc_video_enable(video, 0);
+ 	}
+ 
++	case VIDIOC_G_STD:
++	{
++		v4l2_std_id *std = arg;
++		*std = V4L2_STD_NTSC;
++		return 0;
++	}
++
++	case VIDIOC_S_STD:
++		return 0;
++		
++
+ 	/* Analog video standards make no sense for digital cameras. */
+ 	case VIDIOC_ENUMSTD:
++	{
++		struct v4l2_standard *std = arg;
++		if(std-&gt;index != 0)
++			return -EINVAL;
++
++		v4l2_video_std_construct(std, V4L2_STD_NTSC, &quot;NTSC&quot;);
++		return 0;
++	}
++			
+ 	case VIDIOC_QUERYSTD:
+-	case VIDIOC_G_STD:
+-	case VIDIOC_S_STD:
++	{
++		//v4l2_std_id *std = arg;
++		return 0;
++		//if(*std == V4L2_STD_ALL || *std == V4L2_STD_NTSC)
++		//	return 0;
++
++		//return -EINVAL;
++	}
++	
+ 
+ 	case VIDIOC_OVERLAY:
+ 
+@@ -3117,9 +3194,18 @@
+ 	 * parameters.
+ 	 */
+ 	if ((ret = uvc_video_init(&amp;dev-&gt;video)) &lt; 0) {
+-		uvc_printk(KERN_ERR, &quot;Failed to initialize the device &quot;
+-			&quot;(%d).\n&quot;, ret);
+-		return ret;
++
++		uvc_printk(KERN_ERR, &quot;Failed to initialize the device, &quot;
++			   &quot;(%d). trying to reset ...\n&quot;, ret);
++
++		if ((ret = uvc_usb_reset(dev)))
++			return ret;
++
++		if ((ret = uvc_video_init(&amp;dev-&gt;video)) &lt; 0) {
++			uvc_printk(KERN_ERR, &quot;Failed to initialize the device &quot;
++				   &quot;(%d).\n&quot;, ret);
++			return ret;
++		}
+ 	}
+ 
+ 	/* Register the device with V4L. */
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000313.html">[Linux-uvc-devel] Quickcam fusion
+</A></li>
+	<LI>Next message: <A HREF="000315.html">[Linux-uvc-devel] Quickcam fusion
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#314">[ date ]</a>
+              <a href="thread.html#314">[ thread ]</a>
+              <a href="subject.html#314">[ subject ]</a>
+              <a href="author.html#314">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

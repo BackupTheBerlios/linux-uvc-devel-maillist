@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Fix to the auto white balance temperature	problem
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Fix%20to%20the%20auto%20white%20balance%20temperature%0A%09problem&In-Reply-To=%3C200811252221.14840.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004250.html">
+   <LINK REL="Next"  HREF="004302.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Fix to the auto white balance temperature	problem</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Fix%20to%20the%20auto%20white%20balance%20temperature%0A%09problem&In-Reply-To=%3C200811252221.14840.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Fix to the auto white balance temperature	problem">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Nov 25 22:21:13 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004250.html">[Linux-uvc-devel] Fix to the auto white balance temperature problem
+</A></li>
+        <LI>Next message: <A HREF="004302.html">[Linux-uvc-devel] Fix to the auto white balance temperature	problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4272">[ date ]</a>
+              <a href="thread.html#4272">[ thread ]</a>
+              <a href="subject.html#4272">[ subject ]</a>
+              <a href="author.html#4272">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Juho,
+
+On Monday 17 November 2008, Juho V&#228;h&#228;-Herttua wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> Now that I'm back in business with the latest repository, let's get
+</I>&gt;<i> back to the reason why I need to be able to keep up to date... My
+</I>&gt;<i> SiGma Micro camera still doesn't work with gstreamer or mplayer. The
+</I>&gt;<i> issue is pretty well described in the earlier post:
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="../2008-June/003587.html">http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/003587.html</A>
+</I>&gt;<i>
+</I>&gt;<i> Also there is the earlier mail by Laurent that suggest a fix to the
+</I>&gt;<i> problem:
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="../2008-June/003617.html">http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/003617.html</A>
+</I>&gt;<i>
+</I>&gt;<i> However up until today there's still no fix and my camera is still
+</I>&gt;<i> not fully working. Therefore I took the time to write and test a
+</I>&gt;<i> patch that is attached in this email. The problem of course is that
+</I>&gt;<i> the order of the control units is not known, so I have to do two
+</I>&gt;<i> scans through the list, it makes it look a bit messy.
+</I>
+This is not completely true. Controls are added to the entity controls list in 
+ascending index order, so manual controls will always come before auto 
+controls (at least for the processing unit).
+
+&gt;<i> However it works again for me and that's what matters now. I hope to get
+</I>&gt;<i> this thing resolved some day in the official version too though. :)
+</I>
+Let's work on this then :-)
+
+The patch indeed looked a bit messy at first. I've been trying to rework it 
+for the past hour but ran into various issues and I now understand 
+implementing a clean solution is not as easy as it might seem.
+
+There are several places where control blacklisting can be implemented. If we 
+want to use information taken from uvc_control_info (such as the control 
+selector) the location you picked is the right one. However, the driver then 
+needs to walk the entities and controls lists over again and free data 
+allocated during the initialisation process.
+
+Another solution would be to blacklist controls before they are allocated. We 
+would then process the bmControls bitmask instead of the controls list. This 
+approach is more efficient, but probably less generic as it won't allow the 
+driver to blacklist controls based on advanced information taken from 
+uvc_control_info.
+
+As both solutions have advantages and drawbacks let's remember Linus Torvald 
+and his famous quote about overdesign. Here's a simplified version of the 
+patch that optionally (based on a device quirk) removes processing unit auto 
+controls when no corresponding manual control is available.
+
+Could you please test the patch and report the results ?
+
+Best regards,
+
+Laurent Pinchart
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: auto_control_fixup.diff
+Type: text/x-diff
+Size: 3496 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20081125/9e41dbd3/attachment.diff">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20081125/9e41dbd3/attachment.diff</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004250.html">[Linux-uvc-devel] Fix to the auto white balance temperature problem
+</A></li>
+	<LI>Next message: <A HREF="004302.html">[Linux-uvc-devel] Fix to the auto white balance temperature	problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4272">[ date ]</a>
+              <a href="thread.html#4272">[ thread ]</a>
+              <a href="subject.html#4272">[ subject ]</a>
+              <a href="author.html#4272">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

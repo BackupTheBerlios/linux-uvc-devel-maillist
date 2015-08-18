@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Slow rate at nite?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Slow%20rate%20at%20nite%3F&In-Reply-To=%3C200807171346.52986.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003824.html">
+   <LINK REL="Next"  HREF="003866.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Slow rate at nite?</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Slow%20rate%20at%20nite%3F&In-Reply-To=%3C200807171346.52986.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Slow rate at nite?">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Thu Jul 17 13:46:52 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003824.html">[Linux-uvc-devel] Slow rate at nite?
+</A></li>
+        <LI>Next message: <A HREF="003866.html">[Linux-uvc-devel] Slow rate at nite?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3850">[ date ]</a>
+              <a href="thread.html#3850">[ thread ]</a>
+              <a href="subject.html#3850">[ subject ]</a>
+              <a href="author.html#3850">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Halil,
+
+On Tuesday 15 July 2008, Halil Demirezen wrote:
+&gt;<i> Hello,
+</I>&gt;<i>
+</I>&gt;<i> I am using Logitech Quickcam pro for Notebooks as input device for my
+</I>&gt;<i> mastership thesis  with the topict &quot;constructing an autonomous tracker
+</I>&gt;<i> of a certain shape&quot;. For example red  circle on white A4 paper.
+</I>&gt;<i>
+</I>&gt;<i> Anyway, I could manage to set AUTO_EXPOSURE mode to OFF by
+</I>&gt;<i> calling like
+</I>&gt;<i>
+</I>&gt;<i> control.id = V4L2_CID_EXPOSURE_AUTO;
+</I>&gt;<i> control.value = 1;   // value 8 sets the auto exposure
+</I>&gt;<i>
+</I>&gt;<i> ioctl(vd-&gt;fd, VIDIOC_S_CTRL, &amp;control);
+</I>
+The auto-exposure control supports the following values:
+
+  0: Manual Mode
+  1: Auto Mode
+  2: Shutter Priority Mode
+  3: Aperture Priority Mode
+
+Instead of hard-coding the value, use the v4l2_exposure_auto_type enum defined 
+in linux/videodev2.h (Linux 2.6.26 or newer).
+
+enum  v4l2_exposure_auto_type {
+        V4L2_EXPOSURE_AUTO = 0,
+        V4L2_EXPOSURE_MANUAL = 1,
+        V4L2_EXPOSURE_SHUTTER_PRIORITY = 2,
+        V4L2_EXPOSURE_APERTURE_PRIORITY = 3
+};
+
+&gt;<i> and setting a certain exposure value by
+</I>&gt;<i>
+</I>&gt;<i> control.id = V4L2_CID_EXPOSURE_ABSOLUTE
+</I>&gt;<i> control.value = 350;
+</I>&gt;<i>
+</I>&gt;<i> ioctl(vd-&gt;fd, VIDIOC_S_CTRL, &amp;control);
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Under dark light conditions the camera display is so dark that I
+</I>&gt;<i> make an  extra call to ioctl to set V4L2_CID_BRIGHTNESS to a
+</I>&gt;<i> certain value such as
+</I>&gt;<i>
+</I>&gt;<i> control.id = V4L2_CID_BRIGHTNESS
+</I>&gt;<i> control.value = 90;
+</I>&gt;<i>
+</I>&gt;<i> ioctl(vd-&gt;fd, VIDIOC_S_CTRL, &amp;control);
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> These are the only ioctl manipulations done on camera, however, even though
+</I>&gt;<i> I set the exposure to absolute which in the past auto exposure caused
+</I>&gt;<i> delays in the display, and set the brightness to support bright display
+</I>&gt;<i> under short exposure time, i am still getting delayed stream display
+</I>&gt;<i> sometimes. I could not get the logic behind when it will stream slow or
+</I>&gt;<i> normal. Is there any control which may lead to slow streaming that i should
+</I>&gt;<i> set?
+</I>
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003824.html">[Linux-uvc-devel] Slow rate at nite?
+</A></li>
+	<LI>Next message: <A HREF="003866.html">[Linux-uvc-devel] Slow rate at nite?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3850">[ date ]</a>
+              <a href="thread.html#3850">[ thread ]</a>
+              <a href="subject.html#3850">[ subject ]</a>
+              <a href="author.html#3850">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

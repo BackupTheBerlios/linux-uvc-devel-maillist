@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech HD Pro Webcam C910 and Linux
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20HD%20Pro%20Webcam%20C910%20and%20Linux&In-Reply-To=%3CAANLkTi%3DJANud6dXjJ10C15gqLzxfu%3D9SBWQa2p6P%3DCTw%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006072.html">
+   <LINK REL="Next"  HREF="006062.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech HD Pro Webcam C910 and Linux</H1>
+    <B>Mitar</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20HD%20Pro%20Webcam%20C910%20and%20Linux&In-Reply-To=%3CAANLkTi%3DJANud6dXjJ10C15gqLzxfu%3D9SBWQa2p6P%3DCTw%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Logitech HD Pro Webcam C910 and Linux">mmitar at gmail.com
+       </A><BR>
+    <I>Sun Oct 24 17:46:28 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006072.html">[Linux-uvc-devel] [Linux] [UVC] I'm building a still-image patch
+</A></li>
+        <LI>Next message: <A HREF="006062.html">[Linux-uvc-devel] Logitech HD Pro Webcam C910 and Linux
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6058">[ date ]</a>
+              <a href="thread.html#6058">[ thread ]</a>
+              <a href="subject.html#6058">[ subject ]</a>
+              <a href="author.html#6058">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi!
+
+I can also confirm that Logitech HD Pro Webcam C910 works on Linux.
+But I have few (small) issues/quirks.
+
+The first one is that it seems with HD (1920x1080) field of view is
+much much smaller then normally. Probably so that it is possible to
+pan/tilt it around for face following on Windows. Maybe this is not
+configurable, but maybe this is just default and could be turned-off
+somehow?
+
+Device supports zoom (at least this is what it tells uvc driver) in
+range 1-5, but selecting anything except default (1) makes it simply
+hangs when you want to do anything with it. Is this a driver issue?
+But device still works and you can select back zoom level 1 and it
+works normally then.
+
+The third issue is the most interesting for me. Device supports
+2592x1944 (this seems to be native resolution and 1920x1080 is
+achieved by using just a part of that and allowing panning and tilling
+with moving the area around). In YUYV format it declares itself to
+have 2 FPS, but in practice it is only 1 FPS. I have used example
+capture program from V4L documentation to experiment with that. I have
+compared time when timestamp is put on the buffer in kernel and when
+this buffer arrives into my program. Normally this time is around time
+length of one frame (1 / FPS). But in the case of 2592x1944 (and not
+for lower resolutions) this time is around second. So 500 ms more than
+it is normal with other resolutions and cameras is spend somewhere in
+the kernel. As I have been just queuing and dequeuing buffers without
+doing any processing on them it seems this is really something
+internal. As on this resolution FPS is already very low with YUYV
+format it would be really great to get that one frame more in.
+
+I use 2.6.36-rc6-amd64 and Intel(R) Core(TM)2 Quad CPU Q9400 @ 2.66GHz.
+
+Otherwise things work as expected. The only thing I noticed is that
+with such high resolution and MJPEG encoding decoding time of frames
+is quite visible if you want to decode MJPEG on the fly in real-time.
+For example, with libv4l decoding of one pixel of MJPEG to BGR24 takes
+around 0.025 microseconds on my machine. This is nothing important
+with for example 640x480 resolution, it takes around 7680
+microseconds, that is 8 milliseconds. But with 2592x1944 this becomes
+around 125 milliseconds. So it is impossible to decode stream n the
+fly in real-time with 10 FPS which device supports for this resolution
+and MJPEG.
+
+Has anybody tried to improve MJPEG support in libv4l? For example by
+using ffmpeg MJPEG decoder? They argue it has better performance:
+
+<A HREF="https://roundup.ffmpeg.org/issue1816">https://roundup.ffmpeg.org/issue1816</A>
+
+
+Mitar
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006072.html">[Linux-uvc-devel] [Linux] [UVC] I'm building a still-image patch
+</A></li>
+	<LI>Next message: <A HREF="006062.html">[Linux-uvc-devel] Logitech HD Pro Webcam C910 and Linux
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6058">[ date ]</a>
+              <a href="thread.html#6058">[ thread ]</a>
+              <a href="subject.html#6058">[ subject ]</a>
+              <a href="author.html#6058">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

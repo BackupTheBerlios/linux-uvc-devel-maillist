@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] VIDIOC_DQBUF&lt;7&gt;uvcvideo: Dropping payload (out of	sync)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20VIDIOC_DQBUF%3C7%3Euvcvideo%3A%20Dropping%20payload%20%28out%20of%0A%09sync%29&In-Reply-To=%3C49F40BB6.3020906%40koysevox.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004746.html">
+   <LINK REL="Next"  HREF="004742.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] VIDIOC_DQBUF&lt;7&gt;uvcvideo: Dropping payload (out of	sync)</H1>
+    <B>Zorgh</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20VIDIOC_DQBUF%3C7%3Euvcvideo%3A%20Dropping%20payload%20%28out%20of%0A%09sync%29&In-Reply-To=%3C49F40BB6.3020906%40koysevox.org%3E"
+       TITLE="[Linux-uvc-devel] VIDIOC_DQBUF&lt;7&gt;uvcvideo: Dropping payload (out of	sync)">zorgh at koysevox.org
+       </A><BR>
+    <I>Sun Apr 26 09:22:30 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004746.html">[Linux-uvc-devel] Any progress on ARKMICRO (18ec:3288) ?
+</A></li>
+        <LI>Next message: <A HREF="004742.html">[Linux-uvc-devel] VIDIOC_DQBUF&lt;7&gt;uvcvideo: Dropping payload	(out of sync)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4736">[ date ]</a>
+              <a href="thread.html#4736">[ thread ]</a>
+              <a href="subject.html#4736">[ subject ]</a>
+              <a href="author.html#4736">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I'm trying to install ARtoolkit on Ubuntu 8.10 &quot;Intrepid&quot; (Linux 
+2.6.27-11-generic on x86_64).
+
+The uvcvideo driver implements the Video4Linux 2 (V4L2) API. V4L1 is not 
+supported.
+
+I applied a patch to add support for Video 4 Linux 2 devices into the 
+artoolkit based on the artk 2.72.1 tarball.
+
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">ubuntu at ubuntu</A>:/tmp$ v4l-info
+
+### v4l2 device info [/dev/video0] ###
+general info
+    VIDIOC_QUERYCAP
+    driver                  : &quot;uvcvideo&quot;
+    card                    : &quot;Philips SPC 1330NC&quot;
+    bus_info                : &quot;0000:00:1d.7&quot;
+    version                 : 0.1.0
+    capabilities            : 0x4000001 [VIDEO_CAPTURE,STREAMING]
+
+I succeeded to compile but I get a black window screen :
+
+/<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">ubuntu at ubuntu</A>:/usr/local/ARToolKit/bin$ ./simpleLite
+Control 9963793 is not supported
+Camera image size (x,y) = (640,480)
+*** Camera Parameter ***
+--------------------------------------
+SIZE = 640, 480
+Distortion factor = 318.500000 263.500000 26.200000 1.012757
+700.95147 0.00000 316.50000 0.00000
+0.00000 726.09418 241.50000 0.00000
+0.00000 0.00000 1.00000 0.00000
+--------------------------------------
+FittingMode (Z): COMPENSATED IMAGE
+ProcMode (X)   : FULL IMAGE
+DrawMode (C)   : TEXTURE MAPPING (FULL RESOLUTION)
+TemplateMatchingMode (M)   : Color Template
+MatchingPCAMode (P)   : Without PCA
+ar2VideoCapNext: Error calling VIDIOC_QBUF: 22
+ar2VideoCapNext: Error calling VIDIOC_QBUF: 22/
+
+
+A test is not validated in source code :
+
+/if (-1 == ioctl (fd, VIDIOC_QUERYCTRL, &amp;queryctrl)) {
+    if (errno != EINVAL) {
+      fprintf(stderr, &quot;Error calling VIDIOC_QUERYCTRL\n&quot;);
+      return 1;
+     } else {
+       printf (&quot;Control %d is not supported\n&quot;, type);
+       return 1;
+     }
+   } else if (queryctrl.flags &amp; V4L2_CTRL_FLAG_DISABLED) {
+     printf (&quot;Control %s is not supported\n&quot;, queryctrl.name);
+     return 1;
+   } else {
+
+
+/In dmesg, I get :
+
+/[98915.123356] uvcvideo: Dropping payload (out of sync).
+[98915.123358] uvcvideo: Dropping payload (out of sync).
+[98915.125794] uvcvideo: uvc_v4l2_ioctl
+[98915.125798] VIDIOC_QBUF&lt;7&gt;uvcvideo: Queuing buffer 1.
+[98915.125854] uvcvideo: uvc_v4l2_ioctl
+[98915.125856] VIDIOC_DQBUF&lt;7&gt;uvcvideo: Dropping payload (out of sync).
+[98915.128281] uvcvideo: Dropping payload (out of sync)./
+
+
+How can I fix it ?
+
+Thank you very much for your help.
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090426/a775379a/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090426/a775379a/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004746.html">[Linux-uvc-devel] Any progress on ARKMICRO (18ec:3288) ?
+</A></li>
+	<LI>Next message: <A HREF="004742.html">[Linux-uvc-devel] VIDIOC_DQBUF&lt;7&gt;uvcvideo: Dropping payload	(out of sync)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4736">[ date ]</a>
+              <a href="thread.html#4736">[ thread ]</a>
+              <a href="subject.html#4736">[ subject ]</a>
+              <a href="author.html#4736">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

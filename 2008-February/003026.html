@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] ViewSonic VX2255WMB (Chicony 1.3M 04f2:b021)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20ViewSonic%20VX2255WMB%20%28Chicony%201.3M%2004f2%3Ab021%29&In-Reply-To=%3C200802140000.36837.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003055.html">
+   <LINK REL="Next"  HREF="003057.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] ViewSonic VX2255WMB (Chicony 1.3M 04f2:b021)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20ViewSonic%20VX2255WMB%20%28Chicony%201.3M%2004f2%3Ab021%29&In-Reply-To=%3C200802140000.36837.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] ViewSonic VX2255WMB (Chicony 1.3M 04f2:b021)">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Thu Feb 14 00:00:36 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003055.html">[Linux-uvc-devel] uvcvideo and snd_usb_audio
+</A></li>
+        <LI>Next message: <A HREF="003057.html">[Linux-uvc-devel] ViewSonic VX2255WMB (Chicony 1.3M 04f2:b021)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3026">[ date ]</a>
+              <a href="thread.html#3026">[ thread ]</a>
+              <a href="subject.html#3026">[ subject ]</a>
+              <a href="author.html#3026">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Aurel,
+
+sorry for the long delay.
+
+On Thursday 24 January 2008, Aurel Gabris wrote:
+&gt;<i> Hi Laurent,
+</I>&gt;<i>
+</I>&gt;<i> First of all, it seems that I have a problem with my on-board usb 2.0
+</I>&gt;<i> controller. Even after upgrading the BIOS to the most recent one, the USB
+</I>&gt;<i> 2.0 host writes this into the syslog:
+</I>&gt;<i> usb 4-2: new high speed USB device using ehci_hcd and address 3
+</I>&gt;<i> usb 4-2: unable to read config index 0 descriptor/start
+</I>&gt;<i> usb 4-2: chopping to 0 config(s)
+</I>&gt;<i> usb 4-2: string descriptor 0 read error: -71
+</I>&gt;<i> usb 4-2: string descriptor 0 read error: -71
+</I>&gt;<i> usb 4-2: string descriptor 0 read error: -71
+</I>&gt;<i> usb 4-2: no configuration chosen from 0 choices
+</I>&gt;<i>
+</I>&gt;<i> (the camera is plugged directly into a port on the motherboard, using the
+</I>&gt;<i> cable that came with the monitor)
+</I>&gt;<i>
+</I>&gt;<i> I've spent hours searching the web for a solution, but no success... I
+</I>&gt;<i> have upgraded to latest kernel, latest BIOS: nothing. Interestingly, it
+</I>&gt;<i> does seem to work in Windows! Anyway, I just thought I'll mention this,
+</I>&gt;<i> perhaps you have some ideas...
+</I>
+You should really raise this issue on the linux-usb-devel mailing list. There 
+are a few USB gurus there.
+
+&gt;<i> On the other hand, I tested the webcam with another machine (where USB 2.0
+</I>&gt;<i> worked). I tested both with and without the ehci-hcd module. With USB 2.0
+</I>&gt;<i> enabled everything was working fine:
+</I>&gt;<i>   luvcview (0.2.1)
+</I>&gt;<i>   amsn  (0.97b)
+</I>&gt;<i>   ekiga (2.0.11)
+</I>&gt;<i>
+</I>&gt;<i> When I unloaded ehci-hcd and left the USB only with ohci-hcd, I was
+</I>&gt;<i> receiving the same errors as I've reported in my last post. So, in
+</I>&gt;<i> nutshell luvcview and ekiga was basically usable, but amsn mostly died.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> There's one strange thing you may be interested in:
+</I>&gt;<i>
+</I>&gt;<i> With USB 2.0, luvcview can only use the yuv format: jpg dies with &quot;Unable
+</I>&gt;<i> to set format: 22&quot;.
+</I>&gt;<i>
+</I>&gt;<i> With USB 1.1, it behaves the contrary: only &quot;-f jpg&quot; works.
+</I>&gt;<i>
+</I>&gt;<i> I wonder if this is on purpose. If not, I could send you some trace logs.
+</I>
+That's indeed interesting. If you look at the USB descriptors you posted, you 
+will notice that the camera reports different frame formats depending on the 
+USB version. With USB 2.0 (EHCI) it reports uncompressed formats only, and 
+with USB 1.1 (OHCI) it reports compressed formats only. This is completely 
+legal, but it's the first time I see a device that disables MJPEG when used 
+with a USB 2.0 controller (most devices just disable YUV in USB 1.1 mode).
+
+&gt;<i> So, in summary you can probably include this webcam on the supported list
+</I>&gt;<i> (limited support with USB 1.1).
+</I>
+Done. Thanks.
+
+&gt;<i> I'm going to copy here the full outputs of 
+</I>&gt;<i> 'lsusb -v' both when the EHCI module was loaded, and when I used it with
+</I>&gt;<i> OHCI. The latter may be interesting for you if you'd like to go into the
+</I>&gt;<i> yuv&lt;-&gt;jpg format issue.
+</I>
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003055.html">[Linux-uvc-devel] uvcvideo and snd_usb_audio
+</A></li>
+	<LI>Next message: <A HREF="003057.html">[Linux-uvc-devel] ViewSonic VX2255WMB (Chicony 1.3M 04f2:b021)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3026">[ date ]</a>
+              <a href="thread.html#3026">[ thread ]</a>
+              <a href="subject.html#3026">[ subject ]</a>
+              <a href="author.html#3026">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

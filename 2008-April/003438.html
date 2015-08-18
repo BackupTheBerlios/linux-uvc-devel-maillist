@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] kernel Ooops after replugging (NULL pointer	dereference)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20kernel%20Ooops%20after%20replugging%20%28NULL%20pointer%0A%09dereference%29&In-Reply-To=%3C200804250048.13706.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003442.html">
+   <LINK REL="Next"  HREF="003441.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] kernel Ooops after replugging (NULL pointer	dereference)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20kernel%20Ooops%20after%20replugging%20%28NULL%20pointer%0A%09dereference%29&In-Reply-To=%3C200804250048.13706.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] kernel Ooops after replugging (NULL pointer	dereference)">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Fri Apr 25 00:48:13 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003442.html">[Linux-uvc-devel] Hardware Timestamps
+</A></li>
+        <LI>Next message: <A HREF="003441.html">[Linux-uvc-devel] creative live! cam optia AF at 30 fps?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3438">[ date ]</a>
+              <a href="thread.html#3438">[ thread ]</a>
+              <a href="subject.html#3438">[ subject ]</a>
+              <a href="author.html#3438">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wednesday 23 April 2008, Johannes Wei&#223;l wrote:
+&gt;<i> Hello Laurent,
+</I>&gt;<i>
+</I>&gt;<i> On Wed, Apr 23, 2008 at 04:18:37PM +0200, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; That's very strange. Are you sure you're using svn203 and not a driver
+</I>&gt;<i> &gt; installed by your distribution ? Could you please post more of the kernel
+</I>&gt;<i> &gt; log ? I need all messages related to the UVC driver, including messages
+</I>&gt;<i> &gt; printed when the driver is loaded and messages related to the first
+</I>&gt;<i> &gt; plug/unplug of the camera.
+</I>&gt;<i>
+</I>&gt;<i> Thanks for your fast reply. I'm pretty sure:
+</I>&gt;<i>
+</I>&gt;<i>  # modinfo uvcvideo
+</I>&gt;<i>  filename:       /lib/modules/2.6.24.4/usb/media/uvcvideo.ko
+</I>&gt;<i>  version:        SVN r203
+</I>&gt;<i>  [...]
+</I>&gt;<i>
+</I>&gt;<i> Messages when connecting the webcam:
+</I>&gt;<i>
+</I>&gt;<i>  usb 4-3: new high speed USB device using ehci_hcd and address 2
+</I>&gt;<i>  usb 4-3: configuration #1 chosen from 1 choice
+</I>&gt;<i>  Linux video capture interface: v2.00
+</I>&gt;<i>  uvcvideo: Found UVC 1.00 device Live! Cam Optia (041e:4057)
+</I>&gt;<i>  videodev: &quot;&quot; has no release callback. Please fix your driver for proper
+</I>&gt;<i> sysfs support, see <A HREF="http://lwn.net/Articles/36850/">http://lwn.net/Articles/36850/</A> input: Live! Cam Optia as
+</I>&gt;<i> /class/input/input8
+</I>
+This is definitely not normal. The above message is printed by videodev when a 
+driver registers a device without setting a release callback. It looks like 
+something gets corrupted somewhere, as the message should also print the 
+device's name insted of &quot;&quot;.
+
+Could you please set the trace parameter to 15 when loading the module and try 
+again to see if the driver prints additional information that could help us 
+diagnose the problem ?
+
+&gt;<i>  usbcore: registered new interface driver uvcvideo
+</I>&gt;<i>  USB Video Class driver (SVN r203)
+</I>&gt;<i>
+</I>&gt;<i> first time &quot;luvcview -d /dev/video0 -f jpg -i 25 -s 640x480&quot;:
+</I>&gt;<i>
+</I>&gt;<i>  uvcvideo: device Live! Cam Optia requested null bandwidth, defaulting to
+</I>&gt;<i> lowest.
+</I>&gt;<i>
+</I>&gt;<i> Replugging:
+</I>&gt;<i>
+</I>&gt;<i>  usb 4-3: USB disconnect, address 2
+</I>&gt;<i>  usb 4-3: new high speed USB device using ehci_hcd and address 3
+</I>&gt;<i>  usb 4-3: configuration #1 chosen from 1 choice
+</I>&gt;<i>  uvcvideo: Found UVC 1.00 device Live! Cam Optia (041e:4057)
+</I>&gt;<i>  videodev: &quot;&quot; has no release callback. Please fix your driver for proper
+</I>&gt;<i> sysfs support, see <A HREF="http://lwn.net/Articles/36850/">http://lwn.net/Articles/36850/</A> input: Live! Cam Optia as
+</I>&gt;<i> /class/input/input9
+</I>&gt;<i>
+</I>&gt;<i> second time &quot;luvcview -d /dev/video0 -f jpg -i 25 -s 640x480&quot;:
+</I>&gt;<i>
+</I>&gt;<i>  BUG: unable to handle kernel NULL pointer dereference at virtual address
+</I>&gt;<i> 00000030 printing eip: f9e0e0a5 *pde = 00000000
+</I>&gt;<i>  Oops: 0000 [#1] PREEMPT
+</I>&gt;<i>  [...]
+</I>&gt;<i>
+</I>&gt;<i>  Pid: 4366, comm: luvcview Not tainted (2.6.24.4 #1)
+</I>&gt;<i>  [...]
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> I just found out something that might help:
+</I>&gt;<i>
+</I>&gt;<i> After replugging, a second device /dev/video1 is created (/dev/video0
+</I>&gt;<i> still exists). Reading from /dev/video0 causes the Oops. If I unload all
+</I>&gt;<i> uvc-related drivers (uvcvideo, v4l1_compat, ...), and manually remove
+</I>&gt;<i> all /dev/video* files, I can reconnect the webcam safely.
+</I>
+I'm not too surprised that /dev/video0 doesn't disappear as videodev 
+complained about no release callback.
+
+I really doubt the problem comes from the UVC driver only. Could you add a few 
+printk's in video_register_device to see what happens there ? I would expect 
+the structure pointed by the vfd parameter to be modified at some point. 
+Printing the release and name fields at various points in the function might 
+give us some clues.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003442.html">[Linux-uvc-devel] Hardware Timestamps
+</A></li>
+	<LI>Next message: <A HREF="003441.html">[Linux-uvc-devel] creative live! cam optia AF at 30 fps?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3438">[ date ]</a>
+              <a href="thread.html#3438">[ thread ]</a>
+              <a href="subject.html#3438">[ subject ]</a>
+              <a href="author.html#3438">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

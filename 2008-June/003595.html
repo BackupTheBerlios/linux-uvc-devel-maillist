@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20PATCH%3A%20Acer%20Crystal%20Eye%20WebCam%20%28064e%3Aa101%0A%09Suyin%20Corp.%29&In-Reply-To=%3C200806070012.51078.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003568.html">
+   <LINK REL="Next"  HREF="003600.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20PATCH%3A%20Acer%20Crystal%20Eye%20WebCam%20%28064e%3Aa101%0A%09Suyin%20Corp.%29&In-Reply-To=%3C200806070012.51078.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sat Jun  7 00:12:50 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003568.html">[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101 Suyin	Corp.)
+</A></li>
+        <LI>Next message: <A HREF="003600.html">[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3595">[ date ]</a>
+              <a href="thread.html#3595">[ thread ]</a>
+              <a href="subject.html#3595">[ subject ]</a>
+              <a href="author.html#3595">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Michael,
+
+On Wednesday 04 June 2008, Michael Sparks wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> I've got an Acer laptop with a Crystal Eye WebCam which identifies as
+</I>&gt;<i> follows:
+</I>&gt;<i>
+</I>&gt;<i> Bus 003 Device 002: ID 064e:a101 Suyin Corp.
+</I>&gt;<i>
+</I>&gt;<i> This is listed as a supported device here:
+</I>&gt;<i> <A HREF="http://linux-uvc.berlios.de/#devices">http://linux-uvc.berlios.de/#devices</A>
+</I>&gt;<i>
+</I>&gt;<i> But in practice using the current subversion checkout:
+</I>&gt;<i>
+</I>&gt;<i> URL: <A HREF="svn://svn.berlios.de/linux-uvc/linux-uvc/trunk">svn://svn.berlios.de/linux-uvc/linux-uvc/trunk</A>
+</I>&gt;<i> Repository Root: <A HREF="svn://svn.berlios.de/linux-uvc">svn://svn.berlios.de/linux-uvc</A>
+</I>&gt;<i> Repository UUID: 790547d8-3c09-0410-a358-857946b093de
+</I>&gt;<i> Revision: 212
+</I>&gt;<i> Node Kind: directory
+</I>&gt;<i> Schedule: normal
+</I>&gt;<i> Last Changed Author: pinchartl
+</I>&gt;<i> Last Changed Rev: 212
+</I>&gt;<i> Last Changed Date: 2008-05-29 15:56:11 +0100 (Thu, 29 May 2008)
+</I>&gt;<i>
+</I>&gt;<i> When compiled and running (say), luvcview, I get this error:
+</I>&gt;<i> ~/Incoming&gt; luvcview
+</I>&gt;<i> luvcview 0.2.4
+</I>&gt;<i>
+</I>&gt;<i> [snip]
+</I>&gt;<i> Unable to start capture: Protocol error
+</I>&gt;<i> Error grabbing
+</I>&gt;<i> Cleanup done. Exiting ...
+</I>
+*sigh*. I hate protocol errors. They are most of the time caused by buggy 
+devices, and buggy devices mean I have to find a software workaround :-S
+
+&gt;<i> I get similar errors from other software (eg opencv, python v4l2 bindings,
+</I>&gt;<i> etc): ~/Incoming&gt; ./WebCam.py
+</I>&gt;<i> Traceback (most recent call last):
+</I>&gt;<i>   File &quot;./WebCam.py&quot;, line 238, in &lt;module&gt;
+</I>&gt;<i>     VideoCaptureSource(fps=32),
+</I>&gt;<i>   File &quot;./WebCam.py&quot;, line 139, in __init__
+</I>&gt;<i>     self.camera.start()
+</I>&gt;<i> EnvironmentError: ioctl(VIDIOC_STREAMON) failure : 71, Protocol error
+</I>&gt;<i>
+</I>&gt;<i> It turns out that, for whatever reason, when the above error occurs,
+</I>&gt;<i> it switches on the webcam. (a little green light comes on). Rerunning
+</I>&gt;<i> results in the program then normally working (but green light goes out
+</I>&gt;<i> on exit, etc). Then failing when rerun again (leaving light on), etc.
+</I>&gt;<i>
+</I>&gt;<i> Anyway, I hunted down the problem - the &quot;Protocol Error&quot; is actually
+</I>&gt;<i> caused by this line:
+</I>&gt;<i> uvc_video.c
+</I>&gt;<i>
+</I>&gt;<i>                if ((ret = usb_set_interface(video-&gt;dev-&gt;udev, intfnum, i))
+</I>&gt;<i> &lt; 0) return ret;
+</I>&gt;<i>
+</I>&gt;<i> So it's *something* to do with the device presumably not always being
+</I>&gt;<i> switched &quot;on&quot; I guess. How that is supposed to be done, I don't know.
+</I>&gt;<i>
+</I>&gt;<i> HOWEVER, I have made a patch to uvc_video.c that works:
+</I>&gt;<i>
+</I>&gt;<i> ~/linux-uvc&gt; svn diff
+</I>&gt;<i> Index: uvc_video.c
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvc_video.c (revision 212)
+</I>&gt;<i> +++ uvc_video.c (working copy)
+</I>&gt;<i> @@ -750,8 +750,13 @@
+</I>&gt;<i>                 if (i &gt;= intf-&gt;num_altsetting)
+</I>&gt;<i>                         return -EIO;
+</I>&gt;<i>
+</I>&gt;<i> -               if ((ret = usb_set_interface(video-&gt;dev-&gt;udev, intfnum, i))
+</I>&gt;<i> &lt; 0) -                       return ret;
+</I>&gt;<i> +               if ((ret = usb_set_interface(video-&gt;dev-&gt;udev,
+</I>&gt;<i> intfnum, i)) &lt; 0) {
+</I>&gt;<i> +                       if (ret == -71) { // If we get this error,
+</I>&gt;<i> give it another go &amp; retry
+</I>&gt;<i> +                               if ((ret =
+</I>&gt;<i> usb_set_interface(video-&gt;dev-&gt;udev, intfnum, i)) &lt; 0)
+</I>&gt;<i> +                                       return ret;
+</I>&gt;<i> +                       } else
+</I>&gt;<i> +                               return ret;
+</I>&gt;<i> +               }
+</I>&gt;<i>
+</I>&gt;<i>                 ret = uvc_init_video_isoc(video, ep);
+</I>&gt;<i>         } else {
+</I>&gt;<i>
+</I>&gt;<i> You'll note that I just blindly give the same call another go. The
+</I>&gt;<i> first one manages to
+</I>&gt;<i> switch the green light on, the second causes it to be useful/usable.
+</I>&gt;<i>
+</I>&gt;<i> This rather surprisingly worked, and so this has fixed this issue with
+</I>&gt;<i> this webcam as used by the following software:
+</I>&gt;<i>    * pygame.camera
+</I>&gt;<i>    * opencv
+</I>&gt;<i>    * luvcview
+</I>&gt;<i>    * Skype
+</I>&gt;<i>
+</I>&gt;<i> If this isn't the &quot;correct&quot; way of doing this,please let me know what
+</I>&gt;<i> to test and I'll try a different patch :-)
+</I>
+Could you please try to blindly ignore the usb_set_interface return value ? 
+I'd like to know if the second call is really required.
+
+What kernel version are you running ?
+
+&gt;<i> BTW, many thanks for writing this module - it's great/really useful :-)
+</I>
+You're welcome. Now if we could convince webcam manufacturers to use the Linux 
+driver for testing purpose I'd be much happier :-)
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003568.html">[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101 Suyin	Corp.)
+</A></li>
+	<LI>Next message: <A HREF="003600.html">[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3595">[ date ]</a>
+              <a href="thread.html#3595">[ thread ]</a>
+              <a href="subject.html#3595">[ subject ]</a>
+              <a href="author.html#3595">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

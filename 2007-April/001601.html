@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Ricoh UVC webcams
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Ricoh%20UVC%20webcams&In-Reply-To=%3C200704182219.32086.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001583.html">
+   <LINK REL="Next"  HREF="001618.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Ricoh UVC webcams</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Ricoh%20UVC%20webcams&In-Reply-To=%3C200704182219.32086.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Ricoh UVC webcams">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Apr 18 22:19:31 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001583.html">[Linux-uvc-devel] Ricoh UVC webcams
+</A></li>
+        <LI>Next message: <A HREF="001618.html">[Linux-uvc-devel] Ricoh UVC webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1601">[ date ]</a>
+              <a href="thread.html#1601">[ thread ]</a>
+              <a href="subject.html#1601">[ subject ]</a>
+              <a href="author.html#1601">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Sam,
+
+&gt;<i> &gt; Is there any known reason for that ? That sounds a bit against the UVC
+</I>&gt;<i> &gt; spec.
+</I>&gt;<i>
+</I>&gt;<i> Thanks for your reply.
+</I>&gt;<i>
+</I>&gt;<i> Good question.  I'd guess that Ricoh webcams have non-UVC controls
+</I>&gt;<i> because the manufacturer couldn't fit the required functionality into
+</I>&gt;<i> the limited code space.  Some of these controls (but no UVC controls)
+</I>&gt;<i> support auto-adjustment -- Exposure/AEC, Component WB/AWB, Gain/AGC.
+</I>&gt;<i> There is no reason for these devices to support control change events,
+</I>&gt;<i> but there would be if the auto controls were UVC.
+</I>
+:<i>-/
+</I>
+&gt;<i> Realistically, for full support, the driver needs a hard-coded list of
+</I>&gt;<i> non-UVC controls for each device, and of course needs to be able to
+</I>&gt;<i> issue private non-UVC set commands for these controls.  It's unclear
+</I>&gt;<i> how to fit this into uvcvideo's clean, orderly control model, and
+</I>&gt;<i> seems like a relatively large device-specific concession for an
+</I>&gt;<i> otherwise generic driver.
+</I>
+I've got to agree with you there...
+
+&gt;<i> &gt; Agreed. I'd rather go for the first solution.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Can we discuss the issues you mentioned, as well as all other issues you
+</I>&gt;<i> &gt; can foresee ?
+</I>&gt;<i>
+</I>&gt;<i> If uvcvideo had more complete frame buffer access methods, including
+</I>&gt;<i> read and VIDIOCGMBUF, apps like camstream, motion, and wengophone
+</I>&gt;<i> might work.
+</I>
+VIDIOCGMBUF is part of the deprecated V4L1 API. Applications should be ported 
+to V4L2. Adding V4L1 support is not planned.
+
+&gt;<i> One way to do this would be to link uvcvideo against video-buf, and
+</I>&gt;<i> implement a short VIDIOCGMBUF handler.
+</I>
+uvcvideo already implements full buffer management. The streaming I/O V4L2 
+method is fully supported. I might consider using video-buf later, although 
+there are a few things I don't like in the API (especially the way video-buf 
+insists on handling streamon/streamoff itself). VIDIOCGMBUF support isn't 
+planned.
+
+&gt;<i> xawtv working would be another plus.
+</I>
+xawtv should support V4L2. I'll have to debug it sometimes to find out if the 
+issue lies in the application or in the driver.
+
+&gt;<i> I also have a module used by r5u870 that takes care of common webcam
+</I>&gt;<i> problems, called usbcam.  It handles device registration, file
+</I>&gt;<i> operations, and V4L frame buffer access calls via video-buf.  It's
+</I>&gt;<i> also the foundation for another driver under development for a more
+</I>&gt;<i> exotic sq930b device.  I've been through many cycles tuning this
+</I>&gt;<i> layer, listening to user complaints, tracing apps and figuring out how
+</I>&gt;<i> to work around bugs, and refining its minidriver interface.  To try to
+</I>&gt;<i> integrate it with uvcvideo would be interesting, and I'm willing to
+</I>&gt;<i> adapt it to your liking.  This would be another way to fix the frame
+</I>&gt;<i> buffer problems, and perhaps in a more reusable way.
+</I>
+Once again, there are no frame buffer problems, only application problems :-) 
+An approach to using V4L1 applications with the driver would be to write a 
+LD_PRELOAD'able shared object that would intercept V4L1 calls and translate 
+them into V4L2 calls.
+
+usbcam sounds interesting. Porting uvcvideo to usbcam would be lots of work, 
+and I'm not willing to do that for now. Feel free to give it a go though :-) 
+Don't forget that the uvcvideo driver is quite complex, and that it will 
+eventually support video output as well, which falls out of the scope of 
+usbcam. You might have issues with control handling which is being rewritten 
+to allow for runtime controls definitions through specific ioctls. The 
+extended control API will also have to be implemented by usbcam, and the mini 
+drivers API will have to support control transactions. usbcam also seems to 
+be missing proper multiple open support. Two applications opening the same 
+device shouldn't be able to call VIDIOC_DQBUF for instance, or to mess with 
+each other's streaming parameters.
+
+On a side note, you should split usbcam into several files. It will be easier 
+to read the code.
+
+Do you plan to submit usbcam to the kernel ? Do you think current USB drivers 
+could be ported ? One of the main issues is that developers might not be 
+willing to throw away most of the code they wrote.
+
+Are you aware that Mauro (the V4L2 maintainer) is trying to move ioctl 
+handling to the V4L2 layer, which is the first step to a mini driver 
+approach ? It seems to me that V4L2 is undergoing some major changes, and I'm 
+not sure to be happy with them. If we indeed decide that some operations 
+(such as buffer management) should be handled by generic code, this should be 
+discussed first on the video4linux mailing list.
+
+&gt;<i> &gt; I'm still not sure if the firmware download operation should be handled
+</I>&gt;<i> &gt; by the driver or by a userspace utility. The fxload software from the
+</I>&gt;<i> &gt; usbutils package is meant to be called by the hotplug system. This would
+</I>&gt;<i> &gt; obviously be easier for the driver :-)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Do all Ricoh devices advertise a different class and/or USB pid before
+</I>&gt;<i> &gt; and after loading the firmware ?
+</I>&gt;<i>
+</I>&gt;<i> Indeed, so you started a big thread about this a few months ago.
+</I>&gt;<i>
+</I>&gt;<i> Regarding the descriptor tables, the microcode and other volatile
+</I>&gt;<i> state does not seem to have an effect on what is reported by Ricoh
+</I>&gt;<i> webcam devices, so they don't behave like isight or ezusb devices.
+</I>&gt;<i> This doesn't make it more difficult to do the microcode upload at user
+</I>&gt;<i> level though -- the kernel driver must fail gracefully anyway when
+</I>&gt;<i> probing a device without microcode, and a microcode uploader in this
+</I>&gt;<i> case would have the additional problem of forcing the kernel driver to
+</I>&gt;<i> re-probe the device, which isn't difficult.
+</I>
+Is it possible to simulate device unplugging/replugging from userspace to 
+force the USB stack to reenumerate the device ?
+
+&gt;<i> I wrote up a prototype upload utility, including a solution for the
+</I>&gt;<i> device re-probe problem, and tested it with my non-UVC camera.  This
+</I>&gt;<i> utility should be enough to allow an unmodified uvcvideo to at least
+</I>&gt;<i> grab frames from a Ricoh UVC camera.
+</I>
+I assume the firmware loading requests are not compatible with ezusb chips, so 
+fxload can't do the job. Is that right ?
+
+&gt;<i> There is little question that it is easier for the driver to outsource
+</I>&gt;<i> microcode upload functions to a user level program.  Overall it sounds
+</I>&gt;<i> much more complicated, because one must also create, maintain,
+</I>&gt;<i> evangelize, and support a separate package.  If there is some other
+</I>&gt;<i> reason that this sort of package must exist, fine, and if so, it might
+</I>&gt;<i> be best to integrate the microcode upload functionality for as many
+</I>&gt;<i> devices as possible into this package.
+</I>
+It could be included in the kernel instead, but it would then have to be a 
+generic microcode loader usable by several drivers.
+
+&gt;<i> As for the other problems, the Ricoh cameras do appear to be evolving.
+</I>&gt;<i>  Future models will probably follow the standard more completely and
+</I>&gt;<i> do away with the non-UVC controls, and less device specific code might
+</I>&gt;<i> be required of uvcvideo.  Where do you feel comfortable drawing the
+</I>&gt;<i> line?
+</I>
+I don't mind adding a few quirks to the uvcvideo driver. Support for non-UVC 
+controls is a bit more intrusive though.
+
+Other ways to support those hybrid devices would be to add hooks to uvcvideo 
+or implement a minidriver interface like the one you wrote for usbcam.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001583.html">[Linux-uvc-devel] Ricoh UVC webcams
+</A></li>
+	<LI>Next message: <A HREF="001618.html">[Linux-uvc-devel] Ricoh UVC webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1601">[ date ]</a>
+              <a href="thread.html#1601">[ thread ]</a>
+              <a href="subject.html#1601">[ subject ]</a>
+              <a href="author.html#1601">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

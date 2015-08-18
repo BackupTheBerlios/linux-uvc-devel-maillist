@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20SOLVED%3A%20upside-down%20image%20from%20SONIX%20laptop%0A%09embedded%20webcam&In-Reply-To=%3C879e1f2b0806190807x3eda28bag65059cfe20fffb91%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003653.html">
+   <LINK REL="Next"  HREF="003649.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam</H1>
+    <B>Marco Argiolas</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20SOLVED%3A%20upside-down%20image%20from%20SONIX%20laptop%0A%09embedded%20webcam&In-Reply-To=%3C879e1f2b0806190807x3eda28bag65059cfe20fffb91%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam">arjos85 at gmail.com
+       </A><BR>
+    <I>Thu Jun 19 17:07:22 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003653.html">[Linux-uvc-devel] Getting Webcams 0ac8:301b and 0ac8:307b to	work under openSUSE 10.3
+</A></li>
+        <LI>Next message: <A HREF="003649.html">[Linux-uvc-devel] Getting Webcams 0ac8:301b and 0ac8:307b to work	under openSUSE 10.3
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3646">[ date ]</a>
+              <a href="thread.html#3646">[ thread ]</a>
+              <a href="subject.html#3646">[ subject ]</a>
+              <a href="author.html#3646">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Richard,
+
+Nice to see that you've got yourself a fix. But you are leaking your
+&gt;<i> temp buffer -- you'll need to free it somewhere.
+</I>&gt;<i>
+</I>
+Thanks,
+I've already solved this leakage...
+yesterday I've posted a new mail with some corrections, including this one.
+I hope it will be published soon on the uvcvideo mailing list.
+
+
+&gt;<i> But it does seem expensive to copy the data 3 times.
+</I>
+
+Why &quot;3 time&quot;? In &quot;uvc_video_decode_data&quot; function &quot;memcpy&quot; is called just 2
+times. ;)
+
+
+&gt;<i> Could you do
+</I>&gt;<i> something like this instead?
+</I>&gt;<i>
+</I>&gt;<i> int *src = (int*) data + len;
+</I>&gt;<i> int *dst = (int*) buffer;
+</I>&gt;<i>
+</I>&gt;<i> for ( int i= 0; i &lt; len /sizeof(int); i++) {
+</I>&gt;<i>        src--;
+</I>&gt;<i>        *dst++ = *src;
+</I>&gt;<i> }
+</I>&gt;<i>
+</I>&gt;<i> that way you only have to copy the data once and you don't need a
+</I>&gt;<i> temporary buffer.
+</I>&gt;<i>
+</I>
+thank you for the suggestion but the problem is that I've already tried this
+solution, and thanks to it I've understood that &quot;data&quot; doesn't contain a
+full image, but just one part. So in order to complete an image, the
+function &quot;uvc_video_decode_data&quot; has to be called different times.
+Each time data is copyed into &quot;mem&quot;, where:
+  mem = queue-&gt;mem + buf-&gt;buf.m.offset + buf-&gt;buf.bytesused;
+// &quot;queue-&gt;mem&quot; and &quot;buf-&gt;buf.m.offset&quot; are constant in relation to the same
+image
+  buf-&gt;buf.bytesused += nbytes;
+// &quot;nbytes&quot; is just the number of bytes copied in the current call of
+&quot;uvc_video_decode_data&quot;
+
+So before to flip the image I have to wait that the frame is fully captured:
+&quot;if (len &gt;= maxlen)&quot; statement just helps in solving this need.
+I've added the &quot;=&quot; condition, but I'm not sure about it.
+I hope someone could give me confirmation of this.
+
+Please Richard let me know if I've misunderstood your suggestions or if you
+don't agree with my explanation.
+
+Just for now,
+thank you for your interest.
+
+Marco Argiolas
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080619/019e0c65/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080619/019e0c65/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003653.html">[Linux-uvc-devel] Getting Webcams 0ac8:301b and 0ac8:307b to	work under openSUSE 10.3
+</A></li>
+	<LI>Next message: <A HREF="003649.html">[Linux-uvc-devel] Getting Webcams 0ac8:301b and 0ac8:307b to work	under openSUSE 10.3
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3646">[ date ]</a>
+              <a href="thread.html#3646">[ thread ]</a>
+              <a href="subject.html#3646">[ subject ]</a>
+              <a href="author.html#3646">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

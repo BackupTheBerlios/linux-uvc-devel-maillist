@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] XVideo support?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20XVideo%20support%3F&In-Reply-To=%3CB85D3DCFCADB439BBD695957534DC0F3%40core2%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005780.html">
+   <LINK REL="Next"  HREF="005783.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] XVideo support?</H1>
+    <B>Adrian Sergiu DARABANT</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20XVideo%20support%3F&In-Reply-To=%3CB85D3DCFCADB439BBD695957534DC0F3%40core2%3E"
+       TITLE="[Linux-uvc-devel] XVideo support?">asergiu at yahoo.co.uk
+       </A><BR>
+    <I>Wed Jun  9 11:18:17 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005780.html">[Linux-uvc-devel] XVideo support?
+</A></li>
+        <LI>Next message: <A HREF="005783.html">[Linux-uvc-devel] XVideo support?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5779">[ date ]</a>
+              <a href="thread.html#5779">[ thread ]</a>
+              <a href="subject.html#5779">[ subject ]</a>
+              <a href="author.html#5779">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello
+
+   Luvcview uses SDL if I remember well since a few months when I looked
+into the sources. As I know there is no direct support or control in SDL
+over which rendering engine is used behind the scenes. With XVideo you
+normally get yuv formats and sometimes and for some video drivers/cards you
+also get RGB. 
+
+ 
+
+Mpeg2 is a compressed format that is decompressed most of the times into an
+accelerated YUV format. YUV formats can be directly sent to the video card
+using XVideo - if that's available.
+
+ 
+
+You should look in your case what part: mpeg2 decompression or display takes
+up the CPU time. 
+
+ 
+
+Now on the other side if your card uses the vesa drivers to display to the
+screen XVideo extension is never available for that driver. 
+
+UVC does provide 2D accelerated formats (it mostly provides only those and
+MJPEG) 
+
+ 
+
+1)       Take a look into Xorg.0.log and check the video used driver.
+
+2)       Check the times spent by the mpeg decompression task.
+
+3)       xvinfo - should help you see if XVideo can be used at all and what
+formats are available.
+
+ 
+
+XVideo is just a way to pass let's say a video format encoded on (for
+example) 2 bytes/pixels YUV instead of 4 (RGBA) - to the video card. The
+video card then knows to display those video formats and knows how to scale
+them as well (eating only GPU processing time and not CPU). Usually this
+means passing just pointers to the video frame (as got from the video
+capture device) to the video card for display.
+
+ 
+
+ 
+
+Adrian
+
+  _____  
+
+From: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel-bounces at lists.berlios.de</A>
+[mailto:<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel-bounces at lists.berlios.de</A>] On Behalf Of Asho Yeh - ??
+Sent: Wednesday, June 09, 2010 5:19 AM
+To: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+Subject: [Linux-uvc-devel] XVideo support?
+
+ 
+
+Hi,
+
+ 
+
+    I am new to the UVC project. Currently I am working on video
+conferencing on Linux and met some performance issues. I hope you experts
+can help me to solve these.
+
+ 
+
+    My target board is 
+
+ 
+
+VIA CLE266 which onboard an VIA C3 1Ghz CPU. 
+
+512MB DDR333 Dimm.
+
+Logitech C100 webcam.
+
+ 
+
+    480p mpeg2 video playback with mplayer and xvideo costs 20~30% of CPU
+powers. 50~70% of CPU powers with 720p mpeg2 video file.
+
+ 
+
+    However, when I execute luvcvideo, the console shows 
+
+ 
+
+  Video driver: x11
+
+  A window manager is available
+
+ 
+
+    I was wondering that luvcview lacks XVideo support or UVCVideo doesn't
+provide the video format that supports XVideo?
+
+ 
+
+    Another problem is skype. In skype chat &amp; video window, it ate 100% of
+CPU powers and A/V was out of sync. I didn't know which one is the
+bottleneck in skype. That's why I asked for help here.
+
+ 
+
+    I am new to the video processing in Linux, so some problems are
+conceptual. Any information and wikis are welcome.
+
+ 
+
+    Thanks for reading this mail.
+
+ 
+
+Best regards,
+
+Asho
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100609/e5d8a95a/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100609/e5d8a95a/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005780.html">[Linux-uvc-devel] XVideo support?
+</A></li>
+	<LI>Next message: <A HREF="005783.html">[Linux-uvc-devel] XVideo support?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5779">[ date ]</a>
+              <a href="thread.html#5779">[ thread ]</a>
+              <a href="subject.html#5779">[ subject ]</a>
+              <a href="author.html#5779">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

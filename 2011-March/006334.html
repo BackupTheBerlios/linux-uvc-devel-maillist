@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH 3/3] Make video fixup more robust
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%203/3%5D%20Make%20video%20fixup%20more%20robust&In-Reply-To=%3C1299409035-28090-3-git-send-email-bug-track%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006347.html">
+   <LINK REL="Next"  HREF="006341.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH 3/3] Make video fixup more robust</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%203/3%5D%20Make%20video%20fixup%20more%20robust&In-Reply-To=%3C1299409035-28090-3-git-send-email-bug-track%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] [PATCH 3/3] Make video fixup more robust">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Sun Mar  6 11:57:15 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006347.html">[Linux-uvc-devel] [PATCH 2/3] Recalculate	dwMaxVideoFrameBufferSize for MJPEG
+</A></li>
+        <LI>Next message: <A HREF="006341.html">[Linux-uvc-devel] [PATCH 3/3] Make video fixup more robust
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6334">[ date ]</a>
+              <a href="thread.html#6334">[ thread ]</a>
+              <a href="subject.html#6334">[ subject ]</a>
+              <a href="author.html#6334">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Signed-off-by: Alexey Fisher &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt;
+---
+ drivers/media/video/uvc/uvc_video.c |   59 ++++++++++++++++++++++++++++++-----
+ 1 files changed, 51 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/media/video/uvc/uvc_video.c b/drivers/media/video/uvc/uvc_video.c
+index 64bd1d6..5380189 100644
+--- a/drivers/media/video/uvc/uvc_video.c
++++ b/drivers/media/video/uvc/uvc_video.c
+@@ -92,10 +92,9 @@ static void uvc_fixup_video_ctrl(struct uvc_streaming *stream,
+ {
+ 	struct uvc_format *format;
+ 	struct uvc_frame *frame = NULL;
++	struct usb_host_endpoint *ep;
+ 	unsigned int i;
+ 
+-	pr_debug(&quot;%s&quot;, __func__);
+-
+ 	if (ctrl-&gt;bFormatIndex &lt;= 0 ||
+ 	    ctrl-&gt;bFormatIndex &gt; stream-&gt;nformats)
+ 		return;
+@@ -112,6 +111,9 @@ static void uvc_fixup_video_ctrl(struct uvc_streaming *stream,
+ 	if (frame == NULL)
+ 		return;
+ 
++	pr_debug(&quot;%s: %s %ux%u&quot;, __func__,
++		 format-&gt;name, frame-&gt;wWidth, frame-&gt;wHeight);
++
+ 	if (!(format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) ||
+ 	     (ctrl-&gt;dwMaxVideoFrameSize == 0 &amp;&amp;
+ 	      stream-&gt;dev-&gt;uvc_version &lt; 0x0110) ||
+@@ -123,11 +125,13 @@ static void uvc_fixup_video_ctrl(struct uvc_streaming *stream,
+ 			frame-&gt;dwMaxVideoFrameBufferSize;
+ 	}
+ 
+-	if (!(format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) &amp;&amp;
++	if ((!(format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) ||
++	      format-&gt;fcc == V4L2_PIX_FMT_MJPEG ) &amp;&amp;
+ 	    stream-&gt;dev-&gt;quirks &amp; UVC_QUIRK_FIX_BANDWIDTH &amp;&amp;
+ 	    stream-&gt;intf-&gt;num_altsetting &gt; 1) {
+ 		u32 interval;
+ 		u32 bandwidth;
++		unsigned int best_psize = 3 * 1024;
+ 
+ 		interval = (ctrl-&gt;dwFrameInterval &gt; 100000)
+ 			 ? ctrl-&gt;dwFrameInterval
+@@ -139,13 +143,17 @@ static void uvc_fixup_video_ctrl(struct uvc_streaming *stream,
+ 		 * high-speed devices) per second and add the UVC header size
+ 		 * (assumed to be 12 bytes long).
+ 		 */
+-		bandwidth = frame-&gt;wWidth * frame-&gt;wHeight / 8 * format-&gt;bpp;
++		bandwidth = frame-&gt;dwMaxVideoFrameBufferSize;
++		//bandwidth = frame-&gt;wWidth * frame-&gt;wHeight / 8 * format-&gt;bpp;
+ 		bandwidth *= 10000000 / interval + 1;
+ 		bandwidth /= 1000;
+ 		if (stream-&gt;dev-&gt;udev-&gt;speed == USB_SPEED_HIGH)
+ 			bandwidth /= 8;
+ 		bandwidth += 12;
+ 
++		/* add 20% more, in some cases it is still not enough */
++		bandwidth *= 1.2;
++
+ 		/* The bandwidth estimate is too low for many cameras. Don't use
+ 		 * maximum packet sizes lower than 1024 bytes to try and work
+ 		 * around the problem. According to measurements done on two
+@@ -153,12 +161,39 @@ static void uvc_fixup_video_ctrl(struct uvc_streaming *stream,
+ 		 * resolutions working while not preventing two simultaneous
+ 		 * VGA streams at 15 fps.
+ 		 */
++		pr_debug(&quot;%s: calculated bandwidth: %u for %u(fps); (before 1024 workaround).&quot;,
++			 __func__, bandwidth, 10000000/interval);
+ 		bandwidth = max_t(u32, bandwidth, 1024);
+ 
++		i = 0;
++		for (i = 0; i &lt; stream-&gt;intf-&gt;num_altsetting; ++i) {
++			struct usb_host_interface *alts;
++			struct usb_host_endpoint *ep;
++			unsigned int psize;
++
++			alts = &amp;stream-&gt;intf-&gt;altsetting[i];
++			ep = uvc_find_endpoint(alts,
++				stream-&gt;header.bEndpointAddress);
++			if (ep == NULL)
++				continue;
++
++			psize = le16_to_cpu(ep-&gt;desc.wMaxPacketSize);
++			psize = (psize &amp; 0x07ff) * (1 + ((psize &gt;&gt; 11) &amp; 3));
++			if ((psize &gt;= bandwidth &amp;&amp; psize &lt;= best_psize) ||
++			    (i == stream-&gt;intf-&gt;num_altsetting - 1)) {
++				if (bandwidth &gt; psize)
++					pr_debug(&quot;%s: trying psize=%u even if &quot;
++						 &quot;bandwidth=%u&quot;, __func__,
++						 psize, bandwidth);
++				best_psize = psize;
++				break;
++			}
++		}
++
+ 		pr_debug(&quot;%s: rewrite dwMaxPayloadTransferSize=%u to %u.&quot;,
+-			__func__, ctrl-&gt;dwMaxPayloadTransferSize, bandwidth);
++			__func__, ctrl-&gt;dwMaxPayloadTransferSize, best_psize);
+ 
+-		ctrl-&gt;dwMaxPayloadTransferSize = bandwidth;
++		ctrl-&gt;dwMaxPayloadTransferSize = best_psize;
+ 	}
+ }
+ 
+@@ -1099,11 +1134,19 @@ static int uvc_init_video(struct uvc_streaming *stream, gfp_t gfp_flags)
+ 			/* Check if the bandwidth is high enough. */
+ 			psize = le16_to_cpu(ep-&gt;desc.wMaxPacketSize);
+ 			psize = (psize &amp; 0x07ff) * (1 + ((psize &gt;&gt; 11) &amp; 3));
+-			if (psize &gt;= bandwidth &amp;&amp; psize &lt;= best_psize) {
++			pr_debug(&quot;%s: bandwidth: %u; psize: %u; best_psize: %u&quot;,
++				 __func__, bandwidth, psize, best_psize);
++			if ((psize &gt;= bandwidth &amp;&amp; psize &lt;= best_psize) ||
++			    (i == intf-&gt;num_altsetting - 1)) {
++				if (bandwidth &gt; psize)
++					pr_debug(&quot;%s: trying psize=%u even if &quot;
++						 &quot;bandwidth=%u&quot;, __func__,
++						 psize, bandwidth);
+ 				altsetting = i;
+ 				best_psize = psize;
+ 				best_ep = ep;
+-			}
++				break;
++			} 
+ 		}
+ 
+ 		if (best_ep == NULL) {
+-- 
+1.7.1
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006347.html">[Linux-uvc-devel] [PATCH 2/3] Recalculate	dwMaxVideoFrameBufferSize for MJPEG
+</A></li>
+	<LI>Next message: <A HREF="006341.html">[Linux-uvc-devel] [PATCH 3/3] Make video fixup more robust
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6334">[ date ]</a>
+              <a href="thread.html#6334">[ thread ]</a>
+              <a href="subject.html#6334">[ subject ]</a>
+              <a href="author.html#6334">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,241 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks 046d:0991&quot;
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20again%20%22Logitech%20QuickCam%20Pro%20for%20Notebooks%0A%20046d%3A0991%22&In-Reply-To=%3C1255633259.8813.10.camel%40mini%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005232.html">
+   <LINK REL="Next"  HREF="005239.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks 046d:0991&quot;</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20again%20%22Logitech%20QuickCam%20Pro%20for%20Notebooks%0A%20046d%3A0991%22&In-Reply-To=%3C1255633259.8813.10.camel%40mini%3E"
+       TITLE="[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks 046d:0991&quot;">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Thu Oct 15 21:00:59 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005232.html">[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks	046d:0991&quot;
+</A></li>
+        <LI>Next message: <A HREF="005239.html">[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks	046d:0991&quot;
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5234">[ date ]</a>
+              <a href="thread.html#5234">[ thread ]</a>
+              <a href="subject.html#5234">[ subject ]</a>
+              <a href="author.html#5234">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+I did some simple dirty hack, it prevent webcam from being killed by
+cheese. On other site it make cheese work too.
+Like Paulo said,  the camera is slow and it need more time to make
+thirst start, some time it need 8 seconds on second start it need about
+2 seconds.  If we call STREAMOFF before we get EOF, the camera will die.
+IMHO, the driver should decide if camera ready or not. The easiest way
+is, to add SLOWSTART quirk. Correct way probobly will be to check if
+camera ready or not.
+Any ideas how to make it? Or any other ideas?
+
+I know, cheese use some bruteforce way to get settings, but the bug in
+cheese make the bug in uvcvideo easy to reproduce.
+
+here is this hack:
+
+diff --git a/drivers/media/video/uvc/uvc_video.c
+b/drivers/media/video/uvc/uvc_video.c
+index f960e8e..fdc7007 100644
+--- a/drivers/media/video/uvc/uvc_video.c
++++ b/drivers/media/video/uvc/uvc_video.c
+@@ -794,7 +794,7 @@ static void uvc_uninit_video(struct uvc_streaming
+*stream, int free_buffers)
+{
+struct urb *urb;
+unsigned int i;
+-
++ msleep(5000);
+for (i = 0; i &lt; UVC_URBS; ++i) {
+urb = stream-&gt;urb[i];
+if (urb == NULL)
+@@ -985,7 +985,7 @@ static int uvc_init_video(struct uvc_streaming
+*stream, gfp_t gfp_flags)
+return ret;
+}
+}
+-
++ msleep(5000);
+return 0;
+}
+
+
+
+Alexey,
+
+Am Mittwoch, den 14.10.2009, 16:37 +0100 schrieb Paulo Assis: 
+&gt;<i> Alexey,
+</I>&gt;<i> I believe it has something to do with the camera initialization, both
+</I>&gt;<i> the sphere and the pro9000 are based on the same chip and it takes it
+</I>&gt;<i> several seconds to initialize, unlike other cameras.
+</I>&gt;<i> Not sure how cheese handles this, although I guess very badly :D.
+</I>&gt;<i> If I start some other software first, like guvcview, then cheese, it
+</I>&gt;<i> will work OK since the camera initialization already happen, but if I
+</I>&gt;<i> start cheese first, it can crash/lock the camera. The latest cheese
+</I>&gt;<i> version from upcoming ubuntu karmic exhibits the same problems (even
+</I>&gt;<i> worst than intrepid). In fact the last time I experience this, the
+</I>&gt;<i> crash was so bad that alsa/pulse was also affected, it wouldn't start
+</I>&gt;<i> the camera mic, making the entire system very slow.
+</I>&gt;<i> Other cameras with fast initialization times work without problems.
+</I>&gt;<i> 
+</I>&gt;<i> Best regards,
+</I>&gt;<i> Paulo
+</I>&gt;<i> 
+</I>&gt;<i> 2009/10/14 Alexey Fisher &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt;:
+</I>&gt;<i> &gt; Actually i don't really care about chees or empathy do not work, but
+</I>&gt;<i> &gt; more. Haw they make camera freeze so hard that only plugoff will help?
+</I>&gt;<i> &gt; What control was used to do it?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Alexey.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Am Mittwoch, den 14.10.2009, 09:53 -0400 schrieb Andres Cimmarusti:
+</I>&gt;<i> &gt;&gt; I have the same problem with cheese and the same camera. I don't get
+</I>&gt;<i> &gt;&gt; any problems using lucview nor skype. Cheese version 2.22 was actually
+</I>&gt;<i> &gt;&gt; working fairly well for me (using Debian stable), but I couldn't
+</I>&gt;<i> &gt;&gt; record videos so I uninstalled it. I'll wait for a more polished
+</I>&gt;<i> &gt;&gt; &quot;bug-free&quot; cheese which will be available with squeeze.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; Andres
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; On Wed, Oct 14, 2009 at 7:29 AM, Paulo Assis &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">pj.assis at gmail.com</A>&gt;
+</I>&gt;<i> &gt;&gt; wrote:
+</I>&gt;<i> &gt;&gt;         Alexey,
+</I>&gt;<i> &gt;&gt;         Since this only manifests itself after using cheese I would
+</I>&gt;<i> &gt;&gt;         say it's a
+</I>&gt;<i> &gt;&gt;         cheese problem.
+</I>&gt;<i> &gt;&gt;         I also have the same problem with a sphereAF and cheese,
+</I>&gt;<i> &gt;&gt;         sometimes it
+</I>&gt;<i> &gt;&gt;         works fine, others the camera just crashes and I need to
+</I>&gt;<i> &gt;&gt;         unplug it so
+</I>&gt;<i> &gt;&gt;         that it will work again.
+</I>&gt;<i> &gt;&gt;         Other apps work just fine with the camera.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;         Best regards,
+</I>&gt;<i> &gt;&gt;         Paulo
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;         2009/10/14 Alexey Fisher &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt;:
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;         &gt; Hallo,
+</I>&gt;<i> &gt;&gt;         &gt; I found in this list message &quot;Logitech QuickCam Pro for
+</I>&gt;<i> &gt;&gt;         Notebooks
+</I>&gt;<i> &gt;&gt;         &gt; 046d:0991 not working&quot; from Mon Jul 28 10:18:08 CEST 2008.
+</I>&gt;<i> &gt;&gt;         So now i will
+</I>&gt;<i> &gt;&gt;         &gt; ask about same problem. It seems some bugs was fixed, some
+</I>&gt;<i> &gt;&gt;         new probably
+</I>&gt;<i> &gt;&gt;         &gt; made.
+</I>&gt;<i> &gt;&gt;         &gt;
+</I>&gt;<i> &gt;&gt;         &gt; I have some random problem with this camera. Thirst of all
+</I>&gt;<i> &gt;&gt;         cheese, some
+</I>&gt;<i> &gt;&gt;         &gt; time it's work, some time i gat only black screen, after
+</I>&gt;<i> &gt;&gt;         this camera do
+</I>&gt;<i> &gt;&gt;         &gt; not work, so i need to replug it. With mplayer it working
+</I>&gt;<i> &gt;&gt;         mostly normal
+</I>&gt;<i> &gt;&gt;         &gt; but after cheese it will not work too. The video chat with
+</I>&gt;<i> &gt;&gt;         empathy has
+</I>&gt;<i> &gt;&gt;         &gt; same problem like cheese to. cheese and epmaty depend on
+</I>&gt;<i> &gt;&gt;         gstreamer but
+</I>&gt;<i> &gt;&gt;         &gt; this seems to work fine if i use:
+</I>&gt;<i> &gt;&gt;         &gt;
+</I>&gt;<i> &gt;&gt;         &gt; gst-launch v4l2src ! queue ! videorate !
+</I>&gt;<i> &gt;&gt;         &gt; video/x-raw-yuv,framerate=15/1 ! videoscale !
+</I>&gt;<i> &gt;&gt;         &gt; video/x-raw-yuv,width=640,height=480 ! ffmpegcolorspace !
+</I>&gt;<i> &gt;&gt;         videoscale !
+</I>&gt;<i> &gt;&gt;         &gt; ximagesink
+</I>&gt;<i> &gt;&gt;         &gt;
+</I>&gt;<i> &gt;&gt;         &gt;  After cheese i get this demsg:
+</I>&gt;<i> &gt;&gt;         &gt;
+</I>&gt;<i> &gt;&gt;         &gt; [ 1296.135911] usbcore: registered new interface driver
+</I>&gt;<i> &gt;&gt;         snd-usb-audio
+</I>&gt;<i> &gt;&gt;         &gt; [ 1296.147366] uvcvideo: Found UVC 1.00 device &lt;unnamed&gt;
+</I>&gt;<i> &gt;&gt;         (046d:0991)
+</I>&gt;<i> &gt;&gt;         &gt; [ 1296.170101] input: UVC Camera (046d:0991)
+</I>&gt;<i> &gt;&gt;         &gt;
+</I>&gt;<i> &gt;&gt;         as /devices/pci0000:00/0000:00:1a.7/usb1/1-6/1-6:1.0/input/input15
+</I>&gt;<i> &gt;&gt;         &gt; [ 1296.170139] usbcore: registered new interface driver
+</I>&gt;<i> &gt;&gt;         uvcvideo
+</I>&gt;<i> &gt;&gt;         &gt; [ 1296.170142] USB Video Class driver (v0.1.0)
+</I>&gt;<i> &gt;&gt;         &gt; [ 2235.420181] uvcvideo: Failed to query (135) UVC control 2
+</I>&gt;<i> &gt;&gt;         (unit 2) :
+</I>&gt;<i> &gt;&gt;         &gt; -110 (exp. 2).
+</I>&gt;<i> &gt;&gt;         &gt; [ 2235.721428] uvcvideo: Failed to query (135) UVC control 2
+</I>&gt;<i> &gt;&gt;         (unit 2) :
+</I>&gt;<i> &gt;&gt;         &gt; -110 (exp. 2).
+</I>&gt;<i> &gt;&gt;         &gt; [ 2242.560187] uvcvideo: Failed to query (135) UVC control 2
+</I>&gt;<i> &gt;&gt;         (unit 2) :
+</I>&gt;<i> &gt;&gt;         &gt; -110 (exp. 2).
+</I>&gt;<i> &gt;&gt;         &gt; [ 2242.860179] uvcvideo: Failed to query (135) UVC control 2
+</I>&gt;<i> &gt;&gt;         (unit 2) :
+</I>&gt;<i> &gt;&gt;         &gt; -110 (exp. 2).
+</I>&gt;<i> &gt;&gt;         &gt; [ 2266.230184] uvcvideo: Failed to set UVC probe control :
+</I>&gt;<i> &gt;&gt;         -110 (exp.
+</I>&gt;<i> &gt;&gt;         &gt; 26).
+</I>&gt;<i> &gt;&gt;         &gt; [ 2271.350744] uvcvideo: Failed to set UVC probe control :
+</I>&gt;<i> &gt;&gt;         -110 (exp.
+</I>&gt;<i> &gt;&gt;         &gt; 26).
+</I>&gt;<i> &gt;&gt;         &gt; [ 2289.660019] usb 1-6: USB disconnect, address 6
+</I>&gt;<i> &gt;&gt;         &gt; [ 2293.430078] usb 1-6: new high speed USB device using
+</I>&gt;<i> &gt;&gt;         ehci_hcd and
+</I>&gt;<i> &gt;&gt;         &gt; address 7
+</I>&gt;<i> &gt;&gt;         &gt; [ 2293.708270] usb 1-6: configuration #1 chosen from 1
+</I>&gt;<i> &gt;&gt;         choice
+</I>&gt;<i> &gt;&gt;         &gt;
+</I>&gt;<i> &gt;&gt;         &gt; The guestion is, is it kernel, gstreamer or empathy and
+</I>&gt;<i> &gt;&gt;         cheese bug?
+</I>&gt;<i> &gt;&gt;         &gt;
+</I>&gt;<i> &gt;&gt;         &gt; _______________________________________________
+</I>&gt;<i> &gt;&gt;         &gt; Linux-uvc-devel mailing list
+</I>&gt;<i> &gt;&gt;         &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> &gt;&gt;         &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i> &gt;&gt;         &gt;
+</I>&gt;<i> &gt;&gt;         _______________________________________________
+</I>&gt;<i> &gt;&gt;         Linux-uvc-devel mailing list
+</I>&gt;<i> &gt;&gt;         <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> &gt;&gt;         <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005232.html">[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks	046d:0991&quot;
+</A></li>
+	<LI>Next message: <A HREF="005239.html">[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks	046d:0991&quot;
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5234">[ date ]</a>
+              <a href="thread.html#5234">[ thread ]</a>
+              <a href="subject.html#5234">[ subject ]</a>
+              <a href="author.html#5234">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

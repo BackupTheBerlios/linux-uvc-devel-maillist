@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Thread safety of ioctls
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Thread%20safety%20of%20ioctls&In-Reply-To=%3C200806240033.41145.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003660.html">
+   <LINK REL="Next"  HREF="003674.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Thread safety of ioctls</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Thread%20safety%20of%20ioctls&In-Reply-To=%3C200806240033.41145.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Thread safety of ioctls">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Jun 24 00:33:40 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003660.html">[Linux-uvc-devel] Thread safety of ioctls
+</A></li>
+        <LI>Next message: <A HREF="003674.html">[Linux-uvc-devel] Thread safety of ioctls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3665">[ date ]</a>
+              <a href="thread.html#3665">[ thread ]</a>
+              <a href="subject.html#3665">[ subject ]</a>
+              <a href="author.html#3665">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Gregor,
+
+On Monday 23 June 2008, Gregor Jasny wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> in our video conference application the grabbing (QBUF, DQBUF) is done
+</I>&gt;<i> in a separate thread. The main thread is responsible for the user
+</I>&gt;<i> interface and queries the controls, input and current standard values
+</I>&gt;<i> from time to time.
+</I>&gt;<i>
+</I>&gt;<i> With the latest uvc driver (r217) and vanilla Linux 2.6.25.6 I've
+</I>&gt;<i> noticed the strange behavior that the grabbing thread hangs in the DQBUF
+</I>&gt;<i> ioctl. If I remove the control queries from the gui thread everything is
+</I>&gt;<i> working fine. After the first hang of the driver, even luvcview hangs at
+</I>&gt;<i> the buffer operation.
+</I>&gt;<i>
+</I>&gt;<i> With the bttv driver everything works fine. I'll test vivi and pwc
+</I>&gt;<i> driver later.
+</I>&gt;<i>
+</I>&gt;<i> My systems are a i686 and one amd64 system with one Logitech 9000 and
+</I>&gt;<i> one Microsoft NX-6000. I've tried to create a simple testcase, but
+</I>&gt;<i> suprinsingly this testcase works fine.
+</I>&gt;<i>
+</I>&gt;<i> Can I enable more logging than setting the trace parameter to 0xfff?
+</I>
+No without adding more printk's to the driver, which I encourage you to do.
+
+&gt;<i> Have you any idea what went wrong here?
+</I>
+Not really. The ioctl handler is protected by the big kernel lock, so ioctls 
+are currently not reentrant.
+
+Could you give more information about the hardware you are using (webcam, SMP 
+system) ? Please report kernel log message printed by the UVC driver as well.
+
+&gt;<i> Is the V4L2-API designed to be thread safe?
+</I>
+There is no mention of thread safety in the V4L2 spec, so one can always argue 
+that thread safety is not required for V4L2 drivers :-)
+
+Most drivers are probably not designed with thread safety in mind, and I'm 
+pretty sure lots of race conditions still lie in the depth of V4L(2) drivers. 
+In the long term all those bugs should be fixed, and drivers should support 
+multi-threaded applications without crashing or misbehaving.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003660.html">[Linux-uvc-devel] Thread safety of ioctls
+</A></li>
+	<LI>Next message: <A HREF="003674.html">[Linux-uvc-devel] Thread safety of ioctls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3665">[ date ]</a>
+              <a href="thread.html#3665">[ thread ]</a>
+              <a href="subject.html#3665">[ subject ]</a>
+              <a href="author.html#3665">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] No valid video chain found.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20No%20valid%20video%20chain%20found.&In-Reply-To=%3Ca4fd5c620701090033x6c1957bel97f47103ca874fc7%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001151.html">
+   <LINK REL="Next"  HREF="001164.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] No valid video chain found.</H1>
+    <B>Jose Luis Landabaso</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20No%20valid%20video%20chain%20found.&In-Reply-To=%3Ca4fd5c620701090033x6c1957bel97f47103ca874fc7%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] No valid video chain found.">landabaso at gmail.com
+       </A><BR>
+    <I>Tue Jan  9 09:33:00 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001151.html">[Linux-uvc-devel] No valid video chain found.
+</A></li>
+        <LI>Next message: <A HREF="001164.html">[Linux-uvc-devel] No valid video chain found.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1158">[ date ]</a>
+              <a href="thread.html#1158">[ thread ]</a>
+              <a href="subject.html#1158">[ subject ]</a>
+              <a href="author.html#1158">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks Laurent!
+
+The problem was I hadn't rmmoded the pre-patched driver. Now I can use
+&quot;bayer&quot; without getting error messages.
+However, the program doesn't have change the way the capture is being done.
+As I mentioned yesterday, I have a very simple opencv program (see
+copy/paste below) that keeps working the same way even if I disable the
+color pipeline with the program &quot;bayer&quot; in the background.
+
+I know it is autoadjusting all the time because when I put my hand over the
+lens and remove it, then I capture a color transition from white to the
+actual image, which means (if I am correct) that it is autoadjusting...
+
+Is this the normal behaviour? Am I missing something?
+
+Thanks!
+
+OpenCV prog:
+
+int main(int argc, char* argv[])
+{
+        IplImage * frame = NULL;
+        CvCapture *input_cam = cvCaptureFromCAM(-1);
+
+        frame = cvQueryFrame(input_cam);
+
+        cvNamedWindow(&quot;capture&quot;, 0);
+        cvResizeWindow(&quot;capture&quot;, frame-&gt;width, frame-&gt;height);
+
+        while(frame != NULL){
+                cvShowImage(&quot;capture&quot;, frame);
+                cvWaitKey(10);
+                frame = cvQueryFrame(input_cam);
+        }
+        return 0;
+}
+
+
+
+On 1/8/07, Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+&gt;<i>
+</I>&gt;<i> Hi Adrian,
+</I>&gt;<i>
+</I>&gt;<i> &gt; &gt; I'd like to have a look at the USB descriptors. Could you provide me
+</I>&gt;<i> with
+</I>&gt;<i> &gt; &gt; the output of lsusb -v (usbutils 0.72 or CVS) ?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I've attached the output of lsusb -v.
+</I>&gt;<i>
+</I>&gt;<i> Thanks.
+</I>&gt;<i>
+</I>&gt;<i> &gt; If there's anything else I can do for you, let me know.
+</I>&gt;<i>
+</I>&gt;<i> Feel free to send me a webcam ;-)
+</I>&gt;<i>
+</I>&gt;<i> I had a look at the webcam USB descriptor. Implementing support for the
+</I>&gt;<i> selector unit shouldn't be too difficult, but I have no webcam to test
+</I>&gt;<i> this
+</I>&gt;<i> on. I'll try to contact Creative to see if they can sponsor the project.
+</I>&gt;<i> In
+</I>&gt;<i> the meantime, you can expect a patch in the next few days. It might not
+</I>&gt;<i> work
+</I>&gt;<i> though :-)
+</I>&gt;<i>
+</I>&gt;<i> Cheers,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070109/a43b7904/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070109/a43b7904/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001151.html">[Linux-uvc-devel] No valid video chain found.
+</A></li>
+	<LI>Next message: <A HREF="001164.html">[Linux-uvc-devel] No valid video chain found.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1158">[ date ]</a>
+              <a href="thread.html#1158">[ thread ]</a>
+              <a href="subject.html#1158">[ subject ]</a>
+              <a href="author.html#1158">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

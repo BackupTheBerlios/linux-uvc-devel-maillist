@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Sweex WC061 HD Webcam Sliver
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Sweex%20WC061%20HD%20Webcam%20Sliver&In-Reply-To=%3C4E670B24.1040504%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006877.html">
+   <LINK REL="Next"  HREF="006875.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Sweex WC061 HD Webcam Sliver</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Sweex%20WC061%20HD%20Webcam%20Sliver&In-Reply-To=%3C4E670B24.1040504%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] Sweex WC061 HD Webcam Sliver">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Wed Sep  7 08:11:48 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006877.html">[Linux-uvc-devel] Sweex WC061 HD Webcam Sliver
+</A></li>
+        <LI>Next message: <A HREF="006875.html">[Linux-uvc-devel] uvc header question
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6879">[ date ]</a>
+              <a href="thread.html#6879">[ thread ]</a>
+              <a href="subject.html#6879">[ subject ]</a>
+              <a href="author.html#6879">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Am 06.09.2011 12:53, schrieb Michael Tandy:
+&gt;<i> [99317.553237] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMON)
+</I>&gt;<i> [99317.554747] uvcvideo: uvc_v4l2_poll
+</I>&gt;<i> [99333.472385] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [99333.472389] uvcvideo: Frame complete (EOF found).
+</I>&gt;<i> [99333.472391] uvcvideo: EOF in empty payload.
+</I>&gt;<i> [99333.472429] uvcvideo: uvc_v4l2_poll
+</I>&gt;<i> [99333.472438] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+</I>&gt;<i> [99333.472447] uvcvideo: Dequeuing buffer 0 (3, 2676 bytes).
+</I>
+hmm... the camera notify us about with error bit set, but current driver 
+will just drop it and mark the buffer as faulty.
+
+According to uvc specification v1.1 in &quot;4.3.1.7 Stream Error Code 
+Control&quot; we can/should check the error reason:
+-------------------------------------------------------------------
+The host software should send a GET_CUR request to this control to 
+determine the error when one of the following events occurs:
+- The Error bit in the video or still image payload header is set by the 
+device
+....
+For scenarios where the host is transmitting video data to the device, 
+the host can not use the Error bit in the payload header to detect a 
+device error. Therefore, in order to determine when a streaming error 
+occurs, the host must rely on either a Control Change interrupt from the 
+device or a bulk endpoint stall.
+--------------------------------------------------------------------
+
+I'm suddenly not so good to implement ne things without testing and 
+probing. May be Laurent can do this? Or i need access to the webcam.
+
+Regards,
+	Alexey.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006877.html">[Linux-uvc-devel] Sweex WC061 HD Webcam Sliver
+</A></li>
+	<LI>Next message: <A HREF="006875.html">[Linux-uvc-devel] uvc header question
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6879">[ date ]</a>
+              <a href="thread.html#6879">[ thread ]</a>
+              <a href="subject.html#6879">[ subject ]</a>
+              <a href="author.html#6879">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

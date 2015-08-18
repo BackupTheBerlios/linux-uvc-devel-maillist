@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] poll() and read() standard system calls
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20poll%28%29%20and%20read%28%29%20standard%20system%20calls&In-Reply-To=%3C200702051022.37791.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001333.html">
+   <LINK REL="Next"  HREF="001327.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] poll() and read() standard system calls</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20poll%28%29%20and%20read%28%29%20standard%20system%20calls&In-Reply-To=%3C200702051022.37791.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] poll() and read() standard system calls">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Feb  5 10:22:37 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001333.html">[Linux-uvc-devel] poll() and read() standard system calls
+</A></li>
+        <LI>Next message: <A HREF="001327.html">[Linux-uvc-devel] V4L software with linux-uvc?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1335">[ date ]</a>
+              <a href="thread.html#1335">[ thread ]</a>
+              <a href="subject.html#1335">[ subject ]</a>
+              <a href="author.html#1335">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Luca,
+
+&gt;<i> &gt; poll() without read() makes sense, using VIDIOC_DQBUF.
+</I>&gt;<i>
+</I>&gt;<i> It has little sense. It looks like a mix of I/O methods from the user
+</I>&gt;<i> point of view.
+</I>
+It isn't. The Linux UVC driver supports the streaming I/O with memory mapped 
+buffers only. This is allowed by the V4L2 spec:
+
+&quot;The V4L2 API de&#64257;nes several different methods to read from or write to a 
+device. All drivers exchanging data with applications must support at least 
+one of them.&quot; (p. 44)
+
+read() support will be implemented later. Regarding poll(), V4L2 states that
+
+&quot;All drivers implementing the read() or write() function or streaming I/O must 
+also support the poll() function. See the poll() manual page for details.&quot; 
+(p. 172)
+
+poll() support is thus required.
+
+&gt;<i> Furthermore, poll() does not seem to start to capture video data as
+</I>&gt;<i> expected. This is a flaw.
+</I>
+poll() is not expected to start to capture video data when using a streaming 
+I/O method. You need to explicitely call VIDIOC_STREAMON.
+
+&gt;<i> I wonder how you can implement the code to start the video streaming and
+</I>&gt;<i> integrate the resulting streaming with all the ioctl's related to the mmap()
+</I>&gt;<i> I/O method described by the V4L2 protocol.
+</I>&gt;<i> (VIDIOC_QUERYBUF fo istance).
+</I>
+I'm not sure what you mean there. poll() must not start video streaming when 
+using a streaming I/O method.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001333.html">[Linux-uvc-devel] poll() and read() standard system calls
+</A></li>
+	<LI>Next message: <A HREF="001327.html">[Linux-uvc-devel] V4L software with linux-uvc?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1335">[ date ]</a>
+              <a href="thread.html#1335">[ thread ]</a>
+              <a href="subject.html#1335">[ subject ]</a>
+              <a href="author.html#1335">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

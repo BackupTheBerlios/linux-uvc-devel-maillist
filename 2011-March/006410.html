@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Creative%20VF0700%20Live%21%20Cam%20Chat%20HD%20works%0A%20everywhere%2C%20except%20highly%20distorted%20video%20in%20Skype&In-Reply-To=%3C1301385806.4320.23.camel%40mini%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006422.html">
+   <LINK REL="Next"  HREF="006411.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Creative%20VF0700%20Live%21%20Cam%20Chat%20HD%20works%0A%20everywhere%2C%20except%20highly%20distorted%20video%20in%20Skype&In-Reply-To=%3C1301385806.4320.23.camel%40mini%3E"
+       TITLE="[Linux-uvc-devel] Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Tue Mar 29 10:03:26 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006422.html">[Linux-uvc-devel] How to 'quirk' more than 3 same &quot;YUYV&quot;	streaming web-cams
+</A></li>
+        <LI>Next message: <A HREF="006411.html">[Linux-uvc-devel] Fwd: Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6410">[ date ]</a>
+              <a href="thread.html#6410">[ thread ]</a>
+              <a href="subject.html#6410">[ subject ]</a>
+              <a href="author.html#6410">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Am Dienstag, den 29.03.2011, 00:48 -0400 schrieb Benson Bear:
+&gt;<i> On Mon, Mar 28, 2011 at 5:36 AM, Alexey Fisher
+</I>&gt;<i> &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt; wrote:
+</I>&gt;<i> 
+</I>&gt;<i> &gt; The reason can be... lost packets by usb controller... or may be camera
+</I>&gt;<i> &gt; send only this parts... or hmm...
+</I>&gt;<i> 
+</I>&gt;<i> You seem to be suggesting some hardware problem or a defect
+</I>&gt;<i> with the camera?  This seems very unlikely to me: recall the
+</I>&gt;<i> camera seems to works &quot;out of the box&quot; with cheese, camorama,
+</I>&gt;<i> xawtv, camstream, guvcview.   Only with skype and in some cases
+</I>&gt;<i> with lucvview do I get this distorted pattern, which is the same sort
+</I>&gt;<i> of pattern subjectively that I get when I run the gstreamer pipeline
+</I>&gt;<i> without the conversion element in it.
+</I>&gt;<i> 
+</I>&gt;<i> I also have now tested in in Windows 7 and it seems to work
+</I>&gt;<i> fine there &quot;out of the box&quot; as well.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; Can you please attach dmesg with trace, to enable trace you need:
+</I>&gt;<i> &gt; sudo rmmod uvcvideo &amp;&amp; sudo modprobe uvcvideo trace=0xffff
+</I>&gt;<i> 
+</I>&gt;<i> Don't know quite what you mean?  dmesg output during
+</I>&gt;<i> what?   I attached the dmesg output when the camera is
+</I>&gt;<i> plugged in, followed by two runs of luvcview (the
+</I>&gt;<i> first two command lines below). I
+</I>&gt;<i> 
+</I>&gt;<i> Except I edited out huge amounts of these lines
+</I>&gt;<i> throughout (which are very suggestive of a format
+</I>&gt;<i> mismatch as well):
+</I>&gt;<i> 
+</I>&gt;<i> &quot;uvcvideo: Dropping payload (out of sync).&quot;
+</I>&gt;<i> 
+</I>&gt;<i> &gt; Can you please also try different frame rates with yuv.
+</I>&gt;<i> 
+</I>&gt;<i> Yes, before, per instruction, I used the default.   But I now
+</I>&gt;<i> find that lucview gives nice looking results for any frame rate
+</I>&gt;<i> above 17.
+</I>&gt;<i> 
+</I>&gt;<i> In other words,
+</I>&gt;<i> 
+</I>&gt;<i>  luvcview  -f yuv  -s 320x240  -d /dev/video1 -i 17
+</I>&gt;<i> 
+</I>&gt;<i> does not work, but
+</I>&gt;<i> 
+</I>&gt;<i>  luvcview  -f yuv  -s 320x240  -d /dev/video1 -i 18
+</I>&gt;<i>  luvcview  -f yuv  -s 320x240  -d /dev/video1 -i 19
+</I>&gt;<i> 
+</I>&gt;<i> etc all do work.
+</I>
+Your webcam support(or claim) fallowing framerates 30, 25, 20, 15, 10, 5
+(fps). If you set 17fps, luvcview will tell you, that this framerate is
+unsupported and fall back to 15fps; if you tray set 18 it will fallback
+to 20fps.
+
+&quot;Dropping payload (out of sync).&quot;  mean - camera send more data als
+driver is expecting. The same tell this message &quot;Frame complete
+(overflow).&quot;
+
+Skype prefer to use 640x480 (in some situations 320x240) at 15fps
+uncompressed stream. This is the reason why you hit this bug. Cheese
+prefer to use biggest framerate - 30fps, compressed stream. this is the
+reason why cheese do not hit this bug.
+
+Driver should know the frame rate to check if some packets are lost or
+not.
+
+I assume your webcam just ignore framerate setting and push the maximum
+it can.
+
+Try to use UVC_QUIRK_RESTRICT_FRAME_RATE workaround:
+sudo rmmod uvcvideo &amp;&amp; sudo modprobe uvcvideo quirks=0x200
+
+Regrads,
+	Alexey
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006422.html">[Linux-uvc-devel] How to 'quirk' more than 3 same &quot;YUYV&quot;	streaming web-cams
+</A></li>
+	<LI>Next message: <A HREF="006411.html">[Linux-uvc-devel] Fwd: Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6410">[ date ]</a>
+              <a href="thread.html#6410">[ thread ]</a>
+              <a href="subject.html#6410">[ subject ]</a>
+              <a href="author.html#6410">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

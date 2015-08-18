@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] 2.6.27-rc2: uvcvideo breaks after suspend to ram
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%202.6.27-rc2%3A%20uvcvideo%20breaks%20after%20suspend%20to%0A%20ram&In-Reply-To=%3C48AC7FC1.6040902%40tuffmail.co.uk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003979.html">
+   <LINK REL="Next"  HREF="003982.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] 2.6.27-rc2: uvcvideo breaks after suspend to ram</H1>
+    <B>Alan Jenkins</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%202.6.27-rc2%3A%20uvcvideo%20breaks%20after%20suspend%20to%0A%20ram&In-Reply-To=%3C48AC7FC1.6040902%40tuffmail.co.uk%3E"
+       TITLE="[Linux-uvc-devel] 2.6.27-rc2: uvcvideo breaks after suspend to ram">alan-jenkins at tuffmail.co.uk
+       </A><BR>
+    <I>Wed Aug 20 22:34:09 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003979.html">[Linux-uvc-devel] 2.6.27-rc2: uvcvideo breaks after suspend to	ram
+</A></li>
+        <LI>Next message: <A HREF="003982.html">[Linux-uvc-devel] 2.6.27-rc2: uvcvideo breaks after suspend to	ram
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3981">[ date ]</a>
+              <a href="thread.html#3981">[ thread ]</a>
+              <a href="subject.html#3981">[ subject ]</a>
+              <a href="author.html#3981">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Laurent Pinchart wrote:
+&gt;<i> Hi Alan,
+</I>&gt;<i>
+</I>&gt;<i> On Thursday 07 August 2008, Alan Jenkins wrote:
+</I>&gt;<i>   
+</I>&gt;&gt;<i> Oliver Neukum wrote:
+</I>&gt;&gt;<i>     
+</I>&gt;&gt;&gt;<i> Am Mittwoch 06 August 2008 17:23:43 schrieb Alan Jenkins:
+</I>&gt;&gt;&gt;<i>       
+</I>&gt;&gt;&gt;&gt;<i> [  290.127788] uvcvideo 1-8:1.0: no reset_resume for driver uvcvideo?
+</I>&gt;&gt;&gt;&gt;<i>         
+</I>&gt;&gt;&gt;<i> [..]
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>       
+</I>&gt;&gt;&gt;&gt;<i> [  290.128909]  [&lt;c023465e&gt;] usb_rebind_intf+0x27/0x4e
+</I>&gt;&gt;&gt;&gt;<i> [  290.128916]  [&lt;c02346eb&gt;] do_unbind_rebind+0x4d/0x5a
+</I>&gt;&gt;&gt;&gt;<i> [  290.128924]  [&lt;c0234738&gt;] usb_external_resume_device+0x40/0x51
+</I>&gt;&gt;&gt;&gt;<i> [  290.128933]  [&lt;c020cd87&gt;] device_resume+0x8a/0x2d2
+</I>&gt;&gt;&gt;&gt;<i> [  290.128941]  [&lt;c01334e2&gt;] suspend_devices_and_enter+0x10f/0x138
+</I>&gt;&gt;&gt;&gt;<i> [  290.128954]  [&lt;c013363a&gt;] enter_state+0x10b/0x164
+</I>&gt;&gt;&gt;&gt;<i> [  290.128963]  [&lt;c0133721&gt;] state_store+0x8e/0xa4
+</I>&gt;&gt;&gt;&gt;<i> [  290.128972]  [&lt;c0133693&gt;] state_store+0x0/0xa4
+</I>&gt;&gt;&gt;&gt;<i> [  290.128981]  [&lt;c01a3087&gt;] kobj_attr_store+0x18/0x1c
+</I>&gt;&gt;&gt;&gt;<i> [  290.128991]  [&lt;c018bedc&gt;] sysfs_write_file+0xaf/0xdc
+</I>&gt;&gt;&gt;&gt;<i> [  290.129000]  [&lt;c018be2d&gt;] sysfs_write_file+0x0/0xdc
+</I>&gt;&gt;&gt;&gt;<i> [  290.129007]  [&lt;c015ec41&gt;] vfs_write+0x83/0xf6
+</I>&gt;&gt;&gt;&gt;<i> [  290.129016]  [&lt;c015efd2&gt;] sys_write+0x3c/0x63
+</I>&gt;&gt;&gt;&gt;<i> [  290.129024]  [&lt;c01035c1&gt;] sysenter_do_call+0x12/0x21
+</I>&gt;&gt;&gt;&gt;<i> [  290.129035]  [&lt;c02b0000&gt;] wait_for_common+0xe0/0xe3
+</I>&gt;&gt;&gt;&gt;<i>         
+</I>&gt;&gt;&gt;<i> 	if (reset_resume) {
+</I>&gt;&gt;&gt;<i> 		if (driver-&gt;reset_resume) {
+</I>&gt;&gt;&gt;<i> 			status = driver-&gt;reset_resume(intf);
+</I>&gt;&gt;&gt;<i> 			if (status)
+</I>&gt;&gt;&gt;<i> 				dev_err(&amp;intf-&gt;dev, &quot;%s error %d\n&quot;,
+</I>&gt;&gt;&gt;<i> 						&quot;reset_resume&quot;, status);
+</I>&gt;&gt;&gt;<i> 		} else {
+</I>&gt;&gt;&gt;<i> 			intf-&gt;needs_binding = 1;
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> It doesn't have reset_resume, so it is marked for rebinding. That in turn
+</I>&gt;&gt;&gt;<i> triggers the warning because the parent is still asleep. That shouldn't
+</I>&gt;&gt;&gt;<i> happen if we walk the device tree properly. Can you add a printk
+</I>&gt;&gt;&gt;<i> to device_pm_add() to print out the parent? We need to rule out that the
+</I>&gt;&gt;&gt;<i> device tree is bad.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> 	Regards
+</I>&gt;&gt;&gt;<i> 		Oliver
+</I>&gt;&gt;&gt;<i>       
+</I>&gt;&gt;<i> Done.  (For the record, I've posted the results at
+</I>&gt;&gt;<i> &lt;<A HREF="http://bugzilla.kernel.org/show_bug.cgi?id=11263">http://bugzilla.kernel.org/show_bug.cgi?id=11263</A>&gt;).
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> I've added a reset_resume method to the UVC driver. Could you please test the 
+</I>&gt;<i> latest SVN revision and tell me if it helps ?
+</I>&gt;<i>   
+</I>Alan Stern said the problem was that USB needed to move to the new PM
+ops.  He posted a patch for this which fixed my problem (the scary
+WARNING with call-trace).
+
+So I'll try to test SVN but it's not very interesting :-).
+
+Ta
+Alan
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003979.html">[Linux-uvc-devel] 2.6.27-rc2: uvcvideo breaks after suspend to	ram
+</A></li>
+	<LI>Next message: <A HREF="003982.html">[Linux-uvc-devel] 2.6.27-rc2: uvcvideo breaks after suspend to	ram
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3981">[ date ]</a>
+              <a href="thread.html#3981">[ thread ]</a>
+              <a href="subject.html#3981">[ subject ]</a>
+              <a href="author.html#3981">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

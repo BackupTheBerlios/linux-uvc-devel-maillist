@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Re. Reording sync'ed audio and video with	uvcvideo + alsa
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Re.%20Reording%20sync%27ed%20audio%20and%20video%20with%0A%09uvcvideo%20%2B%20alsa&In-Reply-To=%3C814687.17244.qm%40web52411.mail.re2.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="003697.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Re. Reording sync'ed audio and video with	uvcvideo + alsa</H1>
+    <B>Rich</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Re.%20Reording%20sync%27ed%20audio%20and%20video%20with%0A%09uvcvideo%20%2B%20alsa&In-Reply-To=%3C814687.17244.qm%40web52411.mail.re2.yahoo.com%3E"
+       TITLE="[Linux-uvc-devel] Re. Reording sync'ed audio and video with	uvcvideo + alsa">richietommy at yahoo.com
+       </A><BR>
+    <I>Tue Jul  1 06:27:22 CEST 2008</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="003697.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3696">[ date ]</a>
+              <a href="thread.html#3696">[ thread ]</a>
+              <a href="subject.html#3696">[ subject ]</a>
+              <a href="author.html#3696">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>New versions of GStreamer record audio and video synced with v4l2src, 
+and seem to handle a couple of UVC devices I've tried just fine. Try this:
+
+
+gst-launch-0.10 v4l2src device=/dev/video0 queue-size=16 ! \ 
+video/x-raw-yuv,width=640,height=480,framerate=30/1 ! \
+tee name=tee tee. ! queue ! ffmpegcolorspace ! queue ! x264enc ! \ 
+queue ! mux. matroskamux name=mux alsasrc device=hw:1,0 ! \
+audiorate ! audio/x-raw-int,rate=48000,channels=2,depth=16 ! queue ! \
+audioconvert ! lame !  mux. mux. ! queue ! \
+filesink location=~/Desktop/test.mkv tee. ! ffmpegcolorspace ! queue ! \
+xvimagesink
+
+
+That assumes that you have a newer version of gstreamer with things
+like the bad and ugly plugin sets.
+
+You may have to adjust your audio settings (I have a stereo webcam that
+works up to 48KHz, but a lot of webcams with audio only support 16000
+Hz and 1 channel) and video size/rate to work, but that works just fine 
+for me, and produces a perfectly synced matroska file (AVI's were always 
+out of sync badly when I tried an AVI muxer with gstreamer).
+
+If you want a graphical tool to do this, try this script I wrote:
+
+<A HREF="http://forums.quickcamteam.net/showthread.php?tid=352">http://forums.quickcamteam.net/showthread.php?tid=352</A>
+
+and replace every instance of 'avimux' with 'matroskamux' for proper
+syncing. Hope that helps,
+
+-Rich
+
+&gt;<i>Is there any work around for this yet?
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>Maurizio Monge wrote:
+</I>&gt;&gt;<i> Hi,
+</I>&gt;&gt;<i>  please excuse me if this question is not exactly about uvcvideo
+</I>&gt;&gt;<i>  development, but was anyone able to record sync'ed audio and video
+</I>&gt;&gt;<i>  with some tool?
+</I>&gt;&gt;<i>  This is really driving me mad...
+</I>&gt;&gt;<i>  transcode for some reason only records at 1fps, mencoder segfaults,
+</I>&gt;&gt;<i>  vlc and ffmpeg lose sync, lavrec does not work with v4l2.
+</I>&gt;&gt;<i>  Any suggestion? thanks a lot!
+</I>&gt;&gt;<i>  Regards.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>  --
+</I>&gt;&gt;<i>  Ciao
+</I>&gt;&gt;<i>  Maurizio
+</I>&gt;&gt;<i><A HREF="http://stregatto.wordpress.com">http://stregatto.wordpress.com</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>  &quot;Well we all shine on
+</I>&gt;&gt;<i>  Like the moon and the stars and the sun&quot; (John Lennon)
+</I>&gt;&gt;<i>
+</I>
+
+      
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080630/b648c061/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080630/b648c061/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="003697.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3696">[ date ]</a>
+              <a href="thread.html#3696">[ thread ]</a>
+              <a href="subject.html#3696">[ subject ]</a>
+              <a href="author.html#3696">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

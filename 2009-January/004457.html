@@ -1,0 +1,170 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] URB size for Bulk transport
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20URB%20size%20for%20Bulk%20transport&In-Reply-To=%3CC3C930591D7B9D4083B73AC7CB7A5FF304826CD6%40nl-exc-02.intra.local%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004474.html">
+   <LINK REL="Next"  HREF="004477.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] URB size for Bulk transport</H1>
+    <B>Robert Lukassen</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20URB%20size%20for%20Bulk%20transport&In-Reply-To=%3CC3C930591D7B9D4083B73AC7CB7A5FF304826CD6%40nl-exc-02.intra.local%3E"
+       TITLE="[Linux-uvc-devel] URB size for Bulk transport">Robert.Lukassen at tomtom.com
+       </A><BR>
+    <I>Tue Jan  6 13:25:24 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004474.html">[Linux-uvc-devel] uvcvideo module crashes on load attempt
+</A></li>
+        <LI>Next message: <A HREF="004477.html">[Linux-uvc-devel] URB size for Bulk transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4457">[ date ]</a>
+              <a href="thread.html#4457">[ thread ]</a>
+              <a href="subject.html#4457">[ subject ]</a>
+              <a href="author.html#4457">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I've noticed that the URB size in case of Bulk transport is set to the
+maximum payload size, or to a limit that is a multiple of the bulk
+packet size (psize * UVC_MAX_ISO_PACKETS). The rationale behind this is
+'to be consistent with isochronous mode'.
+
+We encounter some difficulties with this approach. These occur when
+operating Bulk transport over a full-speed link. In that case, the limit
+becomes 64 * 40 = 2560 bytes per URB. The device we use has 16KB
+payloads. The frames typically do not consist of an exact multiple of
+16KB, so a frame is send as a sequence of 16KB USB bulk transfers,
+ending with a bulk transfer &lt; 16KB.
+
+According to the USB 2.0 specification a bulk transfer is considered
+done when:
+
+1) the expected amount of data has been transferred
+2) a short packet (or zero-length packet) has been transferred
+
+For the device, each of the transfers used to sent full sized payloads
+fall in category 1. 16KB is to be expected by the host, as this is the
+MaxPayloadSize (signalled in the configuration descriptor).
+
+The device is unaware of the fact that hosts using the UVC driver split
+payload transfers over multiple bulk transfers. If the payload buffer
+size is not an exact multiple of the URB size determined by the UVC
+driver, the host will not be able to detect the end of a payload
+reliably.
+
+Example:
+
+Assume the frame to be transferred is 100KB. The maximum payload size is
+16KB. The device will submit 6 16KB payloads and a 4KB final payload.
+
+Because the first 16 KB payload transfers are of category 1, the device
+will not insert a ZLP between the last packet of a payload and the first
+packet of the next payload. The final payload is 4KB, which is a
+multiple of a bulk packet (at either full or high speed), so the device
+will end this payload transfer with a ZLP.
+
+At high speed the UVC driver will issue URBs of 16KB as the limit set by
+psize * UVC_MAX_ISO_PACKETS in that case is 512*40 = 20KB. Each of the
+16KB payloads is reliably detected because the USB buffer is completely
+full.
+
+The URB transfers reliably detects the bulk transfer end because of the
+ZLP.
+
+At full speed, the UVC driver will submit URBs of 2650 bytes. This means
+that the first 16 KB payload will result in 6 URBS completely filled,
+but the 7th URB will fail to detect the boundary between the two 16KB
+payloads. It will continue to fill the URB until the URB buffer is full
+resulting in an URB that has 1024 bytes of the first payload and 1536
+bytes of the next payload (including its payload header).
+
+This case is not handled in the bulk data decoder I think.
+
+It may seem that ensuring that the payload size is an multiple of the
+URB size might solve this issue. For full sized payloads that is indeed
+the case. Each full sized payload then results in a multiple URBs that
+only contain data for that payload. However, if the last payload
+contains less data than a full sized payload, the device inserts a ZLP
+if the last packet was not short. This because from the device point of
+view, it needs to signal that the host is going to get less data than it
+expects. However, it may happen that the bulk transfer ends at an exact
+multiple of the URB size.
+
+Again, example:
+
+100 KB frame, 16KB max payload and 2K URB size. The first 6 payload
+transfers all work well. Each payload is transferred with 8 URBs, and
+payload boundaries are detected based on payload buffer being full.
+
+The 7th payload is 4 KB in size. An exact multiple of bulk packets
+completes this transfer, and because 4 KB &lt; 16KB, the device inserts a
+ZLP. The host receives 2 URBs, and then an URB of 0 bytes long (=ZLP).
+Normally, that ZLP would have been absorbed by the USB transport layer
+and caused the URB to end 'prematurely'. But because the UVC host now
+uses a smaller URB buffer lenghth, it needs to handle these ZLP as
+0-length URBs.
+
+It seems that this is indeed the case, and that 0 length URB would mark
+the end of the payload. So this may be a fix:
+
+In static int uvc_init_video_bulk(struct uvc_video_device *video,
+	struct usb_host_endpoint *ep, gfp_t gfp_flags) (uvc_video.c)
+
+	psize = le16_to_cpu(ep-&gt;desc.wMaxPacketSize) &amp; 0x07ff;
+	size = video-&gt;streaming-&gt;ctrl.dwMaxPayloadTransferSize;
+	video-&gt;bulk.max_payload_size = size;
+-	if (size &gt; psize * UVC_MAX_ISO_PACKETS)
+-		size = psize * UVC_MAX_ISO_PACKETS;
++ 	if (size &gt; psize * UVC_MAX_ISO_PACKETS) {
++		size = psize * UVC_MAX_ISO_PACKETS;
++		size -= video-&gt;bulk.max_payload_size % size;
++	}
+	if (uvc_alloc_urb_buffers(video, size) &lt; 0)
+
+I welcome a discussion about this, and a more detailed rationale behind
+the use of UVC_MAX_ISO_PACKETS in this context. Especially since for
+full speed, the packet size difference between bulk and iso transport
+can differ significantly - 64 versus max. 1023. This results in bulk URB
+sizes that are up to 16 times smaller than the ones used for isochronous
+transfer.
+
+Regards,
+
+Robert Lukassen 
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004474.html">[Linux-uvc-devel] uvcvideo module crashes on load attempt
+</A></li>
+	<LI>Next message: <A HREF="004477.html">[Linux-uvc-devel] URB size for Bulk transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4457">[ date ]</a>
+              <a href="thread.html#4457">[ thread ]</a>
+              <a href="subject.html#4457">[ subject ]</a>
+              <a href="author.html#4457">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

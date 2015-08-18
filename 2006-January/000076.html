@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Partial succes with Logitech QC Fusion
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Partial%20succes%20with%20Logitech%20QC%20Fusion&In-Reply-To=%3C200601101526.01677.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000073.html">
+   <LINK REL="Next"  HREF="000078.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Partial succes with Logitech QC Fusion</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Partial%20succes%20with%20Logitech%20QC%20Fusion&In-Reply-To=%3C200601101526.01677.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Partial succes with Logitech QC Fusion">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Jan 10 15:26:01 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000073.html">[Linux-uvc-devel] Partial succes with Logitech QC Fusion
+</A></li>
+        <LI>Next message: <A HREF="000078.html">[Linux-uvc-devel] Partial succes with Logitech QC Fusion
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76">[ date ]</a>
+              <a href="thread.html#76">[ thread ]</a>
+              <a href="subject.html#76">[ subject ]</a>
+              <a href="author.html#76">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Mikael,
+
+&gt;<i> I wanted to report a partial success with my new QuickCam Fusion.
+</I>[...]
+&gt;<i> Anyway, trying the test program I get
+</I>&gt;<i>
+</I>&gt;<i> Device /dev/video0 opened: .
+</I>&gt;<i> Unable to set format: 22.
+</I>
+As you mention later, your laptop doesn't support USB 2.0, so uncompressed 
+image formats are not available (YUYV). You must instead use the MJPEG 
+format, as you found out by yourself.
+
+&gt;<i> Trying instead using
+</I>&gt;<i>
+</I>&gt;<i>         fmt.fmt.pix.width = 640;
+</I>&gt;<i>         fmt.fmt.pix.height = 480;
+</I>&gt;<i>         fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
+</I>&gt;<i>
+</I>&gt;<i> it seems to work: it creates a number of files that &quot;file *&quot; tells me
+</I>&gt;<i> are JPEG files, but I cannot view them using regular image tools. Tips
+</I>&gt;<i> for checking them?
+</I>
+The MJPEG files contains standard JPEG data without the Huffman tables, so you 
+won't be able to open them in your regular image tools. I posted a patch to 
+the video4linux mailing list some time ago to add MJPEG support to Qt (so 
+most Qt/KDE based applications will be able to open MJPEG images).
+
+I will create a simple script to add the Huffman tables to an MJPEG image. 
+Should I write it in C or in Python ?
+
+&gt;<i> I have not gotten xawtv or tvtime to work (xawtv does not like my Xorg
+</I>&gt;<i> server: XF86DGANoDirectVideoMode, and tvtime complains about not having
+</I>&gt;<i> studio quality capture). Other tips on applications I should try?
+</I>
+tvtime should work with the patch I posted on the linux-uvc mailing list. Try 
+with PAL if NTSC doesn't work (the video standard is irrelevant, but tvtime 
+will use another resolution with PAL).
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000073.html">[Linux-uvc-devel] Partial succes with Logitech QC Fusion
+</A></li>
+	<LI>Next message: <A HREF="000078.html">[Linux-uvc-devel] Partial succes with Logitech QC Fusion
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76">[ date ]</a>
+              <a href="thread.html#76">[ thread ]</a>
+              <a href="subject.html#76">[ subject ]</a>
+              <a href="author.html#76">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

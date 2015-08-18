@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Minoru stereo webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Minoru%20stereo%20webcam&In-Reply-To=%3C49880F26.1070005%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004522.html">
+   <LINK REL="Next"  HREF="004525.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Minoru stereo webcam</H1>
+    <B>Simone Freddio</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Minoru%20stereo%20webcam&In-Reply-To=%3C49880F26.1070005%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Minoru stereo webcam">sioux1977 at gmail.com
+       </A><BR>
+    <I>Tue Feb  3 10:32:22 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004522.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+        <LI>Next message: <A HREF="004525.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4523">[ date ]</a>
+              <a href="thread.html#4523">[ thread ]</a>
+              <a href="subject.html#4523">[ subject ]</a>
+              <a href="author.html#4523">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+    here the results of my tests:
+
+    MaxPayloadTransferSize        Value Returned from device            
+Result
+    0                                            128                    
+                              uvcvideo: USB isochronous frame lost (-71).
+    1                                            128                    
+                              uvcvideo: USB isochronous frame lost (-71).
+    42                                          128                    
+                              uvcvideo: USB isochronous frame lost (-71).
+    1024                                      1024                     
+                           works right with few USB iso frame lost
+    0xFFFF                                   3072                        
+                       no error but also no capture :-(
+
+    My conclusion is that MaxPayloadTransferSize, regardless of 
+specification, is not readonly... seems to be that device round this 
+value to the closest that is supported (see also my lsusb in file 
+lsusb.txt).
+
+    I think that the right bandwidth allocation must be calculated in 
+the driver and set up in the device (the same you have done for 
+frameinterval value :-).
+
+BR Simone.
+
+Laurent Pinchart wrote:
+&gt;<i> Hi Simone,
+</I>&gt;<i>
+</I>&gt;<i> On Tuesday 03 February 2009, Simone Freddio wrote:
+</I>&gt;<i>   
+</I>&gt;&gt;<i> Hi Jan, hi Laurent...
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>     i have the same problem with different webcam... i think to have
+</I>&gt;&gt;<i> found the problem, Laurent tell me if i am wrong, i'll go to explain:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>     The problem is in the bandwidth, the uvcdriver ALWAYS ask to usb
+</I>&gt;&gt;<i> layer a dw_MaxPayloadTransferSize that is fetched only when the device
+</I>&gt;&gt;<i> is opening;
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>     In my case is always set to 3072 (3x1024). I have tried changing
+</I>&gt;&gt;<i> uvc_video.c in a very dirty manner (excuse me Laurent)
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> Don't worry :-)
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>&gt;&gt;<i> in this way: 
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>     In function 'uvc_set_video_ctrl' where there is:
+</I>&gt;&gt;<i>      put_unaligned_le32(ctrl-&gt;dwMaxVideoFrameSize, &amp;data[18]);
+</I>&gt;&gt;<i>      put_unaligned_le32(ctrl-&gt;dwMaxPayloadTransferSize, &amp;data[22]);
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>     i have commented out the second line and changed it in:
+</I>&gt;&gt;<i>     put_unaligned_le32(1024, &amp;data[22]);
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>     In this way i have always force uvc driver to ask for a payload size
+</I>&gt;&gt;<i> of 1024.
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> According to the UVC 1.1 specification, the dwMaxPayloadTransferSize is set by 
+</I>&gt;<i> the device and read only from the host. The value set by the host shouldn't 
+</I>&gt;<i> matter.
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>&gt;&gt;<i>     After recompiling, reinstalling, unload e load the module, i can get
+</I>&gt;&gt;<i> two webcam working fine and simultaneously.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>     Now i didn't have a big experience and i can't change source myself
+</I>&gt;&gt;<i> in the right way... but i think that my observation can be usefull.
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> It is, thanks.
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>&gt;&gt;<i>     I think that the best way to re-negotiate the bandwidth is to set
+</I>&gt;&gt;<i> video streaming parameters (framesize and frameinterval) and after ask
+</I>&gt;&gt;<i> the device wich bandwidth it requests.
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> That's exactly what the driver does. In uvc_probe_video, each SET_CUR request 
+</I>&gt;<i> is followed by a GET_CUR to retrieve the bandwidth requested by the camera.
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>&gt;&gt;<i>     In a short way, at the end of uvc_set_video_ctrl function a call to
+</I>&gt;&gt;<i> uvc_get_video_ctrl will solve the problem... what do you think Laurent?)
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> This is already handled by uvc_probe_video. From your report it seems that the 
+</I>&gt;<i> device doesn't touch the dwMaxPayloadTransferSize at all and just returns the 
+</I>&gt;<i> value sets by the host.
+</I>&gt;<i>
+</I>&gt;<i> Could you (or Jan) try to set dwMaxPayloadTransferSize to a weird value (let's 
+</I>&gt;<i> say 42) and see what the device returns in the next GET_CUR call ?
+</I>&gt;<i>
+</I>&gt;<i> Best regards,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>
+-------------- next part --------------
+An embedded and charset-unspecified text was scrubbed...
+Name: lsusb.txt
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090203/1d52a89c/attachment.txt">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090203/1d52a89c/attachment.txt</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004522.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+	<LI>Next message: <A HREF="004525.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4523">[ date ]</a>
+              <a href="thread.html#4523">[ thread ]</a>
+              <a href="subject.html#4523">[ subject ]</a>
+              <a href="author.html#4523">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

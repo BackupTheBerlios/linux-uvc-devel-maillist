@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [BUG] NULL pointer dereference caused by	uvcvideo stress test
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BBUG%5D%20NULL%20pointer%20dereference%20caused%20by%0A%09uvcvideo%20stress%20test&In-Reply-To=%3C200810152319.17925.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004131.html">
+   <LINK REL="Next"  HREF="004133.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [BUG] NULL pointer dereference caused by	uvcvideo stress test</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BBUG%5D%20NULL%20pointer%20dereference%20caused%20by%0A%09uvcvideo%20stress%20test&In-Reply-To=%3C200810152319.17925.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] [BUG] NULL pointer dereference caused by	uvcvideo stress test">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Oct 15 23:19:17 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004131.html">[Linux-uvc-devel] [BUG] NULL pointer dereference caused by	uvcvideo stress test
+</A></li>
+        <LI>Next message: <A HREF="004133.html">[Linux-uvc-devel] Framegrabber USB for Linux
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4132">[ date ]</a>
+              <a href="thread.html#4132">[ thread ]</a>
+              <a href="subject.html#4132">[ subject ]</a>
+              <a href="author.html#4132">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Alan,
+
+On Wednesday 15 October 2008, Alan Jenkins wrote:
+&gt;<i> Laurent Pinchart wrote:
+</I>&gt;<i> &gt; On Wednesday 15 October 2008, Alan Jenkins wrote:
+</I>&gt;<i> &gt; &gt; If you look at the trace, it happens as &quot;hald-probe-video&quot; opens the
+</I>&gt;<i> &gt; &gt; video device.  This is from Ubuntu 8.04.  Possibly it's significant that
+</I>&gt;<i> &gt; &gt; I use the camera first, to make sure it works (I use Kopete, the
+</I>&gt;<i> &gt; &gt; settings dialogue includes a video test).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; The NULL pointer (or rather 0x00000030 pointer) dereference happens in
+</I>&gt;<i> &gt; video_open:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;         file-&gt;f_op = fops_get(vfl-&gt;fops);
+</I>&gt;<i> &gt;         if (file-&gt;f_op-&gt;open)
+</I>&gt;<i> &gt;                 err = file-&gt;f_op-&gt;open(inode, file);
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; file-&gt;f_op ends up being NULL. Either vfl-&gt;fops is NULL to begin with, or
+</I>&gt;<i> &gt; fops_get failed to get a reference to the file_operations structure.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I'd be surprised if vfl-&gt;fops was NULL. To rule out that case, can you
+</I>&gt;<i> &gt; add a BUG_ON(vfl-&gt;fops == NULL) before the call to fops_get ?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I'm not too familiar with the module loader, but a quick look at the code
+</I>&gt;<i> &gt; shows that the module could be marked as being unloaded
+</I>&gt;<i> &gt; (MODULE_STATE_GOING) before its exit function is called. If this is the
+</I>&gt;<i> &gt; case video_open would still be called, as the video device would still be
+</I>&gt;<i> &gt; registered, but fops_get would fail in try_module_get and return a NULL
+</I>&gt;<i> &gt; pointer. It seems the pointer returned by fops_get should be tested in
+</I>&gt;<i> &gt; video_open.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I've CC'ed the v4l maintainer to get his opinion on this.
+</I>&gt;<i>
+</I>&gt;<i> I put one before and one after
+</I>&gt;<i>
+</I>&gt;<i> 134    BUG_ON(vfl-&gt;fops == NULL);
+</I>&gt;<i> 135    file-&gt;f_op = fops_get(vfl-&gt;fops);
+</I>&gt;<i> 136    BUG_ON(file-&gt;f_op == NULL);
+</I>&gt;<i>
+</I>&gt;<i> and the second one triggered
+</I>
+This confirms my suspicion. Could you please try the attached patch ?
+
+Best regards,
+
+Laurent Pinchart
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: fops_get_check.patch
+Type: text/x-diff
+Size: 710 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20081015/b53a4b88/attachment.patch">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20081015/b53a4b88/attachment.patch</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004131.html">[Linux-uvc-devel] [BUG] NULL pointer dereference caused by	uvcvideo stress test
+</A></li>
+	<LI>Next message: <A HREF="004133.html">[Linux-uvc-devel] Framegrabber USB for Linux
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4132">[ date ]</a>
+              <a href="thread.html#4132">[ thread ]</a>
+              <a href="subject.html#4132">[ subject ]</a>
+              <a href="author.html#4132">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

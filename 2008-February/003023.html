@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Camera Restart Error
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Camera%20Restart%20Error&In-Reply-To=%3C200802132322.32590.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003019.html">
+   <LINK REL="Next"  HREF="003025.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Camera Restart Error</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Camera%20Restart%20Error&In-Reply-To=%3C200802132322.32590.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Camera Restart Error">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Feb 13 23:22:32 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003019.html">[Linux-uvc-devel] Camera Restart Error
+</A></li>
+        <LI>Next message: <A HREF="003025.html">[Linux-uvc-devel] Camera Restart Error
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3023">[ date ]</a>
+              <a href="thread.html#3023">[ thread ]</a>
+              <a href="subject.html#3023">[ subject ]</a>
+              <a href="author.html#3023">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Nathanael,
+
+On Wednesday 13 February 2008, Nathanael Galpin wrote:
+&gt;<i> Hi Laurent,
+</I>&gt;<i>
+</I>&gt;<i> &gt; &gt; On Tuesday 12 February 2008, Nathanael Galpin wrote:
+</I>&gt;<i> &gt; &gt; I've run into an error using the UVC driver with V4L2 to stream data
+</I>&gt;<i> &gt; &gt; from webcams. Everything works fine the first time around. I allocate
+</I>&gt;<i> &gt; &gt; buffers, enque them and then stream data from the camera. However,
+</I>&gt;<i> &gt; &gt; after stopping the camera and unmapping all the buffers, a subsequent
+</I>&gt;<i> &gt; &gt; attempt to map buffers and start streaming fails.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; That's definitely not how this is supposed to work. Your code is probably
+</I>&gt;<i> &gt; missing something.
+</I>&gt;<i>
+</I>&gt;<i> I've attached a small sample app to the bottom of this email. It's written
+</I>&gt;<i> in C++ and can be compiled with g++ &lt;filename.cpp&gt;.
+</I>
+Thanks. I compiled and ran the application without any visible issue. Here is 
+the application output.
+
+Cam Test Project: Restarting a camera.
+Video Device Found.
+Video Device Configured
+Allocated buffers for camera.
+Buffers enqueued to camera.
+Streaming data...
+Processing frame: 0
+Processing frame: 1
+Processing frame: 2
+Processing frame: 3
+Processing frame: 4
+Processing frame: 5
+Processing frame: 6
+Processing frame: 7
+Processing frame: 8
+Processing frame: 9
+Streaming data stopped.
+Allocated buffers for camera.
+Buffers enqueued to camera.
+Streaming data...
+Processing frame: 0
+Processing frame: 1
+Processing frame: 2
+Processing frame: 3
+Processing frame: 4
+Processing frame: 5
+Processing frame: 6
+Processing frame: 7
+Processing frame: 8
+Processing frame: 9
+Streaming data stopped.
+
+Terminated Camera - Code: 0
+
+&gt;<i> &gt; &gt; On a related note, whenever an errenous request is made to the camera,
+</I>&gt;<i> &gt; &gt; it goes into an error state and won't accept any other commands. Is
+</I>&gt;<i> &gt; &gt; there a way to clear this error state, or should I just close and
+</I>&gt;<i> &gt; &gt; reopen the device file?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Which camera are you talking about ? What kind of erroneous request ?
+</I>&gt;<i> &gt; Please provide more details along with kernel log messages if available.
+</I>&gt;<i>
+</I>&gt;<i> I wasn't able to get kernel logging enabled last night for the uvc driver
+</I>&gt;<i> (but I was pretty tired). I'll spend some more time debugging this and post
+</I>&gt;<i> more details when I have them. I figured I would ask in case there was a
+</I>&gt;<i> generic way to clear error states in a webcam I wasn't familiar with.
+</I>
+UVC driver logging is controlled by the module's trace parameter. You can set 
+it when loading the module with
+
+modprobe uvcvideo trace=xxx
+
+or modify it at runtime with
+
+echo xxx &gt; /sys/modules/uvcvideo/parameters/trace
+
+The parameter is a bitmask. Bit flags are defined in uvcvideo.h and have the 
+following meaning:
+
+UVC_TRACE_PROBE		Device probing and scanning
+UVC_TRACE_DESCR		Descriptors parsing
+UVC_TRACE_CONTROL	Controls registration and requests
+UVC_TRACE_FORMAT	Frame format modifications
+UVC_TRACE_CAPTURE	Video buffers operations
+UVC_TRACE_CALLS		V4L2 calls
+UVC_TRACE_IOCTL		V4L2 ioctls
+UVC_TRACE_FRAME		Video data frames parsing
+UVC_TRACE_SUSPEND	Suspend/resume operations
+UVC_TRACE_STATUS	Camera-driven event notifications
+
+Setting UVC_TRACE_FRAME fills the kernel log quite fast. UVC_TRACE_IOCTL and 
+UVC_TRACE_CALLS will also print a few messages per frame. Other traces output 
+less information.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003019.html">[Linux-uvc-devel] Camera Restart Error
+</A></li>
+	<LI>Next message: <A HREF="003025.html">[Linux-uvc-devel] Camera Restart Error
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3023">[ date ]</a>
+              <a href="thread.html#3023">[ thread ]</a>
+              <a href="subject.html#3023">[ subject ]</a>
+              <a href="author.html#3023">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

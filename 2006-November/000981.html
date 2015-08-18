@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Experimental%20patch%20for%20USB%20problem%20with%0A%09Logitech%20webcams&In-Reply-To=%3C200611110059.44981.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000979.html">
+   <LINK REL="Next"  HREF="000983.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Experimental%20patch%20for%20USB%20problem%20with%0A%09Logitech%20webcams&In-Reply-To=%3C200611110059.44981.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sat Nov 11 00:59:44 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000979.html">[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+</A></li>
+        <LI>Next message: <A HREF="000983.html">[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#981">[ date ]</a>
+              <a href="thread.html#981">[ thread ]</a>
+              <a href="subject.html#981">[ subject ]</a>
+              <a href="author.html#981">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> &gt;&gt; That's the thing. On Windows, the hardware bug simply isn't triggered.
+</I>&gt;<i> &gt;&gt; The timing of the USB packets is slightly different on Linux and
+</I>&gt;<i> &gt;&gt; Windows and apparently that's enough to trigger the problem.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Is this something that should be addressed in the USB subsystem? Is
+</I>&gt;<i> &gt; either the Linux or Windows way right or wrong, or just different?
+</I>&gt;<i>
+</I>&gt;<i> Just different, unfortunately. The error is clearly in the hardware and
+</I>&gt;<i> there isn't much the USB subsystem can do about it since the EHCI driver
+</I>&gt;<i> just programs the controller and the actual timing depends on the
+</I>&gt;<i> controller. At which point the difference springs into existence is
+</I>&gt;<i> something I haven't understood yet and nobody was able to tell me.
+</I>
+A control request is made of a SETUP transaction (setup stage), zero, one or 
+more DATA transactions (data stage) and a last DATA transaction (status 
+stage).
+
+The EHCI driver splits the request into at least 2 transactions (when there is 
+no data stage), and queues all the transactions to the hardware. Individual 
+packets timing in a single transaction is up to the controller, but it should 
+be possible to delay submission of transactions instead of queuing them ASAP. 
+Knowledge of the EHCI driver internals is needed here.
+
+Anyone wanna give this a try ?
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000979.html">[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+</A></li>
+	<LI>Next message: <A HREF="000983.html">[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#981">[ date ]</a>
+              <a href="thread.html#981">[ thread ]</a>
+              <a href="subject.html#981">[ subject ]</a>
+              <a href="author.html#981">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

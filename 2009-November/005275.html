@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] ViMicro Webcam 0ac8:3420 bug+fix
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20ViMicro%20Webcam%200ac8%3A3420%20bug%2Bfix&In-Reply-To=%3C200911041512.07598.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005274.html">
+   <LINK REL="Next"  HREF="005276.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] ViMicro Webcam 0ac8:3420 bug+fix</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20ViMicro%20Webcam%200ac8%3A3420%20bug%2Bfix&In-Reply-To=%3C200911041512.07598.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] ViMicro Webcam 0ac8:3420 bug+fix">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Wed Nov  4 15:12:07 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005274.html">[Linux-uvc-devel] Webcam problem, notebook ASUS k50in,	CN7129 04f2:b071 , more details
+</A></li>
+        <LI>Next message: <A HREF="005276.html">[Linux-uvc-devel] ViMicro Webcam 0ac8:3420 bug+fix
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5275">[ date ]</a>
+              <a href="thread.html#5275">[ thread ]</a>
+              <a href="subject.html#5275">[ subject ]</a>
+              <a href="author.html#5275">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Sven,
+
+On Thursday 29 October 2009 19:02:50 Sven Geggus wrote:
+&gt;<i> Laurent Pinchart schrieb am Mittwoch, den 28. Oktober um 13:44 Uhr:
+</I>&gt;<i> &gt; Could you please try the following patch ? It disables the quirk for
+</I>&gt;<i> &gt; compressed formats.
+</I>&gt;<i> 
+</I>&gt;<i> This patch does not apply here (Vanilla Kernel Linux 2.6.31.5).
+</I>&gt;<i> 
+</I>&gt;<i> I suppose this would be equivalent:
+</I>&gt;<i> 
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> b/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> index 01b633c..df8a335 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> @@ -90,7 +90,8 @@ static void uvc_fixup_video_ctrl(struct uvc_video_device
+</I>&gt;<i> *video,
+</I>&gt;<i>                 ctrl-&gt;dwMaxVideoFrameSize =
+</I>&gt;<i>                         frame-&gt;dwMaxVideoFrameBufferSize;
+</I>&gt;<i> 
+</I>&gt;<i> -       if (video-&gt;dev-&gt;quirks &amp; UVC_QUIRK_FIX_BANDWIDTH &amp;&amp;
+</I>&gt;<i> +       if (!(format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) &amp;&amp;
+</I>&gt;<i> +           video-&gt;dev-&gt;quirks &amp; UVC_QUIRK_FIX_BANDWIDTH &amp;&amp;
+</I>&gt;<i>             video-&gt;streaming-&gt;intf-&gt;num_altsetting &gt; 1) {
+</I>&gt;<i>                 u32 interval;
+</I>&gt;<i>                 u32 bandwidth;
+</I>
+Yes it is.
+ 
+&gt;<i> The above change _does_ make it work the same as getting rid of the quirks
+</I>&gt;<i> altogether. There might be different firmware Version of the devices
+</I>&gt;<i> around.
+</I>
+Thanks. I'll apply the patch then.
+ 
+&gt;<i> BTW wouldn't it be better to make the quirks module parameter _overwrite_
+</I>&gt;<i> camera specific quirks altogether instead of adding them with xor? This way
+</I>&gt;<i> I would have been able to disable the quirks without patching the module.
+</I>
+It could be useful, but quirks activated by mistake (or not doing their job 
+properly) shouldn't occur often as those problems result of a driver bug. I 
+don't think there's really a need for this.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005274.html">[Linux-uvc-devel] Webcam problem, notebook ASUS k50in,	CN7129 04f2:b071 , more details
+</A></li>
+	<LI>Next message: <A HREF="005276.html">[Linux-uvc-devel] ViMicro Webcam 0ac8:3420 bug+fix
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5275">[ date ]</a>
+              <a href="thread.html#5275">[ thread ]</a>
+              <a href="subject.html#5275">[ subject ]</a>
+              <a href="author.html#5275">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Troubles with Logitech Quickcan Pro for	Notebooks (046d:08c3)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Troubles%20with%20Logitech%20Quickcan%20Pro%20for%0A%09Notebooks%20%28046d%3A08c3%29&In-Reply-To=%3C200607212337.54594.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000605.html">
+   <LINK REL="Next"  HREF="000609.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Troubles with Logitech Quickcan Pro for	Notebooks (046d:08c3)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Troubles%20with%20Logitech%20Quickcan%20Pro%20for%0A%09Notebooks%20%28046d%3A08c3%29&In-Reply-To=%3C200607212337.54594.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Troubles with Logitech Quickcan Pro for	Notebooks (046d:08c3)">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Fri Jul 21 23:37:54 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000605.html">[Linux-uvc-devel] Troubles with Logitech Quickcan Pro for Notebooks	(046d:08c3)
+</A></li>
+        <LI>Next message: <A HREF="000609.html">[Linux-uvc-devel] Troubles with Logitech Quickcan Pro for	Notebooks (046d:08
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#608">[ date ]</a>
+              <a href="thread.html#608">[ thread ]</a>
+              <a href="subject.html#608">[ subject ]</a>
+              <a href="author.html#608">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Shawn,
+
+&gt;<i> First of all, to the developers, thanks for all your hard work and effort
+</I>&gt;<i> on this project.
+</I>
+Thanks :-)
+
+&gt;<i> I recently bought my QPfN and installed the uvcvideo driver.  I plug in my
+</I>&gt;<i> camera and everything seems to load fine.  But I'm not sure if it's
+</I>&gt;<i> working. Both aMSN and Ekiga don't seem to be working with the driver. 
+</I>&gt;<i> Other people seem to have this camera working, so I'm a little confused by
+</I>&gt;<i> my results.
+</I>
+I heard that aMSN doesn't work with MJPEG webcams. Ekiga should work though.
+
+&gt;<i> Here's some useful info for starts
+</I>&gt;<i>
+</I>&gt;<i> #&gt; lsusb
+</I>&gt;<i> Bus 001 Device 008: ID 046d:08c3 Logitech, Inc.
+</I>&gt;<i>
+</I>&gt;<i> #&gt; lsmod
+</I>&gt;<i> Module                  Size  Used by
+</I>&gt;<i> uvcvideo               32452  0
+</I>&gt;<i> v4l1_compat            13380  1 uvcvideo
+</I>&gt;<i> videodev                7232  1 uvcvideo
+</I>&gt;<i> v4l2_common             6592  1 uvcvideo
+</I>&gt;<i>
+</I>&gt;<i> #&gt; dmesg
+</I>&gt;<i> usb 1-1: new high speed USB device using ehci_hcd and address 9
+</I>&gt;<i> usb 1-1: configuration #1 chosen from 1 choice
+</I>&gt;<i> Linux video capture interface: v1.00
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:08c3)
+</I>&gt;<i> usbcore: registered new driver uvcvideo
+</I>&gt;<i> USB Video Class driver (v0.1.0)
+</I>&gt;<i>
+</I>&gt;<i> #&gt; uname -a
+</I>&gt;<i> Linux project2501 2.6.16-gentoo-r13 #9 PREEMPT Thu Jul 20 23:14:19 JST 2006
+</I>&gt;<i> i686 Intel(R) Pentium(R) M processor 1500MHz GNU/Linux
+</I>&gt;<i> // ALSO STARTED WITH 2.6.14-gentoo-r2 WITH SAME RESULTS
+</I>
+Don't use 2.6.14. You need 2.6.15 or newer.
+
+&gt;<i> ### This next bit is curious with unknown descriptor types.  broken
+</I>&gt;<i> hardware?? ###
+</I>&gt;<i> #&gt; lsusb -v
+</I>
+No, that's normal. lsusb doesn't support UVC descriptors and report them as 
+unknown. Get the latest version from CVS if you want lsusb to decode the UVC 
+descriptors.
+
+[snip]
+
+&gt;<i> Testing with Ekiga 2.0.2
+</I>&gt;<i> Edit-&gt;Preferences ---&gt; Devices-&gt;Video Devices
+</I>&gt;<i> Only &quot;Picture&quot; is listed under the Video Plugin combo box.
+</I>&gt;<i> No new messages in /var/log/messages (i.e. dmesg)
+</I>
+Did you compile Ekiga with v4l and v4l2 support ?
+
+&gt;<i> Testing with aMSN
+</I>&gt;<i> Account-&gt;Preferences-&gt;Others-&gt;Configure Webcam-&gt;Change Video Settings
+</I>&gt;<i> I select &quot;v4l2: USB Video Class...&quot; under Devices column and &quot;Camera&quot; under
+</I>&gt;<i> Channels column.
+</I>&gt;<i>
+</I>&gt;<i> I get about 30 of
+</I>&gt;<i>
+</I>&gt;<i> ioctl: VIDIOC_DQBUF(index=0;type=VIDEO_CAPTURE;bytesused=0;flags=0x0
+</I>&gt;<i> [];field=ANY;;timecode.type=0;timecode.flags=0;timecode.frames=0;timecode.s
+</I>&gt;<i>econds=0;timecode.minutes=0;timecode.hours=0;timecode.userbits=&quot;&quot;;sequence=0
+</I>&gt;<i>;memory=unknown): Invalid argument
+</I>&gt;<i>
+</I>&gt;<i> in the terminal I used to start amsn. AND 3 of
+</I>&gt;<i>
+</I>&gt;<i> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110
+</I>&gt;<i>
+</I>&gt;<i> in /var/log/messages
+</I>&gt;<i>
+</I>&gt;<i> I've don't some experimenting with no real differences, so I'll stop here.
+</I>&gt;<i> Am I doing something wrong or missing something?
+</I>
+It's aMSN's fault, not yours. You could try to fix it :-)
+
+&gt;<i> Any other testing or programs I should try?  I saw somebody mention a
+</I>&gt;<i> uvctest program of sorts, but never found it.
+</I>
+You can try with luvcview which you can find on Michel Xhaard's website 
+(Google is your friend).
+
+&gt;<i> Thanks again to anyone who managed to keep reading this far.. :-)
+</I>
+You're welcome :-)
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000605.html">[Linux-uvc-devel] Troubles with Logitech Quickcan Pro for Notebooks	(046d:08c3)
+</A></li>
+	<LI>Next message: <A HREF="000609.html">[Linux-uvc-devel] Troubles with Logitech Quickcan Pro for	Notebooks (046d:08
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#608">[ date ]</a>
+              <a href="thread.html#608">[ thread ]</a>
+              <a href="subject.html#608">[ subject ]</a>
+              <a href="author.html#608">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

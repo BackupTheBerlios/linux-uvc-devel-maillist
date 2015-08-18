@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [new cam] 0408:1fc3 buildin webcam on fujisu	lifebook a340
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5Bnew%20cam%5D%200408%3A1fc3%20buildin%20webcam%20on%20fujisu%0A%09lifebook%20a340&In-Reply-To=%3C201101251438.27552.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006199.html">
+   <LINK REL="Next"  HREF="006208.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [new cam] 0408:1fc3 buildin webcam on fujisu	lifebook a340</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5Bnew%20cam%5D%200408%3A1fc3%20buildin%20webcam%20on%20fujisu%0A%09lifebook%20a340&In-Reply-To=%3C201101251438.27552.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] [new cam] 0408:1fc3 buildin webcam on fujisu	lifebook a340">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Tue Jan 25 14:38:27 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006199.html">[Linux-uvc-devel] [new cam] 0408:1fc3 buildin webcam on fujisu	lifebook a340
+</A></li>
+        <LI>Next message: <A HREF="006208.html">[Linux-uvc-devel] JMicron 152d:0310 needs options quirks=2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6225">[ date ]</a>
+              <a href="thread.html#6225">[ thread ]</a>
+              <a href="subject.html#6225">[ subject ]</a>
+              <a href="author.html#6225">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Alexey,
+
+On Sunday 16 January 2011 09:57:53 Alexey Fisher wrote:
+&gt;<i> Hi,
+</I>&gt;<i> i helping my friend to install linux on his new laptop &quot;fujisu lifebook
+</I>&gt;<i> a340&quot;. It is cheap one (350&#8364;) but seems to work good with linux. But web
+</I>&gt;<i> cam has some issues, which i will discuss with you.
+</I>&gt;<i> 
+</I>&gt;<i> It is uvc webcam (0408:1fc3 Quanta Computer, Inc.).
+</I>&gt;<i> For most frame sizes it aims to support 10, 15,25, 30 fps. In real life it
+</I>&gt;<i> stream only with 30fps, if i try to set 10fps, it will silently ignore it.
+</I>&gt;<i> The real problem - there is no exposure control and autoexposure do not
+</I>&gt;<i> working with 30fps too. So with normal light the image will be dark and
+</I>&gt;<i> noisy.
+</I>&gt;<i> 
+</I>&gt;<i> With frame sizes 1280x960 and 1280x1024, it has max frame rate 9fps
+</I>&gt;<i> (aims to support 9 and 5 fps). Interesting thing is, autoexposure seems
+</I>&gt;<i> to work here. If i close the cam, frame rate will drop to ~4fps, and if
+</I>&gt;<i> i add extra light it will go to ~9fps. The image with this framerate is
+</I>&gt;<i> better than with 30fps.
+</I>&gt;<i> 
+</I>&gt;<i> By tracing i also found &quot;uvcvideo: Dropping payload (out of sync).&quot;
+</I>&gt;<i> messages. So i added two quirks for this cam: UVC_QUIRK_STREAM_NO_FID
+</I>&gt;<i> for out of sync;
+</I>
+Did UVC_QUIRK_STREAM_NO_FID make any difference ?
+
+&gt;<i> UVC_QUIRK_RESTRICT_FRAME_RATE for dummy frame rates.
+</I>&gt;<i>
+</I>&gt;<i> Now my question: is it possible to pull/force some registers to test if
+</I>&gt;<i> auto exposure can work with 30fps too?
+</I>
+The camera doesn't report exposure/auto exposure controls in its descriptors. 
+You could hack the driver to make it think the camera supports those controls. 
+You should then be able to set them from userspace to see if they make any 
+difference.
+
+The easiest way would be to modify uvc_ctrl_init_device() in uvc_ctrl.c. Add
+
+static const u8 camera_controls[3] = { 0x0e, 0x00, 0x00 };
+
+at the beginning of the function, and replace
+
+                } else if (UVC_ENTITY_TYPE(entity) == UVC_ITT_CAMERA) {
+                        bmControls = entity-&gt;camera.bmControls;
+                        bControlSize = entity-&gt;camera.bControlSize;
+                }
+
+with
+
+                } else if (UVC_ENTITY_TYPE(entity) == UVC_ITT_CAMERA) {
+                        bmControls = camera_controls;
+                        bControlSize = entity-&gt;camera.bControlSize;
+                }
+
+&gt;<i> If not, is it possible to notify user space about broken auto exposure?
+</I>&gt;<i> So user space apps can make right decision?
+</I>
+There's no API for that that I know of.
+
+&gt;<i> PS: in attachment is quirks_patch, and lsusb.
+</I>
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006199.html">[Linux-uvc-devel] [new cam] 0408:1fc3 buildin webcam on fujisu	lifebook a340
+</A></li>
+	<LI>Next message: <A HREF="006208.html">[Linux-uvc-devel] JMicron 152d:0310 needs options quirks=2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6225">[ date ]</a>
+              <a href="thread.html#6225">[ thread ]</a>
+              <a href="subject.html#6225">[ subject ]</a>
+              <a href="author.html#6225">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

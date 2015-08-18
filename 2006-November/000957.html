@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Experimental patch for USB problem with Logitech	webcams
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Experimental%20patch%20for%20USB%20problem%20with%20Logitech%0A%09webcams&In-Reply-To=%3Cop.tim8j4tc42iof8%40misha%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000955.html">
+   <LINK REL="Next"  HREF="000958.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Experimental patch for USB problem with Logitech	webcams</H1>
+    <B>Martin Rubli</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Experimental%20patch%20for%20USB%20problem%20with%20Logitech%0A%09webcams&In-Reply-To=%3Cop.tim8j4tc42iof8%40misha%3E"
+       TITLE="[Linux-uvc-devel] Experimental patch for USB problem with Logitech	webcams">linux at rubli.info
+       </A><BR>
+    <I>Tue Nov  7 12:22:49 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000955.html">[Linux-uvc-devel] Which branch to use
+</A></li>
+        <LI>Next message: <A HREF="000958.html">[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#957">[ date ]</a>
+              <a href="thread.html#957">[ thread ]</a>
+              <a href="subject.html#957">[ subject ]</a>
+              <a href="author.html#957">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all,
+
+Attached is a rather ugly patch that has proven to make the Logitech UVC  
+cameras work fine for some people. It works around the USB errors by  
+retrying control requests up to three times.
+
+We would like to get as much feedback as possible, so if you try it out,  
+please let us know whether or not it works for you.
+
+A few notes:
+
+- The patch is against the split branch.
+
+- This only applies for Logitech UVC cameras (QuickCam Fusion,  
+Orbit/Sphere, Pro 5000, for Notebooks Pro, UltraVision), the Cisco VT  
+Camera II, and for some built-in laptop cameras like the QuickCam for Dell  
+Notebooks and the Acer OrbiCam.
+
+- If the debug output bugs you, just uncomment the uvc_printk line. It  
+does, however give you an indication of whether and how often the patch  
+has &quot;prevented&quot; the problem.
+
+- Feel free to increase the QUERY_CTRL_RETRIES if you find that it helps.  
+If it does, please drop us a note.
+
+Again, any feedback is welcome. :-)
+
+Cheers,
+Martin
+
+
+
+
+
+Index: uvc_video.c
+===================================================================
+--- uvc_video.c	(revision 65)
++++ uvc_video.c	(working copy)
+@@ -38,8 +38,24 @@
+  			      : usb_sndctrlpipe(dev-&gt;udev, 0);
+  	type |= (query &amp; 0x80) ? USB_DIR_IN : USB_DIR_OUT;
+
++#ifndef QUERY_CTRL_RETRIES
+  	ret = usb_control_msg(dev-&gt;udev, pipe, query, type, cs &lt;&lt; 8,
+  			unit &lt;&lt; 8 | intfnum, data, size, UVC_CTRL_TIMEOUT);
++#else
++	{
++	int tries = 1 + QUERY_CTRL_RETRIES;
++	ret = 0;
++	while (tries--) {
++		ret = usb_control_msg(dev-&gt;udev, pipe, query, type, cs &lt;&lt; 8,
++				unit &lt;&lt; 8 | intfnum, data, size, UVC_CTRL_TIMEOUT);
++		if(ret &gt;= 0 || ret != -EPIPE)
++			break;
++		uvc_printk(KERN_ERR, &quot;Failed to query (%u) UVC control %u &quot;
++			&quot;(unit %u) : %d. Retrying %d more times ...\n&quot;,
++			query, cs, unit, ret, tries);
++	}
++	}
++#endif /* QUERY_CTRL_RETRIES */
+
+  	if (ret != size) {
+  		uvc_printk(KERN_ERR, &quot;Failed to query (%u) UVC control %u &quot;
+Index: uvcvideo.h
+===================================================================
+--- uvcvideo.h	(revision 65)
++++ uvcvideo.h	(working copy)
+@@ -233,6 +233,8 @@
+  #define UVC_MAX_VIDEO_BUFFERS	32
+
+  #define UVC_CTRL_TIMEOUT	300
++/* Number of retries for stalled control requests */
++#define QUERY_CTRL_RETRIES	3
+
+  /*  
+------------------------------------------------------------------------
+   * Structures.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: usb-retry.patch
+Type: application/octet-stream
+Size: 1343 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061107/d13546ac/attachment.obj">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061107/d13546ac/attachment.obj</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000955.html">[Linux-uvc-devel] Which branch to use
+</A></li>
+	<LI>Next message: <A HREF="000958.html">[Linux-uvc-devel] Experimental patch for USB problem with	Logitech webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#957">[ date ]</a>
+              <a href="thread.html#957">[ thread ]</a>
+              <a href="subject.html#957">[ subject ]</a>
+              <a href="author.html#957">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

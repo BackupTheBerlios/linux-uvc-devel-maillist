@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20Xbox%20Live%20Vision%20Cam%20%28045e%3A0294%29&In-Reply-To=%3C200709130004.40351.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002097.html">
+   <LINK REL="Next"  HREF="002110.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20Xbox%20Live%20Vision%20Cam%20%28045e%3A0294%29&In-Reply-To=%3C200709130004.40351.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Thu Sep 13 00:04:40 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002097.html">[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+</A></li>
+        <LI>Next message: <A HREF="002110.html">[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2100">[ date ]</a>
+              <a href="thread.html#2100">[ thread ]</a>
+              <a href="subject.html#2100">[ subject ]</a>
+              <a href="author.html#2100">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Felix,
+
+On Wednesday 12 September 2007, Felix Domke wrote:
+&gt;<i> Laurent Pinchart wrote:
+</I>&gt;<i> &gt;&gt; i've spent some time on the Microsoft Xbox Live Vision cam (it's pretty
+</I>&gt;<i> &gt;&gt; cheap, USB 2.0, nearly uvc 1.0 compliant, has a pretty good image
+</I>&gt;<i> &gt;&gt; quality, manual focus, allegedly a 1280x960 sensor (i haven't checked,
+</I>&gt;<i> &gt;&gt; it might just upscale, but i don't think so), and supports MJPG and
+</I>&gt;<i> &gt;&gt; YUYV).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; *nearly* UVC compliant ? *sigh*... Can't they test their hardware with
+</I>&gt;<i> &gt; Linux ? :-)
+</I>&gt;<i>
+</I>&gt;<i> *g*
+</I>&gt;<i>
+</I>&gt;<i> Well, given that the thing is designed for a gaming console, I consider
+</I>&gt;<i> it as an advancement already that it a.) doesn't have a proprietary
+</I>&gt;<i> connector, and b.) at least tries to follow SOME standard, and c.)
+</I>&gt;<i> doesn't try to put all the magic into the host.
+</I>&gt;<i>
+</I>&gt;<i> &gt; SET_INTERFACE shouldn't be required. Upon being plugged in, the webcam
+</I>&gt;<i> &gt; should select the default alternate setting.
+</I>&gt;<i>
+</I>&gt;<i> here is a lsusb -v:
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="http://tmb.elitedvb.net/lsusb_045e0294">http://tmb.elitedvb.net/lsusb_045e0294</A>
+</I>
+Thanks.
+
+&gt;<i> What's with that &quot;Xbox Security Method 3&quot; interface? So that's not the
+</I>&gt;<i> default interface? (We can/should totally ignore that interface, it's
+</I>&gt;<i> only an optional authentication between the host and the device. I just
+</I>&gt;<i> want to be sure that this is not the default interface.)
+</I>
+There is no such thing as a default interface. USB devices have several 
+interfaces, each of them with one or more alternate setting. Alternate 
+setting 0 should be selected by default for each interface. 
+usb_set_interface() selects an alternate setting for a given interface.
+
+The &quot;Xbox Security Method 3&quot; interface isn't even seen by the Linux UVC 
+driver.
+
+&gt;<i> &gt;&gt; b.) The cam requires about ~3sec time after the initial SET_INTERFACE.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Now this is bad news. What happens if you query controls during those
+</I>&gt;<i> &gt; ~3sec ? Those the webcam timeout but stay functional, or does it crash ?
+</I>&gt;<i>
+</I>&gt;<i> It stays functional. It just responds with NAKs, and then, after it has
+</I>&gt;<i> initialized itself, it answers (unless, of course, the transaction has
+</I>&gt;<i> been cancelled).
+</I>
+Ok.
+
+&gt;<i> &gt; I'll test the SET_INTERFACE part and commit it soon. Regarding the
+</I>&gt;<i> &gt; timeouts, what happens if you modify the streaming timeout only ?
+</I>&gt;<i>
+</I>&gt;<i> I can currently not test it, because the cam is operating at a remote
+</I>&gt;<i> place (and I don't want to risk a crash), but I can this test tomorrow.
+</I>&gt;<i> My guess it that it will work, because the streaming command is done first.
+</I>&gt;<i>
+</I>&gt;<i> I still vote for a dummy transaction after the SET_INTERFACE with a long
+</I>&gt;<i> timeout, to make sure the cam has initialized itself. After that the
+</I>&gt;<i> short timeout should suffice. Just incrementing the timeout is a bad
+</I>&gt;<i> thing, i'd say.
+</I>
+That's my opinion too. I'll have to test that with different cameras to make 
+sure they don't crash or somehow misbehave.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002097.html">[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+</A></li>
+	<LI>Next message: <A HREF="002110.html">[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2100">[ date ]</a>
+              <a href="thread.html#2100">[ thread ]</a>
+              <a href="subject.html#2100">[ subject ]</a>
+              <a href="author.html#2100">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Add%20new%20sync%20quirk%20to%20uvcvideo%20and%20use%20with%0A%09Syntek%20174f%3A5212&In-Reply-To=%3C200712281340.17571.herton%40mandriva.com.br%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002669.html">
+   <LINK REL="Next"  HREF="002673.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212</H1>
+    <B>Herton Ronaldo Krzesinski</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Add%20new%20sync%20quirk%20to%20uvcvideo%20and%20use%20with%0A%09Syntek%20174f%3A5212&In-Reply-To=%3C200712281340.17571.herton%40mandriva.com.br%3E"
+       TITLE="[Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212">herton at mandriva.com.br
+       </A><BR>
+    <I>Fri Dec 28 16:40:17 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002669.html">[Linux-uvc-devel] Problem with newer Creative Live! IM Pro chip
+</A></li>
+        <LI>Next message: <A HREF="002673.html">[Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2657">[ date ]</a>
+              <a href="thread.html#2657">[ thread ]</a>
+              <a href="subject.html#2657">[ subject ]</a>
+              <a href="author.html#2657">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>This patch from Claudio S. Matsuoka adds a new quirk to make the Syntek 
+174f:5212 work.
+
+From 79775881893806a3aab141b278cf4039673121d7 Mon Sep 17 00:00:00 2001
+From: Claudio Matsuoka &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">cmatsuoka at gmail.com</A>&gt;
+Date: Thu, 27 Dec 2007 13:10:14 -0200
+Subject: [PATCH] Add quirk for Syntek 174f:5212 camera
+
+The Syntek 174f:5212 UVC camera in HP Spartan laptops fail to synchronize
+frames, add quirk to skip synchronization.
+
+Signed-off-by: Claudio Matsuoka &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">cmatsuoka at gmail.com</A>&gt;
+---
+ uvc_driver.c |   12 ++++++++++++
+ uvc_video.c  |   12 ++++++++----
+ uvcvideo.h   |    1 +
+ 3 files changed, 21 insertions(+), 4 deletions(-)
+
+diff --git a/uvc_driver.c b/uvc_driver.c
+index 715b4b1..49fb900 100644
+--- a/uvc_driver.c
++++ b/uvc_driver.c
+@@ -1530,6 +1530,7 @@ static int uvc_probe(struct usb_interface *intf,
+ 	dev-&gt;intf = usb_get_intf(intf);
+ 	dev-&gt;intfnum = intf-&gt;cur_altsetting-&gt;desc.bInterfaceNumber;
+ 	dev-&gt;quirks = id-&gt;driver_info;
++	dev-&gt;udev-&gt;quirks = id-&gt;driver_info;
+ 
+ 	/* Parse the Video Class control descriptor */
+ 	if (uvc_parse_control(dev) &lt; 0) {
+@@ -1653,6 +1654,17 @@ static int uvc_resume(struct usb_interface *intf)
+  * though they are compliant.
+  */
+ static struct usb_device_id uvc_ids[] = {
++	/* Syntek (HP Spartan) */
++	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE
++				| USB_DEVICE_ID_MATCH_INT_INFO,
++	  .idVendor		= 0x174f,
++	  .idProduct		= 0x5212,
++	  .bInterfaceClass	= USB_CLASS_VIDEO,
++	  .bInterfaceSubClass	= 1,
++	  .bInterfaceProtocol	= 0,
++	  .driver_info		= UVC_QUIRK_PROBE_MINMAX
++				| UVC_QUIRK_DONT_SYNCHRONIZE
++	},
+ 	/* ALi M5606 (Clevo M540SR) */
+ 	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE
+ 				| USB_DEVICE_ID_MATCH_INT_INFO,
+diff --git a/uvc_video.c b/uvc_video.c
+index 60e1507..dde1469 100644
+--- a/uvc_video.c
++++ b/uvc_video.c
+@@ -266,7 +266,8 @@ done:
+  * uvc_video_decode_end will never be called with a NULL buffer.
+  */
+ static int uvc_video_decode_start(struct uvc_video_queue *queue,
+-		struct uvc_buffer *buf, const __u8 *data, int len)
++		struct uvc_buffer *buf, const __u8 *data, int len,
++		const __u32 quirks)
+ {
+ 	__u8 fid;
+ 
+@@ -300,7 +301,8 @@ static int uvc_video_decode_start(struct uvc_video_queue *queue,
+ 	 * frame will always be in sync.
+ 	 */
+ 	if (buf-&gt;state != UVC_BUF_STATE_ACTIVE) {
+-		if (fid == queue-&gt;last_fid) {
++		if (~quirks &amp; UVC_QUIRK_DONT_SYNCHRONIZE &amp;&amp;
++					fid == queue-&gt;last_fid) {
+ 			uvc_trace(UVC_TRACE_FRAME, &quot;Dropping payload (out of &quot;
+ 				&quot;sync).\n&quot;);
+ 			return -ENODATA;
+@@ -396,7 +398,8 @@ static void uvc_video_decode_isoc(struct urb *urb,
+ 		mem = urb-&gt;transfer_buffer + urb-&gt;iso_frame_desc[i].offset;
+ 		do {
+ 			ret = uvc_video_decode_start(queue, buf, mem,
+-				urb-&gt;iso_frame_desc[i].actual_length);
++				urb-&gt;iso_frame_desc[i].actual_length,
++				urb-&gt;dev-&gt;quirks);
+ 			if (ret == -EAGAIN)
+ 				buf = uvc_queue_next_buffer(queue, buf);
+ 		} while (ret == -EAGAIN);
+@@ -432,7 +435,8 @@ static void uvc_video_decode_bulk(struct urb *urb,
+ 	 */
+ 	if (queue-&gt;bulk.header_size == -1) {
+ 		do {
+-			ret = uvc_video_decode_start(queue, buf, mem, len);
++			ret = uvc_video_decode_start(queue, buf, mem, len,
++							urb-&gt;dev-&gt;quirks);
+ 			if (ret == -EAGAIN)
+ 				buf = uvc_queue_next_buffer(queue, buf);
+ 		} while (ret == -EAGAIN);
+diff --git a/uvcvideo.h b/uvcvideo.h
+index 84ef9f4..6545951 100644
+--- a/uvcvideo.h
++++ b/uvcvideo.h
+@@ -312,6 +312,7 @@ struct uvc_xu_control {
+ #define UVC_QUIRK_PROBE_MINMAX		0x00000002
+ #define UVC_QUIRK_PROBE_EXTRAFIELDS	0x00000004
+ #define UVC_QUIRK_BUILTIN_ISIGHT	0x00000008
++#define UVC_QUIRK_DONT_SYNCHRONIZE	0x00000010
+ 
+ /* Format flags */
+ #define UVC_FMT_FLAG_COMPRESSED		0x00000001
+-- 
+1.5.2.5
+
+--
+[]'s
+Herton
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002669.html">[Linux-uvc-devel] Problem with newer Creative Live! IM Pro chip
+</A></li>
+	<LI>Next message: <A HREF="002673.html">[Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2657">[ date ]</a>
+              <a href="thread.html#2657">[ thread ]</a>
+              <a href="subject.html#2657">[ subject ]</a>
+              <a href="author.html#2657">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

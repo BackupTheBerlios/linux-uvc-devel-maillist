@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] I cannot get my Apple iSight to work
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20I%20cannot%20get%20my%20Apple%20iSight%20to%20work&In-Reply-To=%3C46CF1077.4090603%40derklecks.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002031.html">
+   <LINK REL="Next"  HREF="002036.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] I cannot get my Apple iSight to work</H1>
+    <B>Felix M&#246;ller</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20I%20cannot%20get%20my%20Apple%20iSight%20to%20work&In-Reply-To=%3C46CF1077.4090603%40derklecks.de%3E"
+       TITLE="[Linux-uvc-devel] I cannot get my Apple iSight to work">felix at derklecks.de
+       </A><BR>
+    <I>Fri Aug 24 19:08:07 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002031.html">[Linux-uvc-devel] I cannot get my Apple iSight to work
+</A></li>
+        <LI>Next message: <A HREF="002036.html">[Linux-uvc-devel] I cannot get my Apple iSight to work
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2032">[ date ]</a>
+              <a href="thread.html#2032">[ thread ]</a>
+              <a href="subject.html#2032">[ subject ]</a>
+              <a href="author.html#2032">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+&gt;&gt;<i> I don't own any MacBook so I can't test driver hacks. A few users helped me in
+</I>&gt;&gt;<i> creating a patch for the Linux UVC driver to support iSight webcams. I wasn't
+</I>&gt;&gt;<i> very happy with the last version, so I asked for feedback on a revised patch.
+</I>&gt;&gt;<i> I got no reply so far.
+</I>&gt;<i> 
+</I>&gt;<i> Where is this patch? Generally it's me and Ronald maintaining
+</I>&gt;<i> different versions of the patch. Mine has the isight functionallity
+</I>&gt;<i> self contained and has firmware loading in kernel space.
+</I>&gt;<i> 
+</I>&gt;<i> I have attached an updated isight patch against revision 121 (svn
+</I>&gt;<i> head) of the trunk. There is a regression introduced for me between
+</I>&gt;<i> revision 100 and 121 in finding a valid video chain. Kernel version
+</I>&gt;<i> here is 2.6.18.8. Output of modprobe uvcvideo trace=15 of the two
+</I>&gt;<i> revisions below.
+</I>
+I did a little bit of bisecting today and not it is working with
+uvcvideo r121 and kernel 2.6.22.3. I am using the openSUSE patch and in
+addition I had to comment out the following from uvc_driver.c. Which was
+added with revision 119:
+
+if (intf-&gt;cur_altsetting-&gt;desc.bInterfaceSubClass
+	!= SC_VIDEOSTREAMING) {
+	uvc_trace(UVC_TRACE_DESCR, &quot;device %d &quot;
+		&quot;interface %d isn't a video &quot;
+		&quot;streaming interface\n&quot;,
+		udev-&gt;devnum, i);
+	continue;
+}
+
+This stopped the crash from appearing.
+
+greetings Felix
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002031.html">[Linux-uvc-devel] I cannot get my Apple iSight to work
+</A></li>
+	<LI>Next message: <A HREF="002036.html">[Linux-uvc-devel] I cannot get my Apple iSight to work
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2032">[ date ]</a>
+              <a href="thread.html#2032">[ thread ]</a>
+              <a href="subject.html#2032">[ subject ]</a>
+              <a href="author.html#2032">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

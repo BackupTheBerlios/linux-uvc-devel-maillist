@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvc header question
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvc%20header%20question&In-Reply-To=%3C201109081032.38179.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006884.html">
+   <LINK REL="Next"  HREF="006916.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvc header question</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvc%20header%20question&In-Reply-To=%3C201109081032.38179.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] uvc header question">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu Sep  8 10:32:37 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006884.html">[Linux-uvc-devel] uvc header question
+</A></li>
+        <LI>Next message: <A HREF="006916.html">[Linux-uvc-devel] [RFC PATCH]  uvc debugfs interface, initial patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6893">[ date ]</a>
+              <a href="thread.html#6893">[ thread ]</a>
+              <a href="subject.html#6893">[ subject ]</a>
+              <a href="author.html#6893">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Alexey,
+
+On Wednesday 07 September 2011 10:46:41 Alexey Fisher wrote:
+&gt;<i> On 07.09.2011 10:05, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; On Wednesday 07 September 2011 08:14:45 Alexey Fisher wrote:
+</I>&gt;<i> &gt;&gt; Am 06.09.2011 17:24, schrieb Laurent Pinchart:
+</I>&gt;<i> &gt;&gt;&gt; On Monday 05 September 2011 17:48:42 Alexey Fisher wrote:
+</I>&gt;<i> &gt;&gt;&gt;&gt; Am 31.08.2011 00:32, schrieb Laurent Pinchart:
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; On Thursday 25 August 2011 09:44:10 Alexey Fisher wrote:
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt;&gt; Hi Laurent,
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt;&gt; 
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt;&gt; are there any reason why uvc_video_decode_start do not do precise
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt;&gt; header size checks? Are there many cameras with broken header size
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt;&gt; too?
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; 
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; How precise do you mean ? The driver currently doesn't use much of
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; the header, so it just makes sure that the header size is smaller
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; than or equal to the packet size, and that it's at least 2 bytes
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; long.
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; 
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt;&gt; I send you patch on what i work now to catch streams with fragmented
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt;&gt; packets.. what do you think about it? Will you apply some thing like
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt;&gt; this?
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; 
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; I'm not sure about that. Webcams that would require something like
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; that are so broken that I'm tempted to consider them as not
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; UVC-compliant. They should be returned to vendors with a loud
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; complaint.
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; 
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; Your patch might help, but the sad story is that it can't completely
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; fix the streams. There's always a chance that fragmented packets that
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; contains no header will start with data that looks like a header. You
+</I>&gt;<i> &gt;&gt;&gt;&gt;&gt; won't be able to find a buller-proof solution.
+</I>&gt;<i> &gt;&gt;&gt;&gt; 
+</I>&gt;<i> &gt;&gt;&gt;&gt; You are right,
+</I>&gt;<i> &gt;&gt;&gt;&gt; the idea is not to show definitely broken frames. If there is some
+</I>&gt;<i> &gt;&gt;&gt;&gt; thing what we can't filter, is ok. we did our best.
+</I>&gt;<i> &gt;&gt;&gt; 
+</I>&gt;<i> &gt;&gt;&gt; I understand. I'm not sure if this should be included in the mainline
+</I>&gt;<i> &gt;&gt;&gt; uvcvideo driver though. It makes the code more complex to support a
+</I>&gt;<i> &gt;&gt;&gt; couple of completely broken devices, and doesn't guarantee that those
+</I>&gt;<i> &gt;&gt;&gt; devices will work correctly.
+</I>&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt;&gt; ok, i give up.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I'm sorry about that. I definitely appreciate the work you've done on
+</I>&gt;<i> &gt; this, but as I said I don't think we should cripple the driver with
+</I>&gt;<i> &gt; complex code just to try to support a bit better a webcam that is
+</I>&gt;<i> &gt; completely broken anyway.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;&gt;&gt;&gt; I just thinking about build in uvc compliance tester insight of the
+</I>&gt;<i> &gt;&gt;&gt;&gt; module. Some thing what users can use right in shop or at home before
+</I>&gt;<i> &gt;&gt;&gt;&gt; 14 day return guarantee.
+</I>&gt;<i> &gt;&gt;&gt;&gt; You enables compliance test and it print results in in dmesg.  One of
+</I>&gt;<i> &gt;&gt;&gt;&gt; test should be header check, error/drop rate, and so on.
+</I>&gt;<i> &gt;&gt;&gt; 
+</I>&gt;<i> &gt;&gt;&gt; That's an interesting idea. It should probably come with a userspace
+</I>&gt;<i> &gt;&gt;&gt; stress test software as well.
+</I>&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt;&gt; you mean luvcview or some thing other?
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I'm thinking about a new command line software that would get/set
+</I>&gt;<i> &gt; controls at high speed for instance, verify that all controls reported
+</I>&gt;<i> &gt; by the device are actually supported, start/stop streaming multiple
+</I>&gt;<i> &gt; times, ... Something that would stress the device and try to crash it
+</I>&gt;<i> &gt; (which is unfortunately often quite easy :-)).
+</I>&gt;<i> 
+</I>&gt;<i> That's nice :)
+</I>&gt;<i> and on kernel should provide file with statistics. Some thing like:
+</I>&gt;<i> /sys/kernel/debug/uvcvideo/stats
+</I>&gt;<i> It should have
+</I>&gt;<i> - packet count
+</I>&gt;<i> - frame count
+</I>&gt;<i> - payloads with error bit
+</I>&gt;<i> - empthy payloads
+</I>&gt;<i> - overruns, and underruns (for row)
+</I>&gt;<i> - jpeg completation (SOI - EOI)
+</I>
+I don't think the driver should parse MJPEG data to extract markers. This can 
+be done by the userspace application.
+
+&gt;<i> Any thing else?
+</I>
+The number of failed and total control requests would also be interesting. 
+Statistics about the status endpoint would also be interesting, to verify that 
+the device correctly sends control change events for instance (although those 
+are not properly supported in the driver yet).
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006884.html">[Linux-uvc-devel] uvc header question
+</A></li>
+	<LI>Next message: <A HREF="006916.html">[Linux-uvc-devel] [RFC PATCH]  uvc debugfs interface, initial patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6893">[ date ]</a>
+              <a href="thread.html#6893">[ thread ]</a>
+              <a href="subject.html#6893">[ subject ]</a>
+              <a href="author.html#6893">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

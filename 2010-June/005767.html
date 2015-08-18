@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] UVC userpointer  streaming (memory mapping)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20UVC%20userpointer%20%20streaming%20%28memory%20mapping%29&In-Reply-To=%3Chu34g3%24h3b%241%40dough.gmane.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="005769.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] UVC userpointer  streaming (memory mapping)</H1>
+    <B>Andreas Auer</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20UVC%20userpointer%20%20streaming%20%28memory%20mapping%29&In-Reply-To=%3Chu34g3%24h3b%241%40dough.gmane.org%3E"
+       TITLE="[Linux-uvc-devel] UVC userpointer  streaming (memory mapping)">a.auer at zydacron.com
+       </A><BR>
+    <I>Tue Jun  1 16:14:35 CEST 2010</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="005769.html">[Linux-uvc-devel] UVC userpointer  streaming (memory mapping)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5767">[ date ]</a>
+              <a href="thread.html#5767">[ thread ]</a>
+              <a href="subject.html#5767">[ subject ]</a>
+              <a href="author.html#5767">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks for the answer. I'll try to add this changes by myself.
+
+Right now, I can get the physical pfn of the user pointer. The first 
+approach that came into my mind was to get a pointer to the page struct 
+with the pfn_to_page(...) function.
+You already added a new function called uvc_buffer_write which maps 
+(kmap_atomic) the pfn associated with the page struct into the kernel 
+space (basically the logical kernel address is returned). And then the 
+data from the uvc cam is copied to the buffer and finally, the pfn is 
+unmapped with kunmap_atomic.
+
+So, I thought this should work. But, I'm getting a paging error:
+&quot;Unable to handle kernel paging request at virtual address cdf46000&quot;
+
+Could that paging error occur because the physical page resides outside 
+of the physical memory that linux holds. That means I specified 216MB 
+for Linux. The memory from 216MB to 256MB is reserved for the DSP. And 
+the user pointer passed to the UVC driver points to 223MB which is above 
+the memory of Linux.
+So, maybe the MMU doesn't know that there are physical pages and has no 
+mapping for it!?
+
+Thanks,
+Andreas
+
+
+Laurent Pinchart schrieb:
+&gt;<i> Hi Andreas,
+</I>&gt;<i> 
+</I>&gt;<i> I've just answered your private e-mail, here's a copy for the list.
+</I>&gt;<i> 
+</I>&gt;<i> On Friday 28 May 2010 11:08:19 Andreas Auer wrote:
+</I>&gt;&gt;<i> Hi,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I'm trying to get user pointer streaming with UVC webcams working. I
+</I>&gt;&gt;<i> already got a patch from Laurent Pinchart (thanks) which enables user
+</I>&gt;&gt;<i> pointer streaming. This patch works if I pass malloc()'d memory to the
+</I>&gt;&gt;<i> driver.
+</I>&gt;&gt;<i> My problem is that I want to use mmap()'d memory (via /dev/mem) and this
+</I>&gt;&gt;<i> type of memory (flags VM_IO and VM_PFNMAP are set) is not supported to
+</I>&gt;&gt;<i> be used with get_user_pages to map the memory to the kernel space.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> So, is there another way to map the pages into the kernel space to be
+</I>&gt;&gt;<i> used for user pointer streaming?? I had a look at kmap (kmap_atomic)...
+</I>&gt;&gt;<i> would this be possible??
+</I>&gt;<i> 
+</I>&gt;<i> PFNMAP memory has no page struct associated with it, it can't be handled the 
+</I>&gt;<i> same way as regular main memory in the uvcvideo driver.
+</I>&gt;<i> 
+</I>&gt;<i> The DSP driver probably reserves memory at system startup. That memory isn't 
+</I>&gt;<i> managed by the Linux kernel memory manager.
+</I>&gt;<i> 
+</I>&gt;<i> The uvcvideo driver doesn't support PFNMAP memory at the moment. That 
+</I>&gt;<i> shouldn't be too difficult to fix though, but I'm afraid I don't have time to 
+</I>&gt;<i> work on it right now.
+</I>&gt;<i> 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="005769.html">[Linux-uvc-devel] UVC userpointer  streaming (memory mapping)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5767">[ date ]</a>
+              <a href="thread.html#5767">[ thread ]</a>
+              <a href="subject.html#5767">[ subject ]</a>
+              <a href="author.html#5767">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

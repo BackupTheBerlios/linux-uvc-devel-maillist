@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] VIDIOC_DQBUF&lt;7&gt;uvcvideo: Dropping payload	(out of sync)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20VIDIOC_DQBUF%3C7%3Euvcvideo%3A%20Dropping%20payload%0A%09%28out%20of%20sync%29&In-Reply-To=%3C200904291728.26751.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004736.html">
+   <LINK REL="Next"  HREF="004737.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] VIDIOC_DQBUF&lt;7&gt;uvcvideo: Dropping payload	(out of sync)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20VIDIOC_DQBUF%3C7%3Euvcvideo%3A%20Dropping%20payload%0A%09%28out%20of%20sync%29&In-Reply-To=%3C200904291728.26751.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] VIDIOC_DQBUF&lt;7&gt;uvcvideo: Dropping payload	(out of sync)">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Apr 29 17:28:26 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004736.html">[Linux-uvc-devel] VIDIOC_DQBUF&lt;7&gt;uvcvideo: Dropping payload (out of	sync)
+</A></li>
+        <LI>Next message: <A HREF="004737.html">[Linux-uvc-devel] uvcvideo r263 does not work in ARM TS-7800
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4742">[ date ]</a>
+              <a href="thread.html#4742">[ thread ]</a>
+              <a href="subject.html#4742">[ subject ]</a>
+              <a href="author.html#4742">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Sunday 26 April 2009 09:22:30 Zorgh wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> I'm trying to install ARtoolkit on Ubuntu 8.10 &quot;Intrepid&quot; (Linux
+</I>&gt;<i> 2.6.27-11-generic on x86_64).
+</I>&gt;<i>
+</I>&gt;<i> The uvcvideo driver implements the Video4Linux 2 (V4L2) API. V4L1 is not
+</I>&gt;<i> supported.
+</I>&gt;<i>
+</I>&gt;<i> I applied a patch to add support for Video 4 Linux 2 devices into the
+</I>&gt;<i> artoolkit based on the artk 2.72.1 tarball.
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">ubuntu at ubuntu</A>:/tmp$ v4l-info
+</I>&gt;<i>
+</I>&gt;<i> ### v4l2 device info [/dev/video0] ###
+</I>&gt;<i> general info
+</I>&gt;<i>     VIDIOC_QUERYCAP
+</I>&gt;<i>     driver                  : &quot;uvcvideo&quot;
+</I>&gt;<i>     card                    : &quot;Philips SPC 1330NC&quot;
+</I>&gt;<i>     bus_info                : &quot;0000:00:1d.7&quot;
+</I>&gt;<i>     version                 : 0.1.0
+</I>&gt;<i>     capabilities            : 0x4000001 [VIDEO_CAPTURE,STREAMING]
+</I>&gt;<i>
+</I>&gt;<i> I succeeded to compile but I get a black window screen :
+</I>&gt;<i>
+</I>&gt;<i> /<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">ubuntu at ubuntu</A>:/usr/local/ARToolKit/bin$ ./simpleLite
+</I>&gt;<i> Control 9963793 is not supported
+</I>&gt;<i> Camera image size (x,y) = (640,480)
+</I>&gt;<i> *** Camera Parameter ***
+</I>&gt;<i> --------------------------------------
+</I>&gt;<i> SIZE = 640, 480
+</I>&gt;<i> Distortion factor = 318.500000 263.500000 26.200000 1.012757
+</I>&gt;<i> 700.95147 0.00000 316.50000 0.00000
+</I>&gt;<i> 0.00000 726.09418 241.50000 0.00000
+</I>&gt;<i> 0.00000 0.00000 1.00000 0.00000
+</I>&gt;<i> --------------------------------------
+</I>&gt;<i> FittingMode (Z): COMPENSATED IMAGE
+</I>&gt;<i> ProcMode (X)   : FULL IMAGE
+</I>&gt;<i> DrawMode (C)   : TEXTURE MAPPING (FULL RESOLUTION)
+</I>&gt;<i> TemplateMatchingMode (M)   : Color Template
+</I>&gt;<i> MatchingPCAMode (P)   : Without PCA
+</I>&gt;<i> ar2VideoCapNext: Error calling VIDIOC_QBUF: 22
+</I>&gt;<i> ar2VideoCapNext: Error calling VIDIOC_QBUF: 22/
+</I>
+
+
+&gt;<i> A test is not validated in source code :
+</I>&gt;<i>
+</I>&gt;<i> /if (-1 == ioctl (fd, VIDIOC_QUERYCTRL, &amp;queryctrl)) {
+</I>&gt;<i>     if (errno != EINVAL) {
+</I>&gt;<i>       fprintf(stderr, &quot;Error calling VIDIOC_QUERYCTRL\n&quot;);
+</I>&gt;<i>       return 1;
+</I>&gt;<i>      } else {
+</I>&gt;<i>        printf (&quot;Control %d is not supported\n&quot;, type);
+</I>&gt;<i>        return 1;
+</I>&gt;<i>      }
+</I>&gt;<i>    } else if (queryctrl.flags &amp; V4L2_CTRL_FLAG_DISABLED) {
+</I>&gt;<i>      printf (&quot;Control %s is not supported\n&quot;, queryctrl.name);
+</I>&gt;<i>      return 1;
+</I>&gt;<i>    } else {
+</I>
+ARtoolkit tries to set the V4L2_CID_BLACK_LEVEL control. That control isn't 
+supported by your camera (it's actually deprecated), and the driver returns an 
+error. Nothing unexpected or wrong here.
+
+&gt;<i> /In dmesg, I get :
+</I>&gt;<i>
+</I>&gt;<i> /[98915.123356] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [98915.123358] uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [98915.125794] uvcvideo: uvc_v4l2_ioctl
+</I>&gt;<i> [98915.125798] VIDIOC_QBUF&lt;7&gt;uvcvideo: Queuing buffer 1.
+</I>&gt;<i> [98915.125854] uvcvideo: uvc_v4l2_ioctl
+</I>&gt;<i> [98915.125856] VIDIOC_DQBUF&lt;7&gt;uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> [98915.128281] uvcvideo: Dropping payload (out of sync)./
+</I>&gt;<i>
+</I>&gt;<i> How can I fix it ?
+</I>
+First of all, have you tested your camera with a supported application ? 
+luvcview is a good candidate.
+
+The &quot;Dropping payload (out of sync)&quot; messages do not necessarily indicate an 
+error. A few of them can be printed when starting video capture, the driver 
+just needs to synchronize to the video stream. Do they keep being printed over 
+and over or are there only a few of them ?
+
+Best regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004736.html">[Linux-uvc-devel] VIDIOC_DQBUF&lt;7&gt;uvcvideo: Dropping payload (out of	sync)
+</A></li>
+	<LI>Next message: <A HREF="004737.html">[Linux-uvc-devel] uvcvideo r263 does not work in ARM TS-7800
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4742">[ date ]</a>
+              <a href="thread.html#4742">[ thread ]</a>
+              <a href="subject.html#4742">[ subject ]</a>
+              <a href="author.html#4742">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

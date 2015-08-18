@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] YUV streaming?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20YUV%20streaming%3F&In-Reply-To=%3C472D99B5.7050701%40gmx.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002391.html">
+   <LINK REL="Next"  HREF="002395.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] YUV streaming?</H1>
+    <B>Tom St</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20YUV%20streaming%3F&In-Reply-To=%3C472D99B5.7050701%40gmx.net%3E"
+       TITLE="[Linux-uvc-devel] YUV streaming?">t.st1 at gmx.net
+       </A><BR>
+    <I>Sun Nov  4 11:06:45 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002391.html">[Linux-uvc-devel] YUV streaming?
+</A></li>
+        <LI>Next message: <A HREF="002395.html">[Linux-uvc-devel] YUV streaming?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2392">[ date ]</a>
+              <a href="thread.html#2392">[ thread ]</a>
+              <a href="subject.html#2392">[ subject ]</a>
+              <a href="author.html#2392">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello Thomas,
+By a fluke I implemented the YUV pixel format a few hours ago, even
+though I did not like it so much, since it consumes many CPU cycles to
+do such a YUV-&gt;JPEG compression. However, if that is your only
+possibility you may give it a try. You can get the most current version
+by using subversion:
+
+$ mkdir somefolder
+$ cd somefolder
+$ svn co <A HREF="https://mjpg-streamer.svn.sourceforge.net/svnroot/mjpg-streamer">https://mjpg-streamer.svn.sourceforge.net/svnroot/mjpg-streamer</A>
+mjpg-streamer
+$ cd mjpeg-streamer/mjpg-streamer
+$ make clean all
+
+Compression is done by libjpeg, please check if you have installed the
+header files and its library.
+
+In your case the invocation of the server will look like:
+$ export LD_LIBRARY_PATH=.
+$ ./mjpg_streamer --input &quot;input_uvc.so --yuv --fps 5 --resolution
+320x240&quot; --output &quot;output_http.so --www ./www&quot;
+
+If you want to daemonize the server (command line switch -b), use
+absolute paths.
+
+Known issues:
+
+    * My Logitech 5000 just supports 160x120, 320x240 but not 640x480
+      capturing in YUV pixel format mode. It also does not work with
+      luvcview to use the highest resolution.
+
+Feedback welcome and with kind regards,
+Tom
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002391.html">[Linux-uvc-devel] YUV streaming?
+</A></li>
+	<LI>Next message: <A HREF="002395.html">[Linux-uvc-devel] YUV streaming?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2392">[ date ]</a>
+              <a href="thread.html#2392">[ thread ]</a>
+              <a href="subject.html#2392">[ subject ]</a>
+              <a href="author.html#2392">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Is Logitech Webcam Model C250 Supported?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Is%20Logitech%20Webcam%20Model%20C250%20Supported%3F&In-Reply-To=%3C59cf47a80912090147y29b107fds450e5aee859034e9%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005395.html">
+   <LINK REL="Next"  HREF="005394.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Is Logitech Webcam Model C250 Supported?</H1>
+    <B>Paulo Assis</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Is%20Logitech%20Webcam%20Model%20C250%20Supported%3F&In-Reply-To=%3C59cf47a80912090147y29b107fds450e5aee859034e9%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Is Logitech Webcam Model C250 Supported?">pj.assis at gmail.com
+       </A><BR>
+    <I>Wed Dec  9 10:47:11 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005395.html">[Linux-uvc-devel] How to add UVC driver into ti-davinci kernel	(v.2.6.18) ?
+</A></li>
+        <LI>Next message: <A HREF="005394.html">[Linux-uvc-devel] Fwd: New UVC webcam not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5393">[ date ]</a>
+              <a href="thread.html#5393">[ thread ]</a>
+              <a href="subject.html#5393">[ subject ]</a>
+              <a href="author.html#5393">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+Please make sure you use the svn version:
+&quot;svn checkout <A HREF="http://svn.quickcamteam.net/svn/qct/Linux/">http://svn.quickcamteam.net/svn/qct/Linux/</A>&quot;
+
+You will also need uvcvideo.h header from the linux-uvc driver:
+&quot; <A HREF="http://linuxtv.org/hg/~pinchartl/uvcvideo/file/26d3049cb825/linux/drivers/media/video/uvc/uvcvideo.h">http://linuxtv.org/hg/~pinchartl/uvcvideo/file/26d3049cb825/linux/drivers/media/video/uvc/uvcvideo.h</A>
+&quot;
+
+this file must be patched (around line 59):
+
+--------------------//---------------------
+struct uvc_xu_control {
+ __u8 unit;
+ __u8 selector;
+ __u16 size;
+ //__u8 __user *data;  //&lt;------remove __user
+ __u8 *data;
+ };
+--------------------//---------------------
+
+now some more patches to libwebcam so that udev scripts work wit the
+latest udev version:
+modify &quot;./ Apps/uvcdynctrl/udev/rules/80-uvcdynctrl.rules&quot; to:
+
+--------------------//---------------------
+###############################################################################
+# Rules for adding dynamic UVC extension unit controls to UVC devices
+###############################################################################
+ACTION==&quot;add&quot;, SUBSYSTEM==&quot;video4linux&quot;, DRIVERS==&quot;uvcvideo&quot;,
+RUN+=&quot;/lib/udev/uvcdynctrl&quot;
+--------------------//---------------------
+
+and &quot;./Apps/uvcdynctrl/udev/scripts/uvcdynctrl&quot; to:
+
+--------------------//---------------------
+#!/bin/sh
+###############################################################################
+# udev helper script for UVC devices to support dynamic controls.
+#
+# Version: 0.1
+###############################################################################
+
+xmlpath=/etc/udev/data
+logfile=/tmp/uvcdynctrl-udev.log
+#logfile=/dev/null
+uvcdynctrlpath=uvcdynctrl
+
+echo &quot;\n===========================================================================
+=== &quot; &gt;&gt; $logfile
+echo &quot;Triggered at `date`\n&quot; &gt;&gt; $logfile
+set &gt;&gt; $logfile
+echo &gt;&gt; $logfile
+
+# Extract the VID and PID
+vid=$ID_VENDOR
+pid=$ID_MODEL
+echo &quot;VID of new device: '$vid'&quot; &gt;&gt; $logfile
+echo &quot;PID of new device: '$pid'&quot; &gt;&gt; $logfile
+if [ -z $vid ]; then
+echo &quot;ERROR: Unable to extract USB VID from '$DEVPATH'&quot; &gt;&gt; $logfile
+exit 2
+fi
+
+# Make sure the vendor directory ($xmlpath/VID) exists
+vendordir=&quot;$xmlpath/$vid&quot;
+if [ ! -d &quot;$vendordir&quot; ]; then
+echo &quot;ERROR: Vendor directory '$vendordir' not found.&quot; &gt;&gt; $logfile
+exit 5
+fi
+
+# Look for device specific XML files ($xmlpath/VID/PID/*.xml)
+if [ ! -z $pid ]; then
+productdir=&quot;$xmlpath/$vid/$pid&quot;
+if [ -d &quot;$productdir&quot; ]; then
+for file in $productdir/*.xml; do
+if [ -f &quot;$file&quot; ]; then
+echo &quot;Found product XML file: $file&quot; &gt;&gt; $logfile
+cmd=&quot;$uvcdynctrlpath -d $DEVNAME -i $file&quot;
+echo &quot;Executing command: '$cmd'&quot; &gt;&gt; $logfile
+$cmd &gt;&gt; $logfile 2&gt;&amp;1
+fi
+done
+fi
+fi
+
+# Look for vendor specific XML files ($xmlpath/VID/*.xml)
+for file in $vendordir/*.xml; do
+if [ -f &quot;$file&quot; ]; then
+echo &quot;Found vendor XML file: $file&quot; &gt;&gt; $logfile
+cmd=&quot;$uvcdynctrlpath -d $DEVNAME -i $file&quot;
+echo &quot;Executing command: '$cmd'&quot; &gt;&gt; $logfile
+$cmd &gt;&gt; $logfile 2&gt;&amp;1
+fi
+done
+
+
+
+echo &quot;==============================================================================\n
+&quot; &gt;&gt; $logfile
+--------------------//---------------------
+
+This should be enough to make everything work :D
+
+Best regards,
+Paulo
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005395.html">[Linux-uvc-devel] How to add UVC driver into ti-davinci kernel	(v.2.6.18) ?
+</A></li>
+	<LI>Next message: <A HREF="005394.html">[Linux-uvc-devel] Fwd: New UVC webcam not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5393">[ date ]</a>
+              <a href="thread.html#5393">[ thread ]</a>
+              <a href="subject.html#5393">[ subject ]</a>
+              <a href="author.html#5393">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

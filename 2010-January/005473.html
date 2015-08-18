@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Disconnect video out device from non-root hub.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Disconnect%20video%20out%20device%20from%20non-root%20hub.&In-Reply-To=%3C201001060250.24579.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005463.html">
+   <LINK REL="Next"  HREF="005464.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Disconnect video out device from non-root hub.</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Disconnect%20video%20out%20device%20from%20non-root%20hub.&In-Reply-To=%3C201001060250.24579.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Disconnect video out device from non-root hub.">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Wed Jan  6 02:50:24 CET 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005463.html">[Linux-uvc-devel] Disconnect video out device from non-root hub.
+</A></li>
+        <LI>Next message: <A HREF="005464.html">[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d) bandwidth	reservation issues?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5473">[ date ]</a>
+              <a href="thread.html#5473">[ thread ]</a>
+              <a href="subject.html#5473">[ subject ]</a>
+              <a href="author.html#5473">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Robert,
+
+On Tuesday 05 January 2010 13:49:34 Robert Lukassen wrote:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> In Ubuntu 9.10, support for Video Out devices (bulk-only) has been added.
+</I>
+That's right. Just out of curiosity, could you tell me which video output 
+device you're working with ? I'm only aware of a single one so far.
+
+Support for isochronous video output devices could also be implemented, feel 
+free to contact me if needed.
+
+&gt;<i>  We noticed that when such a device is disconnected from a non-root hub,
+</I>&gt;<i>  the queued urbs are returned with usb-&gt;status == -EPROTO. The video
+</I>&gt;<i>  completion callback cancels the queue, and does not re-submit the urb.
+</I>&gt;<i> 
+</I>&gt;<i> Because the hub driver needs some time to process the disconnect properly,
+</I>&gt;<i>  there is a brief interval in time where queued urbs for the disconnected
+</I>&gt;<i>  device do not result in -ESHUTDOWN, as expected, but with other error
+</I>&gt;<i>  codes (such as EPROTO).
+</I>&gt;<i> 
+</I>&gt;<i> We have found that (in case of status == -EPROTO) resubmitting the urb and
+</I>&gt;<i>  not canceling the queue results in the correct behaviour. Eventually one
+</I>&gt;<i>  of the urbs indeed comes back with status == -ESHUTDOWN and the device is
+</I>&gt;<i>  properly administrated as disconnected. Subsequent QBUF attempts then also
+</I>&gt;<i>  result in correct user-space experience.
+</I>&gt;<i>
+</I>&gt;<i> We propose the following simple patch:
+</I>&gt;<i> 
+</I>&gt;<i> In uvc_video.c:
+</I>&gt;<i> 
+</I>&gt;<i> static void uvc_video_complete(struct urb *urb)
+</I>&gt;<i> {
+</I>&gt;<i> 	struct uvc_video_device *video = urb-&gt;context;
+</I>&gt;<i> 	struct uvc_video_queue *queue = &amp;video-&gt;queue;
+</I>&gt;<i> 	struct uvc_buffer *buf = NULL;
+</I>&gt;<i> 	unsigned long flags;
+</I>&gt;<i> 	int ret;
+</I>&gt;<i> 
+</I>&gt;<i> 	switch (urb-&gt;status) {
+</I>&gt;<i> 	case 0:
+</I>&gt;<i> 		break;
+</I>&gt;<i> 
+</I>&gt;<i> 	default:
+</I>&gt;<i> 		uvc_printk(KERN_WARNING, &quot;Non-zero status (%d) in video &quot;
+</I>&gt;<i> 			&quot;completion handler.\n&quot;, urb-&gt;status);
+</I>&gt;<i> +		break;
+</I>&gt;<i> 
+</I>&gt;<i> 	case -ENOENT:		/* usb_kill_urb() called. */
+</I>&gt;<i> 		if (video-&gt;frozen)
+</I>&gt;<i> 			return;
+</I>&gt;<i> 
+</I>&gt;<i> 	case -ECONNRESET:	/* usb_unlink_urb() called. */
+</I>&gt;<i> 	case -ESHUTDOWN:	/* The endpoint is being disabled. */
+</I>&gt;<i> 		uvc_queue_cancel(queue, urb-&gt;status == -ESHUTDOWN);
+</I>&gt;<i> 		return;
+</I>&gt;<i> 	}
+</I>&gt;<i> 
+</I>&gt;<i> 	spin_lock_irqsave(&amp;queue-&gt;irqlock, flags);
+</I>&gt;<i> 	if (!list_empty(&amp;queue-&gt;irqqueue))
+</I>&gt;<i> 		buf = list_first_entry(&amp;queue-&gt;irqqueue, struct uvc_buffer,
+</I>&gt;<i> 				       queue);
+</I>&gt;<i> 	spin_unlock_irqrestore(&amp;queue-&gt;irqlock, flags);
+</I>&gt;<i> 
+</I>&gt;<i> 	video-&gt;decode(urb, video, buf);
+</I>&gt;<i> 
+</I>&gt;<i> 	if ((ret = usb_submit_urb(urb, GFP_ATOMIC)) &lt; 0) {
+</I>&gt;<i> 		uvc_printk(KERN_ERR, &quot;Failed to resubmit video URB (%d).\n&quot;,
+</I>&gt;<i> 			ret);
+</I>&gt;<i> 	}
+</I>&gt;<i> }
+</I>
+That would work in your case, but devices that constantly return -EPROTO will 
+never see their queue canceled and will flood the kernel log.
+
+A possible solution would be to count the number of URBs returning with the -
+EPROTO status and cancel the queue only when a hardcoded limit is reached. 
+Could you count how many URBs you get back with a -EPROTO state before the 
+driver receives -ESHUTDOWN ?
+
+Another solution would be to cancel all buffer queues when the uvc_disconnect 
+function is called. The QBUF ioctl could still be called during to &quot;EPROTO - 
+ESHUTDOWN&quot; window, but buffers would be woken up again when uvc_disconnect is 
+called.
+
+The best solution might be a mix between those two: ignore -EPROTO/-EILSEQ/-
+ETIME errors up to a maximum number (the threshold could be the total number 
+or errors, or the number of consecutive errors), and cancel the queues anyway 
+when the device is disconnected. What's your opinion ?
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005463.html">[Linux-uvc-devel] Disconnect video out device from non-root hub.
+</A></li>
+	<LI>Next message: <A HREF="005464.html">[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d) bandwidth	reservation issues?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5473">[ date ]</a>
+              <a href="thread.html#5473">[ thread ]</a>
+              <a href="subject.html#5473">[ subject ]</a>
+              <a href="author.html#5473">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

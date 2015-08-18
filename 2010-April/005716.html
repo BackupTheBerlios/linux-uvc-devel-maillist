@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Multiple camera framerate.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multiple%20camera%20framerate.&In-Reply-To=%3C4BD9D298.1040105%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005708.html">
+   <LINK REL="Next"  HREF="005698.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Multiple camera framerate.</H1>
+    <B>Dennis Muhlestein</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multiple%20camera%20framerate.&In-Reply-To=%3C4BD9D298.1040105%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Multiple camera framerate.">djmuhlestein at gmail.com
+       </A><BR>
+    <I>Thu Apr 29 20:40:24 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005708.html">[Linux-uvc-devel] Multiple camera framerate.
+</A></li>
+        <LI>Next message: <A HREF="005698.html">[Linux-uvc-devel] (no subject)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5716">[ date ]</a>
+              <a href="thread.html#5716">[ thread ]</a>
+              <a href="subject.html#5716">[ subject ]</a>
+              <a href="author.html#5716">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 04/26/2010 02:43 PM, Dennis Muhlestein wrote:
+&gt;<i> I have a project I've been playing with that uses a number of cameras to
+</I>&gt;<i> construct video from 360 degrees. All cameras can be configured as long
+</I>&gt;<i> as I don't overload the underlying ISO bandwidth limits. (&quot;No space left
+</I>&gt;<i> on device.&quot; has been discussed a few times on this list.)
+</I>&gt;<i>
+</I>&gt;<i> The application works well, but I'd like to experiment with making the
+</I>&gt;<i> video quality better. There is always some sheering when the cameras are
+</I>&gt;<i> moving but the higher framerate I can capture at, the less the sheering
+</I>&gt;<i> effect will degrade the video quality.
+</I>&gt;<i>
+</I>&gt;<i> Can anyone suggest a way to configure the cameras at a higher framerate
+</I>&gt;<i> without overloading the USB bus? Suppose I can read at 10 fps right now
+</I>&gt;<i> without overloading the USB bus. I'd like to set the framerate to 15,
+</I>&gt;<i> but still just capture around 10.
+</I>&gt;<i>
+</I>
+One idea I've been toying with is to add a semaphore around submitting 
+the URBs.
+
+In uvc_video.c, where the URBs are submitted, I'd acquire a semephore 
+for each device currently submitting URBs.  The semaphore would limit 
+the number of devices to whatever number I decide can safely submit URBs 
+simultaneously on the bus without throwing out of space errors.
+
+I did an initial test of this and it looks promising.  I can configure 
+all the cameras.  As long as I don't submit the URBs for the number of 
+devices beyond that which will work at the same time, the other cameras 
+simply drop the data.
+
+I'm not sure the best places to control the locking and unlocking of the 
+semaphore are.  Right now, I lock it before submitting URBs in 
+uvc_init_video.  In uvc_video_complete, I unlock it and relock it if the 
+buffer is complete (allowing another camera to acquire it and capture a 
+frame).
+
+Anyway, it isn't working perfectly yet but I think I can debug it and at 
+least get to a point where I know if it's worth pursuing.  I'm curious 
+if anyone can provide thoughts or alternatives.
+
+Thanks
+Dennis
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005708.html">[Linux-uvc-devel] Multiple camera framerate.
+</A></li>
+	<LI>Next message: <A HREF="005698.html">[Linux-uvc-devel] (no subject)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5716">[ date ]</a>
+              <a href="thread.html#5716">[ thread ]</a>
+              <a href="subject.html#5716">[ subject ]</a>
+              <a href="author.html#5716">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

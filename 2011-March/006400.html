@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Creative%20VF0700%20Live%21%20Cam%20Chat%20HD%20works%0A%20everywhere%2C%20except%20highly%20distorted%20video%20in%20Skype&In-Reply-To=%3CAANLkTinS_D7gDOoqBR9K4s8QNYReNavCnFi-pZh%3D0jwF%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006399.html">
+   <LINK REL="Next"  HREF="006401.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype</H1>
+    <B>Benson Bear</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Creative%20VF0700%20Live%21%20Cam%20Chat%20HD%20works%0A%20everywhere%2C%20except%20highly%20distorted%20video%20in%20Skype&In-Reply-To=%3CAANLkTinS_D7gDOoqBR9K4s8QNYReNavCnFi-pZh%3D0jwF%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype">benson.bear at gmail.com
+       </A><BR>
+    <I>Sun Mar 27 13:18:25 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006399.html">[Linux-uvc-devel] can't compile UVC package
+</A></li>
+        <LI>Next message: <A HREF="006401.html">[Linux-uvc-devel] Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6400">[ date ]</a>
+              <a href="thread.html#6400">[ thread ]</a>
+              <a href="subject.html#6400">[ subject ]</a>
+              <a href="author.html#6400">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I have a UVC web cam, the Creative Live! Cam Chat HD, and am trying
+to  run it under Fedora 14's 2.6.35.11-83.fc14.i686.PAE kernel,
+using X.Org X Server 1.9.4, and the current intel driver for the on-chip
+integrated graphics of a core I3 processor.
+
+This camera works nicely in everything like cheese, camstream, camorama,
+xawtv and guvcview.  It doesn't work in the one thing I want it for: Skype.
+
+I am pretty sure this is Skype's fault, exacerbated by its closed nature
+and the fact it has not had an upgrade for a long while.   But I
+wonder if anyone has an idea whether this could be fixed or whether
+I should just return the camera for restocking fee and keep trying
+other ones. (I note that the V0700 doesn't appear to be officially
+supported, but since it works in everything else, Skype seems to be
+to blame).
+
+Here is the ID from lsusb:
+Bus 001 Device 009: ID 041e:4088 Creative Technology, Ltd
+
+What usb and uvcvideo report in /var/log/messages:
+[52201.794788] usb 1-1.5: Product: VF0700 Live! Cam Chat HD
+[52201.794793] usb 1-1.5: Manufacturer: Creative Technology Ltd.
+[52201.794797] usb 1-1.5: SerialNumber: 0L220009
+[52201.799938] uvcvideo: Found UVC 1.00 device VF0700 Live! Cam Chat
+HD (041e:4088)
+
+I can include in subsequent messages more of v4l-info and lsusb details,
+but for now the most potentially useful observations seem to me to be the
+following:
+
+v4l-info seems to be saying that the camera has multiple possible
+video capture modes:
+
+video capture
+    VIDIOC_ENUM_FMT(0,VIDEO_CAPTURE)
+        index                   : 0
+        type                    : VIDEO_CAPTURE
+        flags                   : 0
+        description             : &quot;YUV 4:2:2 (YUYV)&quot;
+        pixelformat             : 0x56595559 [YUYV]
+    VIDIOC_ENUM_FMT(1,VIDEO_CAPTURE)
+        index                   : 1
+        type                    : VIDEO_CAPTURE
+        flags                   : 1
+        description             : &quot;MJPEG&quot;
+        pixelformat             : 0x47504a4d [MJPG]
+    VIDIOC_G_FMT(VIDEO_CAPTURE)
+        type                    : VIDEO_CAPTURE
+        fmt.pix.width           : 320
+        fmt.pix.height          : 240
+        fmt.pix.pixelformat     : 0x56595559 [YUYV]
+        fmt.pix.field           : NONE
+        fmt.pix.bytesperline    : 640
+        fmt.pix.sizeimage       : 153600
+        fmt.pix.colorspace      : SRGB
+        fmt.pix.priv            : 0
+
+Guvcview, it seems (I keep saying &quot;it seems&quot; because I don't
+really understand this) to allow us to see what the cameras streaming
+output looks like when interpreted in different ways.
+
+By default it chooses MJPG, but if I choose YUYV, it
+produces a distorted output that looks *very similar* to
+the distorted output produced by Skype.
+
+This leads me to believe that perhaps the only problem is
+that Skype is not interpreting the output of the camera
+correctly, and all that perhaps need be done is to force
+the camera to put out the kind of output Skype thinks it
+is getting.
+
+This does not seem to require any conversion anywhere
+since the camera appears to be capable of putting out
+the YUYV that I speculate Skype thinks it is getting.
+
+Does any expert think this is a possibility, and if so
+would it be hard to force the camera to just put out
+a selected one of its native modes?
+
+I assume the UVC interface already allows one to force a
+certain mode output but that Skype messes this up and
+the solution would have to be to set the default mode
+differently.  Perhaps not as there is not option for
+any of this on the two v4l control panels I am aware
+of.
+
+(Other things tried to far, to no avail: setting
+Skype to various capture sizes and frame rates,
+thinking perhaps it was confused about thos, and
+also trying the fake video stream thing that is
+floating around from a view years ago.  Haven't
+gotten too far with that as of yet.)
+
+Thanks
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006399.html">[Linux-uvc-devel] can't compile UVC package
+</A></li>
+	<LI>Next message: <A HREF="006401.html">[Linux-uvc-devel] Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6400">[ date ]</a>
+              <a href="thread.html#6400">[ thread ]</a>
+              <a href="subject.html#6400">[ subject ]</a>
+              <a href="author.html#6400">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

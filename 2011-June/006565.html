@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] test results and a patch for timestamps in UVC
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20test%20results%20and%20a%20patch%20for%20timestamps%20in%20UVC&In-Reply-To=%3C4DEE4A3F.10308%40minet.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006554.html">
+   <LINK REL="Next"  HREF="006585.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] test results and a patch for timestamps in UVC</H1>
+    <B>Yann Sionneau</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20test%20results%20and%20a%20patch%20for%20timestamps%20in%20UVC&In-Reply-To=%3C4DEE4A3F.10308%40minet.net%3E"
+       TITLE="[Linux-uvc-devel] test results and a patch for timestamps in UVC">yann at minet.net
+       </A><BR>
+    <I>Tue Jun  7 17:56:47 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006554.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+        <LI>Next message: <A HREF="006585.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6565">[ date ]</a>
+              <a href="thread.html#6565">[ thread ]</a>
+              <a href="subject.html#6565">[ subject ]</a>
+              <a href="author.html#6565">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi again,
+
+here is as attached file a new patch that applies to linux 2.6.39 tree 
+(linux-2.6.git, tag v2.6.39).
+
+This patch now prints at the end of each stream :
+
+(*) total number of PTS (taking into account each packet)
+(*) total number of SCR
+(*) total number of ERR
+(*) number of packets without PTS (nb_missing_pts)
+(*) number of packets without SCR (nb_missing_scr)
+
+It will print as well for each packet (beware, it will hugely flood your 
+syslog) :
+
+(*) SCR
+(*) diff with previous packet's SCR
+(*) PTS
+(*) diff with previous packet's PTS
+
+Beware, to see the &quot;end of stream&quot; statistics, you have to scroll up a 
+little bit, it will be somewhere in the end of the per-packet 
+information flood.
+
+Some results inline in the e-mail.
+
+On 06/06/2011 11:22 PM, Yann Sionneau wrote:
+&gt;<i> Le 06/06/11 19:42, Laurent Pinchart a &#233;crit :
+</I>&gt;&gt;<i> Hi Yann,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Thanks for the patch.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> On Friday 03 June 2011 15:48:59 Yann Sionneau wrote:
+</I>&gt;&gt;&gt;<i> Hi Laurent and the UVC list,
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Here is a patch [snip]
+</I>&gt;&gt;<i> You should take all UVC packets into account, not just the first one for each
+</I>&gt;&gt;<i> frame.
+</I>&gt;<i> Yes I don't know why in my head I thought only the first uvc packet
+</I>&gt;<i> would have a header for the frame with timestamps and such, but it makes
+</I>&gt;<i> no sense, each packet has its own header and the start of frame is just
+</I>&gt;<i> signaled by the toggling of the FID :)
+</I>&gt;<i>
+</I>&gt;&gt;<i> the important information are
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> - do all frames have a PTS timestamp in their first packet ?
+</I>&gt;<i> It seems so yes, at least on the two webcams I tried with the patch.
+</I>&gt;<i>
+</I>&gt;&gt;<i> - do all non-empty packets for a frame have a PTS timestamp, and is it
+</I>&gt;&gt;<i> constant through the whole frame as it should be ?
+</I>&gt;<i> Let's modify the patch to count the PTS and SCR of all packets instead
+</I>&gt;<i> of only one per frame in order to sort this out !
+</I>I tested with the Logitech HD Pro C910, all packets have a PTS.
+PTS are indeed constant through the whole frame as it should be.
+&gt;&gt;<i> - how many SCR timestamps do we have per frame ? are they constant through the
+</I>&gt;&gt;<i> whole frame or do they vary as they should ?
+</I>&gt;&gt;<i>
+</I>&gt;<i> Same here !
+</I>With the same webcam, all packets have a SCR.
+The SCR value does vary through each frame, as it should do.
+The difference between the previous SCR is usually the same, except at a 
+regular interval where there is a &quot;jump&quot; in SCR values.
+
+for example, SCR - SCR_prev would be 7 times the same difference, and 
+then it will change for just one time, and then go back to the old 
+difference for 7 times etc.
+
+&gt;&gt;&gt;<i> [snip]
+</I>&gt;<i> Thanks for your review and comments, will submit a new patch ASAP !
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i>
+</I>Regards,
+
+-- 
+Yann Sionneau
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: 0001-add-statistics-about-ERR-PTS-and-SCR-bits.patch
+Type: text/x-patch
+Size: 5029 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110607/60271fb0/attachment.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110607/60271fb0/attachment.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006554.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+	<LI>Next message: <A HREF="006585.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6565">[ date ]</a>
+              <a href="thread.html#6565">[ thread ]</a>
+              <a href="subject.html#6565">[ subject ]</a>
+              <a href="author.html#6565">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

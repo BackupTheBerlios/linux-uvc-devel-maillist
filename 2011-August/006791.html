@@ -1,0 +1,1200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] error proofing mjpeg stream
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20error%20proofing%20mjpeg%20stream&In-Reply-To=%3C4E44D485.7050003%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006790.html">
+   <LINK REL="Next"  HREF="006792.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] error proofing mjpeg stream</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20error%20proofing%20mjpeg%20stream&In-Reply-To=%3C4E44D485.7050003%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] error proofing mjpeg stream">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Fri Aug 12 09:21:41 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006790.html">[Linux-uvc-devel] MJPEG camera
+</A></li>
+        <LI>Next message: <A HREF="006792.html">[Linux-uvc-devel] Microdia Sonix id 0c45:6310
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6791">[ date ]</a>
+              <a href="thread.html#6791">[ thread ]</a>
+              <a href="subject.html#6791">[ subject ]</a>
+              <a href="author.html#6791">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 12.08.2011 08:24, Carl Michal wrote:
+&gt;<i> 
+</I>&gt;<i> On Thu, 11 Aug 2011, Alexey Fisher wrote:
+</I>&gt;<i> 
+</I>&gt;&gt;<i> On 10.08.2011 21:19, Carl Michal wrote:
+</I>&gt;&gt;&gt;<i> Hi Alexey,
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> On Wed, 10 Aug 2011, Alexey Fisher wrote:
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> Am 10.08.2011 19:20, schrieb Carl Michal:
+</I>&gt;&gt;&gt;&gt;&gt;<i>  Hi Alexey,
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>  On Tue, 9 Aug 2011, Alexey Fisher wrote:
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>  Hall all, Laurent, Carl,
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i>  i just was looking on how my webcam do mjpeg stream and created
+</I>&gt;&gt;&gt;&gt;&gt;<i> some
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>  &quot;visualisation&quot; patch. I got some interesting results (may be it can
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>  help you Carl with your webcam).
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i>  The idea is as fallow, use jpeg bits for error corection.
+</I>&gt;&gt;&gt;&gt;&gt;<i> According to
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>  uvc documentation, webcam should set SOI (start of image) and EOI
+</I>&gt;&gt;&gt;&gt;&gt;<i> (end
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>  of image) magic. In some situations it is possible to use it if
+</I>&gt;&gt;&gt;&gt;&gt;<i> FID is
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>  brocken.
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i>  I got fallowing result (N - mean header is ok, but no data is
+</I>&gt;&gt;&gt;&gt;&gt;<i> present;
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>  !SOI - mean new SOI without EOI; * - image data):
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>  [ 5132.944079] N
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i>  As you can see, my webcam try to resent SOI lots of times and only
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>  last try is correct. For next example i added logic to send
+</I>&gt;&gt;&gt;&gt;&gt;<i> ENODATA on
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>  each packet with correct header but no data. Here is the result:
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>  Your camera sounds weirder than mine!
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>  One potential issue to make sure of if you want to throw away packets
+</I>&gt;&gt;&gt;&gt;&gt;<i>  with valid headers but no data: my camera (Quanta integrated webcam:
+</I>&gt;&gt;&gt;&gt;&gt;<i>  0408:2fb1, sends EOF (usually) in an empty packet - I think you
+</I>&gt;&gt;&gt;&gt;&gt;<i> want to
+</I>&gt;&gt;&gt;&gt;&gt;<i>  make sure that this is looked for before discarding the packet. This
+</I>&gt;&gt;&gt;&gt;&gt;<i>  maybe what happens with your filter - I didn't look closely enough
+</I>&gt;&gt;&gt;&gt;&gt;<i> to see.
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>  My camera actually works more or less perfectly now with the patch I
+</I>&gt;&gt;&gt;&gt;&gt;<i>  sent in earlier. My camera has several distinct problems:
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>  1) In YUV mode the camera sometimes gives up on a frame part way
+</I>&gt;&gt;&gt;&gt;&gt;<i>  through, when this happens it doesn't give an EOF, but toggles
+</I>&gt;&gt;&gt;&gt;&gt;<i> FID. The
+</I>&gt;&gt;&gt;&gt;&gt;<i>  released driver checks the length of YUV frames if the frame is
+</I>&gt;&gt;&gt;&gt;&gt;<i>  terminated with EOF but it doesn't if the frame is terminated with
+</I>&gt;&gt;&gt;&gt;&gt;<i> FID.
+</I>&gt;&gt;&gt;&gt;&gt;<i>  So I check that uncompressed frames terminated with FID are the
+</I>&gt;&gt;&gt;&gt;&gt;<i> correct
+</I>&gt;&gt;&gt;&gt;&gt;<i>  length. This is something that should probably be added globally.
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>  2) In MJPG mode the camera sometimes toggles FID one or two packets
+</I>&gt;&gt;&gt;&gt;&gt;<i>  early. Fortunately EOF is reliable in MJPG, so in MJPG I ignore FID
+</I>&gt;&gt;&gt;&gt;&gt;<i>  fully (based on a patch you supplied).
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>  Sadly I need EOF for MJPG and need FID in YUV...
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>  3) Sometimes payload packets get broken in chunks that are 1/3 or 2/3
+</I>&gt;&gt;&gt;&gt;&gt;<i>  their proper size. This is bad - since the later chunks don't have
+</I>&gt;&gt;&gt;&gt;&gt;<i>  headers, and left uncorrected the raw image data gets interpreted by
+</I>&gt;&gt;&gt;&gt;&gt;<i> the
+</I>&gt;&gt;&gt;&gt;&gt;<i>  driver as header - and all sorts of random things happen. It turns
+</I>&gt;&gt;&gt;&gt;&gt;<i> out
+</I>&gt;&gt;&gt;&gt;&gt;<i>  to be not so difficult to reassemble these packets though, just
+</I>&gt;&gt;&gt;&gt;&gt;<i> based on
+</I>&gt;&gt;&gt;&gt;&gt;<i>  lengths.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> I'll send you one more patch to visualize some info from header, may
+</I>&gt;&gt;&gt;&gt;<i> be we can filter some thing.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>  4) The camera sometimes doesn't start. This turns out to be a problem
+</I>&gt;&gt;&gt;&gt;&gt;<i>  people have seen in windows too. Somebody finally figured out a
+</I>&gt;&gt;&gt;&gt;&gt;<i>  work-around - if the camera doesn't start, you can just point it at a
+</I>&gt;&gt;&gt;&gt;&gt;<i>  light and then it starts.
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>  The very strange thing about all of this is that none of these issues
+</I>&gt;&gt;&gt;&gt;&gt;<i>  appear to be universal. Many people have complained of #4, but other
+</I>&gt;&gt;&gt;&gt;&gt;<i>  linux users do not appear to have problems 1, 2, or 3.
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>  5) The camera lies about the frame rates it can do in high resolution
+</I>&gt;&gt;&gt;&gt;&gt;<i>  YUV. It says it can do 30fps at 1600x1200 (and 1280x720 and 1024x768)
+</I>&gt;&gt;&gt;&gt;&gt;<i>  yuv - but that's way more bits than USB 2 can carry. I don't think
+</I>&gt;&gt;&gt;&gt;&gt;<i> this
+</I>&gt;&gt;&gt;&gt;&gt;<i>  causes any real problems though - you just don't get the frame rate
+</I>&gt;&gt;&gt;&gt;&gt;<i>  advertised.
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>  Carl
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> We can do size check for yuv, but nothing for jpeg. Jpeg stream has
+</I>&gt;&gt;&gt;&gt;<i> really good chance to be more error proof, since jpeg has markers on
+</I>&gt;&gt;&gt;&gt;<i> the start and end of image. The idea is to use this jpeg markers
+</I>&gt;&gt;&gt;&gt;<i> instead of FID or EOF. In my patch this markers are not used, but
+</I>&gt;&gt;&gt;&gt;<i> displayed. SOI and EOI are jpeg marker for start and end of image.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> Since your webcam is so brocken, it is a good test case :) Can you
+</I>&gt;&gt;&gt;&gt;<i> please send me dmesg with output from my patch by capturing jpeg
+</I>&gt;&gt;&gt;&gt;<i> stream.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> The length check I mention is for yuv: but the current driver only does
+</I>&gt;&gt;&gt;<i> that length check when it sees EOF - it doesn't do it if the frame is
+</I>&gt;&gt;&gt;<i> terminated by FID - so I added that check.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> I can try your patch (not now - dont have that computer here) but
+</I>&gt;&gt;&gt;<i> without the reconstruction I already do I can't imagine it helping -
+</I>&gt;&gt;&gt;<i> because without the reconstruction, the driver chops off some of the
+</I>&gt;&gt;&gt;<i> mjpg or yuv data interpreting it as header.  Each time that happens, 12
+</I>&gt;&gt;&gt;<i> bytes get chopped out of the middle of the frame, and random bits get
+</I>&gt;&gt;&gt;<i> interpreted as FID, EOF, ERROR etc...
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> My guess is that if I apply your checks with my stream reconstruction it
+</I>&gt;&gt;&gt;<i> will find that every frame is fine.  Without my stream reconstruction,
+</I>&gt;&gt;&gt;<i> there will still be corrupt frames because some image data will be
+</I>&gt;&gt;&gt;<i> interpreted as header. Just searching for SOI and EOI won't help because
+</I>&gt;&gt;&gt;<i> they will generally be there in the right place, but a few bytes from
+</I>&gt;&gt;&gt;<i> the middle of the stream get removed (and misinterpreted).
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Its true what you propose might help with one of my problems: the fact
+</I>&gt;&gt;&gt;<i> that FID is sometimes toggled a packet or two early in MJPG.  But for me
+</I>&gt;&gt;&gt;<i> that doesn't matter since EOF is reliable.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Hi Carl,
+</I>&gt;&gt;<i> i was reading your patch and there is some questions.
+</I>&gt;&gt;<i> Are there only problems with payload of  this size: 3*760, 3*1024?
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Can you please take a look what URB size making problems? I think
+</I>&gt;&gt;<i> urb-&gt;number_of_packets is always 32. In your webcams usb descriptor you
+</I>&gt;&gt;<i> can find some thing like this:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>    Interface Descriptor:
+</I>&gt;&gt;<i>      bLength                 9
+</I>&gt;&gt;<i>      bDescriptorType         4
+</I>&gt;&gt;<i>      bInterfaceNumber        1
+</I>&gt;&gt;<i>      bAlternateSetting       2 &lt;---- !!!
+</I>&gt;&gt;<i>      bNumEndpoints           1
+</I>&gt;&gt;<i>      bInterfaceClass        14 Video
+</I>&gt;&gt;<i>      bInterfaceSubClass      2 Video Streaming
+</I>&gt;&gt;<i>      bInterfaceProtocol      0
+</I>&gt;&gt;<i>      iInterface              0
+</I>&gt;&gt;<i>      Endpoint Descriptor:
+</I>&gt;&gt;<i>        bLength                 7
+</I>&gt;&gt;<i>        bDescriptorType         5
+</I>&gt;&gt;<i>        bEndpointAddress     0x82  EP 2 IN   &lt;----!!!
+</I>&gt;&gt;<i>        bmAttributes            5
+</I>&gt;&gt;<i>          Transfer Type            Isochronous
+</I>&gt;&gt;<i>          Synch Type               Asynchronous
+</I>&gt;&gt;<i>          Usage Type               Data
+</I>&gt;&gt;<i>        wMaxPacketSize     0x12f8  3x 760 bytes &lt;----!!!
+</I>&gt;&gt;<i>        bInterval               1
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I marked parts i'd like to know. What AlternateSetting and
+</I>&gt;&gt;<i> bEndpointAddress uvc driver is using.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;<i> 
+</I>&gt;<i> Alexey,
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Below that I'll put in what your 'visualization patch' gives, both with
+</I>&gt;<i> and without my stream fixing.
+</I>&gt;<i> 
+</I>&gt;<i> it uses alternate setting 2:
+</I>&gt;<i> Aug 11 22:32:30 tristan kernel: uvcvideo: Device requested 2280 B/frame
+</I>&gt;<i> bandwidth.
+</I>&gt;<i> Aug 11 22:32:30 tristan kernel: uvcvideo: Selecting alternate setting 2
+</I>&gt;<i> (2280 B/frame bandwidth).
+</I>&gt;<i> Aug 11 22:32:30 tristan kernel: uvcvideo: Allocated 5 URB buffers of
+</I>&gt;<i> 32x2280 bytes each.
+</I>&gt;<i> 
+</I>&gt;<i> I only have problems with 3*760 and 3*1024 bytes, but that makes sense,
+</I>&gt;<i> those are the only packet sizes the camera sends that could get split
+</I>&gt;<i> incorrectly.
+</I>&gt;<i> 
+</I>&gt;<i> the whole output of lsusb -v -d 0408:2fb1.
+</I>&gt;<i> 
+</I>&gt;<i> Bus 001 Device 004: ID 0408:2fb1 Quanta Computer, Inc. Device Descriptor:
+</I>&gt;<i>   bLength                18
+</I>&gt;<i>   bDescriptorType         1
+</I>&gt;<i>   bcdUSB               2.00
+</I>&gt;<i>   bDeviceClass          239 Miscellaneous Device
+</I>&gt;<i>   bDeviceSubClass         2 ?
+</I>&gt;<i>   bDeviceProtocol         1 Interface Association
+</I>&gt;<i>   bMaxPacketSize0        64
+</I>&gt;<i>   idVendor           0x0408 Quanta Computer, Inc.
+</I>&gt;<i>   idProduct          0x2fb1
+</I>&gt;<i>   bcdDevice            9.01
+</I>&gt;<i>   iManufacturer           3 CN07CN2C7866411I1870A00
+</I>&gt;<i>   iProduct                2 Laptop_Integrated_Webcam_2HDM
+</I>&gt;<i>   iSerial                 0
+</I>&gt;<i>   bNumConfigurations      1
+</I>&gt;<i>   Configuration Descriptor:
+</I>&gt;<i>     bLength                 9
+</I>&gt;<i>     bDescriptorType         2
+</I>&gt;<i>     wTotalLength         1457
+</I>&gt;<i>     bNumInterfaces          3
+</I>&gt;<i>     bConfigurationValue     1
+</I>&gt;<i>     iConfiguration          2 Laptop_Integrated_Webcam_2HDM
+</I>&gt;<i>     bmAttributes         0x80
+</I>&gt;<i>       (Bus Powered)
+</I>&gt;<i>     MaxPower              250mA
+</I>&gt;<i>     ** UNRECOGNIZED:  24 ff 42 49 53 54 00 01 05 02 10 00 00 00 00 00 01
+</I>&gt;<i> 05 d0 07 02 06 d0 07 03 07 d0 07 04 08 d0 07 05 09 d0 07
+</I>&gt;<i>     Interface Association:
+</I>&gt;<i>       bLength                 8
+</I>&gt;<i>       bDescriptorType        11
+</I>&gt;<i>       bFirstInterface         0
+</I>&gt;<i>       bInterfaceCount         3
+</I>&gt;<i>       bFunctionClass         14 Video
+</I>&gt;<i>       bFunctionSubClass       3 Video Interface Collection
+</I>&gt;<i>       bFunctionProtocol       0
+</I>&gt;<i>       iFunction               4 Integrated Webcam
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        0
+</I>&gt;<i>       bAlternateSetting       0
+</I>&gt;<i>       bNumEndpoints           1
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      1 Video Control
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              4 Integrated Webcam
+</I>&gt;<i>       VideoControl Interface Descriptor:
+</I>&gt;<i>         bLength                14
+</I>&gt;<i>         bDescriptorType        36
+</I>&gt;<i>         bDescriptorSubtype      1 (HEADER)
+</I>&gt;<i>         bcdUVC               1.00
+</I>&gt;<i>         wTotalLength          113
+</I>&gt;<i>         dwClockFrequency       75.000000MHz
+</I>&gt;<i>         bInCollection           2
+</I>&gt;<i>         baInterfaceNr( 0)       1
+</I>&gt;<i>         baInterfaceNr( 1)       2
+</I>&gt;<i>       VideoControl Interface Descriptor:
+</I>&gt;<i>         bLength                18
+</I>&gt;<i>         bDescriptorType        36
+</I>&gt;<i>         bDescriptorSubtype      2 (INPUT_TERMINAL)
+</I>&gt;<i>         bTerminalID             1
+</I>&gt;<i>         wTerminalType      0x0201 Camera Sensor
+</I>&gt;<i>         bAssocTerminal          0
+</I>&gt;<i>         iTerminal               0
+</I>&gt;<i>         wObjectiveFocalLengthMin      0
+</I>&gt;<i>         wObjectiveFocalLengthMax      0
+</I>&gt;<i>         wOcularFocalLength            0
+</I>&gt;<i>         bControlSize                  3
+</I>&gt;<i>         bmControls           0x0000000e
+</I>&gt;<i>           Auto-Exposure Mode
+</I>&gt;<i>           Auto-Exposure Priority
+</I>&gt;<i>           Exposure Time (Absolute)
+</I>&gt;<i>       VideoControl Interface Descriptor:
+</I>&gt;<i>         bLength                11
+</I>&gt;<i>         bDescriptorType        36
+</I>&gt;<i>         bDescriptorSubtype      5 (PROCESSING_UNIT)
+</I>&gt;<i>       Warning: Descriptor too short
+</I>&gt;<i>         bUnitID                 2
+</I>&gt;<i>         bSourceID               1
+</I>&gt;<i>         wMaxMultiplier          0
+</I>&gt;<i>         bControlSize            2
+</I>&gt;<i>         bmControls     0x0000157f
+</I>&gt;<i>           Brightness
+</I>&gt;<i> 3          Contrast
+</I>&gt;<i>           Hue
+</I>&gt;<i>           Saturation
+</I>&gt;<i>           Sharpness
+</I>&gt;<i>           Gamma
+</I>&gt;<i>           White Balance Temperature
+</I>&gt;<i>           Backlight Compensation
+</I>&gt;<i>           Power Line Frequency
+</I>&gt;<i>           White Balance Temperature, Auto
+</I>&gt;<i>         iProcessing             0
+</I>&gt;<i>         bmVideoStandards     0x1a
+</I>&gt;<i>           NTSC - 525/60
+</I>&gt;<i>           SECAM - 625/50
+</I>&gt;<i>           NTSC - 625/50
+</I>&gt;<i>       VideoControl Interface Descriptor:
+</I>&gt;<i>         bLength                26
+</I>&gt;<i>         bDescriptorType        36
+</I>&gt;<i>         bDescriptorSubtype      6 (EXTENSION_UNIT)
+</I>&gt;<i>         bUnitID                 3
+</I>&gt;<i>         guidExtensionCode         {28179e5d-8dab-a94f-9acb-f6d56dbc05a6}
+</I>&gt;<i>         bNumControl             8
+</I>&gt;<i>         bNrPins                 1
+</I>&gt;<i>         baSourceID( 0)          2
+</I>&gt;<i>         bControlSize            1
+</I>&gt;<i>         bmControls( 0)       0x1f
+</I>&gt;<i>         iExtension              0
+</I>&gt;<i>       VideoControl Interface Descriptor:
+</I>&gt;<i>         bLength                26
+</I>&gt;<i>         bDescriptorType        36
+</I>&gt;<i>         bDescriptorSubtype      6 (EXTENSION_UNIT)
+</I>&gt;<i>         bUnitID                 4
+</I>&gt;<i>         guidExtensionCode         {c385b80f-c268-4745-90f7-8f47579d95fc}
+</I>&gt;<i>         bNumControl             4
+</I>&gt;<i>         bNrPins                 1
+</I>&gt;<i>         baSourceID( 0)          3
+</I>&gt;<i>         bControlSize            1
+</I>&gt;<i>         bmControls( 0)       0x0f
+</I>&gt;<i>         iExtension              0
+</I>&gt;<i>       VideoControl Interface Descriptor:
+</I>&gt;<i>         bLength                 9
+</I>&gt;<i>         bDescriptorType        36
+</I>&gt;<i>         bDescriptorSubtype      3 (OUTPUT_TERMINAL)
+</I>&gt;<i>         bTerminalID             5
+</I>&gt;<i>         wTerminalType      0x0101 USB Streaming
+</I>&gt;<i>         bAssocTerminal          0
+</I>&gt;<i>         bSourceID               4
+</I>&gt;<i>         iTerminal               0
+</I>&gt;<i>       VideoControl Interface Descriptor:
+</I>&gt;<i>         bLength                 9
+</I>&gt;<i>         bDescriptorType        36
+</I>&gt;<i>         bDescriptorSubtype      3 (OUTPUT_TERMINAL)
+</I>&gt;<i>         bTerminalID             6
+</I>&gt;<i>         wTerminalType      0x0101 USB Streaming
+</I>&gt;<i>         bAssocTerminal          0
+</I>&gt;<i>         bSourceID               4
+</I>&gt;<i>         iTerminal               0
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x81  EP 1 IN
+</I>&gt;<i>         bmAttributes            3
+</I>&gt;<i>           Transfer Type            Interrupt
+</I>&gt;<i>           Synch Type               None
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x0020  1x 32 bytes
+</I>&gt;<i>         bInterval               6
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        1
+</I>&gt;<i>       bAlternateSetting       0
+</I>&gt;<i>       bNumEndpoints           0
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      2 Video Streaming
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            15
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  1 (INPUT_HEADER)
+</I>&gt;<i>         bNumFormats                         2
+</I>&gt;<i>         wTotalLength                     1135
+</I>&gt;<i>         bEndPointAddress                  130
+</I>&gt;<i>         bmInfo                              0
+</I>&gt;<i>         bTerminalLink                       5
+</I>&gt;<i>         bStillCaptureMethod                 1
+</I>&gt;<i>         bTriggerSupport                     0
+</I>&gt;<i>         bTriggerUsage                       0
+</I>&gt;<i>         bControlSize                        1
+</I>&gt;<i>         bmaControls( 0)                    27
+</I>&gt;<i>         bmaControls( 1)                    27
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            27
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  4 (FORMAT_UNCOMPRESSED)
+</I>&gt;<i>         bFormatIndex                        1
+</I>&gt;<i>         bNumFrameDescriptors               13
+</I>&gt;<i>         guidFormat                           
+</I>&gt;<i> {59555932-0000-1000-8000-00aa00389b71}
+</I>&gt;<i>         bBitsPerPixel                      16
+</I>&gt;<i>         bDefaultFrameIndex                  1
+</I>&gt;<i>         bAspectRatioX                       0
+</I>&gt;<i>         bAspectRatioY                       0
+</I>&gt;<i>         bmInterlaceFlags                 0x00
+</I>&gt;<i>           Interlaced stream or variable: No
+</I>&gt;<i>           Fields per frame: 2 fields
+</I>&gt;<i>           Field 1 first: No
+</I>&gt;<i>           Field pattern: Field 1 only
+</I>&gt;<i>           bCopyProtect                      0
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                         1
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            640
+</I>&gt;<i>         wHeight                           480
+</I>&gt;<i>         dwMinBitRate                 24576000
+</I>&gt;<i>         dwMaxBitRate                147456000
+</I>&gt;<i>         dwMaxVideoFrameBufferSize      614400
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            400000
+</I>&gt;<i>         dwFrameInterval( 2)            500000
+</I>&gt;<i>         dwFrameInterval( 3)            666666
+</I>&gt;<i>         dwFrameInterval( 4)           1000000
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                         2
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            640
+</I>&gt;<i>         wHeight                           400
+</I>&gt;<i>         dwMinBitRate                 20480000
+</I>&gt;<i>         dwMaxBitRate                122880000
+</I>&gt;<i>         dwMaxVideoFrameBufferSize      512000
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            400000
+</I>&gt;<i>         dwFrameInterval( 2)            500000
+</I>&gt;<i>         dwFrameInterval( 3)            666666
+</I>&gt;<i>         dwFrameInterval( 4)           1000000
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                         3
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            384
+</I>&gt;<i>         wHeight                           216
+</I>&gt;<i>         dwMinBitRate                  6635520
+</I>&gt;<i>         dwMaxBitRate                 39813120
+</I>&gt;<i>         dwMaxVideoFrameBufferSize      165888
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            400000
+</I>&gt;<i>         dwFrameInterval( 2)            500000
+</I>&gt;<i>         dwFrameInterval( 3)            666666
+</I>&gt;<i>         dwFrameInterval( 4)           1000000
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                         4
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            352
+</I>&gt;<i>         wHeight                           288
+</I>&gt;<i>         dwMinBitRate                  8110080
+</I>&gt;<i>         dwMaxBitRate                 48660480
+</I>&gt;<i>         dwMaxVideoFrameBufferSize      202752
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            400000
+</I>&gt;<i>         dwFrameInterval( 2)            500000
+</I>&gt;<i>         dwFrameInterval( 3)            666666
+</I>&gt;<i>         dwFrameInterval( 4)           1000000
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                         5
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            320
+</I>&gt;<i>         wHeight                           240
+</I>&gt;<i>         dwMinBitRate                  6144000
+</I>&gt;<i>         dwMaxBitRate                 36864000
+</I>&gt;<i>         dwMaxVideoFrameBufferSize      153600
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            400000
+</I>&gt;<i>         dwFrameInterval( 2)            500000
+</I>&gt;<i>         dwFrameInterval( 3)            666666
+</I>&gt;<i>         dwFrameInterval( 4)           1000000
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                         6
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            176
+</I>&gt;<i>         wHeight                           144
+</I>&gt;<i>         dwMinBitRate                  2027520
+</I>&gt;<i>         dwMaxBitRate                 12165120
+</I>&gt;<i>         dwMaxVideoFrameBufferSize       50688
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            400000
+</I>&gt;<i>         dwFrameInterval( 2)            500000
+</I>&gt;<i>         dwFrameInterval( 3)            666666
+</I>&gt;<i>         dwFrameInterval( 4)           1000000
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                         7
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            160
+</I>&gt;<i>         wHeight                           120
+</I>&gt;<i>         dwMinBitRate                  1536000
+</I>&gt;<i>         dwMaxBitRate                  9216000
+</I>&gt;<i>         dwMaxVideoFrameBufferSize       38400
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            400000
+</I>&gt;<i>         dwFrameInterval( 2)            500000
+</I>&gt;<i>         dwFrameInterval( 3)            666666
+</I>&gt;<i>         dwFrameInterval( 4)           1000000
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                         8
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            160
+</I>&gt;<i>         wHeight                           128
+</I>&gt;<i>         dwMinBitRate                  1638400
+</I>&gt;<i>         dwMaxBitRate                  9830400
+</I>&gt;<i>         dwMaxVideoFrameBufferSize       40960
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            400000
+</I>&gt;<i>         dwFrameInterval( 2)            500000
+</I>&gt;<i>         dwFrameInterval( 3)            666666
+</I>&gt;<i>         dwFrameInterval( 4)           1000000
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                         9
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            768
+</I>&gt;<i>         wHeight                           480
+</I>&gt;<i>         dwMinBitRate                 29491200
+</I>&gt;<i>         dwMaxBitRate                176947200
+</I>&gt;<i>         dwMaxVideoFrameBufferSize      737280
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            400000
+</I>&gt;<i>         dwFrameInterval( 2)            500000
+</I>&gt;<i>         dwFrameInterval( 3)            666666
+</I>&gt;<i>         dwFrameInterval( 4)           1000000
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            30
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                        10
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                           1024
+</I>&gt;<i>         wHeight                           768
+</I>&gt;<i>         dwMinBitRate                377487360
+</I>&gt;<i>         dwMaxBitRate                377487360
+</I>&gt;<i>         dwMaxVideoFrameBufferSize     1572864
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  1
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            30
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                        11
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                           1280
+</I>&gt;<i>         wHeight                           720
+</I>&gt;<i>         dwMinBitRate                442368000
+</I>&gt;<i>         dwMaxBitRate                442368000
+</I>&gt;<i>         dwMaxVideoFrameBufferSize     1843200
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  1
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            30
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                        12
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                           1280
+</I>&gt;<i>         wHeight                          1024
+</I>&gt;<i>         dwMinBitRate                629145600
+</I>&gt;<i>         dwMaxBitRate                629145600
+</I>&gt;<i>         dwMaxVideoFrameBufferSize     2621440
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  1
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            30
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                        13
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                           1600
+</I>&gt;<i>         wHeight                          1200
+</I>&gt;<i>         dwMinBitRate                921600000
+</I>&gt;<i>         dwMaxBitRate                921600000
+</I>&gt;<i>         dwMaxVideoFrameBufferSize     3840000
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  1
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                             6
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                 13 (COLORFORMAT)
+</I>&gt;<i>         bColorPrimaries                     1 (BT.709,sRGB)
+</I>&gt;<i>         bTransferCharacteristics            1 (BT.709)
+</I>&gt;<i>         bMatrixCoefficients                 4 (SMPTE 170M (BT.601))
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            11
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  6 (FORMAT_MJPEG)
+</I>&gt;<i>         bFormatIndex                        2
+</I>&gt;<i>         bNumFrameDescriptors               10
+</I>&gt;<i>         bFlags                              1
+</I>&gt;<i>           Fixed-size samples: Yes
+</I>&gt;<i>         bDefaultFrameIndex                  1
+</I>&gt;<i>         bAspectRatioX                       0
+</I>&gt;<i>         bAspectRatioY                       0
+</I>&gt;<i>         bmInterlaceFlags                 0x00
+</I>&gt;<i>           Interlaced stream or variable: No
+</I>&gt;<i>           Fields per frame: 1 fields
+</I>&gt;<i>           Field 1 first: No
+</I>&gt;<i>           Field pattern: Field 1 only
+</I>&gt;<i>           bCopyProtect                      0
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  7 (FRAME_MJPEG)
+</I>&gt;<i>         bFrameIndex                         1
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            640
+</I>&gt;<i>         wHeight                           480
+</I>&gt;<i>         dwMinBitRate                  2457600
+</I>&gt;<i>         dwMaxBitRate                 73728000
+</I>&gt;<i>         dwMaxVideoFrameBufferSize      307200
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            400000
+</I>&gt;<i>         dwFrameInterval( 2)            500000
+</I>&gt;<i>         dwFrameInterval( 3)            666666
+</I>&gt;<i>         dwFrameInterval( 4)           1000000
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  7 (FRAME_MJPEG)
+</I>&gt;<i>         bFrameIndex                         2
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            352
+</I>&gt;<i>         wHeight                           288
+</I>&gt;<i>         dwMinBitRate                   811008
+</I>&gt;<i>         dwMaxBitRate                 24330240
+</I>&gt;<i>         dwMaxVideoFrameBufferSize      101376
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            400000
+</I>&gt;<i>         dwFrameInterval( 2)            500000
+</I>&gt;<i>         dwFrameInterval( 3)            666666
+</I>&gt;<i>         dwFrameInterval( 4)           1000000
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  7 (FRAME_MJPEG)
+</I>&gt;<i>         bFrameIndex                         3
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            320
+</I>&gt;<i>         wHeight                           240
+</I>&gt;<i>         dwMinBitRate                   614400
+</I>&gt;<i>         dwMaxBitRate                 18432000
+</I>&gt;<i>         dwMaxVideoFrameBufferSize       76800
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            400000
+</I>&gt;<i>         dwFrameInterval( 2)            500000
+</I>&gt;<i>         dwFrameInterval( 3)            666666
+</I>&gt;<i>         dwFrameInterval( 4)           1000000
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  7 (FRAME_MJPEG)
+</I>&gt;<i>         bFrameIndex                         4
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            176
+</I>&gt;<i>         wHeight                           144
+</I>&gt;<i>         dwMinBitRate                   202752
+</I>&gt;<i>         dwMaxBitRate                  6082560
+</I>&gt;<i>         dwMaxVideoFrameBufferSize       25344
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            400000
+</I>&gt;<i>         dwFrameInterval( 2)            500000
+</I>&gt;<i>         dwFrameInterval( 3)            666666
+</I>&gt;<i>         dwFrameInterval( 4)           1000000
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  7 (FRAME_MJPEG)
+</I>&gt;<i>         bFrameIndex                         5
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            160
+</I>&gt;<i>         wHeight                           120
+</I>&gt;<i>         dwMinBitRate                   153600
+</I>&gt;<i>         dwMaxBitRate                  4608000
+</I>&gt;<i>         dwMaxVideoFrameBufferSize       19200
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            400000
+</I>&gt;<i>         dwFrameInterval( 2)            500000
+</I>&gt;<i>         dwFrameInterval( 3)            666666
+</I>&gt;<i>         dwFrameInterval( 4)           1000000
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  7 (FRAME_MJPEG)
+</I>&gt;<i>         bFrameIndex                         6
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                            768
+</I>&gt;<i>         wHeight                           480
+</I>&gt;<i>         dwMinBitRate                  2949120
+</I>&gt;<i>         dwMaxBitRate                 88473600
+</I>&gt;<i>         dwMaxVideoFrameBufferSize      368640
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            400000
+</I>&gt;<i>         dwFrameInterval( 2)            500000
+</I>&gt;<i>         dwFrameInterval( 3)            666666
+</I>&gt;<i>         dwFrameInterval( 4)           1000000
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  7 (FRAME_MJPEG)
+</I>&gt;<i>         bFrameIndex                         7
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                           1024
+</I>&gt;<i>         wHeight                           768
+</I>&gt;<i>         dwMinBitRate                  6291456
+</I>&gt;<i>         dwMaxBitRate                188743680
+</I>&gt;<i>         dwMaxVideoFrameBufferSize      786432
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            400000
+</I>&gt;<i>         dwFrameInterval( 2)            500000
+</I>&gt;<i>         dwFrameInterval( 3)            666666
+</I>&gt;<i>         dwFrameInterval( 4)           1000000
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  7 (FRAME_MJPEG)
+</I>&gt;<i>         bFrameIndex                         8
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                           1280
+</I>&gt;<i>         wHeight                           720
+</I>&gt;<i>         dwMinBitRate                  7372800
+</I>&gt;<i>         dwMaxBitRate                221184000
+</I>&gt;<i>         dwMaxVideoFrameBufferSize      921600
+</I>&gt;<i>         dwDefaultFrameInterval         333333
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            333333
+</I>&gt;<i>         dwFrameInterval( 1)            400000
+</I>&gt;<i>         dwFrameInterval( 2)            500000
+</I>&gt;<i>         dwFrameInterval( 3)            666666
+</I>&gt;<i>         dwFrameInterval( 4)           1000000
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  7 (FRAME_MJPEG)
+</I>&gt;<i>         bFrameIndex                         9
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                           1280
+</I>&gt;<i>         wHeight                          1024
+</I>&gt;<i>         dwMinBitRate                 10485760
+</I>&gt;<i>         dwMaxBitRate                209715200
+</I>&gt;<i>         dwMaxVideoFrameBufferSize     1310720
+</I>&gt;<i>         dwDefaultFrameInterval         500000
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            500000
+</I>&gt;<i>         dwFrameInterval( 1)            666666
+</I>&gt;<i>         dwFrameInterval( 2)            833333
+</I>&gt;<i>         dwFrameInterval( 3)           1000000
+</I>&gt;<i>         dwFrameInterval( 4)           1111111
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            50
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  7 (FRAME_MJPEG)
+</I>&gt;<i>         bFrameIndex                        10
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                           1600
+</I>&gt;<i>         wHeight                          1200
+</I>&gt;<i>         dwMinBitRate                 15360000
+</I>&gt;<i>         dwMaxBitRate                230400000
+</I>&gt;<i>         dwMaxVideoFrameBufferSize     1920000
+</I>&gt;<i>         dwDefaultFrameInterval         666666
+</I>&gt;<i>         bFrameIntervalType                  6
+</I>&gt;<i>         dwFrameInterval( 0)            666666
+</I>&gt;<i>         dwFrameInterval( 1)            833333
+</I>&gt;<i>         dwFrameInterval( 2)           1000000
+</I>&gt;<i>         dwFrameInterval( 3)           1111111
+</I>&gt;<i>         dwFrameInterval( 4)           1428571
+</I>&gt;<i>         dwFrameInterval( 5)           2000000
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                             6
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                 13 (COLORFORMAT)
+</I>&gt;<i>         bColorPrimaries                     1 (BT.709,sRGB)
+</I>&gt;<i>         bTransferCharacteristics            1 (BT.709)
+</I>&gt;<i>         bMatrixCoefficients                 4 (SMPTE 170M (BT.601))
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        1
+</I>&gt;<i>       bAlternateSetting       1
+</I>&gt;<i>       bNumEndpoints           1
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      2 Video Streaming
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x82  EP 2 IN
+</I>&gt;<i>         bmAttributes            5
+</I>&gt;<i>           Transfer Type            Isochronous
+</I>&gt;<i>           Synch Type               Asynchronous
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x1400  3x 1024 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        1
+</I>&gt;<i>       bAlternateSetting       2
+</I>&gt;<i>       bNumEndpoints           1
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      2 Video Streaming
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x82  EP 2 IN
+</I>&gt;<i>         bmAttributes            5
+</I>&gt;<i>           Transfer Type            Isochronous
+</I>&gt;<i>           Synch Type               Asynchronous
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x12f8  3x 760 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        1
+</I>&gt;<i>       bAlternateSetting       3
+</I>&gt;<i>       bNumEndpoints           1
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      2 Video Streaming
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x82  EP 2 IN
+</I>&gt;<i>         bmAttributes            5
+</I>&gt;<i>           Transfer Type            Isochronous
+</I>&gt;<i>           Synch Type               Asynchronous
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x0400  1x 1024 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        1
+</I>&gt;<i>       bAlternateSetting       4
+</I>&gt;<i>       bNumEndpoints           1
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      2 Video Streaming
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x82  EP 2 IN
+</I>&gt;<i>         bmAttributes            5
+</I>&gt;<i>           Transfer Type            Isochronous
+</I>&gt;<i>           Synch Type               Asynchronous
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x0200  1x 512 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        2
+</I>&gt;<i>       bAlternateSetting       0
+</I>&gt;<i>       bNumEndpoints           0
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      2 Video Streaming
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            14
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  1 (INPUT_HEADER)
+</I>&gt;<i>         bNumFormats                         1
+</I>&gt;<i>         wTotalLength                       21
+</I>&gt;<i>         bEndPointAddress                  131
+</I>&gt;<i>         bmInfo                              0
+</I>&gt;<i>         bTerminalLink                       6
+</I>&gt;<i>         bStillCaptureMethod                 1
+</I>&gt;<i>         bTriggerSupport                     0
+</I>&gt;<i>         bTriggerUsage                       0
+</I>&gt;<i>         bControlSize                        1
+</I>&gt;<i>         bmaControls( 0)                     7
+</I>&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                             7
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                 10 (FORMAT_MPEG2TS)
+</I>&gt;<i>         bFormatIndex                        1
+</I>&gt;<i>         bDataOffset                         0
+</I>&gt;<i>         bPacketLength                     188
+</I>&gt;<i>         bStrideLength                     188
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        2
+</I>&gt;<i>       bAlternateSetting       1
+</I>&gt;<i>       bNumEndpoints           1
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      2 Video Streaming
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x83  EP 3 IN
+</I>&gt;<i>         bmAttributes            5
+</I>&gt;<i>           Transfer Type            Isochronous
+</I>&gt;<i>           Synch Type               Asynchronous
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x0318  1x 792 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        2
+</I>&gt;<i>       bAlternateSetting       2
+</I>&gt;<i>       bNumEndpoints           1
+</I>&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;<i>       bInterfaceSubClass      2 Video Streaming
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x83  EP 3 IN
+</I>&gt;<i>         bmAttributes            5
+</I>&gt;<i>           Transfer Type            Isochronous
+</I>&gt;<i>           Synch Type               Asynchronous
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x0100  1x 256 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i> Device Qualifier (for other device speed):
+</I>&gt;<i>   bLength                10
+</I>&gt;<i>   bDescriptorType         6
+</I>&gt;<i>   bcdUSB               2.00
+</I>&gt;<i>   bDeviceClass          239 Miscellaneous Device
+</I>&gt;<i>   bDeviceSubClass         2 ?
+</I>&gt;<i>   bDeviceProtocol         1 Interface Association
+</I>&gt;<i>   bMaxPacketSize0        64
+</I>&gt;<i>   bNumConfigurations      1
+</I>&gt;<i> Device Status:     0x0000
+</I>&gt;<i>   (Bus Powered)
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> I modified your visualization patch to get rid of the I's (which my
+</I>&gt;<i> camera gives lots of, all over the place, but I think aren't so
+</I>&gt;<i> interesting) and to add a marker for EOF.  I also removed the -ENODATA
+</I>&gt;<i> for zero length packets because I rely on EOF.
+</I>&gt;<i> 
+</I>&gt;<i> Then, with my stream fixup patch I get:
+</I>&gt;<i> 
+</I>&gt;<i> [FID 50][SOI]**********[EOI]N[EOF]
+</I>&gt;<i> [FID 51][SOI]***********N[EOF]
+</I>&gt;<i> [FID 52]![SOI]************N[EOF]
+</I>&gt;<i> [FID 53]![SOI]***********N[EOF]
+</I>&gt;<i> [FID 54]![SOI]************N[EOF]
+</I>&gt;<i> [FID 55]![SOI]************N[EOF]
+</I>&gt;<i> [FID 56]![SOI]***********[EOI]N[EOF]
+</I>&gt;<i> [FID 57][SOI]************N[EOF]
+</I>&gt;<i> [FID 58]![SOI]************N[EOF]
+</I>&gt;<i> [FID 59]![SOI]************N[EOF]
+</I>&gt;<i> [FID 60]![SOI]************N[EOF]
+</I>&gt;<i> [FID 61]![SOI]***********[EOI]N[EOF]
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> which renders perfectly - no corrupt frames at all. Either my camera is
+</I>&gt;<i> sloppy about doing EOI correctly, or maybe EOI sometimes isn't at the
+</I>&gt;<i> very end of a packet so your check doesn't see it?
+</I>
+It make no sense. If there is a end of image, no data should be applyed.
+I wondaer if jpeg frames withouth EOI will be rendered at all. Can you
+please dump jpg frames with luvcvier and check if there is same count of
+frames in dump as in dmesg. And check if each dump has EOI signature on
+the end of file? Use some script like:
+for i in frame*.raw; do xxd $i | tail -n2; done
+
+The very last two bytes should be 0xffd9
+
+&gt;<i> But every packet here
+</I>&gt;<i> starts with FID, SOI and ends with EOF in an empty packet.  For this
+</I>&gt;<i> camera N (empty), and [EOF] are always the same packet.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Without my stream fix (using your patch as supplied now - except for the
+</I>&gt;<i> I's removed) this is much worse, all sorts of nasty things happen:
+</I>&gt;<i> 
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 131]![SOI]*************************N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 132]![SOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 133]![SOI]*************************N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 134]![SOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 135]![SOI]*************************N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 136]![SOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 137]![SOI]*******E*****************
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 138]*
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 139]*N![SOI]************************N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 140]![SOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 141]![SOI]************************N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 142]![SOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 143]![SOI]**********************N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 144]![SOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 145]![SOI]**********************N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 146]![SOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 147]![SOI]**********************N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 148]![SOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 149]![SOI]*********************[EOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 150][SOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 151]![SOI]**********************N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 152]![SOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 153]![SOI]**********************N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 154]![SOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 155]![SOI]**********************N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 156]![SOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 157]![SOI]**********************N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 158]![SOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 159]![SOI]**********************N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 160]![SOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 161]![SOI]**********************
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 162]*
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 163]*N![SOI]***********************N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 164]![SOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 165]![SOI]**********************[EOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 166][SOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 167]![SOI]**********************
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 168][EOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel:
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 169][EOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: N[SOI]***********************N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 170]![SOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 171]![SOI]*********************[EOI]
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: N
+</I>&gt;<i> Aug 11 22:21:01 tristan kernel: [FID 172][SOI]
+</I>&gt;<i> Aug 11 22:21:02 tristan kernel: [FID 173]![SOI]*********************[EOI]
+</I>&gt;<i> Aug 11 22:21:02 tristan kernel: N
+</I>&gt;<i> Aug 11 22:21:02 tristan kernel: [FID 174][SOI]
+</I>&gt;<i> Aug 11 22:21:02 tristan kernel: [FID 175]![SOI]**********************[EOI]
+</I>&gt;<i> 
+</I>&gt;<i> you can see at frame 138 and again at 162 the FID comes just before the
+</I>&gt;<i> empty packet that carries the (correct EOF). You don't see the EOF's
+</I>&gt;<i> here because of your return -ENODATA.
+</I>&gt;<i> 
+</I>&gt;<i> I don't like that at all - the header can carry valid information even
+</I>&gt;<i> if there is no data in the packet. I think it's unwise to throw it away
+</I>&gt;<i> - it would be a catastrophe for this camera.
+</I>
+It is not a big problem, just change the check to:
+if (data[0] == len &amp;&amp; !(data[1] &amp; UVC_STREAM_EOF))
+  return -ENODATA;
+
+&gt;<i> I do like the idea of this for diagnosis - it might well have made
+</I>&gt;<i> figuring out what was going on with my camera a little easier.
+</I>
+It will be interesting to add it oficcially to the driver, but i do not
+know if Laurent will be agree with it.
+
+Can you combine your patch with visualisation patch and show what frames
+was fragmented?
+Add some stream-&gt;fragmented variable and tag it if you reconstruct
+frame, and reset after processing it.
+
+Regrads,
+	Alexey
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006790.html">[Linux-uvc-devel] MJPEG camera
+</A></li>
+	<LI>Next message: <A HREF="006792.html">[Linux-uvc-devel] Microdia Sonix id 0c45:6310
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6791">[ date ]</a>
+              <a href="thread.html#6791">[ thread ]</a>
+              <a href="subject.html#6791">[ subject ]</a>
+              <a href="author.html#6791">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

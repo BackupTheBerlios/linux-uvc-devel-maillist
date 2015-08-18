@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] syntek 174f:8a12 unsupported?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20syntek%20174f%3A8a12%20unsupported%3F&In-Reply-To=%3C200807182207.32920.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003873.html">
+   <LINK REL="Next"  HREF="003880.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] syntek 174f:8a12 unsupported?</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20syntek%20174f%3A8a12%20unsupported%3F&In-Reply-To=%3C200807182207.32920.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] syntek 174f:8a12 unsupported?">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Fri Jul 18 22:07:32 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003873.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+        <LI>Next message: <A HREF="003880.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3874">[ date ]</a>
+              <a href="thread.html#3874">[ thread ]</a>
+              <a href="subject.html#3874">[ subject ]</a>
+              <a href="author.html#3874">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Friday 18 July 2008, martuf1 wrote:
+&gt;<i> Laurent Pinchart wrote:
+</I>&gt;<i> &gt; On Thursday 17 July 2008, martuf1 wrote:
+</I>&gt;<i> &gt;&gt; Hi,
+</I>&gt;<i> &gt;&gt; my notebook has a Syntek camera (174f:8a12),
+</I>&gt;<i> &gt;&gt; lsusb says it's an UVC Camera
+</I>&gt;<i> &gt;&gt;    iProduct                3 USB2.0 UVC PC Camera
+</I>&gt;<i> &gt;&gt; (please see attached file for the complete output of the command)
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; It doesn't work; dmesg says:
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; [ 8524.914397] uvcvideo: Found UVC 1.00 device USB2.0 UVC PC Camera
+</I>&gt;<i> &gt;&gt; (174f:8a12)
+</I>&gt;<i> &gt;&gt; [ 8524.936046] uvcvideo: Failed to query (135) UVC control 1 (unit 0) :
+</I>&gt;<i> &gt;&gt; -32 (exp. 26).
+</I>&gt;<i> &gt;&gt; [ 8525.170271] usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> &gt;&gt; [ 8525.170278] USB Video Class driver (SVN r231)
+</I>&gt;<i> &gt;&gt; [ 8525.696738] uvcvideo: Failed to query (129) UVC control 1 (unit 0) :
+</I>&gt;<i> &gt;&gt; -110 (exp. 26).
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; Any idea, help, etc is welcome
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Could you please apply the following patch and try again ? Make sure you
+</I>&gt;<i> &gt; report all kernel log messages printed by the uvcvideo driver.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; -------------------------------------------------------------------------
+</I>&gt;<i> &gt;---- Index: uvc_video.c
+</I>&gt;<i> &gt; ===================================================================
+</I>&gt;<i> &gt; --- uvc_video.c	(revision 230)
+</I>&gt;<i> &gt; +++ uvc_video.c	(working copy)
+</I>&gt;<i> &gt; @@ -899,8 +899,7 @@
+</I>&gt;<i> &gt;  	/* Some webcams don't suport GET_DEF request on the probe control. We
+</I>&gt;<i> &gt;  	 * fall back to GET_CUR if GET_DEF fails.
+</I>&gt;<i> &gt;  	 */
+</I>&gt;<i> &gt; -	if ((ret = uvc_get_video_ctrl(video, probe, 1, GET_DEF)) &lt; 0 &amp;&amp;
+</I>&gt;<i> &gt; -	    (ret = uvc_get_video_ctrl(video, probe, 1, GET_CUR)) &lt; 0)
+</I>&gt;<i> &gt; +	if ((ret = uvc_get_video_ctrl(video, probe, 1, GET_CUR)))
+</I>&gt;<i> &gt;  		return ret;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;  	/* Check if the default format descriptor exists. Use the first
+</I>&gt;<i> &gt; -------------------------------------------------------------------------
+</I>&gt;<i> &gt;----
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Best regards,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Laurent Pinchart
+</I>&gt;<i>
+</I>&gt;<i> Hi Laurent,
+</I>&gt;<i> here is the output of the patched driver:
+</I>&gt;<i>
+</I>&gt;<i> $&gt;  dmesg
+</I>&gt;<i> [ 7264.493153] Linux video capture interface: v2.00
+</I>&gt;<i> [ 7264.498565] uvcvideo: Found UVC 1.00 device USB2.0 UVC PC Camera
+</I>&gt;<i> (174f:8a12)
+</I>&gt;<i> [ 7264.750891] usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> [ 7264.750901] USB Video Class driver (SVN r231)
+</I>&gt;<i> [ 7265.281478] uvcvideo: Failed to query (129) UVC control 1 (unit 0) :
+</I>&gt;<i> -110 (exp. 26).
+</I>&gt;<i> $&gt; ls /dev/video0
+</I>&gt;<i> /dev/video0
+</I>&gt;<i>
+</I>&gt;<i> After removing the module and modprobing again the output is:
+</I>&gt;<i> $&gt; dmesg
+</I>&gt;<i> [ 7519.034499] uvcvideo: Found UVC 1.00 device USB2.0 UVC PC Camera
+</I>&gt;<i> (174f:8a12)
+</I>&gt;<i> [ 7519.289704] usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> [ 7519.289712] USB Video Class driver (SVN r231)
+</I>&gt;<i> $&gt; ls /dev/video0
+</I>&gt;<i> /dev/video0
+</I>&gt;<i>
+</I>&gt;<i> But in both cases, with skype and amsn the cam isn't working
+</I>&gt;<i> (should I use other program to test it?)
+</I>
+Yes, please use luvcview and run it with
+
+luvcview -f yuv
+
+Don't forget to report luvcview error messages as well as driver messages 
+printed to the kernel log.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003873.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+	<LI>Next message: <A HREF="003880.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3874">[ date ]</a>
+              <a href="thread.html#3874">[ thread ]</a>
+              <a href="subject.html#3874">[ subject ]</a>
+              <a href="author.html#3874">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

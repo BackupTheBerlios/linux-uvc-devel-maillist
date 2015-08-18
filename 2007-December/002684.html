@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] supported device Philips SPC1000NC
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20supported%20device%20Philips%20SPC1000NC&In-Reply-To=%3C200712291317.19829.jice%40free.fr%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002668.html">
+   <LINK REL="Next"  HREF="002671.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] supported device Philips SPC1000NC</H1>
+    <B>Jean-Christophe Jice Cardot</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20supported%20device%20Philips%20SPC1000NC&In-Reply-To=%3C200712291317.19829.jice%40free.fr%3E"
+       TITLE="[Linux-uvc-devel] supported device Philips SPC1000NC">jice at free.fr
+       </A><BR>
+    <I>Sat Dec 29 13:17:15 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002668.html">[Linux-uvc-devel] supported device Philips SPC1000NC
+</A></li>
+        <LI>Next message: <A HREF="002671.html">[Linux-uvc-devel] supported device Philips SPC1000NC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2684">[ date ]</a>
+              <a href="thread.html#2684">[ thread ]</a>
+              <a href="subject.html#2684">[ subject ]</a>
+              <a href="author.html#2684">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Le vendredi 28 d&#233;cembre 2007, Laurent Pinchart a &#233;crit :
+&gt;<i> That doesn't look good. Do the 'USB disconnect' messages appear on their
+</I>&gt;<i> own when you're not doing anything, or are they printed only when you try
+</I>&gt;<i> to use the webcam ? Please try to plug the camera in another port and see
+</I>&gt;<i> if it helps.
+</I>
+here it is. after the &quot;&gt;&quot;, the lines from dmesg.
+
+rmmod uvcvideo (ro remove the old version)
+&gt;<i>usbcore: deregistering driver uvcvideo
+</I>
+insmod ./uvcvideo.ko
+&gt;<i>uvcvideo: Found UVC 1.00 device Philips SPC 1000NC Webcam (0471:0332)
+</I>&gt;<i>usbcore: registered new driver uvcvideo
+</I>&gt;<i>USB Video Class driver (v0.1.0)
+</I>
+press the camera button
+&gt;<i>uvcvideo: Button event (1).
+</I>&gt;<i>uvcvideo: Button event (0).
+</I>
+[<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">fred at jice</A> luvcview-20070512]$ ./luvcview -d /dev/video1
+luvcview version 0.2.1
+Video driver: x11
+A window manager is available
+video /dev/video1
+
+Stop asked
+ Clean Up done Quit
+&gt;<i>nothing in dmesg
+</I>
+[<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">fred at jice</A> luvcview-20070512]$ ./luvcview -d /dev/video1
+luvcview version 0.2.1
+Video driver: x11
+A window manager is available
+video /dev/video1
+Unable to dequeue buffer (5).
+Error grabbing
+ Clean Up done Quit
+&gt;<i>usb 1-1: USB disconnect, address 2
+</I>&gt;<i>usb 1-1: new high speed USB device using ehci_hcd and address 3
+</I>&gt;<i>usb 1-1: configuration #1 chosen from 1 choice
+</I>&gt;<i>uvcvideo: Found UVC 1.00 device Philips SPC 1000NC Webcam (0471:0332)
+</I>&gt;<i>3:3:1: cannot get freq at ep 0x84
+</I>
+also, /dev/video1 has been recreated:
+it was:
+&gt;<i>crw-rw---- 1 fred video 81, 1 2007-12-29 12:12 /dev/v4l/video1
+</I>and is now, after the failure:
+&gt;<i>crw-rw---- 1 fred video 81, 1 2007-12-29 12:25 /dev/v4l/video1
+</I>note the change in the time.
+
+again a failure of luvcview:
+&gt;<i>usb 1-1: USB disconnect, address 3
+</I>&gt;<i>usb 1-1: new high speed USB device using ehci_hcd and address 4
+</I>&gt;<i>usb 1-1: configuration #1 chosen from 1 choice
+</I>&gt;<i>uvcvideo: Found UVC 1.00 device Philips SPC 1000NC Webcam (0471:0332)
+</I>&gt;<i>4:3:1: cannot get freq at ep 0x84
+</I>
+then another:
+&gt;<i>usb 1-1: USB disconnect, address 4
+</I>&gt;<i>usb 1-1: new high speed USB device using ehci_hcd and address 5
+</I>&gt;<i>usb 1-1: configuration #1 chosen from 1 choice
+</I>&gt;<i>uvcvideo: Found UVC 1.00 device Philips SPC 1000NC Webcam (0471:0332)
+</I>&gt;<i>5:3:1: cannot get freq at ep 0x84
+</I>
+then it works (and nothing in dmesg).
+
+there is no logical suite in the failures and successes (like 2 failures then 
+one success).
+
+so let's try to change the plug:
+unplug:
+&gt;<i>usb 1-1: USB disconnect, address 13
+</I>
+plug:
+&gt;<i>usb 1-3: new high speed USB device using ehci_hcd and address 14
+</I>&gt;<i>usb 1-3: configuration #1 chosen from 1 choice
+</I>&gt;<i>uvcvideo: Found UVC 1.00 device Philips SPC 1000NC Webcam (0471:0332)
+</I>&gt;<i>14:3:1: cannot get freq at ep 0x84
+</I>
+again luvcview fails then works then fails then fails...
+&gt;<i>usb 1-3: USB disconnect, address 14
+</I>&gt;<i>usb 1-3: new high speed USB device using ehci_hcd and address 15
+</I>&gt;<i>usb 1-3: configuration #1 chosen from 1 choice
+</I>&gt;<i>uvcvideo: Found UVC 1.00 device Philips SPC 1000NC Webcam (0471:0332)
+</I>&gt;<i>15:3:1: cannot get freq at ep 0x84
+</I>
+ok, this was my only usb2 controller, so let's try a USB1 controller:
+&gt;<i>usb 1-3: USB disconnect, address 15
+</I>&gt;<i>usb 5-2: new full speed USB device using uhci_hcd and address 4
+</I>&gt;<i>usb 5-2: not running at top speed; connect to a high speed hub
+</I>&gt;<i>usb 5-2: configuration #1 chosen from 1 choice
+</I>&gt;<i>uvcvideo: Found UVC 1.00 device Philips SPC 1000NC Webcam (0471:0332)
+</I>&gt;<i>4:3:1: cannot get freq at ep 0x84
+</I>
+surprise! luvcview always work properly! and with the same fps (12).
+
+so now I've a work-around, but still I'd like to help it work on the USB2 
+controller if it suits you, because maybe others will have the same 
+problem...
+
+bye and have a good &quot;f&#234;tes de fin d'ann&#233;e&quot; ! (you're speaking french, Laurent, 
+aren't you?)
+
+-- 
+Jean-Christophe &quot;Jic&#233;&quot; Cardot - cofondateur de <A HREF="http://lea-linux.org">http://lea-linux.org</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: This is a digitally signed message part.
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20071229/6359435d/attachment.pgp">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20071229/6359435d/attachment.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002668.html">[Linux-uvc-devel] supported device Philips SPC1000NC
+</A></li>
+	<LI>Next message: <A HREF="002671.html">[Linux-uvc-devel] supported device Philips SPC1000NC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2684">[ date ]</a>
+              <a href="thread.html#2684">[ thread ]</a>
+              <a href="subject.html#2684">[ subject ]</a>
+              <a href="author.html#2684">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

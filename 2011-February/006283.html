@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] XU architecture
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20XU%20architecture&In-Reply-To=%3C201102152206.37356.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006249.html">
+   <LINK REL="Next"  HREF="006250.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] XU architecture</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20XU%20architecture&In-Reply-To=%3C201102152206.37356.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] XU architecture">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Tue Feb 15 22:06:37 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006249.html">[Linux-uvc-devel] XU architecture
+</A></li>
+        <LI>Next message: <A HREF="006250.html">[Linux-uvc-devel]  Looking for upside down uvc cams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6283">[ date ]</a>
+              <a href="thread.html#6283">[ thread ]</a>
+              <a href="subject.html#6283">[ subject ]</a>
+              <a href="author.html#6283">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Brent,
+
+On Wednesday 02 February 2011 19:51:54 Brent Weatherall wrote:
+&gt;<i> Hello.  I just want to clarify my understanding of the use of XUs in the
+</I>&gt;<i> Linux UVC driver.
+</I>&gt;<i> 
+</I>&gt;<i> When a device driver wishes to use an XU for a device, it must first add
+</I>&gt;<i> the XU descriptions (so to speak) to the standard Linux UVC driver.  The
+</I>&gt;<i> Linux kernel driver module (usbhid.ko for example) is indeed the layer
+</I>&gt;<i> this happens in, correct or no?
+</I>
+Not exactly.
+
+XU descriptors contain (among other information) a list of controls supported 
+by the device for that particular extension unit. As extension units are 
+vendor-specific, the Linux UVC driver (uvcvideo.ko) doesn't know about those 
+controls. It must be taught how to map those XU controls to V4L2 controls.
+
+&gt;<i> I am working with a device that operates with the standard UVC interface
+</I>&gt;<i> and detects the proper XU additions automatically (which I am assuming is
+</I>&gt;<i> normal).  I have found if I unplug the device to reset it and plug it back
+</I>&gt;<i> in and then run the test application (which adds the XU controls every
+</I>&gt;<i> time) the device will time out.  If I leave the device plugged in it
+</I>&gt;<i> usually works, but it is not guaranteed.  To correct this I must restart
+</I>&gt;<i> my USB system completely (i.e. rmmod
+</I>&gt;<i> /lib/modules/2.6.35-22-generic/kernel/drivers/hid/usbhid/usbhid.ko, rmmod
+</I>&gt;<i> /lib/modules/2.6.35-22-generic/kernel/drivers/hid/hid.ko, insmod
+</I>&gt;<i> /lib/modules/2.6.35-22-generic/kernel/drivers/hid/hid.ko, insmod
+</I>&gt;<i> /lib/modules/2.6.35-22-generic/kernel/drivers/hid/usbhid/usbhid.ko).
+</I>
+usbhid has nothing to do with this. The UVC driver is uvcvideo.ko.
+
+&gt;<i> From a driver standpoint, should I check for the presence of the XU
+</I>&gt;<i> controls and then only add them if they are not present?
+</I>
+There's not way to check from userspace if mappings have already been added. 
+That's not a big issue, you can just add them, and the driver will return -
+EEXIST if they're already present.
+
+I'm working on making the mappings device-specific, so you will need to add 
+them every time a device is plugged in.
+
+&gt;<i> I would expect adding them every time should not cause the system to break
+</I>&gt;<i> down, but I could be wrong. Theoretically speaking, is this most likely a
+</I>&gt;<i> UVC problem, or most likely a device problem?  Again, just theoretically
+</I>&gt;<i> speaking.
+</I>
+It must definitely not break down. Whether it's a uvcvideo or device issue is 
+hard to tell, you haven't really told me what goes wrong.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006249.html">[Linux-uvc-devel] XU architecture
+</A></li>
+	<LI>Next message: <A HREF="006250.html">[Linux-uvc-devel]  Looking for upside down uvc cams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6283">[ date ]</a>
+              <a href="thread.html#6283">[ thread ]</a>
+              <a href="subject.html#6283">[ subject ]</a>
+              <a href="author.html#6283">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

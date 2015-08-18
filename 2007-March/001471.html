@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] The source clock
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20The%20source%20clock&In-Reply-To=%3C430541.19874.qm%40web60515.mail.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001469.html">
+   <LINK REL="Next"  HREF="001474.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] The source clock</H1>
+    <B>Paul Jurczak</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20The%20source%20clock&In-Reply-To=%3C430541.19874.qm%40web60515.mail.yahoo.com%3E"
+       TITLE="[Linux-uvc-devel] The source clock">pauljurczak at yahoo.com
+       </A><BR>
+    <I>Mon Mar  5 18:34:28 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001469.html">[Linux-uvc-devel] control query fails
+</A></li>
+        <LI>Next message: <A HREF="001474.html">[Linux-uvc-devel] The source clock
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1471">[ date ]</a>
+              <a href="thread.html#1471">[ thread ]</a>
+              <a href="subject.html#1471">[ subject ]</a>
+              <a href="author.html#1471">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+ as much as I would like to see cheap USB webcam based stereo vision, I have to agree with you that adherence to standard is crucial. In general case we have to assume different values in device and host SOF counters. Do you have means (bus analyzer) to test some UVC cameras to find out if these counters have the same values? Maybe all of them or most of them do. In such a case, it would be worthwhile to pursue it further. UVC driver could use time stamps only for these devices. I can provide you with at least one new UVC camera, which is not on official list yet (V-Gear TalkCam MX6) for testing. 
+
+ There seems to be a way to get host system time at SOF Token generation. Chapter 6.3 of Open Host Controller Interface Specification for USB describes StartOfFrame interrupt event, which could be used for this purpose.
+ 
+Best Regards,
+Paul Jurczak.
+
+----- Original Message ----
+From: Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt;
+To: Paul Jurczak &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">pauljurczak at yahoo.com</A>&gt;
+Cc: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel at lists.berlios.de</A>
+Sent: Monday, March 5, 2007 3:28:18 AM
+Subject: Re: [Linux-uvc-devel] The source clock
+
+Hi Paul,
+
+&gt;<i> I see two fields in v4l2_buffer, which are used for time stamps: timecode
+</I>&gt;<i> and timestamp. The timecode field lacks sufficient resolution for our
+</I>&gt;<i> purpose, because it was designed with analog video standards in mind.
+</I>&gt;<i> Besides, it seems that something similar to timecode is already being
+</I>&gt;<i> embedded in MPEG stream by the camera. The timestamp field looks almost
+</I>&gt;<i> perfect for our purpose - resolution could be better, but a microsecond is
+</I>&gt;<i> good enough.
+</I>
+Agreed. Let's use the timestamp field.
+
+&gt;<i> The most comprehensive solution, following the spirit of V4L2 
+</I>&gt;<i> specs, would involve camera and PC clock synchronization. In practical
+</I>&gt;<i> terms, it would mean finding the system time (Tn) of creation of SOF packet
+</I>&gt;<i> number n and using SOF counter value (m) and System Time Clock (Tm) from
+</I>&gt;<i> scrSourceClock and dwPresentationTime (Tp) to calculate frame creation time
+</I>&gt;<i> (t) in PC system time:
+</I>&gt;<i>
+</I>&gt;<i> t = Tn + (m-n)*125us + ((Tm-Tp)%dwClockFrequency)/dwClockFrequency 
+</I>&gt;<i> (sketchy)
+</I>&gt;<i>
+</I>&gt;<i> Before I go any further, it would help to find out the following:
+</I>&gt;<i>
+</I>&gt;<i> 1) Are we getting both dwPresentationTime and scrSourceClock in the Payload
+</I>&gt;<i> Header (controlled by bits 2 and 3 of bmHeaderInfo)? It seems that cameras
+</I>&gt;<i> without microphone may not provide them (page 34 of USB Class Definition
+</I>&gt;<i> for Video Devices).
+</I>
+I tested various webcams. One of them didn't include the PTS and SCR fields in 
+any packet. All others did.
+
+&gt;<i> 2) More importantly, is the camera SOF counter the same as host SOF
+</I>&gt;<i> counter? Possibility of different counting is mentioned on page 33 of USB
+</I>&gt;<i> Class Definition for Video Devices. If counters are different, finding the
+</I>&gt;<i> offset may be very difficult.
+</I>
+The specification doesn't call for a single counter, so we unfortunately can't 
+rely on that.
+
+As the device SOF counter and the host SOF counter have different values, the 
+above formula will be very difficult to use. The PTS and SCR fields have been 
+designed to synchronise multiple video and audio streams from a single 
+device. Synchronising video streams from separate devices seem to be outside 
+the scope of the UVC specification :-/
+
+On the other hand, some webcams might synchronise their SOF counter with the 
+host SOF counter. For those devices, the driver might be able to synchronise 
+multiple webcams. I had a look at the USB stack source code, and found no way 
+to get the host time at which a SOF packet is issued. That could be a 
+problem.
+
+Chapter 5.12 in the USB 2.0 specification discuss clock synchronisation 
+issues, you might find some help there.
+
+Best regards,
+
+Laurent Pinchart
+
+
+
+
+
+ 
+____________________________________________________________________________________
+Bored stiff? Loosen up... 
+Download and play hundreds of games for free on Yahoo! Games.
+<A HREF="http://games.yahoo.com/games/front">http://games.yahoo.com/games/front</A>
+
+
+
+
+
+ 
+____________________________________________________________________________________
+Bored stiff? Loosen up... 
+Download and play hundreds of games for free on Yahoo! Games.
+<A HREF="http://games.yahoo.com/games/front">http://games.yahoo.com/games/front</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001469.html">[Linux-uvc-devel] control query fails
+</A></li>
+	<LI>Next message: <A HREF="001474.html">[Linux-uvc-devel] The source clock
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1471">[ date ]</a>
+              <a href="thread.html#1471">[ thread ]</a>
+              <a href="subject.html#1471">[ subject ]</a>
+              <a href="author.html#1471">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

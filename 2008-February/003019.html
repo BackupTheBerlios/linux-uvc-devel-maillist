@@ -1,0 +1,337 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Camera Restart Error
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Camera%20Restart%20Error&In-Reply-To=%3C8FF3AEDFC5ABAE42A50A92DBBFD702EF02C1E5A2%40calmail1.smarttech.inc%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003012.html">
+   <LINK REL="Next"  HREF="003023.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Camera Restart Error</H1>
+    <B>Nathanael Galpin</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Camera%20Restart%20Error&In-Reply-To=%3C8FF3AEDFC5ABAE42A50A92DBBFD702EF02C1E5A2%40calmail1.smarttech.inc%3E"
+       TITLE="[Linux-uvc-devel] Camera Restart Error">NathanaelGalpin at smarttech.com
+       </A><BR>
+    <I>Wed Feb 13 18:14:40 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003012.html">[Linux-uvc-devel] Camera Restart Error
+</A></li>
+        <LI>Next message: <A HREF="003023.html">[Linux-uvc-devel] Camera Restart Error
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3019">[ date ]</a>
+              <a href="thread.html#3019">[ thread ]</a>
+              <a href="subject.html#3019">[ subject ]</a>
+              <a href="author.html#3019">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+&gt;<i> &gt; On Tuesday 12 February 2008, Nathanael Galpin wrote:
+</I>&gt;<i> &gt; I've run into an error using the UVC driver with V4L2 to stream data from
+</I>&gt;<i> &gt; webcams. Everything works fine the first time around. I allocate buffers,
+</I>&gt;<i> &gt; enque them and then stream data from the camera. However, after stopping
+</I>&gt;<i> &gt; the camera and unmapping all the buffers, a subsequent attempt to map
+</I>&gt;<i> &gt; buffers and start streaming fails.
+</I>&gt;<i> 
+</I>&gt;<i> That's definitely not how this is supposed to work. Your code is probably 
+</I>&gt;<i> missing something.
+</I>
+I've attached a small sample app to the bottom of this email. It's written in
+C++ and can be compiled with g++ &lt;filename.cpp&gt;.
+
+&gt;<i> &gt; On a related note, whenever an errenous request is made to the camera, it
+</I>&gt;<i> &gt; goes into an error state and won't accept any other commands. Is there a
+</I>&gt;<i> &gt; way to clear this error state, or should I just close and reopen the device
+</I>&gt;<i> &gt; file?
+</I>&gt;<i>
+</I>&gt;<i> Which camera are you talking about ? What kind of erroneous request ? Please 
+</I>&gt;<i> provide more details along with kernel log messages if available.
+</I>
+I wasn't able to get kernel logging enabled last night for the uvc driver (but I
+was pretty tired). I'll spend some more time debugging this and post more details
+when I have them. I figured I would ask in case there was a generic way to clear
+error states in a webcam I wasn't familiar with.
+
+&gt;<i> Best regards,
+</I>&gt;<i> Laurent Pinchart
+</I>
+Thanks Laurent,
+
+Nathanael Galpin
+
+Sample App Below
+
+/* Nathanael Galpin 
+ *
+ * File Name:	testvcamrestart.cpp
+ * Description: Tests whether or not streaming data from a camera can be stopped
+ *		and started without having to reopen the camera's device file.
+ */
+
+#ifdef HAVE_CONFIG_H
+#include &lt;config.h&gt;
+#endif
+
+#include &lt;errno.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;sys/mman.h&gt;
+#include &lt;linux/videodev2.h&gt;
+#include &lt;sys/ioctl.h&gt;	
+#include &lt;vector&gt;
+#include &lt;sys/time.h&gt;
+#include &lt;iostream&gt;
+
+#include &lt;cstdlib&gt;
+
+
+#define CLEAR(x) memset (&amp;(x), 0, sizeof (x))
+#define PRINTERR(x,y) cout &lt;&lt; &quot;ERROR: &quot; &lt;&lt; x &lt;&lt; &quot; Code: &quot; &lt;&lt; y &lt;&lt; endl; return y
+
+typedef unsigned int UINT32;
+
+using namespace std;
+
+UINT32 g_xcount;
+vector&lt;char *&gt; m_vecpFrameBuffers;
+UINT32 m_uiBufferSize;
+
+int xioctl( int fd, int request, void *arg )
+{
+	g_xcount++;
+	int err;
+	
+	do err = ioctl( fd, request, arg );
+	while ( err == -1 &amp;&amp; errno == EINTR );
+	
+	return err;
+}
+
+int ReadFrameLoop( int DevHandle )
+{
+	for ( int i=0; i&lt;10; i++ )
+	{
+		struct v4l2_buffer buf;
+		CLEAR( buf );
+		buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+		buf.memory = V4L2_MEMORY_MMAP;
+		
+		if ( xioctl( DevHandle, VIDIOC_DQBUF, &amp;buf ) )
+		{
+			if ( errno != EAGAIN )
+			{
+				PRINTERR( &quot;Failed to Dequeue Buffer&quot;, errno );
+			}
+		}
+		
+		cout &lt;&lt; &quot;Processing frame: &quot; &lt;&lt; buf.sequence &lt;&lt; endl;
+		
+		
+		if ( xioctl( DevHandle, VIDIOC_QBUF, &amp;buf ) == -1 )
+		{ PRINTERR( &quot;Unable to re-enque buffer&quot;, errno ); }	
+	}
+}
+
+int RunCam()
+{
+	int DevHandle;
+	
+	cout &lt;&lt; &quot;Cam Test Project: Restarting a camera.&quot; &lt;&lt; endl;
+	
+	// Open Camera and check capabilities
+	struct v4l2_capability cap;
+	struct v4l2_requestbuffers req;
+	
+	if ( (DevHandle = open( &quot;/dev/video0&quot; , O_RDWR, 0 )) == -1 )
+	{ PRINTERR( &quot;Unable to open device.&quot;, errno ); }
+	
+	if ( xioctl( DevHandle, VIDIOC_QUERYCAP, &amp;cap ) == -1 )
+	{ PRINTERR( &quot;Not a V4L2 Device.&quot;, errno ); }
+	
+	if ( !(cap.capabilities &amp; V4L2_CAP_VIDEO_CAPTURE) )
+	{ PRINTERR( &quot;Not a Video Capture Device.&quot;, -1 ); }
+	
+	if ( !(cap.capabilities &amp; V4L2_CAP_STREAMING) )
+	{ PRINTERR( &quot;Not capable of streaming video.&quot;, -1 ); }
+	
+	cout &lt;&lt; &quot;Video Device Found.&quot; &lt;&lt; endl;
+	
+	// Set Video Format
+	
+	struct v4l2_cropcap cropcap;
+	struct v4l2_crop crop;
+	struct v4l2_format format;
+	
+	cropcap.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+	if ( ( ioctl( DevHandle, VIDIOC_CROPCAP, &amp;cropcap ) ) == -1 )
+	{ PRINTERR( &quot;Error Setting CropCap.&quot;, errno ); }
+	
+	// Reset crop to default
+	crop.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+	crop.c = cropcap.defrect;
+	if ( ( ioctl( DevHandle, VIDIOC_S_CROP, &amp;crop ) ) == -1 )
+	{
+		/* EINVAL simply means cropping
+		* is not supported.
+		*/
+		if ( errno != EINVAL )	 
+		{ PRINTERR( &quot;Error Setting Crop Area.&quot;, errno ); } 
+	}
+	
+	CLEAR( format );
+	
+	format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+	format.fmt.pix.width = 640;
+	format.fmt.pix.height = 480;
+	format.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
+	format.fmt.pix.field = V4L2_FIELD_INTERLACED;
+	
+	if ( ( ioctl( DevHandle, VIDIOC_S_FMT, &amp;format ) ) == -1 )
+	{ PRINTERR( &quot;Error Setting Video Format.&quot;, errno ); }
+	
+	cout &lt;&lt; &quot;Video Device Configured&quot; &lt;&lt; endl;
+	
+	
+	
+	// Loop to test Camera Restart
+	for (UINT32 i=0; i&lt;2; i++)
+	{
+		// Map Buffers
+		CLEAR( req );
+		req.count = 4;
+		req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+		req.memory = V4L2_MEMORY_MMAP;
+	
+		if ( xioctl( DevHandle, VIDIOC_REQBUFS, &amp;req ) == -1 )
+		{ PRINTERR( &quot;Memory Mapped I/O not supported.&quot;, errno ); }
+	
+		if ( req.count &lt; 2 )
+		{ PRINTERR( &quot;Insufficient buffer memory on the device&quot;, -1 ); }
+	
+		m_vecpFrameBuffers.resize( req.count );
+	
+		for ( UINT32 i=0; i&lt;m_vecpFrameBuffers.size(); i++ )
+		{
+			struct v4l2_buffer buf;
+	
+			CLEAR( buf );
+			buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+			buf.memory = V4L2_MEMORY_MMAP;
+			buf.index = i;
+	
+			if ( xioctl( DevHandle, VIDIOC_QUERYBUF, &amp;buf ) == -1 )
+			{ PRINTERR( &quot;Unable to query buffer.&quot;, errno ); }
+			else
+			{
+				m_vecpFrameBuffers[i] = (char *) mmap ( NULL, buf.length,
+						PROT_READ | PROT_WRITE,
+						MAP_SHARED, DevHandle,
+						buf.m.offset );
+	
+	
+				if ( m_vecpFrameBuffers[i] == MAP_FAILED )
+				{ PRINTERR( &quot;Mapping buffer failed.&quot;, -1 ); }
+	
+				m_uiBufferSize = buf.length;
+			}
+		}
+	
+		cout &lt;&lt; &quot;Allocated buffers for camera.&quot; &lt;&lt; endl;
+	
+		// Enque Buffers
+	
+		for ( UINT32 i=0; i&lt;m_vecpFrameBuffers.size(); i++ )
+		{
+			struct v4l2_buffer buf;
+	
+			CLEAR( buf );
+			buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+			buf.memory = V4L2_MEMORY_MMAP;
+			buf.index = i;
+	
+			if ( xioctl( DevHandle, VIDIOC_QBUF, &amp;buf ) == -1 )
+			{ 
+				PRINTERR( &quot;Unable to enque buffer.&quot;, errno ); 
+				return errno;
+			}
+		}
+	
+		cout &lt;&lt; &quot;Buffers enqueued to camera.&quot; &lt;&lt; endl;
+	
+		// STREAM ON
+	
+		enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+	
+		if ( xioctl( DevHandle, VIDIOC_STREAMON, &amp;type ) != 0 )
+		{ PRINTERR( &quot;Unable to start camera.&quot;, errno ); }
+	
+		cout &lt;&lt; &quot;Streaming data...&quot; &lt;&lt; endl;
+	
+		// Stream some data
+	
+		ReadFrameLoop( DevHandle );
+	
+		// STREAM OFF
+	
+		if ( xioctl( DevHandle, VIDIOC_STREAMOFF, &amp;type ) == -1 )
+		{ PRINTERR( &quot;Camera may not have shut down cleanly.&quot;, errno ); }
+	
+		cout &lt;&lt; &quot;Streaming data stopped.&quot; &lt;&lt; endl;
+	
+	
+		for ( UINT32 i=0; i&lt;m_vecpFrameBuffers.size(); i++ )
+		{
+			if ( munmap( m_vecpFrameBuffers[i], m_uiBufferSize ) == -1 )
+			{ PRINTERR( &quot;CViperCam: munmap of buffer failed!&quot;, errno ); }
+		}
+	
+		m_vecpFrameBuffers.clear();
+	}
+	cout &lt;&lt; endl &lt;&lt; &quot;Terminated Camera - Code: &quot; &lt;&lt; close( DevHandle ) &lt;&lt; endl;
+	return 0;
+}
+
+int main(int argc, char *argv[])
+{
+	RunCam();
+	//RunCam();
+	
+	return EXIT_SUCCESS;
+}
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080213/56919226/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080213/56919226/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003012.html">[Linux-uvc-devel] Camera Restart Error
+</A></li>
+	<LI>Next message: <A HREF="003023.html">[Linux-uvc-devel] Camera Restart Error
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3019">[ date ]</a>
+              <a href="thread.html#3019">[ thread ]</a>
+              <a href="subject.html#3019">[ subject ]</a>
+              <a href="author.html#3019">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

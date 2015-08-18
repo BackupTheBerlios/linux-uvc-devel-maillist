@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Concurent accesses to multiple devices.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Concurent%20accesses%20to%20multiple%20devices.&In-Reply-To=%3C84CCD769-518B-4EE5-997C-12D8E78FC002%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003797.html">
+   <LINK REL="Next"  HREF="003801.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Concurent accesses to multiple devices.</H1>
+    <B>MARTIN Pierre</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Concurent%20accesses%20to%20multiple%20devices.&In-Reply-To=%3C84CCD769-518B-4EE5-997C-12D8E78FC002%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Concurent accesses to multiple devices.">hickscorp at gmail.com
+       </A><BR>
+    <I>Thu Jul 10 09:32:03 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003797.html">[Linux-uvc-devel] Concurent accesses to multiple devices.
+</A></li>
+        <LI>Next message: <A HREF="003801.html">[Linux-uvc-devel] Concurent accesses to multiple devices.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3800">[ date ]</a>
+              <a href="thread.html#3800">[ thread ]</a>
+              <a href="subject.html#3800">[ subject ]</a>
+              <a href="author.html#3800">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello Laurent, and thank you very much for taking time for our issue.
+
+We already noticed this issue: at first the total time of the shooting  
+is around 40 seconds. Then, it is 18 seconds :)
+The problem is, that for the 3D modeling, we really need the best  
+resolution available for the webcam...
+
+Any other idea (Another cam with high res, hardware tweaking, or such  
+thing...)?
+
+Thanks!
+Pierre.
+
+On 9 juil. 08, at 18:48, Laurent Pinchart wrote:
+
+&gt;<i> Hi Pierre,
+</I>&gt;<i>
+</I>&gt;<i> On Wednesday 09 July 2008, MARTIN Pierre wrote:
+</I>&gt;&gt;<i> Hello list people :)
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> i have been posting about some issues i had a couple of monthes ago.
+</I>&gt;&gt;<i> The company i'm working for was in the need of a system with 5
+</I>&gt;&gt;<i> webcams, able to shoot simultaneously &quot;objects&quot; from 5 different  
+</I>&gt;&gt;<i> POVs.
+</I>&gt;&gt;<i> The generated pictures are then used for 3D modeling.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Big problem, the &quot;object&quot; is a horse, so the total time of shooting
+</I>&gt;&gt;<i> has to be around 10 seconds, not more, because holding a horse still
+</I>&gt;&gt;<i> for more than 10 seconds require super powers, which we don't have  
+</I>&gt;&gt;<i> (Or
+</I>&gt;&gt;<i> are too expensive, i dont know) :)
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> So we bought 5 quickcam 9000 pro, since the required resolution to
+</I>&gt;&gt;<i> have a find 3D mesh is 1600x1200.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Actually, all the webcams are wired to a single USB hub, and a little
+</I>&gt;&gt;<i> application i have coded handles a very simple queue when the user
+</I>&gt;&gt;<i> presses the &quot;shoot&quot; button.
+</I>&gt;&gt;<i> The application simply calls the uvccapture command, waits for it to
+</I>&gt;&gt;<i> finish, stores the result, and starts uvccapture on the next camera  
+</I>&gt;&gt;<i> (/
+</I>&gt;&gt;<i> dev/video0 / 1 / 2 / 3 / 4) and so on.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> The task takes around 18 seconds it's a bit too much.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> So i was wondering... Why not to use two USB hubs to wire the  
+</I>&gt;&gt;<i> cameras,
+</I>&gt;&gt;<i> 3 cameras on the first hub, two on the second, so the application  
+</I>&gt;&gt;<i> will
+</I>&gt;&gt;<i> be able to shoot two cams at the same time, then again, then the one
+</I>&gt;&gt;<i> remaining?
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> So today i coded this workflow on my application, /dev/video0 to / 
+</I>&gt;&gt;<i> dev/
+</I>&gt;&gt;<i> video2 on the first hub, /dev/video3 and /dev/video4 on the other.
+</I>&gt;&gt;<i> The goal was to shoot video0 / video 3 at the same time, then  
+</I>&gt;&gt;<i> video1 /
+</I>&gt;&gt;<i> video4 at the same time, then /dev/video3.
+</I>&gt;&gt;<i> And i was very surprised to see that the system doesn't allows me
+</I>&gt;&gt;<i> simultaneous requests to the driver.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Is there any solution to that?
+</I>&gt;<i>
+</I>&gt;<i> Logitech cameras don't support MJPEG compression for 1600x1200.  
+</I>&gt;<i> Streaming such
+</I>&gt;<i> a high resolution in YUV requires a high bandwidth, and USB 2.0  
+</I>&gt;<i> doesn't
+</I>&gt;<i> provide enough bandwidth to stream from two 1600x1200 cameras at the  
+</I>&gt;<i> same
+</I>&gt;<i> time.
+</I>&gt;<i>
+</I>&gt;<i> Logitech webcams are quite slow to initialise the first time you use  
+</I>&gt;<i> them, but
+</I>&gt;<i> might be faster the second time your run your application if you don't
+</I>&gt;<i> disconnect the cameras. Could you please try that and let me know if  
+</I>&gt;<i> it
+</I>&gt;<i> helps ?
+</I>&gt;<i>
+</I>&gt;<i> Best regards,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: MARTIN Pierre.vcf
+Type: text/directory
+Size: 3116 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080710/4e986c2f/attachment.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080710/4e986c2f/attachment.bin</A>&gt;
+-------------- next part --------------
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003797.html">[Linux-uvc-devel] Concurent accesses to multiple devices.
+</A></li>
+	<LI>Next message: <A HREF="003801.html">[Linux-uvc-devel] Concurent accesses to multiple devices.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3800">[ date ]</a>
+              <a href="thread.html#3800">[ thread ]</a>
+              <a href="subject.html#3800">[ subject ]</a>
+              <a href="author.html#3800">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

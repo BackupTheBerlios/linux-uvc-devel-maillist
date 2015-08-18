@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Webcam Serial Number
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20Serial%20Number&In-Reply-To=%3C74e91400812110648l1f4939a2q8dbcf4645a20b74d%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004341.html">
+   <LINK REL="Next"  HREF="004335.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Webcam Serial Number</H1>
+    <B>Denis McLaughlin</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20Serial%20Number&In-Reply-To=%3C74e91400812110648l1f4939a2q8dbcf4645a20b74d%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Webcam Serial Number">mclaughlin.denis at gmail.com
+       </A><BR>
+    <I>Thu Dec 11 15:48:38 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004341.html">[Linux-uvc-devel] Webcam Serial Number
+</A></li>
+        <LI>Next message: <A HREF="004335.html">[Linux-uvc-devel] Problem with UVC and Quickcam Pro 9000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4342">[ date ]</a>
+              <a href="thread.html#4342">[ thread ]</a>
+              <a href="subject.html#4342">[ subject ]</a>
+              <a href="author.html#4342">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>  I've done this in the past by doing this:
+
+ - create /etc/udev/rules.d/010-video.rules
+ - add lines of this form to the file:
+
+KERNEL==&quot;video*&quot;, ATTRS{serial}==&quot;835DE5C1&quot;, SYMLINK+=&quot;cam01&quot;
+KERNEL==&quot;video*&quot;, ATTRS{serial}==&quot;F467C7C2&quot;, SYMLINK+=&quot;cam02&quot;
+
+  Now when udev recognizes each camera, it will still (more or less)
+randomly assign the cameras to different /dev/video* files, but will
+symbolically link each camera to /dev/cam01, /dev/cam02, as dictated by the
+rules above.  I've used this to deterministically map 10 quick cam fusions
+on a single system.  I had this working on a Debian system, but I think udev
+is pretty standard with most distributions.
+
+  Some provisos:
+
+ - I have occasionally found cameras that don't report any serial number.  I
+never found a solution for these, so I just swapped them out with cameras
+that did.
+
+ - I could only get 10 cameras to work: when plugging in the 11th, I got a
+&quot;no space left on device&quot; error, which I think may be related to USB bus
+reservation (?)
+
+  Let me know if this doesn't work.  :)
+
+Denis
+
+On Wed, Dec 10, 2008 at 6:01 AM, Alessandro Soro &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">asoro at crs4.it</A>&gt; wrote:
+
+&gt;<i> Dear All,
+</I>&gt;<i>
+</I>&gt;<i> I'm trying without success to get the serial number of a webcam Logitech
+</I>&gt;<i> Quickcam Pro 9000.
+</I>&gt;<i> after initialization, the field bus_info in the capability struct, got
+</I>&gt;<i> via ioctl, is set to something like
+</I>&gt;<i> &quot;0000:05:06.2&quot;, that seems to be related to the usb bus as also appears
+</I>&gt;<i> in the proc fs, but not to
+</I>&gt;<i> the port, so I can't distinguish different webcams connected to the same
+</I>&gt;<i> controller
+</I>&gt;<i>
+</I>&gt;<i> the serial number of the webcam is reported in /proc/usb/devices
+</I>&gt;<i>
+</I>&gt;<i> T:  Bus=04 Lev=01 Prnt=01 Port=01 Cnt=01 Dev#=  2 Spd=480 MxCh= 0
+</I>&gt;<i> D:  Ver= 2.00 Cls=ef(unk. ) Sub=02 Prot=01 MxPS=64 #Cfgs=  1
+</I>&gt;<i> P:  Vendor=046d ProdID=0990 Rev= 0.05
+</I>&gt;<i> S:  SerialNumber=F88F63E8
+</I>&gt;<i>
+</I>&gt;<i> but unfortunately I can't find any way to map this info to the
+</I>&gt;<i> /dev/video# entry that I use
+</I>&gt;<i> to open the device.
+</I>&gt;<i>
+</I>&gt;<i> I need this for a computer vision app that uses 9 webcams connected to
+</I>&gt;<i> three different
+</I>&gt;<i> controllers, so I need the serial to match each webcam to the
+</I>&gt;<i> appropriate configuration file.
+</I>&gt;<i> Whenever the system is halted the /dev/video# entries are reassigned
+</I>&gt;<i> (randomly, it seems)
+</I>&gt;<i> to the webcams and the matching to config files is lost.
+</I>&gt;<i>
+</I>&gt;<i> Any ideas?
+</I>&gt;<i>
+</I>&gt;<i> If not, a way to fix the assignment of /dev/video# entries to a usb
+</I>&gt;<i> bus/port would also do the trick for me.
+</I>&gt;<i>
+</I>&gt;<i> thanx in advance for any help,
+</I>&gt;<i>
+</I>&gt;<i> Alessandro
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20081211/e0106dbc/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20081211/e0106dbc/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004341.html">[Linux-uvc-devel] Webcam Serial Number
+</A></li>
+	<LI>Next message: <A HREF="004335.html">[Linux-uvc-devel] Problem with UVC and Quickcam Pro 9000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4342">[ date ]</a>
+              <a href="thread.html#4342">[ thread ]</a>
+              <a href="subject.html#4342">[ subject ]</a>
+              <a href="author.html#4342">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

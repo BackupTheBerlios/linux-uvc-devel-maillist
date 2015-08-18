@@ -1,0 +1,192 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Problems with QuickCam Pro 5000
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problems%20with%20QuickCam%20Pro%205000&In-Reply-To=%3C200603281509.35196.chrivers%40iversen-net.dk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000402.html">
+   <LINK REL="Next"  HREF="000392.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Problems with QuickCam Pro 5000</H1>
+    <B>Christian Iversen</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problems%20with%20QuickCam%20Pro%205000&In-Reply-To=%3C200603281509.35196.chrivers%40iversen-net.dk%3E"
+       TITLE="[Linux-uvc-devel] Problems with QuickCam Pro 5000">chrivers at iversen-net.dk
+       </A><BR>
+    <I>Tue Mar 28 15:09:35 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000402.html">[Linux-uvc-devel] Minor patch
+</A></li>
+        <LI>Next message: <A HREF="000392.html">[Linux-uvc-devel] Problems with QuickCam Pro 5000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#386">[ date ]</a>
+              <a href="thread.html#386">[ thread ]</a>
+              <a href="subject.html#386">[ subject ]</a>
+              <a href="author.html#386">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi. I've recently bought a Logitech QC Pro 5000. I've compiled and 
+installed the driver on a 2.6.14 kernel.
+
+uvcviewer works fine. I get a good clean picture in (what seems to 
+be) 640x480 x 30fps.
+
+Now, I've tried various programs, to see if I can make this webcam work with 
+anything other than uvcviewer.
+
+#### Lavrec ####
+
+[<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at zephyr</A>]~ #LAV_VIDEO_DEV=/dev/video1 lavrec -v2  test.avi
+   INFO: [lavrec] Recording parameters:
+   INFO: [lavrec] Output format:      AVI
+   INFO: [lavrec] Input Source:       Auto detect
+
+   INFO: [lavrec] Decimation:         4
+   INFO: [lavrec] Quality:            50
+   INFO: [lavrec] Recording time:     -1 sec
+   INFO: [lavrec]
+   INFO: [lavrec] MJPEG buffer size:  256 KB
+   INFO: [lavrec] # of MJPEG buffers: 64
+   INFO: [lavrec] Audio parameters:
+   INFO: [lavrec] Audio sample size:           16 bit
+   INFO: [lavrec] Audio sampling rate:         44100 Hz
+   INFO: [lavrec] Audio is MONO
+   INFO: [lavrec] Audio input recording level: Use mixer setting
+   INFO: [lavrec] Level of correction for Audio/Video synchronization:
+   INFO: [lavrec] Lost frame compensation and frame drop/insert
+--DEBUG: [lavrec] Maximum size per file will be 1739 MB
+   INFO: [lavrec] Using mmap(2) system call for capture
+   INFO: [lavrec] Auto detecting input and norm ...
+   INFO: [lavrec] Trying Composite ...
+**ERROR: [lavrec] Error getting video input status: Invalid argument
+++ WARN: [lavrec] Not ready for capture (state = 0)!
+zsh: segmentation fault  LAV_VIDEO_DEV=/dev/video1 lavrec -v2 test.avi
+
+I think the problem here is that lavrec expects PAL, NTSC or SECAM. Of course, 
+selecting one of those standards is not going to work.
+
+
+#### Transcode ####
+
+[<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at zephyr</A>]~ #transcode -x v4l2,null -i /dev/video1 -g160x120 -y ffmpeg -F 
+mpeg4 -w 1024 -c 0-0:0:10 -o test.avi
+transcode v1.0.2 (C) 2001-2003 Thomas Oestreich, 2003-2004 T. Bitterberg
+[transcode] (probe) suggested AV correction -D 0 (0 ms) | AV 0 ms | 0 ms
+[transcode] auto-probing source /dev/video1 (ok)
+[transcode] V: import format    | unknown  (V=v4l2|A=null)
+[transcode] V: import frame     | 160x120  1.33:1
+[transcode] V: bits/pixel       | 2.133
+[transcode] V: decoding fps,frc | 25.000,3
+[transcode] V: Y'CbCr           | YV12/I420
+[transcode] A: import format    | 0x1     PCM          [44100,16,2]
+[transcode] A: export format    | 0x55    MPEG layer-3 [44100,16,2]  128 kbps
+[transcode] V: encoding fps,frc | 25.000,3
+[transcode] A: bytes per frame  | 7056 (7056.000000)
+[transcode] A: adjustment       | <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">0 at 1000</A>
+[transcode] V: IA32/AMD64 accel | sse (sse 3dnowext 3dnow mmxext mmx asm C)
+tc_memcpy: using sse for memcpy
+[transcode] V: video buffer     | 10 @ 160x120
+[import_null.so] v0.2.0 (2002-01-19) (video) null | (audio) null
+[import_v4l2.so] v1.3.5 (2005-03-11) (video) v4l2 | (audio) pcm
+[export_ffmpeg.so] v0.3.13 (2004-08-03) (video) Lavc51.0.0 | (audio) 
+MPEG/AC3/PCM
+[import_v4l2.so]: v4l2 video grabbing
+[import_v4l2.so]: resync disabled
+[import_v4l2.so]: video grabbing, driver = uvcvideo, card = USB Video Class 
+device
+[import_v4l2.so]: VIDIOC_S_FMT: : Invalid argument
+[import_v4l2.so]: VIDIOC_S_FMT: : Invalid argument
+[import_v4l2.so]: VIDIOC_S_FMT: : Invalid argument
+[import_v4l2.so]: no usable pixel format supported by card
+video import module error: OPEN failed
+[transcode] critical: failed to open input source
+
+I'm not exactly sure what format import_v4l2.so wants, but it doesn't seem to 
+be supported. 
+
+#### XawTV ####
+
+This is xawtv-3.94, running on Linux/i686 (2.6.14-zephyr)
+xinerama 0: 1280x1024+0+0
+xinerama 1: 1280x1024+1280+0
+X Error of failed request:  XF86DGANoDirectVideoMode
+  Major opcode of failed request:  137 (XFree86-DGA)
+  Minor opcode of failed request:  1 (XF86DGAGetVideoLL)
+  Serial number of failed request:  13
+  Current serial number in output stream:  13
+v4l-conf had some trouble, trying to continue anyway
+Warning: Cannot convert string &quot;-*-ledfixed-medium-r-*--39-*-*-*-c-*-*-*&quot; to 
+type FontStruct
+ioctl: VIDIOC_G_STD(std=0xbf859bb4 
+[PAL_G,PAL_I,PAL_D,PAL_K,PAL_M,PAL_N,PAL_60,NTSC_M,?,SECAM_B,SECAM_G,?ATSC_8_VSB,ATSC_16_VSB,
+(null),(null),(null),(null),(null),(null)]): Invalid argument
+config: invalid value for input: Television
+valid choices for &quot;input&quot;: &quot;Camera&quot;
+config: invalid value for norm: PAL
+valid choices for &quot;norm&quot;:
+ioctl: VIDIOC_S_CTRL(id=9963778;value=124): Input/output error
+ioctl: VIDIOC_S_STD(std=0x0 []): Invalid argument
+ioctl: VIDIOC_DQBUF(index=0;type=VIDEO_CAPTURE;bytesused=0;flags=0x0 
+[];field=ANY;;timecode.type=0;timecode.flags=0;timecode.frames=0;timecode.seconds=0;timecode.minutes=0;timecode.hours=0;timecode.userbits=&quot;&quot;;sequence=0;memory=unknown): 
+Invalid argument
+ioctl: VIDIOC_DQBUF(index=0;type=VIDEO_CAPTURE;bytesused=0;flags=0x0 
+[];field=ANY;;timecode.type=0;timecode.flags=0;timecode.frames=0;timecode.seconds=0;timecode.minutes=0;timecode.hours=0;timecode.userbits=&quot;&quot;;sequence=0;memory=unknown): 
+Invalid argument
+&lt;ctrl-c pressed here&gt;
+zsh: segmentation fault  xawtv -nodga -c /dev/video1
+
+I don't know what the problem with this is, either. Is XawTV supposed to work?
+
+#### Kopete ####
+
+(which is what I mostly want to use this cam for)
+
+I actually get a picture! It's even in 30fps. Unfortunately, the colors are 
+all wrong! The color of the first pixel on each scanline is duplicated 
+throughout that line. I have a picture of that effect here:
+
+<A HREF="http://iversen-net.dk/~chrivers/uvc/kopete-qc-problems.png">http://iversen-net.dk/~chrivers/uvc/kopete-qc-problems.png</A>
+
+
+####
+
+Now, if anybody has any idea on making any of these cases work, I'd be very 
+interested.
+
+-- 
+Regards,
+Christian Iversen
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000402.html">[Linux-uvc-devel] Minor patch
+</A></li>
+	<LI>Next message: <A HREF="000392.html">[Linux-uvc-devel] Problems with QuickCam Pro 5000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#386">[ date ]</a>
+              <a href="thread.html#386">[ thread ]</a>
+              <a href="subject.html#386">[ subject ]</a>
+              <a href="author.html#386">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

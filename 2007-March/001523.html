@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech QuickCam Orbit MP: &quot;No such device&quot;	when reading from /dev/video0
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20Orbit%20MP%3A%20%22No%20such%20device%22%0A%09when%20reading%20from%20/dev/video0&In-Reply-To=%3C20070325190929.GO12271%40netisland.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001522.html">
+   <LINK REL="Next"  HREF="001508.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech QuickCam Orbit MP: &quot;No such device&quot;	when reading from /dev/video0</H1>
+    <B>Michael C. Toren</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20Orbit%20MP%3A%20%22No%20such%20device%22%0A%09when%20reading%20from%20/dev/video0&In-Reply-To=%3C20070325190929.GO12271%40netisland.net%3E"
+       TITLE="[Linux-uvc-devel] Logitech QuickCam Orbit MP: &quot;No such device&quot;	when reading from /dev/video0">mct at toren.net
+       </A><BR>
+    <I>Sun Mar 25 21:09:29 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001522.html">[Linux-uvc-devel] Logitech QuickCam Orbit MP: &quot;No such device&quot;	when reading from /dev/video0
+</A></li>
+        <LI>Next message: <A HREF="001508.html">[Linux-uvc-devel] r89 - colours nog good anymore
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1523">[ date ]</a>
+              <a href="thread.html#1523">[ thread ]</a>
+              <a href="subject.html#1523">[ subject ]</a>
+              <a href="author.html#1523">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Sun, Mar 25, 2007 at 08:09:19PM +0200, Laurent Pinchart wrote:
+&gt;<i> The Linux UVC driver doesn't support reading directly from the device
+</I>&gt;<i> (yet).  Only the streaming I/O method (using mmap) is supported. You can
+</I>&gt;<i> test your webcam with luvcview.
+</I>
+Hi Laurent,
+
+Thanks for the feedback.  I had tried a few other utilities to read from
+/dev/vide0, but they were giving me errors as well.  I thought that cat(1)
+would be the simplest way to demonstrate the problem, but I guess not :-)
+
+When I try using the luvcview utility, the error messages I'm seeing are:
+
+	[<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">mct at dragonfly</A> ~/luvcview-20060920]$ ./luvcview
+	uvcview version 0.1.7 
+	Video driver: x11
+	A window manager is available
+	video /dev/video0 
+	Unable to set format: 5.
+	 Init v4L2 failed !! exit fatal 
+
+And in dmesg, I see:
+
+	[17357520.848000] uvcvideo: Trying format 0x47504a4d (MJPG): 320x240.
+	[17357520.848000] uvcvideo: Using default frame interval 66666.6 us (15.0 fps).
+	[17357521.148000] uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+
+Looking at the luvcview-20060920/v4l2uvc.c file, the codepath that
+generates the &quot;Unable to set format&quot; error is:
+
+	/* set format in */
+	memset(&amp;vd-&gt;fmt, 0, sizeof(struct v4l2_format));
+	vd-&gt;fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+	vd-&gt;fmt.fmt.pix.width = vd-&gt;width;
+	vd-&gt;fmt.fmt.pix.height = vd-&gt;height;
+	vd-&gt;fmt.fmt.pix.pixelformat = vd-&gt;formatIn;
+	vd-&gt;fmt.fmt.pix.field = V4L2_FIELD_ANY;
+	ret = ioctl(vd-&gt;fd, VIDIOC_S_FMT, &amp;vd-&gt;fmt);
+	if (ret &lt; 0) {
+	    printf(&quot;Unable to set format: %d.\n&quot;, errno);
+	    goto fatal;
+	}
+
+Which I thought that may be an indication that I needed to use the &quot;-f&quot;
+or &quot;-s&quot; command line arguments to change the requested format or size to
+something that may be better supported by my camera, so I tried a number
+of different permutations with:
+
+	for f in yuv jpg; do
+	for s in 1024x576 1280x960 160x120 176x144 320x240 352x288 432x240 \
+		 480x360 512x288 640x360 640x480 704x576 864x480 960x720; do
+			./luvcview -f $f -s $s -o ~/foo
+	done
+	done
+
+However, none of them appeared to be successful.
+
+Searching around for the &quot;Failed to query&quot; error message that appeared in
+dmesg seems to suggest that I may be hitting a Logitech hardware bug :-(
+Bleh.
+
+-mct
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001522.html">[Linux-uvc-devel] Logitech QuickCam Orbit MP: &quot;No such device&quot;	when reading from /dev/video0
+</A></li>
+	<LI>Next message: <A HREF="001508.html">[Linux-uvc-devel] r89 - colours nog good anymore
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1523">[ date ]</a>
+              <a href="thread.html#1523">[ thread ]</a>
+              <a href="subject.html#1523">[ subject ]</a>
+              <a href="author.html#1523">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

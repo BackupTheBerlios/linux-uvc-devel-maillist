@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Didn't work with webcam(=livecam program of	xawtv3.95)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Didn%27t%20work%20with%20webcam%28%3Dlivecam%20program%20of%0A%09xawtv3.95%29&In-Reply-To=%3C20070927160731.8F60.HIROFUMI%40momose.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002160.html">
+   <LINK REL="Next"  HREF="002195.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Didn't work with webcam(=livecam program of	xawtv3.95)</H1>
+    <B>Hirofumi Momose</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Didn%27t%20work%20with%20webcam%28%3Dlivecam%20program%20of%0A%09xawtv3.95%29&In-Reply-To=%3C20070927160731.8F60.HIROFUMI%40momose.com%3E"
+       TITLE="[Linux-uvc-devel] Didn't work with webcam(=livecam program of	xawtv3.95)">hirofumi at momose.com
+       </A><BR>
+    <I>Thu Sep 27 09:34:41 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002160.html">[Linux-uvc-devel] Didn't work with webcam(=livecam program of	xawtv3.95)
+</A></li>
+        <LI>Next message: <A HREF="002195.html">[Linux-uvc-devel] Didn't work with webcam(=livecam program of	xawtv3.95)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2177">[ date ]</a>
+              <a href="thread.html#2177">[ thread ]</a>
+              <a href="subject.html#2177">[ subject ]</a>
+              <a href="author.html#2177">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello Laurent,
+
+Here, I traced driver with webcam application.
+I think uvc_vm_open/close does not correspond with mmap/unmap sys-calls.
+
+webcam(app): mmap()
+ -&gt; uvc_v4l2_mmap()
+  -&gt; uvc_vm_open() ... vma_use_count = 0-&gt;1
+
+webcam: munmap()
+ -&gt; uvc_vm_open() ...  vma_use_count = 1-&gt;2
+ -&gt; uvc_vm_close() ... vma_use_count = 2-&gt;1
+
+webcam: exit
+ -&gt; uvc_vm_close() ... vma_use_count = 1-&gt;0
+
+My system is:
+ CPU ARM9
+ Kernel 2.6.22
+
+Best regards,
+
+-- 
+Hirofumi Momose &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">hirofumi at momose.com</A>&gt;
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002160.html">[Linux-uvc-devel] Didn't work with webcam(=livecam program of	xawtv3.95)
+</A></li>
+	<LI>Next message: <A HREF="002195.html">[Linux-uvc-devel] Didn't work with webcam(=livecam program of	xawtv3.95)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2177">[ date ]</a>
+              <a href="thread.html#2177">[ thread ]</a>
+              <a href="subject.html#2177">[ subject ]</a>
+              <a href="author.html#2177">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

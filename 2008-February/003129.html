@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] luvcview fails to work.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20luvcview%20fails%20to%20work.&In-Reply-To=%3C200802252119.25801.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003126.html">
+   <LINK REL="Next"  HREF="003131.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] luvcview fails to work.</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20luvcview%20fails%20to%20work.&In-Reply-To=%3C200802252119.25801.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] luvcview fails to work.">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Feb 25 21:19:25 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003126.html">[Linux-uvc-devel] luvcview fails to work.
+</A></li>
+        <LI>Next message: <A HREF="003131.html">[Linux-uvc-devel] luvcview fails to work.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3129">[ date ]</a>
+              <a href="thread.html#3129">[ thread ]</a>
+              <a href="subject.html#3129">[ subject ]</a>
+              <a href="author.html#3129">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi George,
+
+On Monday 25 February 2008, George Peter Staplin wrote:
+&gt;<i> Quoted Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt;:
+</I>&gt;<i> &gt; Hi Ra&#250;l,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Sunday 24 February 2008, Ra&#250;l S&#225;nchez Siles wrote:
+</I>&gt;<i> &gt;&gt;   Hello All:
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;   I own a laptop with a webcam supported by the uvc driver. I can use it
+</I>&gt;<i> &gt;&gt; for videoconference successfully but I fail to take an single jpg photo.
+</I>&gt;<i> &gt;&gt; I use luvcview 0.2.1 in order to have it, with no success.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;   I have just built the latest svn driver (r188), with same result. I'm
+</I>&gt;<i> &gt;&gt; on a Debian unstable distro using 2.6.24.2 for and Core2 Duo laptop.
+</I>&gt;<i> &gt;&gt; This is the output of luvcview:
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; luvcview version 0.2.1
+</I>&gt;<i> &gt;&gt; Video driver: x11
+</I>&gt;<i> &gt;&gt; A window manager is available
+</I>&gt;<i> &gt;&gt; video /dev/video0
+</I>&gt;<i> &gt;&gt; Unable to set format: 22.
+</I>&gt;<i> &gt;&gt;  Init v4L2 failed !! exit fatal
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;   Same result for luvcview -w, -c, -C and -S . -g fails since direct I/O
+</I>&gt;<i> &gt;&gt; is not supported.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;   What does this message mean? Is there a way I could get a simple
+</I>&gt;<i> &gt;&gt; screenshot using the driver. Pointers are appreciated.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;   Only -f yuv worked, but well, what about the others?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Your camera supports YUV only, so there is no other format :-)
+</I>&gt;<i>
+</I>&gt;<i> What you may be able to do is use the mjpg-streamer project's
+</I>&gt;<i> uvc_stream.  The only problem I've had is writing a suitable program
+</I>&gt;<i> to work with its somewhat bizarre MJPEG format.  Mozilla Firefox will
+</I>&gt;<i> display the JPEG frames, although with some bugs, so I wrote my own
+</I>&gt;<i> viewer.  My viewer supports Linux and Win32.  I just share the viewer
+</I>&gt;<i> program with my friends so that they can connect to the MJPEG stream.
+</I>&gt;<i>
+</I>&gt;<i> I also have a small patch to uvc_stream that seems to be useful.
+</I>&gt;<i> $ svn diff uvc_stream.c
+</I>&gt;<i> Index: uvc_stream.c
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvc_stream.c        (revision 56)
+</I>&gt;<i> +++ uvc_stream.c        (working copy)
+</I>&gt;<i> @@ -460,8 +460,11 @@
+</I>&gt;<i>
+</I>&gt;<i>     /* create a child for every client that connects */
+</I>&gt;<i>     while ( 1 ) {
+</I>&gt;<i> +    struct sockaddr_in saddr;
+</I>&gt;<i> +    socklen_t slen = sizeof (saddr);
+</I>&gt;<i>       int *pfd = (int *)calloc(1, sizeof(int));
+</I>&gt;<i> -    *pfd = accept(sd, 0, 0);
+</I>&gt;<i> +    *pfd = accept(sd, (struct sockaddr *)&amp;saddr, &amp;slen);
+</I>&gt;<i> +    fprintf (stderr, &quot;accept %s\n&quot;, inet_ntoa (saddr.sin_addr));
+</I>&gt;<i>       pthread_create(&amp;client, NULL, &amp;client_thread, pfd);
+</I>&gt;<i>       pthread_detach(client);
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> If desired I could clean it up a bit (it's only ~100 lines of code),
+</I>&gt;<i> and add a grab option to save individual frames.  It uses code from my
+</I>&gt;<i> project called megapkg, specifically the megaimage, jpegext2, and ntk
+</I>&gt;<i> extensions to Tcl.
+</I>&gt;<i>
+</I>&gt;<i> By the way, how difficult would it be to add a read() interface to the
+</I>&gt;<i> uvc driver?  Is there something that makes that inherently difficult
+</I>&gt;<i> that the hardware imposes?
+</I>
+It wouldn't be too difficult. I will try to find some time to implement read() 
+support, but my motivation isn't as high as it could be as I think the read() 
+interface was a bad idea in the first place.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003126.html">[Linux-uvc-devel] luvcview fails to work.
+</A></li>
+	<LI>Next message: <A HREF="003131.html">[Linux-uvc-devel] luvcview fails to work.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3129">[ date ]</a>
+              <a href="thread.html#3129">[ thread ]</a>
+              <a href="subject.html#3129">[ subject ]</a>
+              <a href="author.html#3129">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

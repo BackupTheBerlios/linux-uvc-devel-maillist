@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Multi cameras synchronization
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multi%20cameras%20synchronization&In-Reply-To=%3C200705152315.21822.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001744.html">
+   <LINK REL="Next"  HREF="001742.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Multi cameras synchronization</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multi%20cameras%20synchronization&In-Reply-To=%3C200705152315.21822.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Multi cameras synchronization">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue May 15 23:15:21 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001744.html">[Linux-uvc-devel] Multi cameras synchronization
+</A></li>
+        <LI>Next message: <A HREF="001742.html">[Linux-uvc-devel] Renaming USB devices
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1746">[ date ]</a>
+              <a href="thread.html#1746">[ thread ]</a>
+              <a href="subject.html#1746">[ subject ]</a>
+              <a href="author.html#1746">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Julien,
+
+On Monday 14 May 2007, julien quelen wrote:
+&gt;<i> On Sun, 2007-05-13 at 23:14 +0200, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; On Friday 11 May 2007, julien quelen wrote:
+</I>&gt;<i> &gt; &gt; Hi all,
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I am trying to build a synchronized multiple cameras capture.
+</I>&gt;<i> &gt; &gt; I started with 2 Logitech QuickCam UltraVision USB webcams.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I have difficulties synchronizing them.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; In my tests, I manage to extract the exact timestamp of each captured
+</I>&gt;<i> &gt; &gt; frame.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I'm curious, how did you do that ? Which time source did you use ?
+</I>&gt;<i>
+</I>&gt;<i> On the one hand we have in all USB packets:
+</I>&gt;<i> - PTS field containing the device clock time when the current video
+</I>&gt;<i> frame capture began.
+</I>&gt;<i> - SCR field containing the device clock time sampled at USB packet
+</I>&gt;<i> emission.
+</I>&gt;<i>
+</I>&gt;<i> On the other hand we have the host clock time when we received an
+</I>&gt;<i> complete URB.
+</I>&gt;<i>
+</I>&gt;<i> What I need is: the host clock when a new video frame capture begins.
+</I>&gt;<i>
+</I>&gt;<i> To know that, I assume the following approximation: For one URB
+</I>&gt;<i> received, the SCR time of the URB's last packet and the host time when
+</I>&gt;<i> this URB was received complete correspond to the same real time.
+</I>&gt;<i>
+</I>&gt;<i> So at each complete URB, I store last packet's SCR (Tscr) and host time
+</I>&gt;<i> (Thost) with do_gettimeofday.
+</I>&gt;<i>
+</I>&gt;<i> When uvc receives a URB containing a packet with a video EOF, I take
+</I>&gt;<i> packet PTS (Tpts), I take last stored host time (Thost) and I substract
+</I>&gt;<i> to it the time (in us) that separate last URB completion and current
+</I>&gt;<i> video SOF time.
+</I>&gt;<i>
+</I>&gt;<i> Thost(Video SOF) = Thost - ((Tscr - Tpts) / dwClockFrequency * 1000000))
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> I agree that this calculation starts from an approximation, however I
+</I>&gt;<i> guess the time error should be less than 500us..
+</I>&gt;<i>
+</I>&gt;<i> Then I can compare video SOF times of several usbcams and the results
+</I>&gt;<i> look coherent.
+</I>&gt;<i>
+</I>&gt;<i> Please let me know your opinion on this calculation.. I am open to any
+</I>&gt;<i> comment!..
+</I>
+This seems quite coherent for a first try. It should be possible to get rid of 
+the approximation if we can find the relationship between the host time and 
+the SOF time. From what I've heard, a patch is being written to access the 
+SOF counter value. Using that, we could sample the SOF counter at regular 
+intervals (at URB completion time) and try to correlate that with the host 
+time. Some statistical processing would be needed, but I'm not too familiar 
+with that.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001744.html">[Linux-uvc-devel] Multi cameras synchronization
+</A></li>
+	<LI>Next message: <A HREF="001742.html">[Linux-uvc-devel] Renaming USB devices
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1746">[ date ]</a>
+              <a href="thread.html#1746">[ thread ]</a>
+              <a href="subject.html#1746">[ subject ]</a>
+              <a href="author.html#1746">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

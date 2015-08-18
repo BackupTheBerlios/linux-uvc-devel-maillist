@@ -1,0 +1,181 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20LifeCam%20Cinema%20%28045e%3A075d%29%0A%09bandwidth%20reservation%20issues%3F&In-Reply-To=%3C201001060158.59543.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005464.html">
+   <LINK REL="Next"  HREF="005474.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20LifeCam%20Cinema%20%28045e%3A075d%29%0A%09bandwidth%20reservation%20issues%3F&In-Reply-To=%3C201001060158.59543.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Wed Jan  6 01:58:59 CET 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005464.html">[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d) bandwidth	reservation issues?
+</A></li>
+        <LI>Next message: <A HREF="005474.html">[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5470">[ date ]</a>
+              <a href="thread.html#5470">[ thread ]</a>
+              <a href="subject.html#5470">[ subject ]</a>
+              <a href="author.html#5470">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Seth,
+
+On Tuesday 05 January 2010 16:54:20 Seth W wrote:
+&gt;<i> Greetings,
+</I>&gt;<i> 
+</I>&gt;<i> I have two Microsoft LifeCam Cinema Cameras attached to a single system
+</I>&gt;<i> (only one USB 2.0 controller). I have set trace=1024 on uvcvideo and find
+</I>&gt;<i> that the driver allocates the same amount of bandwidth regardless of what I
+</I>&gt;<i> specify for resolution, fps, or codec in ffmpeg, vlc, etc.
+</I>&gt;<i> 
+</I>&gt;<i> Example:
+</I>&gt;<i> 
+</I>&gt;<i> [<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at fedora11-test</A> ~]# ffmpeg   -f video4linux2 -s 1280x800 -r 30 -i
+</I>&gt;<i> /dev/video1 -f m4v 2-1280-800-maxfps.m4v
+</I>&gt;<i> FFmpeg version SVN-r20557-snapshot, Copyright (c) 2000-2009 Fabrice
+</I>&gt;<i>  Bellard, et al.
+</I>&gt;<i>   built on Nov 22 2009 01:51:55 with gcc 4.4.1 20090725 (Red Hat 4.4.1-2)
+</I>&gt;<i>   configuration: --prefix=/usr --libdir=/usr/lib --shlibdir=/usr/lib
+</I>&gt;<i> --mandir=/usr/share/man --enable-shared --enable-gpl --enable-version3
+</I>&gt;<i> --enable-nonfree --enable-postproc --enable-avfilter --enable-avfilter-lavf
+</I>&gt;<i> --enable-pthreads --enable-x11grab --enable-vdpau --disable-avisynth
+</I>&gt;<i> --enable-libdc1394 --enable-libdirac --enable-libfaac --enable-libfaad
+</I>&gt;<i> --enable-libfaadbin --enable-libgsm --enable-libmp3lame --enable-libnut
+</I>&gt;<i> --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg
+</I>&gt;<i> --enable-libschroedinger --enable-libspeex --enable-libtheora
+</I>&gt;<i> --enable-libvorbis --enable-libx264 --enable-libxvid --extra-cflags='-O2 -g
+</I>&gt;<i> -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector
+</I>&gt;<i> --param=ssp-buffer-size=4 -m32 -march=i586 -mtune=generic
+</I>&gt;<i> -fasynchronous-unwind-tables' --disable-stripping
+</I>&gt;<i>   libavutil     50. 4. 0 / 50. 4. 0
+</I>&gt;<i>   libavcodec    52.41. 0 / 52.41. 0
+</I>&gt;<i>   libavformat   52.39. 2 / 52.39. 2
+</I>&gt;<i>   libavdevice   52. 2. 0 / 52. 2. 0
+</I>&gt;<i>   libavfilter    1. 8. 0 /  1. 8. 0
+</I>&gt;<i>   libswscale     0. 7. 1 /  0. 7. 1
+</I>&gt;<i>   libpostproc   51. 2. 0 / 51. 2. 0
+</I>&gt;<i> [video4linux2 @ 0x858a860][3]Capabilities: 4000001
+</I>&gt;<i> Input #0, video4linux2, from '/dev/video1':
+</I>&gt;<i>   Duration: N/A, start: 1262673238.027945, bitrate: 491519 kb/s
+</I>&gt;<i>     Stream #0.0: Video: rawvideo, yuyv422, 1280x800, 491519 kb/s, 30 tbr,
+</I>&gt;<i> 1000k tbn, 30 tbc
+</I>&gt;<i> Output #0, m4v, to '2-1280-800-maxfps.m4v':
+</I>&gt;<i>     Stream #0.0: Video: mpeg4, yuv420p, 1280x800, q=2-31, 200 kb/s, 90k
+</I>&gt;<i>  tbn, 30 tbc
+</I>&gt;<i> Stream mapping:
+</I>&gt;<i>   Stream #0.0 -&gt; #0.0
+</I>&gt;<i> Press [q] to stop encoding
+</I>&gt;<i> frame=  147 fps= 30 q=31.0 Lsize=     356kB time=4.90 bitrate= 595.6kbits/s
+</I>&gt;<i> video:356kB audio:0kB global headers:0kB muxing overhead 0.000000%
+</I>&gt;<i> 
+</I>&gt;<i> And from dmesg:
+</I>&gt;<i> 
+</I>&gt;<i> uvcvideo: Device requested 3072 B/frame bandwidth.
+</I>&gt;<i> uvcvideo: Allocated 5 URB buffers of 32x3072 bytes each.
+</I>&gt;<i> 
+</I>&gt;<i> ---
+</I>&gt;<i> 
+</I>&gt;<i> [<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at fedora11-test</A> ~]# ffmpeg   -f video4linux2 -s 640x480 -r 30 -i
+</I>&gt;<i> /dev/video1 -f m4v 2-640x480.m4v
+</I>&gt;<i> FFmpeg version SVN-r20557-snapshot, Copyright (c) 2000-2009 Fabrice
+</I>&gt;<i>  Bellard, et al.
+</I>&gt;<i>   built on Nov 22 2009 01:51:55 with gcc 4.4.1 20090725 (Red Hat 4.4.1-2)
+</I>&gt;<i>   configuration: --prefix=/usr --libdir=/usr/lib --shlibdir=/usr/lib
+</I>&gt;<i> --mandir=/usr/share/man --enable-shared --enable-gpl --enable-version3
+</I>&gt;<i> --enable-nonfree --enable-postproc --enable-avfilter --enable-avfilter-lavf
+</I>&gt;<i> --enable-pthreads --enable-x11grab --enable-vdpau --disable-avisynth
+</I>&gt;<i> --enable-libdc1394 --enable-libdirac --enable-libfaac --enable-libfaad
+</I>&gt;<i> --enable-libfaadbin --enable-libgsm --enable-libmp3lame --enable-libnut
+</I>&gt;<i> --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg
+</I>&gt;<i> --enable-libschroedinger --enable-libspeex --enable-libtheora
+</I>&gt;<i> --enable-libvorbis --enable-libx264 --enable-libxvid --extra-cflags='-O2 -g
+</I>&gt;<i> -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector
+</I>&gt;<i> --param=ssp-buffer-size=4 -m32 -march=i586 -mtune=generic
+</I>&gt;<i> -fasynchronous-unwind-tables' --disable-stripping
+</I>&gt;<i>   libavutil     50. 4. 0 / 50. 4. 0
+</I>&gt;<i>   libavcodec    52.41. 0 / 52.41. 0
+</I>&gt;<i>   libavformat   52.39. 2 / 52.39. 2
+</I>&gt;<i>   libavdevice   52. 2. 0 / 52. 2. 0
+</I>&gt;<i>   libavfilter    1. 8. 0 /  1. 8. 0
+</I>&gt;<i>   libswscale     0. 7. 1 /  0. 7. 1
+</I>&gt;<i>   libpostproc   51. 2. 0 / 51. 2. 0
+</I>&gt;<i> [video4linux2 @ 0x9a15860][3]Capabilities: 4000001
+</I>&gt;<i> Input #0, video4linux2, from '/dev/video1':
+</I>&gt;<i>   Duration: N/A, start: 1262673302.162194, bitrate: 147456 kb/s
+</I>&gt;<i>     Stream #0.0: Video: rawvideo, yuyv422, 640x480, 147456 kb/s, 30 tbr,
+</I>&gt;<i> 1000k tbn, 30 tbc
+</I>&gt;<i> Output #0, m4v, to '2-640x480.m4v':
+</I>&gt;<i>     Stream #0.0: Video: mpeg4, yuv420p, 640x480, q=2-31, 200 kb/s, 90k tbn,
+</I>&gt;<i> 30 tbc
+</I>&gt;<i> Stream mapping:
+</I>&gt;<i>   Stream #0.0 -&gt; #0.0
+</I>&gt;<i> Press [q] to stop encoding
+</I>&gt;<i> frame=  152 fps= 30 q=5.2 Lsize=     347kB time=5.07 bitrate= 561.4kbits/s
+</I>&gt;<i> video:347kB audio:0kB global headers:0kB muxing overhead 0.000000%
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> and from dmesg:
+</I>&gt;<i> 
+</I>&gt;<i> vcvideo: Device requested 3072 B/frame bandwidth.
+</I>&gt;<i> uvcvideo: Allocated 5 URB buffers of 32x3072 bytes each.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> ----
+</I>&gt;<i> 
+</I>&gt;<i> I had planned on showing the example from dmesg of the same allocation when
+</I>&gt;<i> using mencoder with --v4l2-chroma=mjpeg ; but unfortunately the machine is
+</I>&gt;<i> remote and just died...
+</I>&gt;<i> 
+</I>&gt;<i> At any rate, if anyone can verify that this is the (in)correct behavior of
+</I>&gt;<i> uvcvideo i would appreciate it (but I am under the impression it is not
+</I>&gt;<i> supposed to work this way, and is supposed to allocate bandwidth based on
+</I>&gt;<i> the input parameters). I would be happy to provide any debugging
+</I>&gt;<i>  information necessary.
+</I>
+Could you please send me the lsusb -v output for your cameras ?
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005464.html">[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d) bandwidth	reservation issues?
+</A></li>
+	<LI>Next message: <A HREF="005474.html">[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5470">[ date ]</a>
+              <a href="thread.html#5470">[ thread ]</a>
+              <a href="subject.html#5470">[ subject ]</a>
+              <a href="author.html#5470">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

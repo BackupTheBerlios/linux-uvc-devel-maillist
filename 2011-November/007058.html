@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Webcam with nv12
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20with%20nv12&In-Reply-To=%3C4EC0472D.5040109%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007055.html">
+   <LINK REL="Next"  HREF="007066.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Webcam with nv12</H1>
+    <B>Andrew Leech</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20with%20nv12&In-Reply-To=%3C4EC0472D.5040109%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Webcam with nv12">coronasensei at gmail.com
+       </A><BR>
+    <I>Sun Nov 13 23:39:41 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007055.html">[Linux-uvc-devel] Webcam with nv12
+</A></li>
+        <LI>Next message: <A HREF="007066.html">[Linux-uvc-devel] [PATCH] uvcvideo: correct error message for	debugfs stats file
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7058">[ date ]</a>
+              <a href="thread.html#7058">[ thread ]</a>
+              <a href="subject.html#7058">[ subject ]</a>
+              <a href="author.html#7058">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>It's quite safe to say no one has ever made a camera like this 
+commercially. Even yuy2 is very rare, as the bandwidth requirements are 
+too high. I've made custom built hardware that captures PAL to yuy2 uvc 
+at 768 x 576 and that takes ~22MB/s on the USB bus, which only works on 
+quite stable usb connections (ie most front ports can't keep up because 
+of error rates). To even get 720p at 25fps you would need 35MB/s which 
+is relatively rare to achive on a real device. You've got not chance of 
+getting 1080p except at a very low frame rate.
+
+On top of that, Windows UVC driver doesn't support NV12 as standard, so 
+you would need to add your own directshow filter to convert it. This is 
+what I do to support Y800 which isn't officially supported by uvc 
+anyway, but by adding my own custom filter I can convert it into RGB24 
+at the computer end and use it fine.
+
+Manufacturers just use mjpeg typically, because it means they can get 
+high resolutions, windows support and still work on a normal usb port 
+easily.
+
+If you really need NV12 you will basically need to make your own 
+controller, I can suggest the LPC3131 because I know it works, but it 
+takes a lot of work to make it, and you would need frame buffer memory 
+added to it to handle NV12 (my hardware doesn't have any ram for 
+framebuffering).
+
+On 13/11/2011 2:51 PM, ge s wrote:
+&gt;<i> hi,all.I need a pixel format for NV12 and resolution for 720p or 1080p 
+</I>&gt;<i> USB webcam.
+</I>&gt;<i> For a long time did not find the corresponding usb webcam.Please give 
+</I>&gt;<i> me some advice!Thank you!
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20111114/b55d97e1/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20111114/b55d97e1/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007055.html">[Linux-uvc-devel] Webcam with nv12
+</A></li>
+	<LI>Next message: <A HREF="007066.html">[Linux-uvc-devel] [PATCH] uvcvideo: correct error message for	debugfs stats file
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7058">[ date ]</a>
+              <a href="thread.html#7058">[ thread ]</a>
+              <a href="subject.html#7058">[ subject ]</a>
+              <a href="author.html#7058">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

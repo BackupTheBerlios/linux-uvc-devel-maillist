@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20PATCH%3A%20Acer%20Crystal%20Eye%20WebCam%20%28064e%3Aa101%0A%09Suyin%20Corp.%29&In-Reply-To=%3C200806070059.11395.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003600.html">
+   <LINK REL="Next"  HREF="003569.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20PATCH%3A%20Acer%20Crystal%20Eye%20WebCam%20%28064e%3Aa101%0A%09Suyin%20Corp.%29&In-Reply-To=%3C200806070059.11395.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sat Jun  7 00:59:11 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003600.html">[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)
+</A></li>
+        <LI>Next message: <A HREF="003569.html">[Linux-uvc-devel] [PATCH] uvc: release streaming interface	to	fix suspend to RAM
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3601">[ date ]</a>
+              <a href="thread.html#3601">[ thread ]</a>
+              <a href="subject.html#3601">[ subject ]</a>
+              <a href="author.html#3601">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Michael,
+
+On Saturday 07 June 2008, MIchael Sparks wrote:
+&gt;<i> Hi Laurent,
+</I>&gt;<i>
+</I>&gt;<i> Many thanks for getting back to me :)
+</I>
+You're welcome.
+
+&gt;<i> On Friday 06 June 2008 23:12:50 Laurent Pinchart wrote:
+</I>&gt;<i> ..
+</I>&gt;<i>
+</I>&gt;<i> &gt; *sigh*. I hate protocol errors. They are most of the time caused by buggy
+</I>&gt;<i> &gt; devices, and buggy devices mean I have to find a software workaround :-S
+</I>&gt;<i>
+</I>&gt;<i> I guessed that might be the case :-/
+</I>&gt;<i>
+</I>&gt;<i> &gt; Could you please try to blindly ignore the usb_set_interface return value
+</I>&gt;<i> &gt; ? I'd like to know if the second call is really required.
+</I>&gt;<i>
+</I>&gt;<i> I've tried changing it to specifically ignore that error:
+</I>&gt;<i> Index: uvc_video.c
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvc_video.c (revision 213)
+</I>&gt;<i> +++ uvc_video.c (working copy)
+</I>&gt;<i> @@ -750,8 +750,10 @@
+</I>&gt;<i>                 if (i &gt;= intf-&gt;num_altsetting)
+</I>&gt;<i>                         return -EIO;
+</I>&gt;<i>
+</I>&gt;<i> -               if ((ret = usb_set_interface(video-&gt;dev-&gt;udev, intfnum, i))
+</I>&gt;<i> &lt; 0) -                       return ret;
+</I>&gt;<i> +               if ((ret = usb_set_interface(video-&gt;dev-&gt;udev, intfnum, i))
+</I>&gt;<i> &lt; 0) { +                       if (ret != -71)  // Let's try blindly
+</I>&gt;<i> ignoring protocol errors as requested +                              
+</I>&gt;<i> return ret;
+</I>&gt;<i> +               }
+</I>&gt;<i>
+</I>&gt;<i>                 ret = uvc_init_video_isoc(video, ep);
+</I>&gt;<i>         } else {
+</I>&gt;<i>
+</I>&gt;<i> Any when I now retry, I get the following error:
+</I>&gt;<i>
+</I>&gt;<i> ~/&gt; ./WebCam.py
+</I>&gt;<i> Traceback (most recent call last):
+</I>&gt;<i>   File &quot;./WebCam.py&quot;, line 214, in &lt;module&gt;
+</I>&gt;<i>     VideoCapturePlayer().run() # Runs at full speed - basic test case
+</I>&gt;<i>   File &quot;./WebCam.py&quot;, line 27, in __init__
+</I>&gt;<i>     self.camera.start()
+</I>&gt;<i> EnvironmentError: ioctl(VIDIOC_STREAMON) failure : 90, Message too long
+</I>&gt;<i>
+</I>&gt;<i> For good measure I also tried this ...
+</I>&gt;<i>
+</I>&gt;<i> Index: uvc_video.c
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvc_video.c (revision 213)
+</I>&gt;<i> +++ uvc_video.c (working copy)
+</I>&gt;<i> @@ -749,10 +749,13 @@
+</I>&gt;<i>
+</I>&gt;<i>                 if (i &gt;= intf-&gt;num_altsetting)
+</I>&gt;<i>                         return -EIO;
+</I>&gt;<i> +
+</I>&gt;<i> +                ret = usb_set_interface(video-&gt;dev-&gt;udev, intfnum, i);
+</I>&gt;<i> +//             if ((ret = usb_set_interface(video-&gt;dev-&gt;udev, intfnum, i))
+</I>&gt;<i> &lt; 0) { +//                     if (ret != -71)  // Let's try blindly
+</I>&gt;<i> ignoring protocol errors as requested +//                            
+</I>&gt;<i> return ret;
+</I>&gt;<i> +//             }
+</I>&gt;<i>
+</I>&gt;<i> -               if ((ret = usb_set_interface(video-&gt;dev-&gt;udev, intfnum, i))
+</I>&gt;<i> &lt; 0) -                       return ret;
+</I>&gt;<i> -
+</I>&gt;<i>                 ret = uvc_init_video_isoc(video, ep);
+</I>&gt;<i>         } else {
+</I>&gt;<i>                 /* Bulk endpoint, proceed to URB initialization. */
+</I>&gt;<i>
+</I>&gt;<i> ... ie completely ignoring the return code, and again I get this error:
+</I>&gt;<i>
+</I>&gt;<i> ~/&gt; ./WebCam.py
+</I>&gt;<i> Traceback (most rcall last):
+</I>&gt;<i>   File &quot;./WebCam.py&quot;, line 214, in &lt;module&gt;
+</I>&gt;<i>     VideoCapturePlayer().run() # Runs at full speed - basic test case
+</I>&gt;<i>   File &quot;./WebCam.py&quot;, line 27, in __init__
+</I>&gt;<i>     self.camera.start()
+</I>&gt;<i> EnvironmentError: ioctl(VIDIOC_STREAMON) failure : 90, Message too long
+</I>&gt;<i>
+</I>&gt;<i> Making it simply retry just seems to work.
+</I>
+Thanks for testing.
+
+&gt;<i> &gt; What kernel version are you running ?
+</I>&gt;<i>
+</I>&gt;<i> This is the output from uname -a &amp; /proc/version
+</I>&gt;<i>
+</I>&gt;<i> ~/&gt; uname -a
+</I>&gt;<i> Linux kamaelia-NG 2.6.22.17-0.1-default #1 SMP 2008/02/10 20:01:04 UTC i686
+</I>&gt;<i> i686 i386 GNU/Linux
+</I>&gt;<i>
+</I>&gt;<i> ~/&gt; more /proc/version
+</I>&gt;<i> Linux version 2.6.22.17-0.1-default (<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">geeko at buildhost</A>) (gcc version 4.2.1
+</I>&gt;<i> (SUSE Linux)) #1 SMP 2008/02/10 20:01:04 UTC
+</I>
+Would you be able to try 2.6.26-rc5 ? I'd like to know if the recent patches 
+to the EHCI driver solve the issue (or maybe make it worse :-)).
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003600.html">[Linux-uvc-devel] PATCH: Acer Crystal Eye WebCam (064e:a101	Suyin Corp.)
+</A></li>
+	<LI>Next message: <A HREF="003569.html">[Linux-uvc-devel] [PATCH] uvc: release streaming interface	to	fix suspend to RAM
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3601">[ date ]</a>
+              <a href="thread.html#3601">[ thread ]</a>
+              <a href="subject.html#3601">[ subject ]</a>
+              <a href="author.html#3601">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

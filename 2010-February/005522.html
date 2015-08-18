@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Unlisted partially-supported webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Unlisted%20partially-supported%20webcam&In-Reply-To=%3C201002030123.25367.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005521.html">
+   <LINK REL="Next"  HREF="005529.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Unlisted partially-supported webcam</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Unlisted%20partially-supported%20webcam&In-Reply-To=%3C201002030123.25367.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Unlisted partially-supported webcam">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Wed Feb  3 01:23:25 CET 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005521.html">[Linux-uvc-devel] MSI starcam mini+ compatible with Linux
+</A></li>
+        <LI>Next message: <A HREF="005529.html">[Linux-uvc-devel] Unlisted partially-supported webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5522">[ date ]</a>
+              <a href="thread.html#5522">[ thread ]</a>
+              <a href="subject.html#5522">[ subject ]</a>
+              <a href="author.html#5522">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Bram,
+
+On Tuesday 26 January 2010 16:12:02 Bram Senders wrote:
+&gt;<i> Hi there,
+</I>&gt;<i> 
+</I>&gt;<i> I have here a partially working webcam which is unlisted on the list
+</I>&gt;<i> of known cameras; it's the built-in camera found in the Asus EeePC T91
+</I>&gt;<i> netbook.
+</I>
+Thanks for the report.
+
+&gt;<i> &quot;dmesg&quot; says:
+</I>&gt;<i> ===
+</I>&gt;<i> [    3.683885] uvcvideo: Found UVC 1.00 device USB 2.0 Camera (13d3:509b)
+</I>&gt;<i> [    3.685259] Error: Driver 'pcspkr' is already registered, aborting...
+</I>&gt;<i> [    3.695705] input: USB 2.0 Camera as
+</I>&gt;<i> /devices/pci0000:00/0000:00:1d.7/usb1/1-7/1-7:1.0/input/input6
+</I>&gt;<i> [    3.695886] usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> [    3.695898] USB Video Class driver (v0.1.0)
+</I>&gt;<i> ===
+</I>&gt;<i> 
+</I>&gt;<i> &quot;lsusb -v&quot; says:
+</I>
+[snip]
+
+&gt;<i> Now, as far as the working status of this camera is concerned, some
+</I>&gt;<i> apps work and others don't.  For example, I can display video with the
+</I>&gt;<i> GUVCView application, and I can record video with FFmpeg using &quot;ffmpeg
+</I>&gt;<i> -f video4linux2 -s 640x480 -r 30 -i /dev/video0 -vcodec copy bla.avi&quot;.
+</I>&gt;<i>  However, particularly GStreamer-based applications seem not to work
+</I>&gt;<i> at all; for example the standard GNOME webcam app Cheese does not
+</I>&gt;<i> work.
+</I>&gt;<i> 
+</I>&gt;<i> This seems to be the case because GStreamer's v4l2src element want to
+</I>&gt;<i> get a camera attribute which seems to be not supported by the driver.
+</I>&gt;<i> For example, gst-launch says:
+</I>&gt;<i> ====
+</I>&gt;<i> $ gst-launch v4l2src ! filesink location=foo
+</I>&gt;<i> Setting pipeline to PAUSED ...
+</I>&gt;<i> ERROR: Pipeline doesn't want to pause.
+</I>&gt;<i> ERROR: from element /GstPipeline:pipeline0/GstV4l2Src:v4l2src0: Failed
+</I>&gt;<i> getting controls attributes on device '/dev/video0'.
+</I>&gt;<i> Additional debug info:
+</I>&gt;<i> v4l2_calls.c(264): gst_v4l2_fill_lists ():
+</I>&gt;<i> /GstPipeline:pipeline0/GstV4l2Src:v4l2src0:
+</I>&gt;<i> Failed querying control 9963795 on device '/dev/video0'. (5 -
+</I>&gt;<i> Input/output error)
+</I>&gt;<i> Setting pipeline to NULL ...
+</I>&gt;<i> Freeing pipeline ...
+</I>&gt;<i> ====
+</I>&gt;<i> 
+</I>&gt;<i> When I execute this command, I get the following message from dmesg:
+</I>&gt;<i> ====
+</I>&gt;<i> [ 1799.428886] uvcvideo: Failed to query (135) UVC control 4 (unit 3)
+</I>&gt;<i> 
+</I>&gt;<i> : -32 (exp. 2).
+</I>&gt;<i> 
+</I>&gt;<i> ====
+</I>&gt;<i> 
+</I>&gt;<i> This is using kernel 2.6.32-trunk-686 from Debian unstable.
+</I>&gt;<i> 
+</I>&gt;<i> Now I don't really know what control 9963795 is, or what UVC control 4
+</I>&gt;<i> (unit 3) is,
+</I>
+That's V4L2_CID_GAIN.
+
+&gt;<i> but since I would like to do some simple GStreamer-based development with
+</I>&gt;<i> this webcam myself, any help on getting this to work would be appreciated! 
+</I>&gt;<i> I don't know whether this is a bug in the kernel driver or in GStreamer or
+</I>&gt;<i> possibly in the camera itself,
+</I>
+It looks like a camera bug. The camera claims to support the gain control, but
+ any attempt to access it fails.
+
+&gt;<i> but any way in which I could try to get this to work (either by patching
+</I>&gt;<i> the kernel driver, or possibly trying to patch the GStreamer v4l2src
+</I>&gt;<i> element to not query the relevant control?) or further debug this
+</I>&gt;<i> thing would be really really helpful.
+</I>
+Could you please try the following patch and let me know if it helps ?
+
+diff --git a/drivers/media/video/uvc/uvc_ctrl.c b/drivers/media/video/uvc/uvc_ctrl.c
+index f90319e..60f40d9 100644
+--- a/drivers/media/video/uvc/uvc_ctrl.c
++++ b/drivers/media/video/uvc/uvc_ctrl.c
+@@ -1453,6 +1453,7 @@ uvc_ctrl_prune_entity(struct uvc_device *dev, struct uvc_entity *entity)
+ 		struct usb_device_id id;
+ 		u8 index;
+ 	} blacklist[] = {
++		{ { USB_DEVICE(0x13d3, 0x509b) }, 4 }, /* Gain */
+ 		{ { USB_DEVICE(0x1c4f, 0x3000) }, 6 }, /* WB Temperature */
+ 		{ { USB_DEVICE(0x5986, 0x0241) }, 2 }, /* Hue */
+ 	};
+
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005521.html">[Linux-uvc-devel] MSI starcam mini+ compatible with Linux
+</A></li>
+	<LI>Next message: <A HREF="005529.html">[Linux-uvc-devel] Unlisted partially-supported webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5522">[ date ]</a>
+              <a href="thread.html#5522">[ thread ]</a>
+              <a href="subject.html#5522">[ subject ]</a>
+              <a href="author.html#5522">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

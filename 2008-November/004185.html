@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] support for 05ca:183a
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20support%20for%2005ca%3A183a&In-Reply-To=%3C1226236516.21482.24.camel%40mentalek%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004177.html">
+   <LINK REL="Next"  HREF="004189.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] support for 05ca:183a</H1>
+    <B>Petr Men&#353;&#237;k</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20support%20for%2005ca%3A183a&In-Reply-To=%3C1226236516.21482.24.camel%40mentalek%3E"
+       TITLE="[Linux-uvc-devel] support for 05ca:183a">pihhan at cipis.net
+       </A><BR>
+    <I>Sun Nov  9 14:15:16 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004177.html">[Linux-uvc-devel] support for 05ca:183a
+</A></li>
+        <LI>Next message: <A HREF="004189.html">[Linux-uvc-devel] support for 05ca:183a
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4185">[ date ]</a>
+              <a href="thread.html#4185">[ thread ]</a>
+              <a href="subject.html#4185">[ subject ]</a>
+              <a href="author.html#4185">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I think i can reply here also, as i have 05ca:183b that is very similar.
+It is integrated in Sony Vaio VGN-FZ21 series.
+
+I made some tests at <A HREF="http://www.pihhan.info/sony/webcam/webcam-tests">http://www.pihhan.info/sony/webcam/webcam-tests</A>
+There are also scripts i used and lsusb verbose output for camera.
+
+Laurent Pinchart p&#237;&#353;e v &#268;t 06. 11. 2008 v 01:17 +0100:
+&gt;<i> On Tuesday 04 November 2008, Pavel Revak wrote:
+</I>&gt;<i> &gt; Hi Philipp
+</I>&gt;<i> &gt; very nice, this solved my problem :)
+</I>&gt;<i> &gt; thanks.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; also I do some tests with luvcview and any other grabbed resolution than
+</I>&gt;<i> &gt; 640x480 is broken ...
+</I>&gt;<i> 
+</I>&gt;<i> How broken ? Can you post screenshots ?
+</I>See <A HREF="http://www.pihhan.info/sony/webcam/webcam-tests/160/00000012.png">http://www.pihhan.info/sony/webcam/webcam-tests/160/00000012.png</A> as
+example. After simpel transformation of buffer to width 640, you will se
+camera never changed its resolution. Only software thinks it did. See
+<A HREF="http://www.pihhan.info/sony/webcam/webcam-tests/160/00000012-mod.png">http://www.pihhan.info/sony/webcam/webcam-tests/160/00000012-mod.png</A> to
+get upper part of original image.
+&gt;<i> 
+</I>&gt;<i> As a side note, make sure you check the kernel log (dmesg) for uvcvideo error 
+</I>&gt;<i> messages when performing your tests.
+</I>No errors in kernel for my model. I made some debug info with controls
+and stuff using:
+options uvcvideo trace=0x307
+
+Output is at <A HREF="http://www.pihhan.info/sony/webcam/uvcload.txt">http://www.pihhan.info/sony/webcam/uvcload.txt</A>
+it is somehow bigger to paste it into mail i think. Only strange warning is
+
+Nov  9 14:02:17 mentalek kernel: [23909.937596] uvcvideo: Control 0x00980909 not found.
+
+It does so when i play it using mplayer <A HREF="tv:///,">tv:///,</A> i dont know what does that mean.
+&gt;<i> 
+</I>&gt;<i> &gt; is here possible to disable, these resolutions for this camera
+</I>&gt;<i> 
+</I>&gt;<i> The resolutions are reported by the camera itself. The UVC driver merely pass 
+</I>&gt;<i> the data to userspace without any modification.
+</I>They are reported but not working. R5u870 driver seems to be not
+developed now, as work is put to upload firmware and then handle camera
+using uvcvideo.
+&gt;<i> 
+</I>&gt;<i> &gt; or make software image resize ? 
+</I>&gt;<i> 
+</I>&gt;<i> The driver doesn't resize or process the image in any way. This kind of 
+</I>&gt;<i> function belongs to userspace.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; luvcview reports the following resolutions:
+</I>&gt;<i> &gt; $ lucview -L
+</I>&gt;<i> &gt; luvcview 0.2.4
+</I>&gt;<i> &gt; SDL information:
+</I>&gt;<i> &gt;   Video driver: x11
+</I>&gt;<i> &gt;   A window manager is available
+</I>&gt;<i> &gt; Device information:
+</I>&gt;<i> &gt;   Device path:  /dev/video0
+</I>&gt;<i> &gt; /dev/video0 does not support read i/o
+</I>&gt;<i> &gt; { pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+</I>&gt;<i> &gt; { discrete: width = 640, height = 480 }
+</I>&gt;<i> &gt;         Time interval between frame: 1/15,
+</I>&gt;<i> &gt; { discrete: width = 320, height = 240 }
+</I>&gt;<i> &gt;         Time interval between frame: 1/15,
+</I>&gt;<i> &gt; { discrete: width = 176, height = 144 }
+</I>&gt;<i> &gt;         Time interval between frame: 1/15,
+</I>&gt;<i> &gt; { discrete: width = 160, height = 120 }
+</I>&gt;<i> &gt;         Time interval between frame: 1/15,
+</I>&gt;<i> 
+</I>My output:
+luvcview version 0.2.1 
+Video driver: x11
+A window manager is available
+video /dev/video0 
+/dev/video0 does not support read i/o
+{ pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+{ discrete: width = 640, height = 480 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 1280, height = 1024 }
+	Time interval between frame: 2/15, 
+{ discrete: width = 320, height = 240 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 176, height = 144 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 160, height = 120 }
+	Time interval between frame: 1/30, 
+
+Where can i get newer version? i found this most recent one at
+<A HREF="http://mxhaard.free.fr/spca50x/Investigation/uvc/">http://mxhaard.free.fr/spca50x/Investigation/uvc/</A> but i have older
+version it seems. Also, my luvcview will not show anything to me, it
+fails with:
+
+luvcview version 0.2.1 
+Video driver: x11
+A window manager is available
+video /dev/video0 
+Unable to set format: 22.
+ Init v4L2 failed !! exit fatal 
+
+Do you where it could fail or how could i fix this? I tried different
+formats and sizes, but i never saw image from luvcview.
+
+Mplayer <A HREF="tv:///">tv:///</A> will work (1.0rc2-4.2.3), as is cheese 2.22.3. xawtv will
+choose wrong resolution and i dont know how to change it. It worked with
+r5u870 driver. But Mplayer has somehow strange colors, image from cheese
+is better in quality. 
+
+&gt;<i> Please note that the r5u870 chipset is not completely UVC compliant and is 
+</I>&gt;<i> currently not officially supported by the UVC driver.
+</I>Do you know about anything exactly that this camera does not support as
+it should? I would like to get it working with uvcvideo module and i may
+try to create patch, but i dont understand well how is resolution
+switching done in UVC video module. Would it be fixed with some custom
+quirk for example? iSight has some special, why not this?
+&gt;<i> 
+</I>&gt;<i> Best regards,
+</I>&gt;<i> 
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004177.html">[Linux-uvc-devel] support for 05ca:183a
+</A></li>
+	<LI>Next message: <A HREF="004189.html">[Linux-uvc-devel] support for 05ca:183a
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4185">[ date ]</a>
+              <a href="thread.html#4185">[ thread ]</a>
+              <a href="subject.html#4185">[ subject ]</a>
+              <a href="author.html#4185">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

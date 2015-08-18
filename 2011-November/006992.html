@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Dual sensor, single controller, one USB Device
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Dual%20sensor%2C%20single%20controller%2C%20one%20USB%20Device&In-Reply-To=%3C201111021738.25161.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006990.html">
+   <LINK REL="Next"  HREF="007033.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Dual sensor, single controller, one USB Device</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Dual%20sensor%2C%20single%20controller%2C%20one%20USB%20Device&In-Reply-To=%3C201111021738.25161.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Dual sensor, single controller, one USB Device">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Wed Nov  2 17:38:24 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006990.html">[Linux-uvc-devel] (no subject)
+</A></li>
+        <LI>Next message: <A HREF="007033.html">[Linux-uvc-devel] Dual sensor, single controller, one USB Device
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6992">[ date ]</a>
+              <a href="thread.html#6992">[ thread ]</a>
+              <a href="subject.html#6992">[ subject ]</a>
+              <a href="author.html#6992">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Saturday 29 October 2011 09:30:04 Alexey Fisher wrote:
+&gt;<i> Am 28.10.2011 18:01, schrieb cheshirekow:
+</I>&gt;<i> &gt; On Sun, 2011-10-23 at 13:50 -0400, cheshirekow wrote:
+</I>&gt;<i> &gt;&gt; On 10/22/2011 03:16 AM, Alexey Fisher wrote:
+</I>&gt;<i> &gt;&gt;&gt; Can you please attach the output of this command:
+</I>&gt;<i> &gt;&gt;&gt; lsusb -vd 10f1:1a26&gt;  lsusb_dump
+</I>&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt;&gt; Sure. The dump file is attached.
+</I>&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt;&gt; Thanks!
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Has anyone by chance managed to take a look at this lsusb dump?
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; To recap:
+</I>&gt;<i> &gt; the HP Slate has two integrated we cams: One forward facing for video
+</I>&gt;<i> &gt; calls, and one higher-resolution rear-facing for snapping photos. There
+</I>&gt;<i> &gt; appears to be a single controller for both cameras. In linux, lsusb only
+</I>&gt;<i> &gt; shows one webcam device. In windows, the device manager also shows only
+</I>&gt;<i> &gt; one device for the webcam. However, in windows applications that use the
+</I>&gt;<i> &gt; webcam (i.e. HP's webcam application, and in skype) I'm able to select
+</I>&gt;<i> &gt; which one to use as an option. In linux, there is only one video
+</I>&gt;<i> &gt; device, /dev/video0.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; There does not appear to be any control available from uvcdynctrl or
+</I>&gt;<i> &gt; within vlc to select which physical camera to use. I've tried setting
+</I>&gt;<i> &gt; the resolution in vlc when I use the &quot;open capture device&quot; menu item. I
+</I>&gt;<i> &gt; know that the forward facing camera is VGA so I tried specifying
+</I>&gt;<i> &gt; 640x480, but the result is that it shows the rear-camera stream at a low
+</I>&gt;<i> &gt; resolution, rather then showing the forward-camera stream.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I'd appreciate any suggestions on how to get the forward-facing camera
+</I>&gt;<i> &gt; to work in linux (for skype/google video calls). Also, if it is clear
+</I>&gt;<i> &gt; that this facility is not available in UVC and that there is no way this
+</I>&gt;<i> &gt; is possilble, that would also be useful information.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Thanks again
+</I>&gt;<i> 
+</I>&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> suddenly i do not see any control to switch the sensor. I assume there
+</I>&gt;<i> can be two variants how it may work:
+</I>&gt;<i> 1. vendor specific extension unit for uvc
+</I>&gt;<i> 2. or usb mode switcher
+</I>&gt;<i> 
+</I>&gt;<i> if both sensors have same capabilities, the 1. make sense. If not then
+</I>&gt;<i> second. Because this usb dump report settings only for one sensor.
+</I>&gt;<i> 
+</I>&gt;<i> For 1. it will be probably possible to control it with libwebcam. For 2.
+</I>&gt;<i> it should be possible to control it with some kind of usb_modeswitch
+</I>&gt;<i> (i'm not up to date).
+</I>&gt;<i> 
+</I>&gt;<i> To find what it is actually, there can be fallowing options:
+</I>&gt;<i> 1. sniff usb traffic
+</I>&gt;<i> 2. see if the windows driver has some advise for us
+</I>&gt;<i> 3. unscrew your laptop and find what control use your webcam.
+</I>
+My guess is that the camera uses either an extension unit (XU) control or a 
+vendor-specific request to select between the two sensors (which is very 
+unfortunate, given that the UVC specification has explicit support for dual-
+sensor cameras, and I would have liked to test that code :-)).
+
+Let's start with the XU control. I've attached a patch for the yavta test 
+application (<A HREF="http://git.ideasonboard.org/?p=yavta.git;a=summary">http://git.ideasonboard.org/?p=yavta.git;a=summary</A>) to this e-
+mail. Could you please apply it, compile the application with
+
+make
+
+run
+
+yavta /dev/video0
+
+and report the results ?
+
+If your kernel headers are not recent enough (which I expect), compilation 
+will fail. In that case you will need to download a recent kernel source tree, 
+run
+
+make headers_install
+
+in the kernel tree (this will install the headers in the local directory, it 
+won't mess up with your system) and then compile yavta with
+
+make KDIR=/path/to/kernel/tree
+
+-- 
+Regards,
+
+Laurent Pinchart
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: yavta-uvc-xu.patch
+Type: text/x-patch
+Size: 2551 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20111102/8d435f6b/attachment.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20111102/8d435f6b/attachment.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006990.html">[Linux-uvc-devel] (no subject)
+</A></li>
+	<LI>Next message: <A HREF="007033.html">[Linux-uvc-devel] Dual sensor, single controller, one USB Device
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6992">[ date ]</a>
+              <a href="thread.html#6992">[ thread ]</a>
+              <a href="subject.html#6992">[ subject ]</a>
+              <a href="author.html#6992">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

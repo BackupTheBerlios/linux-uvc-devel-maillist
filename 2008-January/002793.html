@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Add%20new%20sync%20quirk%20to%20uvcvideo%20and%20use%20with%0A%09Syntek%20174f%3A5212&In-Reply-To=%3C200801151953.28034.herton%40mandriva.com.br%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002789.html">
+   <LINK REL="Next"  HREF="002794.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212</H1>
+    <B>Herton Ronaldo Krzesinski</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Add%20new%20sync%20quirk%20to%20uvcvideo%20and%20use%20with%0A%09Syntek%20174f%3A5212&In-Reply-To=%3C200801151953.28034.herton%40mandriva.com.br%3E"
+       TITLE="[Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212">herton at mandriva.com.br
+       </A><BR>
+    <I>Tue Jan 15 22:53:27 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002789.html">[Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212
+</A></li>
+        <LI>Next message: <A HREF="002794.html">[Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2793">[ date ]</a>
+              <a href="thread.html#2793">[ thread ]</a>
+              <a href="subject.html#2793">[ subject ]</a>
+              <a href="author.html#2793">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Em Tuesday 15 January 2008 18:56:35 Laurent Pinchart escreveu:
+&gt;<i> Hi Herton,
+</I>&gt;<i> 
+</I>&gt;<i> On Tuesday 15 January 2008, Herton Ronaldo Krzesinski wrote:
+</I>&gt;<i> &gt; Hi Laurent, thanks for the commit and advice. We played with the webcam
+</I>&gt;<i> &gt; again (sorry for delay) and we found out that it isn't really reporting the
+</I>&gt;<i> &gt; FID bit, but only end of frame marker (EOF). This is strange indeed, as
+</I>&gt;<i> &gt; from what I understand from UVC spec FID is required while EOF is optional.
+</I>&gt;<i> 
+</I>&gt;<i> The bmFramingInfo field in the probe&amp;commit control can be used by the device 
+</I>&gt;<i> to report if it supports FID and/or EOF. However, for known frame-based 
+</I>&gt;<i> formats, the field must be ignored. Just out of curiosity, could you print 
+</I>&gt;<i> the field's value when reading the probe and commit controls ?
+</I>
+It's always 0x00, falls at else in size check inside uvc_get_video_ctrl:
+uvc_get_video_ctrl: size != 34, bmFramingInfo = 0x00
+
+&gt;<i> 
+</I>&gt;<i> &gt; I reworked the quirk that Claudio made against revision 166 from svn, but
+</I>&gt;<i> &gt; now using the EOF to sync the stream (the previous quirk was ok, but on
+</I>&gt;<i> &gt; laggy communication, like using to transmit a video stream over internet
+</I>&gt;<i> &gt; etc., the frames would overlap etc. resulting in many display issues):
+</I>&gt;<i> 
+</I>&gt;<i> Your patch could drop the last payload of each frame. Could you please try the 
+</I>&gt;<i> attached patch ?
+</I>
+It works, but gives a different behaviour: for example, I simulate lag
+in luvcview placing a sleep(1) at the start of uvcGrab function, with
+this patch it captures only some frames at start and stops, with the
+patch I posted I receive continous snapshots.
+
+&gt;<i> 
+</I>&gt;<i> Best regards,
+</I>&gt;<i> 
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i> 
+</I>
+-- 
+[]'s
+Herton
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002789.html">[Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212
+</A></li>
+	<LI>Next message: <A HREF="002794.html">[Linux-uvc-devel] Add new sync quirk to uvcvideo and use with	Syntek 174f:5212
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2793">[ date ]</a>
+              <a href="thread.html#2793">[ thread ]</a>
+              <a href="subject.html#2793">[ subject ]</a>
+              <a href="author.html#2793">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] error proofing mjpeg stream
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20error%20proofing%20mjpeg%20stream&In-Reply-To=%3Calpine.LNX.2.00.1108190723080.16623%40tristan%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006812.html">
+   <LINK REL="Next"  HREF="006813.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] error proofing mjpeg stream</H1>
+    <B>Carl Michal</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20error%20proofing%20mjpeg%20stream&In-Reply-To=%3Calpine.LNX.2.00.1108190723080.16623%40tristan%3E"
+       TITLE="[Linux-uvc-devel] error proofing mjpeg stream">michal at physics.ubc.ca
+       </A><BR>
+    <I>Fri Aug 19 16:26:51 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006812.html">[Linux-uvc-devel] error proofing mjpeg stream
+</A></li>
+        <LI>Next message: <A HREF="006813.html">[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6815">[ date ]</a>
+              <a href="thread.html#6815">[ thread ]</a>
+              <a href="subject.html#6815">[ subject ]</a>
+              <a href="author.html#6815">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Alexey,
+
+
+On Fri, 19 Aug 2011, Alexey Fisher wrote:
+
+&gt;<i> I continued to work on you usb dump for jpeg stream, here are some examples:
+</I>&gt;<i>
+</I>&gt;<i> This is first frame:
+</I>&gt;<i> 0c8d41c4ce01e010ca042f04ffd8ff SOI
+</I>&gt;<i> 0c8d41c4ce015ca3ca042f04975271
+</I>&gt;<i>
+</I>&gt;<i> This is end of first frame, start of second, and first issue.
+</I>&gt;<i> 0c8d41c4ce017b42ee044e046a1950
+</I>&gt;<i> 0c8c0f5fee041a67ee044e0496a246 FID togled, new uvc time, but actual EOI
+</I>&gt;<i> is here.
+</I>&gt;<i> 0c8e0f5fee041a67ee044e04        actual EOF
+</I>&gt;<i> 0c8c0f5fee04961ef0045004ffd8ff SOI
+</I>&gt;<i> for now this will be corrupt.
+</I>&gt;<i>
+</I>&gt;<i> Second frame, every thing is fine.
+</I>&gt;<i> 0c8c0f5fee04315014056f04c74b75 EOI
+</I>&gt;<i> 0c8e0f5fee04d07414057004
+</I>&gt;<i> 0c8d1f801405ea5016057104ffd8ff SOI
+</I>&gt;<i>
+</I>&gt;<i> frame 3.; FID is togled, no EOF, no EOI...
+</I>&gt;<i> last part of this packet is corrupt, frame 2. is corrupt.
+</I>&gt;<i> 0c8d1f80140509f039059004666e79
+</I>&gt;<i> 0c8c34a13a05a05e3c059204ffd8ff SOI
+</I>&gt;<i> It will be ipossible to fix, EOF probably lost, but FID is correct.
+</I>&gt;<i>
+</I>&gt;<i> frame 3 is ok, start of frame 4.
+</I>&gt;<i> 0c8c34a13a053d906005b20497335d EOI
+</I>&gt;<i> 0c8e34a13a05dcb46005b204 EOF
+</I>&gt;<i> 0c8d7a576205556c6205b404ffd8ff SOI
+</I>&gt;<i>
+</I>&gt;<i> frame 4 is ok
+</I>&gt;<i> 0c8d7a57620592c28605d3040c8f4a EOI
+</I>&gt;<i> 0c8e4fe3860531e78605d404 EOF
+</I>&gt;<i> 0c8c4fe38605aa9e8805d504ffd8ff SOI
+</I>&gt;<i>
+</I>&gt;<i> no end of frame 4, FID togled and frame 5 started.
+</I>&gt;<i> 0c8c4fe38605c93dac05f4042515c4
+</I>&gt;<i> 0c8d5f04ad0501d1ae05f604ffd8ff SOI
+</I>&gt;<i> may be some parts was not included in dump, or 4 is really corrupt.
+</I>&gt;<i> Can't do any thing here, except only to check for EOI and SOI
+</I>&gt;<i>
+</I>&gt;<i> Every thing is ok, here.
+</I>&gt;<i> 0c8d5f04ad059c02d3051605bd8d13 EOI
+</I>&gt;<i> 0c8f5f04ad059c02d3051605
+</I>&gt;<i> 0c8c6f25d305b6ded4051805ffd8ff SOI
+</I>&gt;<i>
+</I>&gt;<i> OK:
+</I>&gt;<i> 0c8c6f25d305f034f9053705dcf952 EOI
+</I>&gt;<i> 0c8e6f25d305f034f9053705 EOF
+</I>&gt;<i> 0c8d2967fa050b11fb053905ffd8ff SOI
+</I>&gt;<i>
+</I>&gt;<i> Not ok
+</I>&gt;<i> 0c8d2967fa054a421e065805e0ee50 no EOI, no EOF
+</I>&gt;<i> 0c8c94671f06c01e21065a05ffd8ff SOI and FID
+</I>&gt;<i>
+</I>&gt;<i> Again, Fid is toggled too early.
+</I>&gt;<i> 0c8d9f884506b2826b069b051b3bb9
+</I>&gt;<i> 0c8cafa96b0651a76b069b05adcde2 EOI and FID
+</I>&gt;<i> 0c8eafa96b0651a76b069b05 EOF
+</I>&gt;<i> 0c8cafa96b06aacc6d069d05ffd8ff SOI
+</I>&gt;<i>
+</I>&gt;<i> In this case will happen fallowing scenario,
+</I>&gt;<i> 1. frame 9f884506 will have corrupted end. (like you describe)
+</I>&gt;<i> 2. will be created new buffer, but this will contain only end of prev
+</I>&gt;<i> frame. this will be stoped by EOF, but since FID == last_fid, then we
+</I>&gt;<i> will get out of sync error and this buffer will be probably lost as well.
+</I>&gt;<i>
+</I>&gt;<i> Let us concentrate on errors we can handle,
+</I>&gt;<i> 1. we can sort of reconstruct fragmented frames. But I do not really
+</I>&gt;<i> like my previous patch, enay way let us keep it for now.
+</I>&gt;<i> 2. we can ignore FID,EOF,last_fid=fid problem by setting it to -1,
+</I>&gt;<i> but this may brake other brocken cams. should think about this. or
+</I>&gt;<i> collect more usb dumps.
+</I>&gt;<i> 3. We should defenetly check if new buffer with MJPEG stream, start with
+</I>&gt;<i> jpeg header. I think this is important.
+</I>&gt;<i>
+</I>&gt;<i> jpeg header is defined by uvc specification, it is always on same place.
+</I>&gt;<i> Buffer is defenetly corrupt if there is no jpeg header [SOI] on start.
+</I>&gt;<i> If ther is no EOI, we can still reconstruct part of image.
+</I>&gt;<i>
+</I>&gt;<i> On 19.08.2011 06:52, Carl Michal wrote:
+</I>&gt;&gt;<i> Hi Alexey,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> ok, if I take your patch, and add to it a check for frame length when
+</I>&gt;&gt;<i> when the frame is terminated with FID (patch below), then YUV appears to
+</I>&gt;&gt;<i> function well.  I haven't looked at the patch closely enough to see if
+</I>&gt;&gt;<i> it handles the case where a packet is split into 3 instead of just two.
+</I>&gt;&gt;<i> Those are quite infrequent - so it is possible that none occurred in my
+</I>&gt;&gt;<i> testing of your patch.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> MJPG still has a couple of problems.  There are some mildly corrupt
+</I>&gt;&gt;<i> frames (just the bottom ~3% of the image) - I believe that's still from
+</I>&gt;&gt;<i> frames where FID comes a packet or two early.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Also, there is still a problem with empty buffer's returned: either
+</I>&gt;&gt;<i> guvcview or luvcview spits out:
+</I>&gt;&gt;<i> Ignoring empty buffer ...
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> about 1 time /second.  After four of those luvcview quits.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> One last thing - there is minor typo in your patch leght should be length
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Carl
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Add frame length check to uncompressed frames terminated with FID:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> --- uvc_video.c~    2011-08-18 21:35:53.664881826 -0700
+</I>&gt;&gt;<i> +++ uvc_video.c    2011-08-18 21:41:51.712872852 -0700
+</I>&gt;&gt;<i> @@ -627,10 +627,15 @@
+</I>&gt;&gt;<i>              do {
+</I>&gt;&gt;<i>                  ret = uvc_video_decode_start(stream, buf, mem,
+</I>&gt;&gt;<i>                      urb-&gt;iso_frame_desc[i].actual_length);
+</I>&gt;&gt;<i> -                if (ret == -EAGAIN)
+</I>&gt;&gt;<i> -                    buf =
+</I>&gt;&gt;<i> -                      uvc_queue_next_buffer(&amp;stream-&gt;queue,
+</I>&gt;&gt;<i> -                                buf);
+</I>&gt;&gt;<i> +                if (ret == -EAGAIN){
+</I>&gt;&gt;<i> +                if (buf-&gt;buf.length != buf-&gt;buf.bytesused &amp;&amp;
+</I>&gt;&gt;<i> +                  !(stream-&gt;cur_format-&gt;flags &amp;
+</I>&gt;&gt;<i> +                      UVC_FMT_FLAG_COMPRESSED))
+</I>&gt;&gt;<i> +                    buf-&gt;error = 1;
+</I>&gt;&gt;<i> +
+</I>&gt;&gt;<i> +                buf = uvc_queue_next_buffer(&amp;stream-&gt;queue,
+</I>&gt;&gt;<i> +                            buf);
+</I>&gt;&gt;<i> +            }
+</I>&gt;&gt;<i>              } while (ret == -EAGAIN);
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>              if (ret &lt; 0)
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>
+
+my patch repairs the stream from my camera essentially perfectly.
+As I said a long time ago - FID is broken in MJPG output - you have to 
+ignore it completely and only trust EOF.  With YUV output though, you 
+can't just rely on EOF because sometimes the camera gives up on a frame 
+part way through and the only way that is indicated is with FID (and a new 
+SOI).
+
+So I think if you ignore FID when in MJPG mode your patch should work 
+well.
+
+Carl
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006812.html">[Linux-uvc-devel] error proofing mjpeg stream
+</A></li>
+	<LI>Next message: <A HREF="006813.html">[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6815">[ date ]</a>
+              <a href="thread.html#6815">[ thread ]</a>
+              <a href="subject.html#6815">[ subject ]</a>
+              <a href="author.html#6815">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

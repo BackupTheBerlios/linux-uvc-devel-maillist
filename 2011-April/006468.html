@@ -1,0 +1,212 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Philips Pico Pix 1020 Projector
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Philips%20Pico%20Pix%201020%20Projector&In-Reply-To=%3C166c6bcaa45acf4335510667fe336055.squirrel%40kondor.etf.rs%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006461.html">
+   <LINK REL="Next"  HREF="006470.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Philips Pico Pix 1020 Projector</H1>
+    <B>Marko Uskokovic</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Philips%20Pico%20Pix%201020%20Projector&In-Reply-To=%3C166c6bcaa45acf4335510667fe336055.squirrel%40kondor.etf.rs%3E"
+       TITLE="[Linux-uvc-devel] Philips Pico Pix 1020 Projector">uskokovic at gmail.com
+       </A><BR>
+    <I>Thu Apr 14 23:03:38 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006461.html">[Linux-uvc-devel] Philips Pico Pix 1020 Projector
+</A></li>
+        <LI>Next message: <A HREF="006470.html">[Linux-uvc-devel] Philips Pico Pix 1020 Projector
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6468">[ date ]</a>
+              <a href="thread.html#6468">[ thread ]</a>
+              <a href="subject.html#6468">[ subject ]</a>
+              <a href="author.html#6468">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thu, April 14, 2011 10:00 am, Gianluigi wrote:
+&gt;<i> On Wednesday 13 April 2011 21:35:05 Marko Uskokovic wrote:
+</I>&gt;<i> First of all we must get it working with usb_modeswitch [1], I think.
+</I>
+
+Thank you, that's valuable info!
+
+
+I've sniffed my USB communication while running PicoPix Viewer.exe and got
+a large UsbSnoop.log file. The important lines of log file are:
+
+[557488 ms]  &gt;&gt;&gt;  URB 1249 going down  &gt;&gt;&gt;
+-- URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER:
+  PipeHandle           = f9da5bcc [endpoint 0x00000001]
+  TransferFlags        = 00000000 (USBD_TRANSFER_DIRECTION_OUT,
+~USBD_SHORT_TRANSFER_OK)
+  TransferBufferLength = 0000001f
+  TransferBuffer       = f9e4cb28
+  TransferBufferMDL    = 00000000
+    00000000: 55 53 42 43 08 90 d8 f9 00 00 00 00 00 00 0c ff
+    00000010: 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  UrbLink              = 00000000
+
+That is second last URB_FUNCTION_BULK_OR_INTERRUPT_TRANSFER in &quot;going
+down&quot; mode. So my /etc/usb_modeswitch.conf file is (also attached):
+
+
+DisableSwitching=0
+EnableLogging=1
+DefaultVendor = 0x1de1
+DefaultProduct = 0x1101
+
+MessageEndpoint = 0x01
+MessageContent =
+&quot;555342430890d8f90000000000000cff020000000000000000000000000000&quot;
+
+After running:
+sudo usb_modeswitch -c /etc/usb_modeswitch.conf
+
+My PicoProjector went black, and lsusb showed:
+
+Bus 001 Device 005: ID 21e7:000e
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               2.00
+  bDeviceClass          255 Vendor Specific Class
+  bDeviceSubClass         0
+  bDeviceProtocol         0
+  bMaxPacketSize0        64
+  idVendor           0x21e7
+  idProduct          0x000e
+  bcdDevice            1.00
+  iManufacturer           1 actions
+  iProduct                2 Usb Device
+  iSerial                 3 00000000000000000000000000000000
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           32
+    bNumInterfaces          1
+    bConfigurationValue     2
+    iConfiguration          6 PICO PROJECTOR
+    bmAttributes         0xc0
+      Self Powered
+    MaxPower                2mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           2
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceSubClass      8
+      bInterfaceProtocol      8
+      iInterface              7 USB PICO
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0200  1x 512 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x01  EP 1 OUT
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0200  1x 512 bytes
+        bInterval               1
+Device Qualifier (for other device speed):
+  bLength                10
+  bDescriptorType         6
+  bcdUSB               2.00
+  bDeviceClass            0 (Defined at Interface level)
+  bDeviceSubClass         0
+  bDeviceProtocol         0
+  bMaxPacketSize0        64
+  bNumConfigurations      1
+Device Status:     0x0001
+  Self Powered
+
+
+Yay!
+
+
+dmesg said:
+[  472.290119] usb 1-1: usbfs: process 4560 (usb_modeswitch) did not claim
+interface 0 before use
+[  472.319514] usb 1-1: USB disconnect, address 4
+[  472.776066] usb 1-1: new high speed USB device using ehci_hcd and
+address 5
+[  472.909209] usb 1-1: configuration #2 chosen from 1 choice
+
+
+I tried loading udlfb kernel module, and then dmesg said:
+
+[  202.148996] usbcore: registered new interface driver udlfb
+[  202.150096] VMODES initialized
+
+But I didn't get any /dev/fb* files, and make check from libdlo-0.1.2
+source said:
+
+test: argv[0]:
+/home/turncoat/projektor/staro/libdlo-0.1.2/test/.libs/lt-test1
+test: init...
+test: no DisplayLink devices found
+test: error 0 'Successful'
+FAIL: test/test1
+=======================================
+1 of 1 test failed
+Please report to <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">libdlo at displaylink.com</A>
+=======================================
+make[2]: *** [check-TESTS] Error 1
+
+
+Any ideas what to do next?
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: usb_modeswitch.conf
+Type: application/x-extension-conf
+Size: 750 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110414/fc5fc959/attachment.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110414/fc5fc959/attachment.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006461.html">[Linux-uvc-devel] Philips Pico Pix 1020 Projector
+</A></li>
+	<LI>Next message: <A HREF="006470.html">[Linux-uvc-devel] Philips Pico Pix 1020 Projector
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6468">[ date ]</a>
+              <a href="thread.html#6468">[ thread ]</a>
+              <a href="subject.html#6468">[ subject ]</a>
+              <a href="author.html#6468">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Always polling atfer unplug the usb webcam,	BUG ?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Always%20polling%20atfer%20unplug%20the%20usb%20webcam%2C%0A%09BUG%20%3F&In-Reply-To=%3CCOL115-W5567219FED96E563CE26189FD90%40phx.gbl%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005162.html">
+   <LINK REL="Next"  HREF="005118.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Always polling atfer unplug the usb webcam,	BUG ?</H1>
+    <B>Bo Liu</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Always%20polling%20atfer%20unplug%20the%20usb%20webcam%2C%0A%09BUG%20%3F&In-Reply-To=%3CCOL115-W5567219FED96E563CE26189FD90%40phx.gbl%3E"
+       TITLE="[Linux-uvc-devel] Always polling atfer unplug the usb webcam,	BUG ?">bo-liu at hotmail.com
+       </A><BR>
+    <I>Fri Sep 25 04:23:48 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005162.html">[Linux-uvc-devel] Always polling atfer unplug the usb webcam,	BUG ?
+</A></li>
+        <LI>Next message: <A HREF="005118.html">[Linux-uvc-devel] Upside down webcamera
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5163">[ date ]</a>
+              <a href="thread.html#5163">[ thread ]</a>
+              <a href="subject.html#5163">[ subject ]</a>
+              <a href="author.html#5163">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+ &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">COL115-W22A985FC6F53C6CC9B934E9FD90 at phx.gbl</A>&gt;
+Content-Type: text/plain; charset=&quot;Windows-1252&quot;
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+
+Sorry=2C I don't know why my format always error.
+
+&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> On Tuesday 15 September 2009 10:01:03 Bo Liu wrote:
+</I>&gt;&gt;&gt;<i> Hi=3D2C
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> I found a problem when using my webcam. First=3D2C it's ok=3D2C but aft=
+</I>er I =3D
+&gt;<i> unplug
+</I>&gt;&gt;&gt;<i> it. Systerm call poll() will not return.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> I looked at the src code=3D2C and found that uvc_queue_poll() always re=
+</I>tur=3D
+&gt;<i> n 0=3D2C
+</I>&gt;&gt;&gt;<i> it didn't know the webcam have unpluged at that time.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> And I saw in funtion uvc_video_complete()=3D2C if urb-&gt;status is
+</I>&gt;&gt;&gt;<i> -ESHUTDOWN=3D2Cuvc_queue_cancel(queue=3D2C urb-&gt;status =3D3D=3D3D -ESHU=
+</I>TDOWN)=3D3B=3D
+&gt;<i> will be
+</I>&gt;&gt;&gt;<i> called.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> That's right=3D2C and then uvc_queue_poll() should return POLLERR=3D2C m=
+</I>aking=3D
+&gt;<i> poll()
+</I>&gt;&gt;<i> return.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> But=3D2C if just when in uvc_video_complete()&gt; usb_submit_urb() =3D2C t=
+</I>he we=3D
+&gt;<i> bcam is
+</I>&gt;&gt;&gt;<i> unpluged=3D2C the usb_submit_urb() will failed=3D2C but just with a pri=
+</I>ntk. =3D
+&gt;<i> Won't
+</I>&gt;&gt;&gt;<i> call uvc_queue_cancel(). So=3D2C uvc_queue_poll() will always return 0.=
+</I> An=3D
+&gt;<i> d=3D2C I
+</I>&gt;&gt;&gt;<i> add uvc_queue_cancel() after usb_submit_urb() failed=3D2Cerverything is=
+</I> ok=3D
+&gt;<i> .
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Is this a bug ?
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> This is weird. The uvcvideo driver submits several URBs=3D2C so even if =
+</I>the=3D
+&gt;<i> device
+</I>&gt;&gt;<i> is disconnected during the completion handler=3D2C the next URBs should =
+</I>get=3D
+&gt;<i> a -
+</I>&gt;&gt;<i> ESHUTDOWN status (at least with EHCI USB controllers).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Are you using the latest driver ? What status do you get when the comple=
+</I>t=3D
+&gt;<i> ion
+</I>&gt;&gt;<i> handler is called for the next URB after usb_submit_urb() returns -ESHUT=
+</I>D=3D
+&gt;<i> OWN ?
+</I>&gt;&gt;<i> What USB controller are you using ?
+</I>&gt;<i> =3D20
+</I>&gt;<i> The driver version is about last month.
+</I>&gt;<i> The status sometimes is -ESHUTDOWN then uvc_queue_poll() can return POLLE=
+</I>RR=3D
+&gt;<i> .
+</I>&gt;<i> But most of the time urb-&gt;status is 0 and I got several &quot;Failed to resubm=
+</I>it=3D
+&gt;<i> =3D20
+</I>&gt;<i> video URB (-19)&quot; error.
+</I>&gt;<i> So I must add uvc_queue_cancel() to make poll() alwasy can return.
+</I>&gt;<i>
+</I>&gt;&gt;<i> 716 if ((ret =3D3D usb_submit_urb(urb=3D2CGFP_ATOMIC)) &lt; 0) {
+</I>&gt;&gt;<i> //added
+</I>&gt;&gt;<i> uvc_queue_cancel()
+</I>&gt;&gt;<i> 717 uvc_printk(KERN_ERR=3D2C &quot;Failed to resubmit video URB (%d).\n&quot;
+</I>&gt;&gt;<i> 718 ret)=3D3B
+</I>&gt;&gt;<i> 719 }
+</I>&gt;<i>
+</I>&gt;<i> usb controller is intel's ECHI.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Funtions uvc_video_complete():
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> 716 if ((ret =3D3D usb_submit_urb(urb=3D2C GFP_ATOMIC)) &lt; 0) {
+</I>&gt;&gt;&gt;<i> 717 uvc_printk(KERN_ERR=3D2C &quot;Failed to resubmit video URB (%d).\n&quot;=3D2=
+</I>C
+&gt;&gt;&gt;<i> 718 ret)=3D3B
+</I>&gt;&gt;&gt;<i> 719 }
+</I>&gt;&gt;<i> 		 	   		  =0A=
+</I>_________________________________________________________________=0A=
+More than messages=96check out the rest of the Windows Live=99.=0A=
+<A HREF="http://www.microsoft.com/windows/windowslive/=">http://www.microsoft.com/windows/windowslive/=</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005162.html">[Linux-uvc-devel] Always polling atfer unplug the usb webcam,	BUG ?
+</A></li>
+	<LI>Next message: <A HREF="005118.html">[Linux-uvc-devel] Upside down webcamera
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5163">[ date ]</a>
+              <a href="thread.html#5163">[ thread ]</a>
+              <a href="subject.html#5163">[ subject ]</a>
+              <a href="author.html#5163">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

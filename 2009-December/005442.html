@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] has no release call back
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20has%20no%20release%20call%20back&In-Reply-To=%3C200912261952.16544.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005438.html">
+   <LINK REL="Next"  HREF="005439.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] has no release call back</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20has%20no%20release%20call%20back&In-Reply-To=%3C200912261952.16544.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] has no release call back">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Sat Dec 26 19:52:16 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005438.html">[Linux-uvc-devel] has no release call back
+</A></li>
+        <LI>Next message: <A HREF="005439.html">[Linux-uvc-devel] Is it possible to have two streaming interfaces	for ISOC &amp; BULK under one configuration ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5442">[ date ]</a>
+              <a href="thread.html#5442">[ thread ]</a>
+              <a href="subject.html#5442">[ subject ]</a>
+              <a href="author.html#5442">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Wednesday 23 December 2009 08:06:03 nitesh suthar wrote:
+&gt;<i> hello,dear all
+</I>&gt;<i> 
+</I>&gt;<i> I having problem when using uvcvideo.ko ,Would any one help me in this.
+</I>&gt;<i> 
+</I>&gt;<i> I got error as :
+</I>&gt;<i> 
+</I>&gt;<i> videodev:  has no release callback. Please fix your driver for proper sysfs
+</I>&gt;<i> support
+</I>&gt;<i> 
+</I>&gt;<i> I am using linux 2.6.24 kernel . And download latest uvc driver .I am using
+</I>&gt;<i> cross compiler gcc- 4.2.2-eabi
+</I>&gt;<i> 
+</I>&gt;<i> while I am compiling uvc driver using this compiler and kernel path I got
+</I>&gt;<i> error in v4l2-dev.h file that
+</I>&gt;<i> 
+</I>&gt;<i> In file included from
+</I>&gt;<i> /home/rajiv/6410/ExperimentUVC/UVC/uvcvideo-033b5968aa1a/v4l/../linux/inclu
+</I>&gt;<i> de/media/v4l2-common.h:30, from
+</I>&gt;<i> /home/rajiv/6410/ExperimentUVC/UVC/uvcvideo-033b5968aa1a/v4l/uvc_driver.c:3
+</I>&gt;<i> 7:
+</I>&gt;<i>  /home/rajiv/6410/ExperimentUVC/UVC/uvcvideo-033b5968aa1a/v4l/../linux/incl
+</I>&gt;<i> ude/media/v4l2-dev.h: In function 'video_device_node_name':
+</I>&gt;<i> /home/rajiv/6410/ExperimentUVC/UVC/uvcvideo-033b5968aa1a/v4l/../linux/inclu
+</I>&gt;<i> de/media/v4l2-dev.h:159: error: implicit declaration of function 'dev_name'
+</I>&gt;<i> /home/rajiv/6410/ExperimentUVC/UVC/uvcvideo-033b5968aa1a/v4l/../linux/inclu
+</I>&gt;<i> de/media/v4l2-dev.h:159: warning: return makes pointer from integer without
+</I>&gt;<i>  a cast
+</I>&gt;<i> 
+</I>&gt;<i> after getting this error I change  function video_device_node_name as:
+</I>&gt;<i> old function is
+</I>&gt;<i> static inline const char *video_device_node_name(struct video_device *vdev)
+</I>&gt;<i> {
+</I>&gt;<i> #if LINUX_VERSION_CODE &lt; KERNEL_VERSION(2, 6, 19)
+</I>&gt;<i>         return vdev-&gt;dev.class_id;
+</I>&gt;<i> #else
+</I>&gt;<i>         return dev_name(&amp;vdev-&gt;dev);
+</I>&gt;<i> #endif
+</I>&gt;<i> }
+</I>&gt;<i> 
+</I>&gt;<i> I have changed this function as
+</I>&gt;<i> static inline const char *video_device_node_name(struct video_device *vdev)
+</I>&gt;<i> {
+</I>&gt;<i> #if LINUX_VERSION_CODE &lt; KERNEL_VERSION(2, 6, 19)
+</I>&gt;<i>         return vdev-&gt;dev.class_id;
+</I>&gt;<i> #else
+</I>&gt;<i>         return &quot;/dev/video0&quot;;
+</I>&gt;<i> #endif
+</I>&gt;<i> }
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> after replacing this dev_name it is got compiled easily.
+</I>
+This issue has been fixed in the uvcvideo tree on linuxtv.org. Could you get 
+the latest version and see if you still get an oops ?
+
+&gt;<i> and when I loaded it and trying to execute test program for dev/video0 then
+</I>&gt;<i> I got error as
+</I>&gt;<i> 
+</I>&gt;<i> Unable to handle kernel NULL pointer dereference at virtual address
+</I>&gt;<i>  00000004 pgd=c6a54000
+</I>&gt;<i> [00000004] *pgd=56b57031, *pte=00000000,*ppte=00000000
+</I>&gt;<i> internal error:Oops:17[#1]
+</I>&gt;<i> Modules linked in : uvcvideo
+</I>&gt;<i> .....so many lines and last line is
+</I>&gt;<i> Sementation fault
+</I>&gt;<i> 
+</I>&gt;<i> If any one knows the solution for this problem Please guide me
+</I>
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005438.html">[Linux-uvc-devel] has no release call back
+</A></li>
+	<LI>Next message: <A HREF="005439.html">[Linux-uvc-devel] Is it possible to have two streaming interfaces	for ISOC &amp; BULK under one configuration ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5442">[ date ]</a>
+              <a href="thread.html#5442">[ thread ]</a>
+              <a href="subject.html#5442">[ subject ]</a>
+              <a href="author.html#5442">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

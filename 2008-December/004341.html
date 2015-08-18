@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Webcam Serial Number
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20Serial%20Number&In-Reply-To=%3C8ceb98f20812110158w31f36814pa093f6ca8de3c82c%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004339.html">
+   <LINK REL="Next"  HREF="004342.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Webcam Serial Number</H1>
+    <B>Filippo Argiolas</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Webcam%20Serial%20Number&In-Reply-To=%3C8ceb98f20812110158w31f36814pa093f6ca8de3c82c%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Webcam Serial Number">fargiolas at gnome.org
+       </A><BR>
+    <I>Thu Dec 11 10:58:50 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004339.html">[Linux-uvc-devel] Webcam Serial Number
+</A></li>
+        <LI>Next message: <A HREF="004342.html">[Linux-uvc-devel] Webcam Serial Number
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4341">[ date ]</a>
+              <a href="thread.html#4341">[ thread ]</a>
+              <a href="subject.html#4341">[ subject ]</a>
+              <a href="author.html#4341">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed, Dec 10, 2008 at 11:38 PM, Laurent Pinchart
+&lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+&gt;<i> On Wednesday 10 December 2008, Alessandro Soro wrote:
+</I>&gt;&gt;<i> Any ideas?
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> If not, a way to fix the assignment of /dev/video# entries to a usb
+</I>&gt;&gt;<i> bus/port would also do the trick for me.
+</I>&gt;<i>
+</I>&gt;<i> The order in which the /dev/videoX nodes are created depends on the
+</I>&gt;<i> enumeration order on USB. This probably varies between reboots, hence your
+</I>&gt;<i> problems.
+</I>&gt;<i>
+</I>&gt;<i> First of all, please note that not all cameras have a serial number, and
+</I>&gt;<i> serial numbers are not always unique. Logitech cameras behave nicely here so
+</I>&gt;<i> it won't be an issue for your application, but beware of this if you decided
+</I>&gt;<i> to switch to other cameras.
+</I>&gt;<i>
+</I>&gt;<i> The serial number is available through sysfs:
+</I>&gt;<i>
+</I>&gt;<i> $ cat /sys/bus/usb/devices/5-1/serial
+</I>&gt;<i> C2D14EDB
+</I>&gt;<i>
+</I>&gt;<i> You can control how device nodes are created through udev rules. I'm no udev
+</I>&gt;<i> expert, but copying your video device rule with an additional
+</I>&gt;<i>
+</I>&gt;<i> ATTRS{serial}==&quot;xxxxxxxx&quot;
+</I>&gt;<i>
+</I>&gt;<i> option should let you give persistant names to the device nodes.
+</I>
+Hi Alessandro,
+If you want it to be independent from the current udev rules and you
+have HAL running on your setup you could try using libhal.
+
+You can call libhal_find_device_by_capability to query video4linux
+capable devices.
+It will give you an array of unique udis, one per device. Then you can
+call libhal_device_get_property_string on each udi to get the
+&quot;video4linux.device&quot; property (/dev/videoX).
+
+It's probably not worth if you have a minimal setup and cannot depend
+on hal but surely more portable if you don't want to edit udev rules
+in each system you're going to run the app into.
+
+Best Regards,
+
+Filippo
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004339.html">[Linux-uvc-devel] Webcam Serial Number
+</A></li>
+	<LI>Next message: <A HREF="004342.html">[Linux-uvc-devel] Webcam Serial Number
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4341">[ date ]</a>
+              <a href="thread.html#4341">[ thread ]</a>
+              <a href="subject.html#4341">[ subject ]</a>
+              <a href="author.html#4341">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Strange issue with V4L, Gumstix,	and VIDIOC_REQBUFS/VIDIOC_QUERYBUF
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Strange%20issue%20with%20V4L%2C%20Gumstix%2C%0A%09and%20VIDIOC_REQBUFS/VIDIOC_QUERYBUF&In-Reply-To=%3C200902250124.36542.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004583.html">
+   <LINK REL="Next"  HREF="004593.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Strange issue with V4L, Gumstix,	and VIDIOC_REQBUFS/VIDIOC_QUERYBUF</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Strange%20issue%20with%20V4L%2C%20Gumstix%2C%0A%09and%20VIDIOC_REQBUFS/VIDIOC_QUERYBUF&In-Reply-To=%3C200902250124.36542.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Strange issue with V4L, Gumstix,	and VIDIOC_REQBUFS/VIDIOC_QUERYBUF">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Feb 25 01:24:36 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004583.html">[Linux-uvc-devel] Strange issue with V4L, Gumstix,	and VIDIOC_REQBUFS/VIDIOC_QUERYBUF
+</A></li>
+        <LI>Next message: <A HREF="004593.html">[Linux-uvc-devel] Strange issue with V4L, Gumstix,	and VIDIOC_REQBUFS/VIDIOC_QUERYBUF
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4590">[ date ]</a>
+              <a href="thread.html#4590">[ thread ]</a>
+              <a href="subject.html#4590">[ subject ]</a>
+              <a href="author.html#4590">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Tom,
+
+On Tuesday 24 February 2009 12:51:47 Tom Moore wrote:
+&gt;<i> Hi all,
+</I>&gt;<i>
+</I>&gt;<i> I wrote some capture code and tested it out on Ubuntu 8.10 (kernel
+</I>&gt;<i> 2.6.27.11). My Dynex 1.3 MP camera supports memory mapping and works
+</I>&gt;<i> just fine on my Ubuntu box. However, I have cross-compiled the UVC
+</I>&gt;<i> driver for my Gumstix (the target platform for capture - kernel is
+</I>&gt;<i> 2.6.21) and though I was able to successfully install the driver, my
+</I>&gt;<i> capture code doesn't seem to work. I've traced the problem to to ioctl
+</I>&gt;<i> call with VIDIOC_QUERYBUF. On my box, that function call returns a
+</I>&gt;<i> buffer length of width * height * 2 (format is YUYV, so this is right).
+</I>&gt;<i> On my Gumstix, it returns width * height + 589 (the 589 is the same
+</I>&gt;<i> regardless of the frame size).
+</I>&gt;<i>
+</I>&gt;<i> Is there any reason why this would be happening? I appear to be
+</I>&gt;<i> unfamilar with the behavior of VIDIOC_QUERYBUF, but it looks like it
+</I>&gt;<i> ought to be pretty straightforward.
+</I>
+None that I can think of (at least at this time of the night). Would you mind 
+adding a few printk's to the driver code to hunt the bug down ?
+
+&gt;<i> Oh, I should point out that calls to VIDIOCSPICT and VIDIOCGPICT on my
+</I>&gt;<i> Ubuntu box works just fine, but returns -1 for the Gumstix.
+</I>
+The uvcvideo driver relies on the videodev compatibility layer to handle V4L1 
+ioctls. The Gumstix kernel might come with those disabled.
+
+&gt;<i> This camera requires that I use some bizarre combinations of V4L1 and V4L2
+</I>&gt;<i> code to access all of its functionality. I'm not sure what versions of the
+</I>&gt;<i> various V4L modules and camera drivers are.
+</I>
+That's definitely not normal. The uvcvideo driver implement V4L2 only. The 
+V4L1 ioctls are translated to V4L2 ioctls by the videodev compatibility layer, 
+there's no added functionality for the V4L1 API.
+
+Best regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004583.html">[Linux-uvc-devel] Strange issue with V4L, Gumstix,	and VIDIOC_REQBUFS/VIDIOC_QUERYBUF
+</A></li>
+	<LI>Next message: <A HREF="004593.html">[Linux-uvc-devel] Strange issue with V4L, Gumstix,	and VIDIOC_REQBUFS/VIDIOC_QUERYBUF
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4590">[ date ]</a>
+              <a href="thread.html#4590">[ thread ]</a>
+              <a href="subject.html#4590">[ subject ]</a>
+              <a href="author.html#4590">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20suyin%20crystal%20eye%20webcam%20064e%3Aa103%20not%20working&In-Reply-To=%3C200906081656.01543.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004850.html">
+   <LINK REL="Next"  HREF="004851.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20suyin%20crystal%20eye%20webcam%20064e%3Aa103%20not%20working&In-Reply-To=%3C200906081656.01543.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Jun  8 16:56:01 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004850.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+        <LI>Next message: <A HREF="004851.html">[Linux-uvc-devel] Minoru3D Webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4862">[ date ]</a>
+              <a href="thread.html#4862">[ thread ]</a>
+              <a href="subject.html#4862">[ subject ]</a>
+              <a href="author.html#4862">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Bruce,
+
+On Friday 05 June 2009 22:36:55 bruce m beach wrote:
+&gt;<i> Hello Laurent
+</I>&gt;<i>
+</I>&gt;<i> I replied to your last email but it 'mailman' is holding it because it is
+</I>&gt;<i> far too big.
+</I>
+Mailman was holding it but I've manually accepted the mail, so it made it 
+through to the list.
+
+&gt;<i> Just to give you an update on something that I realized:
+</I>&gt;<i> &gt; What bothers me in the trace is
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; May 28 10:53:28 lapsystemx kernel: uvcvideo: Dropping payload (out of
+</I>&gt;<i> &gt; sync). May 28 10:53:59 lapsystemx last message repeated 30784 times
+</I>&gt;<i> &gt; May 28 10:55:00 lapsystemx last message repeated 60992 times
+</I>&gt;<i> &gt; May 28 10:55:24 lapsystemx last message repeated 24351 times
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; The &quot;out of sync&quot; message means that the device didn't toggle the FID
+</I>&gt;<i> &gt; bit. Quirk 0x10 is supposed to work around that by ignoring the FID bit.
+</I>&gt;<i>
+</I>&gt;<i> in the following bit of code from
+</I>&gt;<i>
+</I>&gt;<i> static void uvc_video_decode_end(...
+</I>&gt;<i>
+</I>&gt;<i>     if (data[1] &amp; UVC_STREAM_EOF &amp;&amp; buf-&gt;buf.bytesused != 0)
+</I>&gt;<i>                   -------------
+</I>&gt;<i>     {
+</I>&gt;<i>           uvc_trace(UVC_TRACE_FRAME, &quot;Frame complete (EOF found).\n&quot;);
+</I>&gt;<i>           if (data[0] == len)
+</I>&gt;<i>               uvc_trace(UVC_TRACE_FRAME, &quot;EOF in empty payload.\n&quot;);
+</I>&gt;<i>           buf-&gt;state = UVC_BUF_STATE_DONE;
+</I>&gt;<i>           if (video-&gt;dev-&gt;quirks &amp; UVC_QUIRK_STREAM_NO_FID)
+</I>&gt;<i>       video-&gt;last_fid ^= UVC_STREAM_FID;
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i> last_fid is toggled -&gt;only&lt;- if the appropriate bit of data[1] is
+</I>&gt;<i> set (UVC_STREAM_EOF) which will never happen since UVC_STREAM_EOF
+</I>&gt;<i> is always zero (on the crystal eye webcam).
+</I>
+last_fid is also set in uvc_video_decode_start().
+
+Here's what's supposed to happen with a UVC compliant device.
+
+- The EOH bit is set in every packet.
+- The SCR and PTS bits are usually set in every packets as well.
+- The ERR, STI and RES bits should not be set.
+- The EOF bit should be set for the last packet of a video frame.
+- The FID bit should be toggled in the first packet of every video frame.
+
+Your device always sets EOH, SCR and PTS. It never sets ERR, STI and RES. So 
+good so far.
+
+From the logs you sent me, the EOF bit is never set. This is wrong, but the 
+driver tries to work around that by checking when the FID bit toggles in 
+uvc_video_decode_start():
+
+        /* Mark the buffer as done if we're at the beginning of a new frame.
+         * End of frame detection is better implemented by checking the EOF
+         * bit (FID bit toggling is delayed by one frame compared to the EOF
+         * bit), but some devices don't set the bit at end of frame (and the
+         * last payload can be lost anyway). We thus must check if the FID has
+         * been toggled.
+         *
+         * stream-&gt;last_fid is initialized to -1, so the first isochronous
+         * frame will never trigger an end of frame detection.
+         *
+         * Empty buffers (bytesused == 0) don't trigger end of frame detection
+         * as it doesn't make sense to return an empty buffer. This also
+         * avoids detecting end of frame conditions at FID toggling if the
+         * previous payload had the EOF bit set.
+         */
+        if (fid != stream-&gt;last_fid &amp;&amp; buf-&gt;buf.bytesused != 0) {
+                uvc_trace(UVC_TRACE_FRAME, &quot;Frame complete (FID bit &quot;
+                                &quot;toggled).\n&quot;);
+                buf-&gt;state = UVC_BUF_STATE_DONE;
+                return -EAGAIN;
+        }
+
+(the code might be slightly different from the one you're using, I'm reworking 
+part of the driver).
+
+If the current FID bit is different from the last one, and if the current 
+video buffer is not empty, the buffer is marked as done and the function 
+returns -EAGAIN. The caller will move the buffer to the output queue, get a 
+new buffer from the input queue and call uvc_video_decode_start() again. At 
+that point, the following code should be triggered:
+
+        /* Synchronize to the input stream by waiting for the FID bit to be
+         * toggled when the the buffer state is not UVC_BUF_STATE_ACTIVE.
+         * stream-&gt;last_fid is initialized to -1, so the first isochronous
+         * frame will always be in sync.
+         *
+         * If the device doesn't toggle the FID bit, invert stream-&gt;last_fid
+         * when the EOF bit is set to force synchronisation on the next
+         * packet.
+         */
+        if (buf-&gt;state != UVC_BUF_STATE_ACTIVE) {
+                if (fid == stream-&gt;last_fid) {
+                        uvc_trace(UVC_TRACE_FRAME, &quot;Dropping payload (out of &quot;
+                                &quot;sync).\n&quot;);
+                        if ((stream-&gt;dev-&gt;quirks &amp; UVC_QUIRK_STREAM_NO_FID) &amp;&amp;
+                            (data[1] &amp; UVC_STREAM_EOF))
+                                stream-&gt;last_fid ^= UVC_STREAM_FID;
+                        return -ENODATA;
+                }
+
+                /* TODO: Handle PTS and SCR. */
+                buf-&gt;state = UVC_BUF_STATE_ACTIVE;
+        }
+
+The buffer being freshly dequeued, it's state will not be 
+UVC_BUF_STATE_ACTIVE. The FID bit being different than the last stored value 
+(otherwise the first call to uvc_video_decode_start() wouldn't have returned -
+EAGAIN in the first place), the buffer state is set to UVC_BUF_STATE_ACTIVE 
+and the function continues with
+
+        stream-&gt;last_fid = fid;
+
+which effectively toggles the stored FID value.
+
+If the buffer gets filled with video data before the FID bit is toggled, 
+uvc_video_decode_data() will mark the buffer as done and the caller will 
+process a new buffer. The next call to uvc_video_decode_start() will then drop 
+all packets with &quot;Dropping payload (out of sync).&quot; until the FID bit set by 
+the device is toggled. This seems to never happen in your case.
+
+If the camera doesn't set the EOF bit and doesn't toggle the FID bit there's 
+very little I can do. Without any frame boundary information the driver can't 
+synchronize itself to the video stream. I'm really puzzled by how this camera 
+can work at all. Your last e-mail showed that it toggled the FID bit once from 
+0 to 1 and left it at 1 forever after. Is my understanding correct ?
+
+Best regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004850.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+	<LI>Next message: <A HREF="004851.html">[Linux-uvc-devel] Minoru3D Webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4862">[ date ]</a>
+              <a href="thread.html#4862">[ thread ]</a>
+              <a href="subject.html#4862">[ subject ]</a>
+              <a href="author.html#4862">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

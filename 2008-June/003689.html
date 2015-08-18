@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Frame dropping in Logitech raw bayer mode
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Frame%20dropping%20in%20Logitech%20raw%20bayer%20mode&In-Reply-To=%3C200806301725.46227.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003675.html">
+   <LINK REL="Next"  HREF="003677.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Frame dropping in Logitech raw bayer mode</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Frame%20dropping%20in%20Logitech%20raw%20bayer%20mode&In-Reply-To=%3C200806301725.46227.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Frame dropping in Logitech raw bayer mode">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Jun 30 17:25:46 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003675.html">[Linux-uvc-devel] Frame dropping in Logitech raw bayer mode
+</A></li>
+        <LI>Next message: <A HREF="003677.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3689">[ date ]</a>
+              <a href="thread.html#3689">[ thread ]</a>
+              <a href="subject.html#3689">[ subject ]</a>
+              <a href="author.html#3689">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Bruno,
+
+On Wednesday 25 June 2008, Bruno Viaris wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> I try to get raw bayer mode working with a Quickcam Pro for Notebooks
+</I>&gt;<i> (046d:0991).
+</I>
+I knew this would hit me sooner or later :-)
+
+&gt;<i> I activate this function with the following command:
+</I>&gt;<i>
+</I>&gt;<i> uvcdynctrl -d /dev/video1 -s &quot;Disable video processing&quot; 1
+</I>&gt;<i>
+</I>&gt;<i> then I can get the raw frames (frame???.raw) on disk with
+</I>&gt;<i> luvcview -d /dev/video1 -f yuv -s 1600x1200 -C
+</I>&gt;<i>
+</I>&gt;<i> That worked fine until uvcvideo driver svn revision 207, where a test
+</I>&gt;<i> was introduced to drop frames if their length is different from the
+</I>&gt;<i> expected size:
+</I>&gt;<i> &gt; --- linux-uvc-206/uvc_v4l2.c    2008-06-22 22:00:57.000000000 +0200
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; +               video-&gt;queue.drop_incomplete =
+</I>&gt;<i> &gt; +                       video-&gt;streaming-&gt;cur_format-&gt;flags &amp;
+</I>&gt;<i> &gt; +                               UVC_FMT_FLAG_COMPRESSED ? 0 : 1;
+</I>&gt;<i> &gt; +
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; --- linux-uvc-206/uvc_queue.c   2008-06-22 22:00:57.000000000 +0200
+</I>&gt;<i> &gt; +       if (queue-&gt;drop_incomplete &amp;&amp; buf-&gt;buf.length !=
+</I>&gt;<i> &gt; buf-&gt;buf.bytesused) {
+</I>&gt;<i> &gt; +               buf-&gt;state = UVC_BUF_STATE_QUEUED;
+</I>&gt;<i> &gt; +               buf-&gt;buf.bytesused = 0;
+</I>&gt;<i> &gt; +               return buf;
+</I>&gt;<i> &gt; +       }
+</I>&gt;<i>
+</I>&gt;<i> =&gt; if the video format is not &quot;COMPRESSED&quot;, and a frame has not the
+</I>&gt;<i> expected length, drop it!
+</I>
+This patch has been included because many userspace applications can't handle 
+short frames properly (some of them even crash). The real fix probably 
+belongs in userspace.
+
+&gt;<i> The problem is that my webcam is switched to raw mode without the driver
+</I>&gt;<i> being aware of it, and that the 8bpp bayer frames are half the size of
+</I>&gt;<i> YUV frames, so they all get dropped.
+</I>&gt;<i> A partial solution is to ask the driver for MJPG frames -&gt; deactivates
+</I>&gt;<i> drop_incomplete, but the maximum resolution is then limited to 960x720,
+</I>&gt;<i> and I'd like to get the full frame.
+</I>&gt;<i>
+</I>&gt;<i> I am rather new to webcam and kernel-module programming, so I am not
+</I>&gt;<i> sure of what is the correct approach to this problem:
+</I>&gt;<i> - should this &quot;drop_incomplete&quot; function be deactivable through an ioctl ?
+</I>
+It would be possible to add a private control, accessible through 
+VIDIOC_S_CTRL, to disable frame drop. I would prefer frame drop to be 
+disabled by default, but our goal is to work around userspace bugs without 
+touching the applications, so that wouldn't be really useful.
+
+&gt;<i> - should logitech bayer mode be treated like &quot;YUV2&quot; or &quot;MJPG&quot; and be
+</I>&gt;<i> activated by the VIDIOC_S_FMT ioctl with &quot;BYR8&quot;?
+</I>
+That would be the best solution, but also the most difficult to implement. 
+Logitech didn't implement Bayer mode as an extra format, but added a private 
+control. The driver initialises all its internal data from the USB 
+descriptors, the code would need a few hacks in various places to emulate the 
+proper behaviour.
+
+&gt;<i> - should the driver recognize the &quot;Disable video processing&quot; dynamic
+</I>&gt;<i> control and deactivate drop_incomplete ?
+</I>
+That's the option I like the less. Extension units and their controls should 
+really be transparent to the driver.
+
+&gt;<i> - something else ?
+</I>
+A quirk to disable (or enable if it's disabled by default) frame drop is an 
+easy solution. It couldn't be set per device though.
+
+&gt;<i> Any advice is welcome...
+</I>&gt;<i>
+</I>&gt;<i>     Bruno
+</I>&gt;<i>
+</I>&gt;<i> PS:
+</I>&gt;<i> For anyone interested, as a workaround I have added a quirk to disable
+</I>&gt;<i> this &quot;drop_incomplete&quot; feature,
+</I>&gt;<i> activate with &quot;modprobe uvcvideo quirks=0x80000000&quot;
+</I>&gt;<i> ------------------------------------
+</I>&gt;<i> diff -u linux-uvc-217/uvc_v4l2.c linux-uvc-217b/uvc_v4l2.c
+</I>&gt;<i> --- linux-uvc-217/uvc_v4l2.c    2008-06-24 23:01:57.000000000 +0200
+</I>&gt;<i> +++ linux-uvc-217b/uvc_v4l2.c   2008-06-23 00:31:24.000000000 +0200
+</I>&gt;<i> @@ -846,6 +846,7 @@
+</I>&gt;<i>                 if (ret &lt; 0)
+</I>&gt;<i>                         return ret;
+</I>&gt;<i>
+</I>&gt;<i> +               if (!(video-&gt;dev-&gt;quirks &amp;
+</I>&gt;<i> UVC_QUIRK_DISABLE_DROP_INCOMPLETE))
+</I>&gt;<i>                 if (!(video-&gt;streaming-&gt;cur_format-&gt;flags &amp;
+</I>&gt;<i>                     UVC_FMT_FLAG_COMPRESSED))
+</I>&gt;<i>                         video-&gt;queue.flags |= UVC_QUEUE_DROP_INCOMPLETE;
+</I>&gt;<i> diff -u linux-uvc-217/uvcvideo.h linux-uvc-217b/uvcvideo.h
+</I>&gt;<i> --- linux-uvc-217/uvcvideo.h    2008-06-24 23:01:57.000000000 +0200
+</I>&gt;<i> +++ linux-uvc-217b/uvcvideo.h   2008-06-24 01:10:56.000000000 +0200
+</I>&gt;<i> @@ -309,6 +309,7 @@
+</I>&gt;<i>  #define UVC_CTRL_STREAMING_TIMEOUT     1000
+</I>&gt;<i>
+</I>&gt;<i>  /* Devices quirks */
+</I>&gt;<i> +#define UVC_QUIRK_DISABLE_DROP_INCOMPLETE 0x80000000
+</I>&gt;<i>  #define UVC_QUIRK_STATUS_INTERVAL      0x00000001
+</I>&gt;<i>  #define UVC_QUIRK_PROBE_MINMAX         0x00000002
+</I>&gt;<i>  #define UVC_QUIRK_PROBE_EXTRAFIELDS    0x00000004
+</I>&gt;<i> --------------------------------------------------------------
+</I>
+Should the driver drop incomplete frames by default ?
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003675.html">[Linux-uvc-devel] Frame dropping in Logitech raw bayer mode
+</A></li>
+	<LI>Next message: <A HREF="003677.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3689">[ date ]</a>
+              <a href="thread.html#3689">[ thread ]</a>
+              <a href="subject.html#3689">[ subject ]</a>
+              <a href="author.html#3689">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

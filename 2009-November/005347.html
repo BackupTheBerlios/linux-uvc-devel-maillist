@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] BisonCam 5986:0203 kills USB
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20BisonCam%205986%3A0203%20kills%20USB&In-Reply-To=%3C200911302215.04555.stephan.diestelhorst%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005339.html">
+   <LINK REL="Next"  HREF="005328.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] BisonCam 5986:0203 kills USB</H1>
+    <B>Stephan Diestelhorst</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20BisonCam%205986%3A0203%20kills%20USB&In-Reply-To=%3C200911302215.04555.stephan.diestelhorst%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] BisonCam 5986:0203 kills USB">stephan.diestelhorst at gmail.com
+       </A><BR>
+    <I>Mon Nov 30 22:15:04 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005339.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+        <LI>Next message: <A HREF="005328.html">[Linux-uvc-devel] Linux UVC driver - device not listed
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5347">[ date ]</a>
+              <a href="thread.html#5347">[ thread ]</a>
+              <a href="subject.html#5347">[ subject ]</a>
+              <a href="author.html#5347">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Am Montag 23 November 2009 10:20:46 schrieb Oliver Neukum:
+&gt;<i> Am Samstag, 21. November 2009 17:56:30 schrieb Alan Stern:
+</I>&gt;<i> this version should be efficient.
+</I>&gt;<i> Stephan, please test.
+</I>
+I have increased the delay to 1000us, as discussed and added a
+tested-by notice.
+
+Is my back-port of interest to anyone?
+
+Cheers,
+  Stephan
+--
+commit 1d272fa5ec701b8e39ed9e822f25a4c12f50aa71
+Author: Oliver Neukum &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">oliver at neukum.org</A>&gt;
+Date:   Mon Nov 23 10:12:55 2009 +0100
+
+    usb:workaround for EHCI with broken periodic schedules
+    
+    Some controllers must execute a periodic schedule for
+    a minimum time before they can disable it.
+    This adds a variable delay based on the time of the
+    last enablement.
+
+    Tested-by: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">stephan.diestelhorst at gmail.com</A>
+
+diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
+index 9835e07..f5f5601 100644
+--- a/drivers/usb/host/ehci-hcd.c
++++ b/drivers/usb/host/ehci-hcd.c
+@@ -28,6 +28,7 @@
+ #include &lt;linux/errno.h&gt;
+ #include &lt;linux/init.h&gt;
+ #include &lt;linux/timer.h&gt;
++#include &lt;linux/ktime.h&gt;
+ #include &lt;linux/list.h&gt;
+ #include &lt;linux/interrupt.h&gt;
+ #include &lt;linux/usb.h&gt;
+@@ -676,6 +677,7 @@ static int ehci_run (struct usb_hcd *hcd)
+ 	ehci_readl(ehci, &amp;ehci-&gt;regs-&gt;command);	/* unblock posted writes */
+ 	msleep(5);
+ 	up_write(&amp;ehci_cf_port_reset_rwsem);
++	ehci-&gt;last_periodic_enable = ktime_get_real();
+ 
+ 	temp = HC_VERSION(ehci_readl(ehci, &amp;ehci-&gt;caps-&gt;hc_capbase));
+ 	ehci_info (ehci,
+diff --git a/drivers/usb/host/ehci-pci.c b/drivers/usb/host/ehci-pci.c
+index 378861b..ead5f4f 100644
+--- a/drivers/usb/host/ehci-pci.c
++++ b/drivers/usb/host/ehci-pci.c
+@@ -111,6 +111,10 @@ static int ehci_pci_setup(struct usb_hcd *hcd)
+ 	switch (pdev-&gt;vendor) {
+ 	case PCI_VENDOR_ID_INTEL:
+ 		ehci-&gt;need_io_watchdog = 0;
++		if (pdev-&gt;device == 0x27cc) {
++			ehci-&gt;broken_periodic = 1;
++			ehci_info(ehci, &quot;using broken periodic workaround\n&quot;);
++		}
+ 		break;
+ 	case PCI_VENDOR_ID_TDI:
+ 		if (pdev-&gt;device == PCI_DEVICE_ID_TDI_EHCI) {
+diff --git a/drivers/usb/host/ehci-sched.c b/drivers/usb/host/ehci-sched.c
+index b25cdea..0468e88 100644
+--- a/drivers/usb/host/ehci-sched.c
++++ b/drivers/usb/host/ehci-sched.c
+@@ -475,6 +475,8 @@ static int enable_periodic (struct ehci_hcd *ehci)
+ 	/* make sure ehci_work scans these */
+ 	ehci-&gt;next_uframe = ehci_readl(ehci, &amp;ehci-&gt;regs-&gt;frame_index)
+ 		% (ehci-&gt;periodic_size &lt;&lt; 3);
++	if (unlikely(ehci-&gt;broken_periodic))
++		ehci-&gt;last_periodic_enable = ktime_get_real();
+ 	return 0;
+ }
+ 
+@@ -486,6 +488,15 @@ static int disable_periodic (struct ehci_hcd *ehci)
+ 	if (--ehci-&gt;periodic_sched)
+ 		return 0;
+ 
++	if (unlikely(ehci-&gt;broken_periodic)) {
++		ktime_t safe = ktime_add_us(ehci-&gt;last_periodic_enable, 1000);
++		ktime_t now = ktime_get_real();
++		s64 delay = ktime_us_delta(safe, now);
++		
++		if (unlikely(delay &gt; 0))
++			udelay(delay);
++	}
++
+ 	/* did setting PSE not take effect yet?
+ 	 * takes effect only at frame boundaries...
+ 	 */
+diff --git a/drivers/usb/host/ehci.h b/drivers/usb/host/ehci.h
+index 064e768..2d85e21 100644
+--- a/drivers/usb/host/ehci.h
++++ b/drivers/usb/host/ehci.h
+@@ -118,6 +118,7 @@ struct ehci_hcd {			/* one per controller */
+ 	unsigned		stamp;
+ 	unsigned		random_frame;
+ 	unsigned long		next_statechange;
++	ktime_t			last_periodic_enable;
+ 	u32			command;
+ 
+ 	/* SILICON QUIRKS */
+@@ -127,6 +128,7 @@ struct ehci_hcd {			/* one per controller */
+ 	unsigned		big_endian_desc:1;
+ 	unsigned		has_amcc_usb23:1;
+ 	unsigned		need_io_watchdog:1;
++	unsigned		broken_periodic:1;
+ 
+ 	/* required for usb32 quirk */
+ 	#define OHCI_CTRL_HCFS          (3 &lt;&lt; 6)
+
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005339.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+	<LI>Next message: <A HREF="005328.html">[Linux-uvc-devel] Linux UVC driver - device not listed
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5347">[ date ]</a>
+              <a href="thread.html#5347">[ thread ]</a>
+              <a href="subject.html#5347">[ subject ]</a>
+              <a href="author.html#5347">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

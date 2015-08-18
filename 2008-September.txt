@@ -1,0 +1,4659 @@
+From hixon.alexander at mediati.org  Mon Sep  1 00:40:09 2008
+From: hixon.alexander at mediati.org (Alex Hixon)
+Date: Mon, 1 Sep 2008 08:40:09 +1000
+Subject: [Linux-uvc-devel] linux-uvc and r5u870
+In-Reply-To: <200808312315.55764.laurent.pinchart@skynet.be>
+References: <ff0f76ee7f443f172755662fa0aaad7d@localhost>
+	<200808312315.55764.laurent.pinchart@skynet.be>
+Message-ID: <AD459ED1-956C-44B8-9535-16D32B04E9B7@mediati.org>
+
+On 01/09/2008, at 7:15 AM, Laurent Pinchart  
+<laurent.pinchart at skynet.be> wrote:
+
+> Hi Alex,
+>
+> On Sunday 31 August 2008, Alex Hixon wrote:
+>> Hi Laurent,
+>>
+>> Way back in April last year, Sam Revitch sent an email to
+>> linux-uvc-devel[1] announcing the work he had been doing on r5u870,  
+>> which
+>> provided a working webcam to those users with cameras using the Ricoh
+>> chipset. In January this year, I took up the task of maintaining  
+>> the driver
+>> (since Sam had seemingly gone MIA). Maintaining an out-of-kernel  
+>> driver and
+>> having very little time to tend to it (we now support 15 different  
+>> camera
+>> models, up from 3 ;) has become very difficult as of late, and bug  
+>> reports
+>> regarding conflicts between the r5u870 and uvcvideo modules seem to
+>> becoming more and more frequent. uvcvideo also seems to do a better  
+>> job at
+>> the UVC stuff than the other driver on most devices, anyway.
+>>
+>> I've done a bit of hacking in an effort to retrofit uvcvideo with the
+>> firmware-loading functionality of the original r5u870 driver. It  
+>> appears to
+>> work reasonably well. However, before I go and work on something  
+>> worth
+>> committing, I was just curious as to whether I should be attempting  
+>> to
+>> implement it in the kernel module (less work for me :) or as a  
+>> userspace
+>> application.
+>
+> I've discussed firmware loading issues previously with iSight  
+> developers, and
+> I wasn't very keen on adding firmware loading support to the UVC  
+> driver,
+> especially with a userspace utility already available (the iSight is  
+> based on
+> a Cypress chip). How do Ricoh webcams enumerate when the firmware is  
+> not
+> loaded ? Is the firmware loading protocol specific to Ricoh devices ?
+
+As far as I'm aware, all Ricoh devices use the same firmware loading  
+protocol. Looking at the source for the iSight cameras the other day,  
+and found that they also interestingly use the same command while  
+uploading firmware data (although a different format from what I  
+gather).
+
+Before the firmware is uploaded to the devices, they still report via  
+the USB descriptor that they are webcam devices, hence why uvcvideo  
+picks it up.
+
+>
+>> One thing that might be an issue that I'm not sure was ever  
+>> resolved in the
+>> communication between yourself and Chris was that regarding the UVC
+>> controls. As you might remember, the microcode that gets uploaded  
+>> to the
+>> camera doesn't report all the controls it supports. Would it be  
+>> possible to
+>> use some of the quirk modes provided by uvcvideo to get around that?
+>
+> Could you list the Ricoh "features" that are not UVC-compliant ? Are  
+> the
+> non-reported controls addressed with standard UVC requests or with a
+> proprietary protocol ?
+
+For the most part, the controls that aren't reported but supported are  
+all accessible through the standard controls, you just have to know  
+which camera supports which.
+
+Once the firmware is uploaded, everything is handled by the UVC  
+specification.
+
+Cheers,
+Alex Hixon
+
+
+From yoav at comediagroup.com  Tue Sep  2 14:14:52 2008
+From: yoav at comediagroup.com (Yoav Levy)
+Date: Tue, 02 Sep 2008 15:14:52 +0300
+Subject: [Linux-uvc-devel] Camera Installation
+Message-ID: <48BD2E3C.4000201@comediagroup.com>
+
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080902/b5d58d2f/attachment.html>
+
+From laurent.pinchart at skynet.be  Tue Sep  2 23:01:29 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 2 Sep 2008 23:01:29 +0200
+Subject: [Linux-uvc-devel] Camera stopped working
+In-Reply-To: <20080828140456.9E5BC4E362@cork.irdesign.cypress.com>
+References: <20080828140456.9E5BC4E362@cork.irdesign.cypress.com>
+Message-ID: <200809022301.29315.laurent.pinchart@skynet.be>
+
+Hi,
+
+On Thursday 28 August 2008, lhecking at users.sourceforge.net wrote:
+>  Hi all,
+>
+>  My laptop camera stopped working recently, I presume when I upgraded to
+>  kernel version 2.6.25. I then tried 2.6.26 with the integrated uvc driver,
+>  but with the same result; the camera LED flashes twice during boot (udev
+>  and hald), yet it doesn't work in e.g. skype. Tested the current version
+>  in gentoo stable (233?) and svn.
+>
+>  dmesg:
+> ...
+> Linux video capture interface: v2.00
+> usbcore: registered new interface driver uvcvideo
+> USB Video Class driver (v0.1.0)
+> ...
+> uvcvideo: Found UVC 1.00 device Laptop Integrated Webcam (05a9:2640)
+> uvcvideo: Failed to query (135) UVC control 1 (unit 0) : -32 (exp. 26).
+> input: Laptop Integrated Webcam as /class/input/input5
+>
+>  Running mplayer (yes, I read the comments about mplayer in the archives :)
+>
+>  gives ioctl related errors:
+> | $ mplayer tv:// -tv driver=v4l2:device=/dev/video0:mjpeg:fps=30
+> | MPlayer dev-SVN-r26753-4.1.2 (C) 2000-2008 MPlayer Team
+> | CPU: Intel(R) Core(TM)2 Duo CPU     T7300  @ 2.00GHz (Family: 6, Model:
+> | 15, Stepping: 10) CPUflags:  MMX: 1 MMX2: 1 3DNow: 0 3DNow2: 0 SSE: 1
+> | SSE2: 1
+> | Compiled for x86 CPU with extensions: MMX MMX2 SSE SSE2
+> |
+> | Playing tv://.
+> | TV file format detected.
+> | Selected driver: v4l2
+> |  name: Video 4 Linux 2 input
+> |  author: Martin Olschewski <olschewski at zpr.uni-koeln.de>
+> |  comment: first try, more to come ;-)
+> | v4l2: ioctl get standard failed: Invalid argument
+> | Selected device: Laptop Integrated Webcam
+> |  Capabilites:  video capture  streaming
+> |  supported norms:
+> |  inputs: 0 = Camera 1;
+> |  Current input: 0
+> |  Current format: MJPEG
+> | v4l2: ioctl set format failed: Invalid argument
+> | v4l2: ioctl set format failed: Invalid argument
+> | v4l2: ioctl set format failed: Invalid argument
+> | v4l2: ioctl set format failed: Invalid argument
+> | v4l2: ioctl set format failed: Invalid argument
+> | v4l2: ioctl set format failed: Invalid argument
+> | v4l2: ioctl set format failed: Invalid argument
+> | v4l2: ioctl set format failed: Invalid argument
+> | tv.c: norm_from_string(pal): Bogus norm parameter, setting default.
+> | v4l2: ioctl enum norm failed: Invalid argument
+> | Error: Cannot set norm!
+> |   MJP: width 352 height 288
+> | Selected input hasn't got a tuner!
+> | v4l2: ioctl set mute failed: Invalid argument
+> | =========================================================================
+> |= Opening video decoder: [ffmpeg] FFmpeg's libavcodec codec family
+> | Selected video codec: [ffmjpeg] vfm: ffmpeg (FFmpeg MJPEG decoder)
+> | =========================================================================
+> |= Audio: no sound
+> | Starting playback...
+> | VDec: vo config request - 160 x 120 (preferred colorspace: Planar 422P)
+> | Could not find matching colorspace - retrying with -vf scale...
+> | Opening video filter: [scale]
+> | VDec: using Planar 422P as output csp (no 1)
+> | Movie-Aspect is nan:1 - prescaling to correct movie aspect.
+> | SwScaler: reducing / aligning filtersize 1 -> 4
+> | SwScaler: reducing / aligning filtersize 1 -> 4
+> | SwScaler: reducing / aligning filtersize 1 -> 1
+> | SwScaler: reducing / aligning filtersize 9 -> 8
+> | [swscaler @ 0x8762018]BICUBIC scaler, from yuv422p to yuv420p using MMX2
+> | [swscaler @ 0x8762018]using 4-tap MMX scaler for horizontal luminance
+> | scaling [swscaler @ 0x8762018]using 4-tap MMX scaler for horizontal
+> | chrominance scaling [swscaler @ 0x8762018]using 1-tap MMX "scaler" for
+> | vertical scaling (YV12 like) [swscaler @ 0x8762018]160x120 -> 160x120
+> | VO: invalid dimensions!
+> | FATAL: Cannot initialize video driver.
+> | VDec: vo config request - 160 x 120 (preferred colorspace: Planar 422P)
+> | VDec: using Planar 422P as output csp (no 1)
+> | Movie-Aspect is nan:1 - prescaling to correct movie aspect.
+> | VO: invalid dimensions!
+> | FATAL: Cannot initialize video driver.
+> |
+> | FATAL: Could not initialize video filters (-vf) or video output (-vo).
+> |
+> |
+> |
+> | MPlayer interrupted by signal 8 in module: free_demuxer
+> | - MPlayer crashed by bad usage of CPU/FPU/RAM.
+> |   Recompile MPlayer with --enable-debug and make a 'gdb' backtrace and
+> |   disassembly. Details in
+> | DOCS/HTML/en/bugreports_what.html#bugreports_crash. - MPlayer crashed.
+> | This shouldn't happen.
+> |   It can be a bug in the MPlayer code _or_ in your drivers _or_ in your
+> |   gcc version. If you think it's MPlayer's fault, please read
+> |   DOCS/HTML/en/bugreports.html and follow the instructions there. We
+> | can't and won't help unless you provide this information when reporting a
+> | possible bug.
+>
+>  Any ideas?
+
+Does the driver print any message in the kernel log when you run mplayer ?
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Tue Sep  2 23:19:52 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 2 Sep 2008 23:19:52 +0200
+Subject: [Linux-uvc-devel] UVC Device not listed
+In-Reply-To: <9686bc530809012029p285cdf0vfc72119fb75de46@mail.gmail.com>
+References: <9686bc530809012029p285cdf0vfc72119fb75de46@mail.gmail.com>
+Message-ID: <200809022319.52844.laurent.pinchart@skynet.be>
+
+Hi Joseph,
+
+On Tuesday 02 September 2008, Joseph dela Pena wrote:
+> Hi,
+>
+>    I would just like to report that device 5986:0104 is not in your
+> supported devices list.  This is a Compaq Presario B1200 built in webcam.
+> I've been pulling my hair down trying to make the webcam work.  I've been
+> already trying for 2weeks and still no positive results.
+
+Please try to load the driver with
+
+modprobe uvcvideo quirks=2
+
+If it works I'll update the driver to support your camera. Please provide me 
+with the output of
+
+lsusb -v -d 5986:0104
+
+using usbutils 0.72 or newer (0.73+ preferred).
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Tue Sep  2 23:25:02 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 2 Sep 2008 23:25:02 +0200
+Subject: [Linux-uvc-devel] Camera Installation
+In-Reply-To: <48BD2E3C.4000201@comediagroup.com>
+References: <48BD2E3C.4000201@comediagroup.com>
+Message-ID: <200809022325.02883.laurent.pinchart@skynet.be>
+
+Hi Yoav,
+
+On Tuesday 02 September 2008, Yoav Levy wrote:
+> Hello,
+>
+> I just finished installing my new Dell Laptop - Studio1535.
+> Although the camera? doesn't appear on the? known UVC? devices list, it
+> works very well,  :-) . The camera device ID is 05ca:18a1.
+
+Could you please provide me with the output of
+
+lsusb -v -d 05ca:18a1
+
+using usbutils 0.72 or newer (0.73+ preferred) ? I'll then update the 
+supported devices list on the website.
+
+> In a different computer I have installed a Microsoft LifeCam NX-1000 device
+> ID 045e:00f7. Unfortunately the UVC driver doesn't recognize this model.
+> Will appreciate any info regarding this camera.
+
+That camera is not UVC compatible. You should try the gpsca driver instead.
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Tue Sep  2 23:29:03 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 2 Sep 2008 23:29:03 +0200
+Subject: [Linux-uvc-devel] linux-uvc and r5u870
+In-Reply-To: <AD459ED1-956C-44B8-9535-16D32B04E9B7@mediati.org>
+References: <ff0f76ee7f443f172755662fa0aaad7d@localhost>
+	<200808312315.55764.laurent.pinchart@skynet.be>
+	<AD459ED1-956C-44B8-9535-16D32B04E9B7@mediati.org>
+Message-ID: <200809022329.03683.laurent.pinchart@skynet.be>
+
+Hi Alex,
+
+On Monday 01 September 2008, Alex Hixon wrote:
+> On 01/09/2008, at 7:15 AM, Laurent Pinchart
+>
+> <laurent.pinchart at skynet.be> wrote:
+> > Hi Alex,
+> >
+> > On Sunday 31 August 2008, Alex Hixon wrote:
+> >> Hi Laurent,
+> >>
+> >> Way back in April last year, Sam Revitch sent an email to
+> >> linux-uvc-devel[1] announcing the work he had been doing on r5u870,
+> >> which provided a working webcam to those users with cameras using the
+> >> Ricoh chipset. In January this year, I took up the task of maintaining
+> >> the driver (since Sam had seemingly gone MIA). Maintaining an
+> >> out-of-kernel driver and having very little time to tend to it (we now
+> >> support 15 different camera models, up from 3 ;) has become very
+> >> difficult as of late, and bug reports regarding conflicts between the
+> >> r5u870 and uvcvideo modules seem to becoming more and more frequent.
+> >> uvcvideo also seems to do a better job at the UVC stuff than the other
+> >> driver on most devices, anyway. 
+> >>
+> >> I've done a bit of hacking in an effort to retrofit uvcvideo with the
+> >> firmware-loading functionality of the original r5u870 driver. It
+> >> appears to work reasonably well. However, before I go and work on
+> >> something worth committing, I was just curious as to whether I should be
+> >> attempting to implement it in the kernel module (less work for me :) or
+> >> as a userspace application.
+> >
+> > I've discussed firmware loading issues previously with iSight
+> > developers, and I wasn't very keen on adding firmware loading support to
+> > the UVC driver, especially with a userspace utility already available (the
+> > iSight is based on a Cypress chip). How do Ricoh webcams enumerate when
+> > the firmware is not loaded ? Is the firmware loading protocol specific to
+> > Ricoh devices ? 
+>
+> As far as I'm aware, all Ricoh devices use the same firmware loading
+> protocol. Looking at the source for the iSight cameras the other day,
+> and found that they also interestingly use the same command while
+> uploading firmware data (although a different format from what I
+> gather).
+>
+> Before the firmware is uploaded to the devices, they still report via
+> the USB descriptor that they are webcam devices, hence why uvcvideo
+> picks it up.
+
+Does the device expose different descriptors after a firmware upgrade ? Does 
+it simulate a disconnection/reconnection when you upload the firmware ?
+
+Could you please provide me with a full USB descriptors dump ('lsusb -v' with 
+usbutils 0.72 or newer) ? If descriptors before and after firmware loading 
+differ please send me both. I would also be interested in having a look at 
+the firmware file.
+
+> >> One thing that might be an issue that I'm not sure was ever resolved in
+> >> the communication between yourself and Chris was that regarding the UVC
+> >> controls. As you might remember, the microcode that gets uploaded to the
+> >> camera doesn't report all the controls it supports. Would it be possible
+> >> to use some of the quirk modes provided by uvcvideo to get around that?
+> >
+> > Could you list the Ricoh "features" that are not UVC-compliant ? Are
+> > the non-reported controls addressed with standard UVC requests or with a
+> > proprietary protocol ?
+>
+> For the most part, the controls that aren't reported but supported are
+> all accessible through the standard controls, you just have to know
+> which camera supports which.
+>
+> Once the firmware is uploaded, everything is handled by the UVC
+> specification.
+
+Best regards,
+
+Laurent Pinchart
+
+
+From lhecking at users.sourceforge.net  Wed Sep  3 13:46:54 2008
+From: lhecking at users.sourceforge.net (Lars Hecking)
+Date: Wed,  3 Sep 2008 12:46:54 +0100 (IST)
+Subject: [Linux-uvc-devel] Camera stopped working
+In-Reply-To: <200809022301.29315.laurent.pinchart@skynet.be>
+References: <20080828140456.9E5BC4E362@cork.irdesign.cypress.com>
+	<200809022301.29315.laurent.pinchart@skynet.be>
+Message-ID: <20080903114654.2872D4E37E@cork.irdesign.cypress.com>
+
+Laurent Pinchart writes:
+[...] 
+> Does the driver print any message in the kernel log when you run mplayer ?
+
+ I don't think so, but I can't find out right now - the camera is working
+ and I cannot reproduce the failure :-/
+
+ This appears to be an intermittent hardware issue rather than kernel/driver,
+ although the failures seem to have become much more frequent with 2.6.25.
+ But that may be a coincidence ...
+
+ I was using mplayer because it issues some error messages that might help
+ diagnosing, whereas skype doesn't. What I noticed was that whenever mplayer
+ failed, it was using
+
+| ==========================================================================
+| Opening video decoder: [ffmpeg] FFmpeg's libavcodec codec family
+| Selected video codec: [ffmjpeg] vfm: ffmpeg (FFmpeg MJPEG decoder)
+| ==========================================================================
+
+ whereas whenever it works, it prints it's using a raw video stream.
+
+
+
+
+From jlorin at synapse.net  Wed Sep  3 20:13:12 2008
+From: jlorin at synapse.net (Jean-Claude Lorin)
+Date: Wed, 3 Sep 2008 14:13:12 -0400
+Subject: [Linux-uvc-devel] Acer Travelmate 7720 Crystal Eye webcam not
+	working on Skype 2.0 for Linux
+Message-ID: <200809031413.13070.jlorin@synapse.net>
+
+I have an Acer Travelmate 7720 laptop which includes a Crystal Eye webcam. My 
+Linux system is OpenSuse 11.0 with KDE 3.5.10
+
+the webcam is recognized by Linux but does not work under Skype. It works 
+under Kopete. I have compiled the latest uvcvideo from svn but to no avail
+
+Other webcams such as Logitech Quickcam Pro work fine
+
+Any clues on what to do? 
+
+find below an extract from dmesg
+
+
+uvcvideo: Found UVC 1.00 device Acer Crystal Eye webcam (5986:0105)
+usbcore: registered new interface driver uvcvideo
+uvcvideo: Failed to query (130) UVC control 1 (unit 0) : 2 (exp. 26).
+usbcore: deregistering interface driver uvcvideo
+uvcvideo: Found UVC 1.00 device Acer Crystal Eye webcam (5986:0105)
+uvcvideo: Forcing device quirks 0x2 by module parameter for testing purpose.
+uvcvideo: Please report required quirks to the linux-uvc-devel mailing list.
+usbcore: registered new interface driver uvcvideo
+uvcvideo: device Acer Crystal Eye webcam requested null bandwidth, defaulting 
+to lowest.
+usbcore: deregistering interface driver uvcvideo
+uvcvideo: Found UVC 1.00 device Acer Crystal Eye webcam (5986:0105)
+usbcore: registered new interface driver uvcvideo
+u
+
+
+From l.schimmer at cgv.tugraz.at  Thu Sep  4 10:00:17 2008
+From: l.schimmer at cgv.tugraz.at (Lars Schimmer)
+Date: Thu, 04 Sep 2008 10:00:17 +0200
+Subject: [Linux-uvc-devel] Acer Travelmate 7720 Crystal Eye webcam not
+ working on Skype 2.0 for Linux
+In-Reply-To: <200809031413.13070.jlorin@synapse.net>
+References: <200809031413.13070.jlorin@synapse.net>
+Message-ID: <48BF9591.5020906@cgv.tugraz.at>
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Jean-Claude Lorin wrote:
+> I have an Acer Travelmate 7720 laptop which includes a Crystal Eye webcam. My 
+> Linux system is OpenSuse 11.0 with KDE 3.5.10
+> 
+> the webcam is recognized by Linux but does not work under Skype. It works 
+> under Kopete. I have compiled the latest uvcvideo from svn but to no avail
+> 
+> Other webcams such as Logitech Quickcam Pro work fine
+> 
+> Any clues on what to do? 
+
+Your webcam works, fine. Skype does not work, ok, go and mourn about
+skype at skype dev team.
+As long as your webcam works, linux-uvc cannot do more...
+
+> find below an extract from dmesg
+
+> u
+
+
+MfG,
+Lars Schimmer
+- --
+- -------------------------------------------------------------
+TU Graz, Institut f?r ComputerGraphik & WissensVisualisierung
+Tel: +43 316 873-5405       E-Mail: l.schimmer at cgv.tugraz.at
+Fax: +43 316 873-5402       PGP-Key-ID: 0x4A9B1723
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAki/lZEACgkQmWhuE0qbFyO/3gCfWDQJKYn6oAV9zaWQl6Tl5Zjk
+BMwAnRur8rYoHplyVIJgK+p7aUo0Cle6
+=cqzw
+-----END PGP SIGNATURE-----
+
+
+From benderamp at gmail.com  Thu Sep  4 11:37:47 2008
+From: benderamp at gmail.com (Anton Moiseev)
+Date: Thu, 4 Sep 2008 13:37:47 +0400
+Subject: [Linux-uvc-devel] hp pavilion dv6000 webcam (064e:a110 - SuYin)
+In-Reply-To: <9aa228cf0809040225u6270e065pa4d49011bb99904a@mail.gmail.com>
+References: <9aa228cf0809040225u6270e065pa4d49011bb99904a@mail.gmail.com>
+Message-ID: <9aa228cf0809040237l6ffcfcedu6ac6411523db21b@mail.gmail.com>
+
+Hi,
+
+I have Hp Pavilion dv6000 notebook with built-in webcam
+
+> lsusb
+Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 007 Device 002: ID 03f0:171d Hewlett-Packard Wireless (Bluetooth +
+WLAN)Interface [Integrated Module]
+Bus 007 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 006 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 002 Device 002: ID 064e:a110 Suyin Corp.
+Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+
+
+
+From uli-uvc at uli-eckhardt.de  Fri Sep  5 18:53:08 2008
+From: uli-uvc at uli-eckhardt.de (Ulrich Eckhardt)
+Date: Fri, 05 Sep 2008 18:53:08 +0200
+Subject: [Linux-uvc-devel] BisonCam, NB Pro (5986:0203)
+Message-ID: <48C163F4.3000107@uli-eckhardt.de>
+
+Hi,
+
+the web-cam build into the Smartbook-ZENID works, when loading the
+uvcvideo module with the quirks=2 option.
+
+Output of dmesg:
+uvcvideo: Found UVC 1.00 device BisonCam, NB Pro (5986:0203)
+uvcvideo: Forcing device quirks 0x2 by module parameter for testing purpose.
+uvcvideo: Please report required quirks to the linux-uvc-devel mailing list.
+input: BisonCam, NB Pro as 
+/devices/pci0000:00/0000:00:1d.7/usb5/5-5/5-5:1.0/input/input11
+usb 5-5: New USB device found, idVendor=5986, idProduct=0203
+usb 5-5: New USB device strings: Mfr=0, Product=1, SerialNumber=0
+usb 5-5: Product: BisonCam, NB Pro
+uvcvideo: device BisonCam, NB Pro requested null bandwidth, defaulting 
+to lowest.
+
+Output of lsusb:
+linux-s3ke:/etc # lsusb -v -d 5986:0203
+
+Bus 005 Device 007: ID 5986:0203 Acer, Inc
+Device Descriptor:
+   bLength                18
+   bDescriptorType         1
+   bcdUSB               2.00
+   bDeviceClass          239 Miscellaneous Device
+   bDeviceSubClass         2 ?
+   bDeviceProtocol         1 Interface Association
+   bMaxPacketSize0        64
+   idVendor           0x5986 Acer, Inc
+   idProduct          0x0203
+   bcdDevice            0.02
+   iManufacturer           0
+   iProduct                1 BisonCam, NB Pro
+   iSerial                 0
+   bNumConfigurations      1
+   Configuration Descriptor:
+     bLength                 9
+     bDescriptorType         2
+     wTotalLength          408
+     bNumInterfaces          2
+     bConfigurationValue     1
+     iConfiguration          0
+     bmAttributes         0x80
+       (Bus Powered)
+     MaxPower              500mA
+     Interface Association:
+       bLength                 8
+       bDescriptorType        11
+       bFirstInterface         0
+       bInterfaceCount         2
+       bFunctionClass         14 Video
+       bFunctionSubClass       3 Video Interface Collection
+       bFunctionProtocol       0
+       iFunction               1 BisonCam, NB Pro
+     Interface Descriptor:
+       bLength                 9
+       bDescriptorType         4
+       bInterfaceNumber        0
+       bAlternateSetting       0
+       bNumEndpoints           1
+       bInterfaceClass        14 Video
+       bInterfaceSubClass      1 Video Control
+       bInterfaceProtocol      0
+       iInterface              1 BisonCam, NB Pro
+       VideoControl Interface Descriptor:
+         bLength                13
+         bDescriptorType        36
+         bDescriptorSubtype      1 (HEADER)
+         bcdUVC               1.00
+         wTotalLength           84
+         dwClockFrequency       30.000000MHz
+         bInCollection           1
+         baInterfaceNr( 0)       1
+       VideoControl Interface Descriptor:
+         bLength                17
+         bDescriptorType        36
+         bDescriptorSubtype      2 (INPUT_TERMINAL)
+         bTerminalID             1
+         wTerminalType      0x0201 Camera Sensor
+         bAssocTerminal          0
+         iTerminal               0
+         wObjectiveFocalLengthMin      0
+         wObjectiveFocalLengthMax      0
+         wOcularFocalLength            0
+         bControlSize                  2
+         bmControls           0x00000000
+       VideoControl Interface Descriptor:
+         bLength                 9
+         bDescriptorType        36
+         bDescriptorSubtype      3 (OUTPUT_TERMINAL)
+         bTerminalID             3
+         wTerminalType      0x0101 USB Streaming
+         bAssocTerminal          0
+         bSourceID               6
+         iTerminal               0
+       VideoControl Interface Descriptor:
+         bLength                 7
+         bDescriptorType        36
+         bDescriptorSubtype      4 (SELECTOR_UNIT)
+         bUnitID                 4
+         bNrInPins               1
+         baSource( 0)            1
+         iSelector               0
+       VideoControl Interface Descriptor:
+         bLength                11
+         bDescriptorType        36
+         bDescriptorSubtype      5 (PROCESSING_UNIT)
+       Warning: Descriptor too short
+         bUnitID                 5
+         bSourceID               4
+         wMaxMultiplier          0
+         bControlSize            2
+         bmControls     0x0000043f
+           Brightness
+           Contrast
+           Hue
+           Saturation
+           Sharpness
+           Gamma
+           Power Line Frequency
+         iProcessing             0
+         bmVideoStandards     0x1b
+           None
+           NTSC - 525/60
+           SECAM - 625/50
+           NTSC - 625/50
+       VideoControl Interface Descriptor:
+         bLength                27
+         bDescriptorType        36
+         bDescriptorSubtype      6 (EXTENSION_UNIT)
+         bUnitID                 6
+         guidExtensionCode         {564c97a7-7ea7-904b-8cbf-1c71ec303000}
+         bNumControl            16
+         bNrPins                 1
+         baSourceID( 0)          5
+         bControlSize            2
+         bmControls( 0)       0xff
+         bmControls( 1)       0xff
+         iExtension              0
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x82  EP 2 IN
+         bmAttributes            3
+           Transfer Type            Interrupt
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0008  1x 8 bytes
+         bInterval              15
+     Interface Descriptor:
+       bLength                 9
+       bDescriptorType         4
+       bInterfaceNumber        1
+       bAlternateSetting       0
+       bNumEndpoints           0
+       bInterfaceClass        14 Video
+       bInterfaceSubClass      2 Video Streaming
+       bInterfaceProtocol      0
+       iInterface              0
+       VideoStreaming Interface Descriptor:
+         bLength                            14
+         bDescriptorType                    36
+         bDescriptorSubtype                  1 (INPUT_HEADER)
+         bNumFormats                        1
+         wTotalLength                      261
+         bEndPointAddress                  129
+         bmInfo                              0
+         bTerminalLink                       3
+         bStillCaptureMethod                 0
+         bTriggerSupport                     0
+         bTriggerUsage                       0
+         bControlSize                        1
+         bmaControls( 0)                    27
+       VideoStreaming Interface Descriptor:
+         bLength                            27
+         bDescriptorType                    36
+         bDescriptorSubtype                  4 (FORMAT_UNCOMPRESSED)
+         bFormatIndex                        1
+         bNumFrameDescriptors                6
+         guidFormat 
+{59555932-0000-1000-8000-00aa00389b71}
+         bBitsPerPixel                      16
+         bDefaultFrameIndex                  1
+         bAspectRatioX                       0
+         bAspectRatioY                       0
+         bmInterlaceFlags                 0x00
+           Interlaced stream or variable: No
+           Fields per frame: 1 fields
+           Field 1 first: No
+           Field pattern: Field 1 only
+           bCopyProtect                      0
+       VideoStreaming Interface Descriptor:
+         bLength                            38
+         bDescriptorType                    36
+         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+         bFrameIndex                         1
+         bmCapabilities                   0x01
+           Still image supported
+         wWidth                            640
+         wHeight                           480
+         dwMinBitRate                   912384
+         dwMaxBitRate                   912384
+         dwMaxVideoFrameBufferSize      614400
+         dwDefaultFrameInterval         333333
+         bFrameIntervalType                  3
+         dwFrameInterval( 0)            333333
+         dwFrameInterval( 1)            666666
+         dwFrameInterval( 2)           1000000
+       VideoStreaming Interface Descriptor:
+         bLength                            38
+         bDescriptorType                    36
+         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+         bFrameIndex                         2
+         bmCapabilities                   0x01
+           Still image supported
+         wWidth                            320
+         wHeight                           240
+         dwMinBitRate                   912384
+         dwMaxBitRate                   912384
+         dwMaxVideoFrameBufferSize      230400
+         dwDefaultFrameInterval         333333
+         bFrameIntervalType                  3
+         dwFrameInterval( 0)            333333
+         dwFrameInterval( 1)            666666
+         dwFrameInterval( 2)           1000000
+       VideoStreaming Interface Descriptor:
+         bLength                            38
+         bDescriptorType                    36
+         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+         bFrameIndex                         3
+         bmCapabilities                   0x01
+           Still image supported
+         wWidth                            160
+         wHeight                           120
+         dwMinBitRate                   912384
+         dwMaxBitRate                   912384
+         dwMaxVideoFrameBufferSize       57600
+         dwDefaultFrameInterval         333333
+         bFrameIntervalType                  3
+         dwFrameInterval( 0)            333333
+         dwFrameInterval( 1)            666666
+         dwFrameInterval( 2)           1000000
+       VideoStreaming Interface Descriptor:
+         bLength                            38
+         bDescriptorType                    36
+         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+         bFrameIndex                         4
+         bmCapabilities                   0x01
+           Still image supported
+         wWidth                            352
+         wHeight                           288
+         dwMinBitRate                   912384
+         dwMaxBitRate                   912384
+         dwMaxVideoFrameBufferSize      304128
+         dwDefaultFrameInterval         333333
+         bFrameIntervalType                  3
+         dwFrameInterval( 0)            333333
+         dwFrameInterval( 1)            666666
+         dwFrameInterval( 2)           1000000
+       VideoStreaming Interface Descriptor:
+         bLength                            38
+         bDescriptorType                    36
+         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+         bFrameIndex                         5
+         bmCapabilities                   0x01
+           Still image supported
+         wWidth                            176
+         wHeight                           144
+         dwMinBitRate                   912384
+         dwMaxBitRate                   912384
+         dwMaxVideoFrameBufferSize       76032
+         dwDefaultFrameInterval         333333
+         bFrameIntervalType                  3
+         dwFrameInterval( 0)            333333
+         dwFrameInterval( 1)            666666
+         dwFrameInterval( 2)           1000000
+       VideoStreaming Interface Descriptor:
+         bLength                            30
+         bDescriptorType                    36
+         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+         bFrameIndex                         6
+         bmCapabilities                   0x01
+           Still image supported
+         wWidth                           1280
+         wHeight                          1024
+         dwMinBitRate                   912384
+         dwMaxBitRate                   912384
+         dwMaxVideoFrameBufferSize     3932160
+         dwDefaultFrameInterval        1428571
+         bFrameIntervalType                  1
+         dwFrameInterval( 0)           1428571
+     Interface Descriptor:
+       bLength                 9
+       bDescriptorType         4
+       bInterfaceNumber        1
+       bAlternateSetting       1
+       bNumEndpoints           1
+       bInterfaceClass        14 Video
+       bInterfaceSubClass      2 Video Streaming
+       bInterfaceProtocol      0
+       iInterface              0
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x81  EP 1 IN
+         bmAttributes            5
+           Transfer Type            Isochronous
+           Synch Type               Asynchronous
+           Usage Type               Data
+         wMaxPacketSize     0x1400  3x 1024 bytes
+         bInterval               1
+Device Qualifier (for other device speed):
+   bLength                10
+   bDescriptorType         6
+   bcdUSB               2.00
+   bDeviceClass            0 (Defined at Interface level)
+   bDeviceSubClass         0
+   bDeviceProtocol         0
+   bMaxPacketSize0        64
+   bNumConfigurations      1
+Device Status:     0x0000
+   (Bus Powered)
+
+-- 
+Ulrich Eckhardt                  http://www.uli-eckhardt.de
+
+Ein Blitzableiter auf dem Kirchturm ist das denkbar st?rkste
+Misstrauensvotum gegen den lieben Gott. (Karl Krauss)
+
+
+From artem at makhutov.org  Fri Sep  5 23:32:43 2008
+From: artem at makhutov.org (Artem Makhutov)
+Date: Fri, 5 Sep 2008 23:32:43 +0200
+Subject: [Linux-uvc-devel] High resulution and high framerate cameras
+Message-ID: <20080905213242.GC7830@moelleritberatung.de>
+
+Hi,
+
+is somebody aware of a camera with a higher resolution then 800x600 @ 30 fps?
+
+It seems like all cameras with a higher resolution then 800x600 are
+dropping the framerate to 15 fps or even less. Has somebody an
+explenation for this behavior? Is the USB-Bus too slow, or is this all
+just marketing stuff?
+
+Thanks, Artem
+
+
+From witzjean at gmail.com  Sun Sep  7 03:05:52 2008
+From: witzjean at gmail.com (jeff witz)
+Date: Sun, 7 Sep 2008 03:05:52 +0200
+Subject: [Linux-uvc-devel] High resulution and high framerate cameras
+In-Reply-To: <20080905213242.GC7830@moelleritberatung.de>
+References: <20080905213242.GC7830@moelleritberatung.de>
+Message-ID: <bb7789710809061805x78c929e4lc878a8a69575f9cf@mail.gmail.com>
+
+2008/9/5 Artem Makhutov <artem at makhutov.org>
+
+> Hi,
+>
+> is somebody aware of a camera with a higher resolution then 800x600 @ 30
+> fps?
+>
+> It seems like all cameras with a higher resolution then 800x600 are
+> dropping the framerate to 15 fps or even less. Has somebody an
+> explenation for this behavior? Is the USB-Bus too slow, or is this all
+> just marketing stuff?
+
+
+It seems that this behaviour appears in my camera moddel too.
+Phillips spc 1300 NC
+
+I have investigated on this and I found explanation on a commercial  web
+site, they say that even with the most expensive one, the video resolution
+is limited to 960 x 720 pixels.
+http://www.logitech.com/index.cfm/webcam_communications/webcams/devices/3480&cl=fr,fr
+
+I assume that the other one are lying about this theoritical framerate of 90
+fps.
+It's quite strange because the usb oprt is able to deal with more important
+flow ... but may be the electronical componant of cameraa can't.
+
+
+
+
+
+
+
+>
+>
+> Thanks, Artem
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+>
+
+
+
+-- 
+Jean-Fran?ois WITZ
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080907/e99d05ee/attachment.html>
+
+From michel.brabants at euphonynet.be  Sun Sep  7 13:49:32 2008
+From: michel.brabants at euphonynet.be (Michel Brabants)
+Date: Sun, 07 Sep 2008 13:49:32 +0200
+Subject: [Linux-uvc-devel] kernel 2.6.26 - webcam doesn't work,
+	stack-trace available
+Message-ID: <1220788172.19678.6.camel@localhost.localdomain>
+
+Hello,
+
+I have a logitech , and am having problems with this driver since it is
+integrated in the kernel (I used to use svn-builds before this). Here is
+the call-trace when trying to use cheese (gnome program):
+
+
+
+cheese: page allocation failure. order:5,
+mode:0x4                                                                                                                                                                                           
+Pid: 11446, comm: cheese Not tainted 2.6.26-ARCH
+#1                                                                                                                                                                                          
+
+Call Trace:
+ [<ffffffff8027d78d>] __alloc_pages_internal+0x3dd/0x4e0
+ [<ffffffff80212995>] dma_alloc_coherent+0xf5/0x2e0     
+ [<ffffffffa039947b>] :uvcvideo:uvc_alloc_urb_buffers+0x4b/0xe0
+ [<ffffffffa039965e>] :uvcvideo:uvc_init_video+0x14e/0x3d0     
+ [<ffffffffa0398667>] :uvcvideo:uvc_v4l2_do_ioctl+0x717/0x1180 
+ [<ffffffff80288e1b>] __pte_alloc+0xab/0xf0                    
+ [<ffffffff8028a856>] get_locked_pte+0x196/0x1e0               
+ [<ffffffffa0386cf6>] :videodev:video_usercopy+0x176/0x360     
+ [<ffffffffa0397f50>] :uvcvideo:uvc_v4l2_do_ioctl+0x0/0x1180   
+ [<ffffffff802b4225>] vfs_ioctl+0x85/0xb0                      
+ [<ffffffff802b44d3>] do_vfs_ioctl+0x283/0x2f0                 
+ [<ffffffff802b45e1>] sys_ioctl+0xa1/0xb0                      
+ [<ffffffff8020c59a>] system_call_after_swapgs+0x8a/0x8f       
+
+Mem-info:
+DMA per-cpu:
+CPU    0: hi:    0, btch:   1 usd:   0
+CPU    1: hi:    0, btch:   1 usd:   0
+DMA32 per-cpu:                        
+CPU    0: hi:  186, btch:  31 usd:  89
+CPU    1: hi:  186, btch:  31 usd:  22
+Active:177207 inactive:44979 dirty:352 writeback:0 unstable:0
+ free:2598 slab:16717 mapped:31519 pagetables:6333 bounce:0  
+DMA free:4116kB min:40kB low:48kB high:60kB active:1336kB inactive:44kB
+present:10576kB pages_scanned:41 all_unreclaimable? no
+lowmem_reserve[]: 0 994 994
+994                                                                                               
+DMA32 free:6276kB min:4012kB low:5012kB high:6016kB active:707492kB
+inactive:179872kB present:1017888kB pages_scanned:194 all_unreclaimable?
+no
+lowmem_reserve[]: 0 0 0
+0                                                                                                                      
+DMA: 195*4kB 189*8kB 32*16kB 1*32kB 0*64kB 0*128kB 1*256kB 0*512kB
+1*1024kB 0*2048kB 0*4096kB =
+4116kB                                         
+DMA32: 1182*4kB 50*8kB 12*16kB 4*32kB 0*64kB 0*128kB 1*256kB 1*512kB
+0*1024kB 0*2048kB 0*4096kB =
+6216kB                                       
+81579 total pagecache
+pages                                                                                                                    
+Swap cache: add 2119, delete 1700, find
+554/667                                                                                                
+Free swap  =
+285724kB                                                                                                                          
+Total swap =
+289160kB                                                                                                                          
+262096 pages of
+RAM                                                                                                                            
+7294 reserved
+pages                                                                                                                            
+194872 pages
+shared                                                                                                                            
+572 pages swap
+cached                                                                                                                          
+ehci_hcd 0000:00:13.5: dma_pool_free buffer-32, ffff810000aa0000/aa0000
+(bad dma)                                                              
+ehci_hcd 0000:00:13.5: dma_pool_free buffer-32, ffff810002720000/2720000
+(bad dma)       
+
+
+
+
+I saw that someone else also had this problem. I have an Logitech
+Ultravision webcam, amd X2 4400, 1 Gig memory and am running in
+64-bit-mode. The motherboard is an msi k9a platinum. I'm running kernel
+2.6.26 (archlinux).
+
+Thank you and kind regards,
+
+Michel
+
+P.S.: Does anyone know a good video-chat-prgram for linux? I have this
+nice webcam (when the driver, ... works), but no program that supports
+decent resolutions for video-chat ...
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080907/57a024d0/attachment.html>
+
+From benderamp at gmail.com  Tue Sep  9 10:59:33 2008
+From: benderamp at gmail.com (Anton Moiseev)
+Date: Tue, 9 Sep 2008 12:59:33 +0400
+Subject: [Linux-uvc-devel] hp pavilion dv6000 webcam (064e:a110 - SuYin)
+In-Reply-To: <9aa228cf0809040237l6ffcfcedu6ac6411523db21b@mail.gmail.com>
+References: <9aa228cf0809040225u6270e065pa4d49011bb99904a@mail.gmail.com>
+	<9aa228cf0809040237l6ffcfcedu6ac6411523db21b@mail.gmail.com>
+Message-ID: <9aa228cf0809090159u4692026fp87ebe432d30d0d3@mail.gmail.com>
+
+On Thu, Sep 4, 2008 at 1:37 PM, Anton Moiseev <benderamp at gmail.com> wrote:
+> Hi,
+>
+> I have Hp Pavilion dv6000 notebook with built-in webcam
+
+> Kopete only shows green screen, thought it locks the /dev/video0
+> device and shows hp webcam
+> in the available device list.
+
+I have also found a bug in kopete bugzilla which describes exactly the
+same problem, but it is
+marked as fixed - there it is said, that such behavior is most likely
+the driver's problem, so
+I suppose it was fixed for a number of devices, but not for mine.
+
+Thank's
+
+
+From sangshuduo at gmail.com  Tue Sep  9 12:56:12 2008
+From: sangshuduo at gmail.com (Shuduo Sang)
+Date: Tue, 9 Sep 2008 18:56:12 +0800
+Subject: [Linux-uvc-devel] get fault after to run luvcview -f yuv and
+	luvcview -f jpg on Logitech QuickCam Pro 7500
+Message-ID: <ee101c360809090356y230d9b92r737f9bd8ae79fc29@mail.gmail.com>
+
+ Hi,
+
+kernel version: 2.6.26 vanilla.
+
+I met a problem on Logitech QuickCam Pro 7500 with uvcvideo driver.
+This model can outputs with YUYV and MJPG pixel format.
+I am writing a program to do something like digital camera. I hope I can
+output YUYV data as viewfinding and output mjpg as still capture.
+But I can't get MJPG data after I got YUYV data. Since my code is too
+huge so i can't attach here, so I can do similar job by luvcview as following.
+
+1, luvcview -f yuv. It works good.
+2, luvcview -f jpg. No data output.
+
+After I replug the webcam, luvcview -f jpg works good. and luvcview -f
+yuv also works.
+ but run luvcview -f jpg again, still no output. It can be reproduced
+every time.
+
+I got uvc trace log after insert module again with parameter trace=0x1ff.
+
+[28036.049978] uvcvideo: Probing generic UVC device 3
+[28036.049978] uvcvideo: Found format MJPEG.
+[28036.049978] uvcvideo: - 160x120 (30.0 fps)
+[28036.049978] uvcvideo: - 176x144 (30.0 fps)
+[28036.049978] uvcvideo: - 320x240 (15.0 fps)
+[28036.049978] uvcvideo: - 352x288 (15.0 fps)
+[28036.049978] uvcvideo: - 640x480 (15.0 fps)
+[28036.049978] uvcvideo: - 960x720 (15.0 fps)
+[28036.049978] uvcvideo: Found format YUV 4:2:2 (YUYV).
+[28036.049978] uvcvideo: - 160x120 (30.0 fps)
+[28036.049978] uvcvideo: - 176x144 (30.0 fps)
+[28036.049978] uvcvideo: - 320x240 (15.0 fps)
+[28036.049978] uvcvideo: - 352x288 (15.0 fps)
+[28036.049978] uvcvideo: - 640x480 (15.0 fps)
+[28036.049978] uvcvideo: - 960x720 (10.0 fps)
+[28036.049978] uvcvideo: - 1280x960 (7.5 fps)
+[28036.049978] uvcvideo: Found a Status endpoint (addr 87).
+[28036.049978] uvcvideo: Found UVC 1.00 device <unnamed> (046d:09a2)
+[28036.049978] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/2 to device 3 entity 2
+[28036.049978] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/3 to device 3 entity 2
+[28036.049978] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/7 to device 3 entity 2
+[28036.049978] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/8 to device 3 entity 2
+[28036.049978] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/1 to device 3 entity 2
+[28036.049978] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/4 to device 3 entity 2
+[28036.049978] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/5 to device 3 entity 2
+[28036.049978] uvcvideo: Added control
+00000000-0000-0000-0000-000000000001/2 to device 3 entity 1
+[28036.049978] uvcvideo: Added control
+00000000-0000-0000-0000-000000000001/3 to device 3 entity 1
+[28036.049978] uvcvideo: Added control
+00000000-0000-0000-0000-000000000001/4 to device 3 entity 1
+[28036.049978] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/11 to device 3 entity 2
+[28036.049978] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/10 to device 3 entity 2
+[28036.049978] uvcvideo: Scanning UVC chain: OT 5 <- XU 4 (-> XU 10 12
+8 11) <- PU 2 (-> XU 13) <- IT 1
+[28036.049978] uvcvideo: Found a valid video chain (1 -> 5).
+[28036.083020] input: UVC Camera (046d:09a2) as /class/input/input24
+[28036.099224] uvcvideo: UVC device initialized.
+[28036.162317] uvcvideo: uvc_v4l2_open
+[28036.162319] uvcvideo: uvc_v4l2_ioctl
+[28036.162319] VIDIOC_QUERYCAP<7>uvcvideo: uvc_v4l2_ioctl
+[28036.180400] VIDIOCGCAPVIDIOC_QUERYCAPVIDIOC_ENUMINPUTVIDIOC_ENUMINPUTVIDIOC_ENUM_FMTVIDIOC_TRY_FMT<7>uvcvideo:
+Trying format 0x47504a4d (MJPG): 10000x10000.
+[28036.182045] uvcvideo: Using default frame interval 66666.6 us (15.0 fps).
+[28036.217822] uvcvideo: uvc_v4l2_release
+
+We can see the "Trying format 0x47504a4d (MJPG): 10000x10000.
+It is output by following code lines of uvc_v4l2.c.
+
+ 115         fcc = (__u8 *)&fmt->fmt.pix.pixelformat;
+ 116         uvc_trace(UVC_TRACE_FORMAT, "Trying format 0x%08x
+(%c%c%c%c): %ux%u.\n",
+ 117                         fmt->fmt.pix.pixelformat,
+ 118                         fcc[0], fcc[1], fcc[2], fcc[3],
+ 119                         fmt->fmt.pix.width, fmt->fmt.pix.height);
+
+I think width and height should not be 10000x10000.
+I guess the fmt must be changed somewhere.
+Did anyone know this bug or already a patch exist?
+
+Thanks,
+Shuduo
+
+
+From botio at no-log.org  Tue Sep  9 17:53:13 2008
+From: botio at no-log.org (botio at no-log.org)
+Date: Tue, 9 Sep 2008 17:53:13 +0200
+Subject: [Linux-uvc-devel] get fault after to run luvcview -f yuv and
+	luvcview -f jpg on Logitech QuickCam Pro 7500
+In-Reply-To: <ee101c360809090356y230d9b92r737f9bd8ae79fc29@mail.gmail.com>
+References: <ee101c360809090356y230d9b92r737f9bd8ae79fc29@mail.gmail.com>
+Message-ID: <200809091753.13870.botio@no-log.org>
+
+On Tuesday 09 September 2008, Shuduo Sang wrote:
+>
+> 1, luvcview -f yuv. It works good.
+> 2, luvcview -f jpg. No data output.
+>
+> After I replug the webcam, luvcview -f jpg works good. and luvcview -f
+> yuv also works.
+> ?but run luvcview -f jpg again, still no output. It can be reproduced
+> every time.
+>
+
+Hi,
+
+I have exactly the same issue with a hercules dualpix exchange
+
+I can reproduce the problem with luvcview alone as you described, 
+or when I try "luvcview -f jpg" after using skype (which uses yuv).
+
+
+From g.longo3 at gmail.com  Tue Sep  9 23:31:11 2008
+From: g.longo3 at gmail.com (Giuseppe Longo)
+Date: Tue, 9 Sep 2008 23:31:11 +0200
+Subject: [Linux-uvc-devel] New device tested
+In-Reply-To: <200808292310.01025.laurent.pinchart@skynet.be>
+References: <71b5c9b80808220514p2f20bf49sc5f3805d0f0b004f@mail.gmail.com>
+	<71b5c9b80808220529t1c3c7ec2wbeb0dce0fddd40b1@mail.gmail.com>
+	<200808292310.01025.laurent.pinchart@skynet.be>
+Message-ID: <71b5c9b80809091431k168a1e7al24e0fbdd0e73fed6@mail.gmail.com>
+
+Hi Laurent,
+Sorry for the delay, I've attached the output( lsusb version 0.73).
+
+Best regards,
+Giuseppe
+
+2008/8/29 Laurent Pinchart <laurent.pinchart at skynet.be>
+
+> Hi Giuseppe,
+>
+> On Friday 22 August 2008, Giuseppe Longo wrote:
+> > Hi all,
+> > Thanks for your hard work.
+> >
+> > I tried my old camera (Webcam mode) and it worked flawlessly with Ekiga,
+> > but not with Skype.
+> > It's a Fujifilm FinePix A340 with 04cb : 014c as USB ids.
+> >
+> > My distro is Ubuntu Hardy Heron and I tested it with kernel
+> > 2.6.24-19-generic.
+>
+> Could you please send me the ouput of
+>
+> lsusb -v -d 04cb:014c
+>
+> with usbutils 0.72 or newer (0.73+ preferred) ?
+>
+> Thanks.
+>
+> Best regards,
+>
+> Laurent Pinchart
+>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080909/3e342cc4/attachment.html>
+-------------- next part --------------
+An embedded and charset-unspecified text was scrubbed...
+Name: fuji.txt
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080909/3e342cc4/attachment.txt>
+
+From paul at christianpatriot.us  Wed Sep 10 15:59:09 2008
+From: paul at christianpatriot.us (Paul Hickey)
+Date: Wed, 10 Sep 2008 09:59:09 -0400
+Subject: [Linux-uvc-devel] Fuji FinePix F700 Revisited
+Message-ID: <1221055149.8772.4.camel@panda1.christianpatriot.us>
+
+Hello again,
+I was wondering if the problem with my camera ceasing to work since
+Gnomemeeting became Ekiga is a kernel issue or application issue? Either
+way, if I get another camera, will I run the risk of that one working
+for awhile and then due to some change, it becomes useless as well?
+Paul Hickey
+Christian Patriot
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080910/c13c9d71/attachment.html>
+
+From soler.sito at gmail.com  Thu Sep 11 23:31:08 2008
+From: soler.sito at gmail.com (Sito Soler)
+Date: Thu, 11 Sep 2008 23:31:08 +0200
+Subject: [Linux-uvc-devel] Fwd: quickcam e 2500 driver
+In-Reply-To: <a2c3ebd30809111427w77a96d1fy3645525a838ae725@mail.gmail.com>
+References: <a2c3ebd30809111427w77a96d1fy3645525a838ae725@mail.gmail.com>
+Message-ID: <a2c3ebd30809111431m27331db6gb5ec509ce92f6ce6@mail.gmail.com>
+
+Hellow, i'm spanish. I don't find a driver for Linux but I could not find
+any place. I have the kernel 2.6.27 but that does not work. I like know if
+UVC will support this driver in the futer. Thanks.
+-- 
+<<SitO>>
+
+
+
+-- 
+<<SitO>>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080911/db36d3d5/attachment.html>
+
+From benjamin.girault at gmail.com  Sat Sep 13 18:55:25 2008
+From: benjamin.girault at gmail.com (Benjamin GIRAULT)
+Date: Sat, 13 Sep 2008 18:55:25 +0200
+Subject: [Linux-uvc-devel] New
+Message-ID: <e9a54d1f0809130955x5b195224h3acc8054e6a5f5f5@mail.gmail.com>
+
+Hi.
+
+I have an integrated webcam (the one on the Asus M70VM, 04f2:b033)
+which is not listed in the supported devices. I managed to have video
+with "luvcview -f yuv" (command I saw on this list). Without "-f yuv",
+the video doesn't show up. Finally, the webcam works well with aMSN.
+
+I join the result of "lsusb -v -d 04f2:b033" (usbutils 0.73).
+
+I can test other functions of this webcam if you need, but with some
+help (I don't know which test to perform and how).
+
+Best regards,
+
+Benjamin Girault.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: lsusb
+Type: application/octet-stream
+Size: 12166 bytes
+Desc: not available
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080913/09695943/attachment.obj>
+
+From suckfish at ihug.co.nz  Sun Sep 14 02:26:30 2008
+From: suckfish at ihug.co.nz (Ralph Loader)
+Date: Sun, 14 Sep 2008 12:26:30 +1200
+Subject: [Linux-uvc-devel] Two quirks with Logitech Sphere AF.
+Message-ID: <20080914122630.2d91ce81@i.geek.nz>
+
+Hi,
+
+First, thanks for the good work with Linux-UVC.
+
+I've just got myself a Logitech Sphere AF, this is working very well,
+except for two things:
+
+
+1.  After running the camera with YUYV output, switching back to MJPG
+does not work.  E.g., luvcview hangs in an ioctl:
+
+gettimeofday({1221351740, 446699}, NULL) = 0
+ioctl(5, VIDIOC_STREAMON, 0xbf97c0b8)   = 0
+ioctl(5, VIDIOC_DQBUF <unfinished ...>
+
+(The camera initially comes up on MJPG mode, and that works; it is only
+after switching to YUYV that I cannot use MJPG.)
+
+
+2.  The default camera gain is reported as 0, which results in a
+dark-gray-black-image; the camera actually initialises the gain to
+about 34, which is much more reasonable.  [I suspect this is a camera
+bug not a driver bug :-(]
+
+Cheers,
+Ralph.
+
+
+From cesar_maciel at ig.com.br  Sun Sep 14 04:19:02 2008
+From: cesar_maciel at ig.com.br (Cesar Maciel)
+Date: Sat, 13 Sep 2008 22:19:02 -0400
+Subject: [Linux-uvc-devel] Recording from two webcams
+Message-ID: <48CC7496.2010707@ig.com.br>
+
+Hello,
+ I have seen some past e-mails on the subject, but I am experiencing a 
+situation where a specific camera does not work, while other cameras work.
+ I have tried simultaneously recording using ffmpeg from 3 webcams 
+(different vendors), and was able to record the three streams.
+ I have tried simultaneously recording using ffmpeg from two Microsoft 
+NX-3000 webcams, and was able to record both streams.
+ Using a Topspeed camera (lsusb for the device included), I am able to 
+record from a single camera without problems. When I try to record from 
+two Topspeed cameras at the same time, I get the following error from 
+uvcvideo:
+
+[video4linux2 @ 0x8417760][3]Capabilities: 4000001
+[video4linux2 @ 0x8417760]ioctl(VIDIOC_STREAMON): No space left on device
+
+and dmesg shows:
+
+uvcvideo: Failed to submit URB 0 (-28).
+
+I am using SVN 246, and uvcvideo recognizes both cameras:
+
+Linux video capture interface: v2.00
+uvcvideo: Found UVC 1.00 device TOPSPEED USB 2.0 Camera B. (0ac8:3313)
+input: TOPSPEED USB 2.0 Camera B. as /class/input/input14
+uvcvideo: Found UVC 1.00 device TOPSPEED USB 2.0 Camera B. (0ac8:3313)
+input: TOPSPEED USB 2.0 Camera B. as /class/input/input15
+usbcore: registered new interface driver uvcvideo
+USB Video Class driver (SVN r246)
+
+The ffmpeg command I am using is:
+
+./ffmpeg -y -f video4linux2 -r 5 -s 352x288 -qscale 5 -i /dev/videoX 
+-vcodec msmpeg4v2 -f avi -r $1 /mnt/testeX.avi
+
+where "X" is 0 or 1 depending on the device.
+Both cameras work fine alone, and also work fine recording 
+simultaneously with the Microsoft NX-3000, and/or a Logitech Quickcam 5000.
+
+Any ideas?
+
+Thanks
+Cesar
+
+
+------------------------------------------------------------------------
+
+
+Bus 001 Device 015: ID 0ac8:3313 Z-Star Microelectronics Corp. 
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               2.00
+  bDeviceClass          239 Miscellaneous Device
+  bDeviceSubClass         2 Common Class
+  bDeviceProtocol         1 Interface Association
+  bMaxPacketSize0        64
+  idVendor           0x0ac8 Z-Star Microelectronics Corp.
+  idProduct          0x3313 
+  bcdDevice            1.00
+  iManufacturer           1 Vimicro Corp.
+  iProduct                2 TOPSPEED USB 2.0 Camera B.
+  iSerial                 0 
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength          581
+    bNumInterfaces          2
+    bConfigurationValue     1
+    iConfiguration          0 
+    bmAttributes         0x80
+      (Bus Powered)
+    MaxPower              500mA
+    Interface Association:
+      bLength                 8
+      bDescriptorType        11
+      bFirstInterface         0
+      bInterfaceCount         2
+      bFunctionClass         14 Video
+      bFunctionSubClass       3 Video Interface Collection
+      bFunctionProtocol       0 
+      iFunction               2 TOPSPEED USB 2.0 Camera B.
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      1 Video Control
+      bInterfaceProtocol      0 
+      iInterface              2 TOPSPEED USB 2.0 Camera B.
+      VideoControl Interface Descriptor:
+        bLength                13
+        bDescriptorType        36
+        bDescriptorSubtype      1 (HEADER)
+        bcdUVC               1.00
+        wTotalLength           79
+        dwClockFrequency       24.000000MHz
+        bInCollection           1
+        baInterfaceNr( 0)       1
+      VideoControl Interface Descriptor:
+        bLength                18
+        bDescriptorType        36
+        bDescriptorSubtype      2 (INPUT_TERMINAL)
+        bTerminalID             1
+        wTerminalType      0x0201 Camera Sensor
+        bAssocTerminal          0
+        iTerminal               0 
+        wObjectiveFocalLengthMin      0
+        wObjectiveFocalLengthMax      0
+        wOcularFocalLength            0
+        bControlSize                  3
+        bmControls           0x0004000a
+          Auto-Exposure Mode
+          Exposure Time (Absolute)
+          Privacy
+      VideoControl Interface Descriptor:
+        bLength                11
+        bDescriptorType        36
+        bDescriptorSubtype      5 (PROCESSING_UNIT)
+      Warning: Descriptor too short
+        bUnitID                 2
+        bSourceID               1
+        wMaxMultiplier          0
+        bControlSize            2
+        bmControls     0x0000177f
+          Brightness
+          Contrast
+          Hue
+          Saturation
+          Sharpness
+          Gamma
+          White Balance Temperature
+          Backlight Compensation
+          Gain
+          Power Line Frequency
+          White Balance Temperature, Auto
+        iProcessing             0 
+        bmVideoStandards     0x 9
+          None
+          SECAM - 625/50
+      VideoControl Interface Descriptor:
+        bLength                 9
+        bDescriptorType        36
+        bDescriptorSubtype      3 (OUTPUT_TERMINAL)
+        bTerminalID             3
+        wTerminalType      0x0101 USB Streaming
+        bAssocTerminal          0
+        bSourceID               2
+        iTerminal               0 
+      VideoControl Interface Descriptor:
+        bLength                28
+        bDescriptorType        36
+        bDescriptorSubtype      6 (EXTENSION_UNIT)
+        bUnitID                 4
+        guidExtensionCode         {a917c75d-4119-11da-ae0e-000d56ac7b4c}
+        bNumControl            13
+        bNrPins                 1
+        baSourceID( 0)          1
+        bControlSize            3
+        bmControls( 0)       0xf9
+        bmControls( 1)       0x1f
+        bmControls( 2)       0x18
+        iExtension              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x000a  1x 10 bytes
+        bInterval               5
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       0
+      bNumEndpoints           0
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      VideoStreaming Interface Descriptor:
+        bLength                            14
+        bDescriptorType                    36
+        bDescriptorSubtype                  1 (INPUT_HEADER)
+        bNumFormarts                        1
+        wTotalLength                    33281
+        bEndPointAddress                    0
+        bmInfo                              3
+        bTerminalLink                       2
+        bStillCaptureMethod                 1
+        bTriggerSupport                     1
+        bTriggerUsage                       1
+        bControlSize                        1
+        bmaControls( 0)                    27
+      VideoStreaming Interface Descriptor:
+        bLength                            27
+        bDescriptorType                    36
+        bDescriptorSubtype                  4 (FORMAT_UNCOMPRESSED)
+        bFormatIndex                        1
+        bNumFrameDescriptors                5
+        guidFormat                            {32595559-0000-0010-8000-00aa00389b71}
+        bBitsPerPixel                      16
+        bDefaultFrameIndex                  1
+        bAspectRatioX                       0
+        bAspectRatioY                       0
+        bmInterlaceFlags                 0x00
+          Interlaced stream or variable: No
+          Fields per frame: 1 fields
+          Field 1 first: No
+          Field pattern: Field 1 only
+          bCopyProtect                      0
+      VideoStreaming Interface Descriptor:
+        bLength                            54
+        bDescriptorType                    36
+        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+        bFrameIndex                         1
+        bmCapabilities                   0x00
+          Still image unsupported
+        wWidth                            640
+        wHeight                           480
+        dwMinBitRate                 24576000
+        dwMaxBitRate                147456000
+        dwMaxVideoFrameBufferSize      614400
+        dwDefaultFrameInterval         333333
+        bFrameIntervalType                  7
+        dwFrameInterval( 0)            333333
+        dwFrameInterval( 1)            400000
+        dwFrameInterval( 2)            500000
+        dwFrameInterval( 3)            666667
+        dwFrameInterval( 4)           1000000
+        dwFrameInterval( 5)           1333333
+        dwFrameInterval( 6)           2000000
+      VideoStreaming Interface Descriptor:
+        bLength                            54
+        bDescriptorType                    36
+        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+        bFrameIndex                         2
+        bmCapabilities                   0x00
+          Still image unsupported
+        wWidth                            352
+        wHeight                           288
+        dwMinBitRate                 24576000
+        dwMaxBitRate                147456000
+        dwMaxVideoFrameBufferSize      202752
+        dwDefaultFrameInterval         333333
+        bFrameIntervalType                  7
+        dwFrameInterval( 0)            333333
+        dwFrameInterval( 1)            400000
+        dwFrameInterval( 2)            500000
+        dwFrameInterval( 3)            666667
+        dwFrameInterval( 4)           1000000
+        dwFrameInterval( 5)           1333333
+        dwFrameInterval( 6)           2000000
+      VideoStreaming Interface Descriptor:
+        bLength                            54
+        bDescriptorType                    36
+        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+        bFrameIndex                         3
+        bmCapabilities                   0x00
+          Still image unsupported
+        wWidth                            320
+        wHeight                           240
+        dwMinBitRate                 24576000
+        dwMaxBitRate                147456000
+        dwMaxVideoFrameBufferSize      153600
+        dwDefaultFrameInterval         333333
+        bFrameIntervalType                  7
+        dwFrameInterval( 0)            333333
+        dwFrameInterval( 1)            400000
+        dwFrameInterval( 2)            500000
+        dwFrameInterval( 3)            666667
+        dwFrameInterval( 4)           1000000
+        dwFrameInterval( 5)           1333333
+        dwFrameInterval( 6)           2000000
+      VideoStreaming Interface Descriptor:
+        bLength                            54
+        bDescriptorType                    36
+        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+        bFrameIndex                         4
+        bmCapabilities                   0x00
+          Still image unsupported
+        wWidth                            176
+        wHeight                           144
+        dwMinBitRate                 24576000
+        dwMaxBitRate                147456000
+        dwMaxVideoFrameBufferSize       50688
+        dwDefaultFrameInterval         333333
+        bFrameIntervalType                  7
+        dwFrameInterval( 0)            333333
+        dwFrameInterval( 1)            400000
+        dwFrameInterval( 2)            500000
+        dwFrameInterval( 3)            666667
+        dwFrameInterval( 4)           1000000
+        dwFrameInterval( 5)           1333333
+        dwFrameInterval( 6)           2000000
+      VideoStreaming Interface Descriptor:
+        bLength                            54
+        bDescriptorType                    36
+        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+        bFrameIndex                         5
+        bmCapabilities                   0x00
+          Still image unsupported
+        wWidth                            160
+        wHeight                           120
+        dwMinBitRate                 24576000
+        dwMaxBitRate                147456000
+        dwMaxVideoFrameBufferSize       38400
+        dwDefaultFrameInterval         333333
+        bFrameIntervalType                  7
+        dwFrameInterval( 0)            333333
+        dwFrameInterval( 1)            400000
+        dwFrameInterval( 2)            500000
+        dwFrameInterval( 3)            666667
+        dwFrameInterval( 4)           1000000
+        dwFrameInterval( 5)           1333333
+        dwFrameInterval( 6)           2000000
+      VideoStreaming Interface Descriptor:
+        bLength                            26
+        bDescriptorType                    36
+        bDescriptorSubtype                  3 (STILL_IMAGE_FRAME)
+        bEndpointAddress                    0
+        bNumImageSizePatterns               5
+        wWidth( 0)                        640
+        wHeight( 0)                       480
+        wWidth( 1)                        352
+        wHeight( 1)                       288
+        wWidth( 2)                        320
+        wHeight( 2)                       240
+        wWidth( 3)                        176
+        wHeight( 3)                       144
+        wWidth( 4)                        160
+        wHeight( 4)                       120
+        bNumCompressionPatterns             5
+      VideoStreaming Interface Descriptor:
+        bLength                             6
+        bDescriptorType                    36
+        bDescriptorSubtype                 13 (COLORFORMAT)
+        bColorPrimaries                     0 (Unspecified)
+        bTransferCharacteristics            0 (Unspecified)
+        bMatrixCoefficients                 0 (Unspecified)
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       1
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0080  1x 128 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       2
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0200  1x 512 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       3
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0400  1x 0 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       4
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0b00  2x 768 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       5
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0c00  2x 0 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       6
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x1380  3x 896 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       7
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x1400  3x 0 bytes
+        bInterval               1
+Device Qualifier (for other device speed):
+  bLength                10
+  bDescriptorType         6
+  bcdUSB               2.00
+  bDeviceClass          239 Miscellaneous Device
+  bDeviceSubClass         2 Common Class
+  bDeviceProtocol         1 Interface Association
+  bMaxPacketSize0        64
+  bNumConfigurations      1
+Device Status:     0x0000
+  (Bus Powered)
+
+Bus 001 Device 014: ID 0ac8:3313 Z-Star Microelectronics Corp. 
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               2.00
+  bDeviceClass          239 Miscellaneous Device
+  bDeviceSubClass         2 Common Class
+  bDeviceProtocol         1 Interface Association
+  bMaxPacketSize0        64
+  idVendor           0x0ac8 Z-Star Microelectronics Corp.
+  idProduct          0x3313 
+  bcdDevice            1.00
+  iManufacturer           1 Vimicro Corp.
+  iProduct                2 TOPSPEED USB 2.0 Camera B.
+  iSerial                 0 
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength          581
+    bNumInterfaces          2
+    bConfigurationValue     1
+    iConfiguration          0 
+    bmAttributes         0x80
+      (Bus Powered)
+    MaxPower              500mA
+    Interface Association:
+      bLength                 8
+      bDescriptorType        11
+      bFirstInterface         0
+      bInterfaceCount         2
+      bFunctionClass         14 Video
+      bFunctionSubClass       3 Video Interface Collection
+      bFunctionProtocol       0 
+      iFunction               2 TOPSPEED USB 2.0 Camera B.
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      1 Video Control
+      bInterfaceProtocol      0 
+      iInterface              2 TOPSPEED USB 2.0 Camera B.
+      VideoControl Interface Descriptor:
+        bLength                13
+        bDescriptorType        36
+        bDescriptorSubtype      1 (HEADER)
+        bcdUVC               1.00
+        wTotalLength           79
+        dwClockFrequency       24.000000MHz
+        bInCollection           1
+        baInterfaceNr( 0)       1
+      VideoControl Interface Descriptor:
+        bLength                18
+        bDescriptorType        36
+        bDescriptorSubtype      2 (INPUT_TERMINAL)
+        bTerminalID             1
+        wTerminalType      0x0201 Camera Sensor
+        bAssocTerminal          0
+        iTerminal               0 
+        wObjectiveFocalLengthMin      0
+        wObjectiveFocalLengthMax      0
+        wOcularFocalLength            0
+        bControlSize                  3
+        bmControls           0x0004000a
+          Auto-Exposure Mode
+          Exposure Time (Absolute)
+          Privacy
+      VideoControl Interface Descriptor:
+        bLength                11
+        bDescriptorType        36
+        bDescriptorSubtype      5 (PROCESSING_UNIT)
+      Warning: Descriptor too short
+        bUnitID                 2
+        bSourceID               1
+        wMaxMultiplier          0
+        bControlSize            2
+        bmControls     0x0000177f
+          Brightness
+          Contrast
+          Hue
+          Saturation
+          Sharpness
+          Gamma
+          White Balance Temperature
+          Backlight Compensation
+          Gain
+          Power Line Frequency
+          White Balance Temperature, Auto
+        iProcessing             0 
+        bmVideoStandards     0x 9
+          None
+          SECAM - 625/50
+      VideoControl Interface Descriptor:
+        bLength                 9
+        bDescriptorType        36
+        bDescriptorSubtype      3 (OUTPUT_TERMINAL)
+        bTerminalID             3
+        wTerminalType      0x0101 USB Streaming
+        bAssocTerminal          0
+        bSourceID               2
+        iTerminal               0 
+      VideoControl Interface Descriptor:
+        bLength                28
+        bDescriptorType        36
+        bDescriptorSubtype      6 (EXTENSION_UNIT)
+        bUnitID                 4
+        guidExtensionCode         {a917c75d-4119-11da-ae0e-000d56ac7b4c}
+        bNumControl            13
+        bNrPins                 1
+        baSourceID( 0)          1
+        bControlSize            3
+        bmControls( 0)       0xf9
+        bmControls( 1)       0x1f
+        bmControls( 2)       0x18
+        iExtension              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x000a  1x 10 bytes
+        bInterval               5
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       0
+      bNumEndpoints           0
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      VideoStreaming Interface Descriptor:
+        bLength                            14
+        bDescriptorType                    36
+        bDescriptorSubtype                  1 (INPUT_HEADER)
+        bNumFormarts                        1
+        wTotalLength                    33281
+        bEndPointAddress                    0
+        bmInfo                              3
+        bTerminalLink                       2
+        bStillCaptureMethod                 1
+        bTriggerSupport                     1
+        bTriggerUsage                       1
+        bControlSize                        1
+        bmaControls( 0)                    27
+      VideoStreaming Interface Descriptor:
+        bLength                            27
+        bDescriptorType                    36
+        bDescriptorSubtype                  4 (FORMAT_UNCOMPRESSED)
+        bFormatIndex                        1
+        bNumFrameDescriptors                5
+        guidFormat                            {32595559-0000-0010-8000-00aa00389b71}
+        bBitsPerPixel                      16
+        bDefaultFrameIndex                  1
+        bAspectRatioX                       0
+        bAspectRatioY                       0
+        bmInterlaceFlags                 0x00
+          Interlaced stream or variable: No
+          Fields per frame: 1 fields
+          Field 1 first: No
+          Field pattern: Field 1 only
+          bCopyProtect                      0
+      VideoStreaming Interface Descriptor:
+        bLength                            54
+        bDescriptorType                    36
+        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+        bFrameIndex                         1
+        bmCapabilities                   0x00
+          Still image unsupported
+        wWidth                            640
+        wHeight                           480
+        dwMinBitRate                 24576000
+        dwMaxBitRate                147456000
+        dwMaxVideoFrameBufferSize      614400
+        dwDefaultFrameInterval         333333
+        bFrameIntervalType                  7
+        dwFrameInterval( 0)            333333
+        dwFrameInterval( 1)            400000
+        dwFrameInterval( 2)            500000
+        dwFrameInterval( 3)            666667
+        dwFrameInterval( 4)           1000000
+        dwFrameInterval( 5)           1333333
+        dwFrameInterval( 6)           2000000
+      VideoStreaming Interface Descriptor:
+        bLength                            54
+        bDescriptorType                    36
+        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+        bFrameIndex                         2
+        bmCapabilities                   0x00
+          Still image unsupported
+        wWidth                            352
+        wHeight                           288
+        dwMinBitRate                 24576000
+        dwMaxBitRate                147456000
+        dwMaxVideoFrameBufferSize      202752
+        dwDefaultFrameInterval         333333
+        bFrameIntervalType                  7
+        dwFrameInterval( 0)            333333
+        dwFrameInterval( 1)            400000
+        dwFrameInterval( 2)            500000
+        dwFrameInterval( 3)            666667
+        dwFrameInterval( 4)           1000000
+        dwFrameInterval( 5)           1333333
+        dwFrameInterval( 6)           2000000
+      VideoStreaming Interface Descriptor:
+        bLength                            54
+        bDescriptorType                    36
+        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+        bFrameIndex                         3
+        bmCapabilities                   0x00
+          Still image unsupported
+        wWidth                            320
+        wHeight                           240
+        dwMinBitRate                 24576000
+        dwMaxBitRate                147456000
+        dwMaxVideoFrameBufferSize      153600
+        dwDefaultFrameInterval         333333
+        bFrameIntervalType                  7
+        dwFrameInterval( 0)            333333
+        dwFrameInterval( 1)            400000
+        dwFrameInterval( 2)            500000
+        dwFrameInterval( 3)            666667
+        dwFrameInterval( 4)           1000000
+        dwFrameInterval( 5)           1333333
+        dwFrameInterval( 6)           2000000
+      VideoStreaming Interface Descriptor:
+        bLength                            54
+        bDescriptorType                    36
+        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+        bFrameIndex                         4
+        bmCapabilities                   0x00
+          Still image unsupported
+        wWidth                            176
+        wHeight                           144
+        dwMinBitRate                 24576000
+        dwMaxBitRate                147456000
+        dwMaxVideoFrameBufferSize       50688
+        dwDefaultFrameInterval         333333
+        bFrameIntervalType                  7
+        dwFrameInterval( 0)            333333
+        dwFrameInterval( 1)            400000
+        dwFrameInterval( 2)            500000
+        dwFrameInterval( 3)            666667
+        dwFrameInterval( 4)           1000000
+        dwFrameInterval( 5)           1333333
+        dwFrameInterval( 6)           2000000
+      VideoStreaming Interface Descriptor:
+        bLength                            54
+        bDescriptorType                    36
+        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+        bFrameIndex                         5
+        bmCapabilities                   0x00
+          Still image unsupported
+        wWidth                            160
+        wHeight                           120
+        dwMinBitRate                 24576000
+        dwMaxBitRate                147456000
+        dwMaxVideoFrameBufferSize       38400
+        dwDefaultFrameInterval         333333
+        bFrameIntervalType                  7
+        dwFrameInterval( 0)            333333
+        dwFrameInterval( 1)            400000
+        dwFrameInterval( 2)            500000
+        dwFrameInterval( 3)            666667
+        dwFrameInterval( 4)           1000000
+        dwFrameInterval( 5)           1333333
+        dwFrameInterval( 6)           2000000
+      VideoStreaming Interface Descriptor:
+        bLength                            26
+        bDescriptorType                    36
+        bDescriptorSubtype                  3 (STILL_IMAGE_FRAME)
+        bEndpointAddress                    0
+        bNumImageSizePatterns               5
+        wWidth( 0)                        640
+        wHeight( 0)                       480
+        wWidth( 1)                        352
+        wHeight( 1)                       288
+        wWidth( 2)                        320
+        wHeight( 2)                       240
+        wWidth( 3)                        176
+        wHeight( 3)                       144
+        wWidth( 4)                        160
+        wHeight( 4)                       120
+        bNumCompressionPatterns             5
+      VideoStreaming Interface Descriptor:
+        bLength                             6
+        bDescriptorType                    36
+        bDescriptorSubtype                 13 (COLORFORMAT)
+        bColorPrimaries                     0 (Unspecified)
+        bTransferCharacteristics            0 (Unspecified)
+        bMatrixCoefficients                 0 (Unspecified)
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       1
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0080  1x 128 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       2
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0200  1x 512 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       3
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0400  1x 0 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       4
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0b00  2x 768 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       5
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0c00  2x 0 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       6
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x1380  3x 896 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       7
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x1400  3x 0 bytes
+        bInterval               1
+Device Qualifier (for other device speed):
+  bLength                10
+  bDescriptorType         6
+  bcdUSB               2.00
+  bDeviceClass          239 Miscellaneous Device
+  bDeviceSubClass         2 Common Class
+  bDeviceProtocol         1 Interface Association
+  bMaxPacketSize0        64
+  bNumConfigurations      1
+Device Status:     0x0000
+  (Bus Powered)
+
+
+
+From sangshuduo at gmail.com  Sun Sep 14 12:25:27 2008
+From: sangshuduo at gmail.com (Shuduo Sang)
+Date: Sun, 14 Sep 2008 18:25:27 +0800
+Subject: [Linux-uvc-devel] New
+In-Reply-To: <e9a54d1f0809130955x5b195224h3acc8054e6a5f5f5@mail.gmail.com>
+References: <e9a54d1f0809130955x5b195224h3acc8054e6a5f5f5@mail.gmail.com>
+Message-ID: <ee101c360809140325r59856a40lfa67fb776f10379d@mail.gmail.com>
+
+On Sun, Sep 14, 2008 at 12:55 AM, Benjamin GIRAULT
+<benjamin.girault at gmail.com> wrote:
+> Hi.
+>
+> I have an integrated webcam (the one on the Asus M70VM, 04f2:b033)
+> which is not listed in the supported devices. I managed to have video
+> with "luvcview -f yuv" (command I saw on this list). Without "-f yuv",
+> the video doesn't show up. Finally, the webcam works well with aMSN.
+>
+
+you can try "luvcview -L" to list all fmt and resolutions which it supports. HTH
+
+> I join the result of "lsusb -v -d 04f2:b033" (usbutils 0.73).
+>
+> I can test other functions of this webcam if you need, but with some
+> help (I don't know which test to perform and how).
+>
+> Best regards,
+>
+> Benjamin Girault.
+>
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+>
+>
+
+
+From sangshuduo at gmail.com  Sun Sep 14 12:28:22 2008
+From: sangshuduo at gmail.com (Shuduo Sang)
+Date: Sun, 14 Sep 2008 18:28:22 +0800
+Subject: [Linux-uvc-devel] Two quirks with Logitech Sphere AF.
+In-Reply-To: <20080914122630.2d91ce81@i.geek.nz>
+References: <20080914122630.2d91ce81@i.geek.nz>
+Message-ID: <ee101c360809140328v44a8561dqb938533902f37608@mail.gmail.com>
+
+On Sun, Sep 14, 2008 at 8:26 AM, Ralph Loader <suckfish at ihug.co.nz> wrote:
+> Hi,
+>
+> First, thanks for the good work with Linux-UVC.
+>
+> I've just got myself a Logitech Sphere AF, this is working very well,
+> except for two things:
+>
+>
+> 1.  After running the camera with YUYV output, switching back to MJPG
+> does not work.  E.g., luvcview hangs in an ioctl:
+>
+> gettimeofday({1221351740, 446699}, NULL) = 0
+> ioctl(5, VIDIOC_STREAMON, 0xbf97c0b8)   = 0
+> ioctl(5, VIDIOC_DQBUF <unfinished ...>
+
+I have reported same issue to list but no reply. I just see two large
+width and height
+ (10000x10000) be received after I set to 640x480 with MJPG format.
+
+>
+> (The camera initially comes up on MJPG mode, and that works; it is only
+> after switching to YUYV that I cannot use MJPG.)
+>
+>
+> 2.  The default camera gain is reported as 0, which results in a
+> dark-gray-black-image; the camera actually initialises the gain to
+> about 34, which is much more reasonable.  [I suspect this is a camera
+> bug not a driver bug :-(]
+>
+> Cheers,
+> Ralph.
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+>
+
+
+From laurent.pinchart at skynet.be  Sun Sep 14 23:19:38 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Sun, 14 Sep 2008 23:19:38 +0200
+Subject: [Linux-uvc-devel] New
+In-Reply-To: <e9a54d1f0809130955x5b195224h3acc8054e6a5f5f5@mail.gmail.com>
+References: <e9a54d1f0809130955x5b195224h3acc8054e6a5f5f5@mail.gmail.com>
+Message-ID: <200809142319.39103.laurent.pinchart@skynet.be>
+
+Hi Benjamin,
+
+On Saturday 13 September 2008, Benjamin GIRAULT wrote:
+> Hi.
+>
+> I have an integrated webcam (the one on the Asus M70VM, 04f2:b033)
+> which is not listed in the supported devices. I managed to have video
+> with "luvcview -f yuv" (command I saw on this list). Without "-f yuv",
+> the video doesn't show up. Finally, the webcam works well with aMSN.
+>
+> I join the result of "lsusb -v -d 04f2:b033" (usbutils 0.73).
+
+Thanks for the report. I've updated the supported devices list on the website.
+
+> I can test other functions of this webcam if you need, but with some
+> help (I don't know which test to perform and how).
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Sun Sep 14 23:25:17 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Sun, 14 Sep 2008 23:25:17 +0200
+Subject: [Linux-uvc-devel] Fwd: quickcam e 2500 driver
+In-Reply-To: <a2c3ebd30809111431m27331db6gb5ec509ce92f6ce6@mail.gmail.com>
+References: <a2c3ebd30809111427w77a96d1fy3645525a838ae725@mail.gmail.com>
+	<a2c3ebd30809111431m27331db6gb5ec509ce92f6ce6@mail.gmail.com>
+Message-ID: <200809142325.17933.laurent.pinchart@skynet.be>
+
+Hi,
+
+On Thursday 11 September 2008, Sito Soler wrote:
+> Hellow, i'm spanish. I don't find a driver for Linux but I could not find
+> any place. I have the kernel 2.6.27 but that does not work. I like know if
+> UVC will support this driver in the futer. Thanks.
+
+The E2500 is not UVC compliant so it won't be supported by the UVC driver. You 
+might have more luck with the gspca driver. Have a look at 
+http://forums.quickcamteam.net/showthread.php?tid=310 for more information.
+
+Best regards,
+
+Laurent Pinchart
+
+
+
+From nick at daenim.com  Mon Sep 15 08:39:29 2008
+From: nick at daenim.com (Nick HS)
+Date: Mon, 15 Sep 2008 14:39:29 +0800
+Subject: [Linux-uvc-devel] Cheese and Camorama not working with Eee PC webcam
+Message-ID: <48CE0321.10105@daenim.com>
+
+Hi,
+
+I am running Debian Sid on my Eee PC and trying to get Cheese to work.
+As far as I can tell this is an issue in how uvc talks to v4l2, in
+cheese I cannot see my video in the preview screen but when I take my
+picture it comes out fine. I am using the latest drivers from SVN
+
+Any ideas?
+
+Thanks Nick
+
+
+From xbenlau at gmail.com  Mon Sep 15 13:47:42 2008
+From: xbenlau at gmail.com (Ben Lau)
+Date: Mon, 15 Sep 2008 19:47:42 +0800
+Subject: [Linux-uvc-devel] Cheese and Camorama not working with Eee PC
+	webcam
+In-Reply-To: <48CE0321.10105@daenim.com>
+References: <48CE0321.10105@daenim.com>
+Message-ID: <f9a7555e0809150447s65750cb8v14b6efe53851e7f5@mail.gmail.com>
+
+Did you compiled the eeepc-acpi module? I am using the kernel image
+from array.org + Ubunut 8.0.4. It is working fine.
+
+On Mon, Sep 15, 2008 at 2:39 PM, Nick HS <nick at daenim.com> wrote:
+> Hi,
+>
+> I am running Debian Sid on my Eee PC and trying to get Cheese to work.
+> As far as I can tell this is an issue in how uvc talks to v4l2, in
+> cheese I cannot see my video in the preview screen but when I take my
+> picture it comes out fine. I am using the latest drivers from SVN
+>
+> Any ideas?
+>
+> Thanks Nick
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+>
+
+
+From laurent.pinchart at skynet.be  Mon Sep 15 23:03:36 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Mon, 15 Sep 2008 23:03:36 +0200
+Subject: [Linux-uvc-devel] New device tested
+In-Reply-To: <71b5c9b80809091431k168a1e7al24e0fbdd0e73fed6@mail.gmail.com>
+References: <71b5c9b80808220514p2f20bf49sc5f3805d0f0b004f@mail.gmail.com>
+	<200808292310.01025.laurent.pinchart@skynet.be>
+	<71b5c9b80809091431k168a1e7al24e0fbdd0e73fed6@mail.gmail.com>
+Message-ID: <200809152303.36892.laurent.pinchart@skynet.be>
+
+Hi Giuseppe,
+
+On Tuesday 09 September 2008, Giuseppe Longo wrote:
+> Hi Laurent,
+> Sorry for the delay,
+
+No worries.
+
+> I've attached the output( lsusb version 0.73).
+
+Thanks. I've updated the supported devices list on the website.
+
+Your camera streams video in MJPEG only, which Skype doesn't support. This 
+explains why you can use it with Ekiga but not with Skype.
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Tue Sep 16 00:07:15 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 16 Sep 2008 00:07:15 +0200
+Subject: [Linux-uvc-devel] get fault after to run luvcview -f yuv and
+	luvcview -f jpg on Logitech QuickCam Pro 7500
+In-Reply-To: <ee101c360809090356y230d9b92r737f9bd8ae79fc29@mail.gmail.com>
+References: <ee101c360809090356y230d9b92r737f9bd8ae79fc29@mail.gmail.com>
+Message-ID: <200809160007.16115.laurent.pinchart@skynet.be>
+
+Hi,
+
+On Tuesday 09 September 2008, Shuduo Sang wrote:
+>  Hi,
+>
+> kernel version: 2.6.26 vanilla.
+>
+> I met a problem on Logitech QuickCam Pro 7500 with uvcvideo driver.
+> This model can outputs with YUYV and MJPG pixel format.
+> I am writing a program to do something like digital camera. I hope I can
+> output YUYV data as viewfinding and output mjpg as still capture.
+> But I can't get MJPG data after I got YUYV data. Since my code is too
+> huge so i can't attach here, so I can do similar job by luvcview as
+> following.
+>
+> 1, luvcview -f yuv. It works good.
+> 2, luvcview -f jpg. No data output.
+>
+> After I replug the webcam, luvcview -f jpg works good. and luvcview -f
+> yuv also works.
+>  but run luvcview -f jpg again, still no output. It can be reproduced
+> every time.
+>
+> I got uvc trace log after insert module again with parameter trace=0x1ff.
+>
+> [28036.049978] uvcvideo: Probing generic UVC device 3
+> [28036.049978] uvcvideo: Found format MJPEG.
+> [28036.049978] uvcvideo: - 160x120 (30.0 fps)
+> [28036.049978] uvcvideo: - 176x144 (30.0 fps)
+> [28036.049978] uvcvideo: - 320x240 (15.0 fps)
+> [28036.049978] uvcvideo: - 352x288 (15.0 fps)
+> [28036.049978] uvcvideo: - 640x480 (15.0 fps)
+> [28036.049978] uvcvideo: - 960x720 (15.0 fps)
+> [28036.049978] uvcvideo: Found format YUV 4:2:2 (YUYV).
+> [28036.049978] uvcvideo: - 160x120 (30.0 fps)
+> [28036.049978] uvcvideo: - 176x144 (30.0 fps)
+> [28036.049978] uvcvideo: - 320x240 (15.0 fps)
+> [28036.049978] uvcvideo: - 352x288 (15.0 fps)
+> [28036.049978] uvcvideo: - 640x480 (15.0 fps)
+> [28036.049978] uvcvideo: - 960x720 (10.0 fps)
+> [28036.049978] uvcvideo: - 1280x960 (7.5 fps)
+> [28036.049978] uvcvideo: Found a Status endpoint (addr 87).
+> [28036.049978] uvcvideo: Found UVC 1.00 device <unnamed> (046d:09a2)
+> [28036.049978] uvcvideo: Added control
+> 00000000-0000-0000-0000-000000000101/2 to device 3 entity 2
+> [28036.049978] uvcvideo: Added control
+> 00000000-0000-0000-0000-000000000101/3 to device 3 entity 2
+> [28036.049978] uvcvideo: Added control
+> 00000000-0000-0000-0000-000000000101/7 to device 3 entity 2
+> [28036.049978] uvcvideo: Added control
+> 00000000-0000-0000-0000-000000000101/8 to device 3 entity 2
+> [28036.049978] uvcvideo: Added control
+> 00000000-0000-0000-0000-000000000101/1 to device 3 entity 2
+> [28036.049978] uvcvideo: Added control
+> 00000000-0000-0000-0000-000000000101/4 to device 3 entity 2
+> [28036.049978] uvcvideo: Added control
+> 00000000-0000-0000-0000-000000000101/5 to device 3 entity 2
+> [28036.049978] uvcvideo: Added control
+> 00000000-0000-0000-0000-000000000001/2 to device 3 entity 1
+> [28036.049978] uvcvideo: Added control
+> 00000000-0000-0000-0000-000000000001/3 to device 3 entity 1
+> [28036.049978] uvcvideo: Added control
+> 00000000-0000-0000-0000-000000000001/4 to device 3 entity 1
+> [28036.049978] uvcvideo: Added control
+> 00000000-0000-0000-0000-000000000101/11 to device 3 entity 2
+> [28036.049978] uvcvideo: Added control
+> 00000000-0000-0000-0000-000000000101/10 to device 3 entity 2
+> [28036.049978] uvcvideo: Scanning UVC chain: OT 5 <- XU 4 (-> XU 10 12
+> 8 11) <- PU 2 (-> XU 13) <- IT 1
+> [28036.049978] uvcvideo: Found a valid video chain (1 -> 5).
+> [28036.083020] input: UVC Camera (046d:09a2) as /class/input/input24
+> [28036.099224] uvcvideo: UVC device initialized.
+> [28036.162317] uvcvideo: uvc_v4l2_open
+> [28036.162319] uvcvideo: uvc_v4l2_ioctl
+> [28036.162319] VIDIOC_QUERYCAP<7>uvcvideo: uvc_v4l2_ioctl
+> [28036.180400]
+> VIDIOCGCAPVIDIOC_QUERYCAPVIDIOC_ENUMINPUTVIDIOC_ENUMINPUTVIDIOC_ENUM_FMTVID
+>IOC_TRY_FMT<7>uvcvideo: Trying format 0x47504a4d (MJPG): 10000x10000.
+> [28036.182045] uvcvideo: Using default frame interval 66666.6 us (15.0
+> fps). [28036.217822] uvcvideo: uvc_v4l2_release
+>
+> We can see the "Trying format 0x47504a4d (MJPG): 10000x10000.
+> It is output by following code lines of uvc_v4l2.c.
+>
+>  115         fcc = (__u8 *)&fmt->fmt.pix.pixelformat;
+>  116         uvc_trace(UVC_TRACE_FORMAT, "Trying format 0x%08x
+> (%c%c%c%c): %ux%u.\n",
+>  117                         fmt->fmt.pix.pixelformat,
+>  118                         fcc[0], fcc[1], fcc[2], fcc[3],
+>  119                         fmt->fmt.pix.width, fmt->fmt.pix.height);
+>
+> I think width and height should not be 10000x10000.
+> I guess the fmt must be changed somewhere.
+> Did anyone know this bug or already a patch exist?
+
+I've committed a patch to SVN that should fix the issue. Could you please test 
+it ?
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Tue Sep 16 00:15:12 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 16 Sep 2008 00:15:12 +0200
+Subject: [Linux-uvc-devel] High resulution and high framerate cameras
+In-Reply-To: <20080905213242.GC7830@moelleritberatung.de>
+References: <20080905213242.GC7830@moelleritberatung.de>
+Message-ID: <200809160015.12804.laurent.pinchart@skynet.be>
+
+Hi Artem,
+
+On Friday 05 September 2008, Artem Makhutov wrote:
+> Hi,
+>
+> is somebody aware of a camera with a higher resolution then 800x600 @ 30
+> fps?
+
+Have a look at http://www.theimagingsource.com/en/products/cameras/
+
+> It seems like all cameras with a higher resolution then 800x600 are
+> dropping the framerate to 15 fps or even less. Has somebody an
+> explenation for this behavior? Is the USB-Bus too slow, or is this all
+> just marketing stuff?
+
+There is simply not enough USB bandwidth to stream uncompressed high 
+resolution images in a high frame rate. MJPEG compression helps achieving 
+higher resolutions/frame rates, but most consumer-grade CMOS sensors also 
+limit the frame rate at high resolutions.
+
+For the record, here's a list of resolutions and frame rates for Logitech 
+webcams.
+ 
+http://www.quickcamteam.net/hcl/frame-format-matrix/logitech_uvc_frame_format_matrix_v2.xls/view
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Tue Sep 16 00:16:02 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 16 Sep 2008 00:16:02 +0200
+Subject: [Linux-uvc-devel] BisonCam, NB Pro (5986:0203)
+In-Reply-To: <48C163F4.3000107@uli-eckhardt.de>
+References: <48C163F4.3000107@uli-eckhardt.de>
+Message-ID: <200809160016.02717.laurent.pinchart@skynet.be>
+
+Hi Ulrich,
+
+On Friday 05 September 2008, Ulrich Eckhardt wrote:
+> Hi,
+>
+> the web-cam build into the Smartbook-ZENID works, when loading the
+> uvcvideo module with the quirks=2 option.
+
+Thanks for the report. The fix has been committed to SVN and will be pushed to 
+the kernel.
+
+Best regards,
+
+Laurent Pinchart
+
+
+From rankincj at yahoo.com  Tue Sep 16 00:20:39 2008
+From: rankincj at yahoo.com (Chris Rankin)
+Date: Mon, 15 Sep 2008 15:20:39 -0700 (PDT)
+Subject: [Linux-uvc-devel] Sometimes the picture is completely black,
+	with Logitech 046d:0992
+Message-ID: <163042.73405.qm@web52911.mail.re2.yahoo.com>
+
+Hi,
+
+I have noticed that if leave the lens cover down when I power the camera up *for the first time*, then the picture stays black even after I raise the lens cover. (Yes, the lights *are* on ;-).) This is with a Logitech QuickCam Communicate Deluxe (046b:0992), and the driver version in the Linux 2.6.26.4 kernel.
+
+Once I start getting a completely black picture, the solution is to unload the driver, replug the camera and then reload the drivers, followed by powering the camera up with the lens cover raised this time.
+
+I'm not sure what is going on here: some kind of persistent auto-exposure calibration issue, perhaps?
+
+Has anyone else seen anything like this, please?
+Thanks,
+Chris
+
+
+
+      
+
+
+From bnc at astronomicalresearchaustralia.org  Tue Sep 16 01:31:58 2008
+From: bnc at astronomicalresearchaustralia.org (Brian)
+Date: Tue, 16 Sep 2008 09:31:58 +1000
+Subject: [Linux-uvc-devel] Resize luvcview causes segmentation fault.
+In-Reply-To: <163042.73405.qm@web52911.mail.re2.yahoo.com>
+References: <163042.73405.qm@web52911.mail.re2.yahoo.com>
+Message-ID: <48CEF06E.9080901@astronomicalresearchaustralia.org>
+
+Laurent,
+Not sure if this is the right list for this and I probably should not 
+have done it anyway:)
+However I started luvcview in a small window. I then dragged the edge of 
+the window to increase the size. It seems to work up to a point and then 
+crashes. It is repeatable.
+See below.
+Brian
+
+  luvcview -vvv &
+[1] 21298
+uvcview version 0.1.7
+ > Video driver: x11
+A window manager is available
+video /dev/video0
+*** glibc detected *** luvcview: double free or corruption (!prev): 
+0x080850a0 ***
+======= Backtrace: =========
+/lib/libc.so.6[0xb7dc54b6]
+/lib/libc.so.6(cfree+0x89)[0xb7dc7179]
+/usr/lib/libXext.so.6[0xb7f5a9ad]
+/usr/lib/libSDL-1.2.so.0[0xb7eeaf43]
+/usr/lib/libSDL-1.2.so.0[0xb7eeb34e]
+/usr/lib/libSDL-1.2.so.0[0xb7eefff2]
+/usr/lib/libSDL-1.2.so.0(SDL_SetVideoMode+0x1f1)[0xb7edb351]
+luvcview[0x8049325]
+/usr/lib/libSDL-1.2.so.0[0xb7eb83db]
+/usr/lib/libSDL-1.2.so.0[0xb7f062dd]
+/lib/libpthread.so.0[0xb7e97192]
+/lib/libc.so.6(clone+0x5e)[0xb7e2202e]
+======= Memory map: ========
+08048000-08054000 r-xp 00000000 08:07 371775     /usr/local/bin/luvcview
+08054000-08058000 rw-p 0000c000 08:07 371775     /usr/local/bin/luvcview
+08058000-080c4000 rw-p 08058000 00:00 0          [heap]
+b6f00000-b6f21000 rw-p b6f00000 00:00 0
+b6f21000-b7000000 ---p b6f21000 00:00 0
+b707e000-b7128000 rw-s 00000000 00:09 50233345   /SYSV00000000 (deleted)
+b7128000-b7129000 ---p b7128000 00:00 0
+b7129000-b7929000 rw-p b7129000 00:00 0
+b7929000-b7954000 rw-s 00000000 00:09 49872900   /SYSV00000000 (deleted)
+b7979000-b7983000 r-xp 00000000 08:07 1041       /lib/libgcc_s.so.1
+b7983000-b7985000 rw-p 00009000 08:07 1041       /lib/libgcc_s.so.1
+b79a9000-b79f6000 rw-p b79a9000 00:00 0
+b79f6000-b7a05000 r--s 0002d000 00:0f 491697     /dev/video0
+b7a05000-b7a14000 r--s 0001e000 00:0f 491697     /dev/video0
+b7a14000-b7a18000 r-xp 00000000 08:07 32993      /usr/lib/libXfixes.so.3.1.0
+b7a18000-b7a1a000 rw-p 00003000 08:07 32993      /usr/lib/libXfixes.so.3.1.0
+b7a1a000-b7a22000 r-xp 00000000 08:07 52640 
+/usr/lib/libXcursor.so.1.0.2
+b7a22000-b7a24000 rw-p 00007000 08:07 52640 
+/usr/lib/libXcursor.so.1.0.2
+b7a2a000-b7a39000 r--s 0000f000 00:0f 491697     /dev/video0
+b7a39000-b7a48000 r--s 00000000 00:0f 491697     /dev/video0
+b7a48000-b7a75000 r--p 00000000 08:07 21761 
+/var/cache/libx11/compose/l4_024_313cb605_00280cc0
+b7a75000-b7ab4000 r--p 00000000 08:07 25264 
+/usr/lib/locale/en_US.utf8/LC_CTYPE
+b7ab4000-b7ab5000 r--p 00000000 08:07 25240 
+/usr/lib/locale/en_US.utf8/LC_NUMERIC
+b7ab5000-b7ab6000 r--p 00000000 08:07 94552 
+/usr/lib/locale/en_US.utf8/LC_TIME
+b7ab6000-b7b96000 r--p 00000000 08:07 100919 
+/usr/lib/locale/en_US.utf8/LC_COLLATE
+b7b96000-b7b97000 r--p 00000000 08:07 94551 
+/usr/lib/locale/en_US.utf8/LC_MONETARY
+b7b97000-b7b98000 r--p 00000000 08:07 25230 
+/usr/lib/locale/en_US.utf8/LC_MESSAGES/SYS_LC_MESSAGES
+b7b98000-b7b99000 r--p 00000000 08:07 25048 
+/usr/lib/locale/en_US.utf8/LC_PAPER
+b7b99000-b7b9a000 r--p 00000000 08:07 25123 
+/usr/lib/locale/en_US.utf8/LC_NAME
+b7b9a000-b7ba1000 r--s 00000000 08:07 22270 
+/usr/lib/gconv/gconv-modules.cache
+b7ba1000-b7ba2000 rw-p b7ba1000 00:00 0
+b7ba2000-b7ba4000 r-xp 00000000 08:07 26431      /usr/lib/libXau.so.6.0.0
+b7ba4000-b7ba6000 rw-p 00001000 08:07 26431      /usr/lib/libXau.so.6.0.0
+b7ba6000-b7ba7000 rw-p b7ba6000 00:00 0
+b7ba7000-b7bbe000 r-xp 00000000 08:07 52702      /usr/lib/libxcb.so.1.0.0
+b7bbe000-b7bc0000 rw-p 00016000 08:07 52702      /usr/lib/libxcb.so.1.0.0
+b7bc0000-b7bc1000 r-xp 00000000 08:07 52692 
+/usr/lib/libxcb-xlib.so.0.0.0
+b7bc1000-b7bc3000 rw-p 00000000 08:07 52692 
+/usr/lib/libxcb-xlib.so.0.0.0
+b7bc3000-b7bc8000 r-xp 00000000 08:07 38475      /usr/lib/libgpm.so.1.19.0
+b7bc8000-b7bca000 rw-p 00004000 08:07 38475      /usr/lib/libgpm.so.1.19.0
+b7bca000-b7ce1000 r-xp 00000000 08:07 31070      /usr/lib/libX11.so.6.2.0
+b7ce1000-b7ce5000 rw-p 00116000 08:07 31070      /usr/lib/libX11.so.6.2.0
+b7ce5000-b7d14000 r-xp 00000000 08:07 81214      /lib/libncurses.so.5.6
+b7d14000-b7d15000 r--p 0002e000 08:07 81214      /lib/libncurses.so.5.6
+b7d15000-b7d1a000 rw-p 0002f000 08:07 81214      /lib/libncurses.so.5.6
+b7d1a000-b7d1b000 rw-p b7d1a000 00:00 0
+b7d1b000-b7d32000 r-xp 00000000 08:07 43569      /usr/lib/libaa.so.1.0.4
+b7d32000-b7d34000 rw-p 00017000 08:07 43569      /usr/lib/libaa.so.1.0.4
+b7d34000-b7d36000 rw-p b7d34000 00:00 0
+b7d36000-b7d38000 r-xp 00000000 08:07 15986
+
+
+From bnc at astronomicalresearchaustralia.org  Tue Sep 16 01:24:42 2008
+From: bnc at astronomicalresearchaustralia.org (Brian)
+Date: Tue, 16 Sep 2008 09:24:42 +1000
+Subject: [Linux-uvc-devel] Sometimes the picture is completely black,
+ with Logitech 046d:0992
+In-Reply-To: <163042.73405.qm@web52911.mail.re2.yahoo.com>
+References: <163042.73405.qm@web52911.mail.re2.yahoo.com>
+Message-ID: <48CEEEBA.7090202@astronomicalresearchaustralia.org>
+
+Chris,
+I get a similar black screen problem but I do not think it has anything 
+to do with the lens cover.
+I have been testing guvcview, in the process I have had the situation 
+where I start guvcview under my userid and the picture is black and I 
+have to kill the app. I then start it under root and it works fine.
+The same happens with luvcview.
+
+I just did a test, twice, with the lens down at power on and it made no 
+difference.
+
+The solution in my case was to rmmod uvcview then modprobe uvcview.
+
+
+guvcview version 0.9.3
+uvcview version 0.1.7
+SUSE 10.3
+Logitech quickcam pro 5000
+
+Brian
+
+Chris Rankin wrote:
+> Hi,
+> 
+> I have noticed that if leave the lens cover down when I power the camera up *for the first time*, then the picture stays black even after I raise the lens cover. (Yes, the lights *are* on ;-).) This is with a Logitech QuickCam Communicate Deluxe (046b:0992), and the driver version in the Linux 2.6.26.4 kernel.
+> 
+> Once I start getting a completely black picture, the solution is to unload the driver, replug the camera and then reload the drivers, followed by powering the camera up with the lens cover raised this time.
+> 
+> I'm not sure what is going on here: some kind of persistent auto-exposure calibration issue, perhaps?
+> 
+> Has anyone else seen anything like this, please?
+> Thanks,
+> Chris
+> 
+> 
+> 
+>       
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+> 
+
+
+From sangshuduo at gmail.com  Tue Sep 16 11:41:32 2008
+From: sangshuduo at gmail.com (Shuduo Sang)
+Date: Tue, 16 Sep 2008 17:41:32 +0800
+Subject: [Linux-uvc-devel] get fault after to run luvcview -f yuv and
+	luvcview -f jpg on Logitech QuickCam Pro 7500
+In-Reply-To: <200809160007.16115.laurent.pinchart@skynet.be>
+References: <ee101c360809090356y230d9b92r737f9bd8ae79fc29@mail.gmail.com>
+	<200809160007.16115.laurent.pinchart@skynet.be>
+Message-ID: <ee101c360809160241y18feb8d1lc11db2dcf3781876@mail.gmail.com>
+
+On Tue, Sep 16, 2008 at 6:07 AM, Laurent Pinchart
+<laurent.pinchart at skynet.be> wrote:
+> Hi,
+>
+> On Tuesday 09 September 2008, Shuduo Sang wrote:
+>>  Hi,
+>>
+>> kernel version: 2.6.26 vanilla.
+>>
+>> I met a problem on Logitech QuickCam Pro 7500 with uvcvideo driver.
+>> This model can outputs with YUYV and MJPG pixel format.
+>> I am writing a program to do something like digital camera. I hope I can
+>> output YUYV data as viewfinding and output mjpg as still capture.
+>> But I can't get MJPG data after I got YUYV data. Since my code is too
+>> huge so i can't attach here, so I can do similar job by luvcview as
+>> following.
+>>
+>> 1, luvcview -f yuv. It works good.
+>> 2, luvcview -f jpg. No data output.
+>>
+>> After I replug the webcam, luvcview -f jpg works good. and luvcview -f
+>> yuv also works.
+>>  but run luvcview -f jpg again, still no output. It can be reproduced
+>> every time.
+>>
+>> I got uvc trace log after insert module again with parameter trace=0x1ff.
+>>
+>> [28036.049978] uvcvideo: Probing generic UVC device 3
+>> [28036.049978] uvcvideo: Found format MJPEG.
+>> [28036.049978] uvcvideo: - 160x120 (30.0 fps)
+>> [28036.049978] uvcvideo: - 176x144 (30.0 fps)
+>> [28036.049978] uvcvideo: - 320x240 (15.0 fps)
+>> [28036.049978] uvcvideo: - 352x288 (15.0 fps)
+>> [28036.049978] uvcvideo: - 640x480 (15.0 fps)
+>> [28036.049978] uvcvideo: - 960x720 (15.0 fps)
+>> [28036.049978] uvcvideo: Found format YUV 4:2:2 (YUYV).
+>> [28036.049978] uvcvideo: - 160x120 (30.0 fps)
+>> [28036.049978] uvcvideo: - 176x144 (30.0 fps)
+>> [28036.049978] uvcvideo: - 320x240 (15.0 fps)
+>> [28036.049978] uvcvideo: - 352x288 (15.0 fps)
+>> [28036.049978] uvcvideo: - 640x480 (15.0 fps)
+>> [28036.049978] uvcvideo: - 960x720 (10.0 fps)
+>> [28036.049978] uvcvideo: - 1280x960 (7.5 fps)
+>> [28036.049978] uvcvideo: Found a Status endpoint (addr 87).
+>> [28036.049978] uvcvideo: Found UVC 1.00 device <unnamed> (046d:09a2)
+>> [28036.049978] uvcvideo: Added control
+>> 00000000-0000-0000-0000-000000000101/2 to device 3 entity 2
+>> [28036.049978] uvcvideo: Added control
+>> 00000000-0000-0000-0000-000000000101/3 to device 3 entity 2
+>> [28036.049978] uvcvideo: Added control
+>> 00000000-0000-0000-0000-000000000101/7 to device 3 entity 2
+>> [28036.049978] uvcvideo: Added control
+>> 00000000-0000-0000-0000-000000000101/8 to device 3 entity 2
+>> [28036.049978] uvcvideo: Added control
+>> 00000000-0000-0000-0000-000000000101/1 to device 3 entity 2
+>> [28036.049978] uvcvideo: Added control
+>> 00000000-0000-0000-0000-000000000101/4 to device 3 entity 2
+>> [28036.049978] uvcvideo: Added control
+>> 00000000-0000-0000-0000-000000000101/5 to device 3 entity 2
+>> [28036.049978] uvcvideo: Added control
+>> 00000000-0000-0000-0000-000000000001/2 to device 3 entity 1
+>> [28036.049978] uvcvideo: Added control
+>> 00000000-0000-0000-0000-000000000001/3 to device 3 entity 1
+>> [28036.049978] uvcvideo: Added control
+>> 00000000-0000-0000-0000-000000000001/4 to device 3 entity 1
+>> [28036.049978] uvcvideo: Added control
+>> 00000000-0000-0000-0000-000000000101/11 to device 3 entity 2
+>> [28036.049978] uvcvideo: Added control
+>> 00000000-0000-0000-0000-000000000101/10 to device 3 entity 2
+>> [28036.049978] uvcvideo: Scanning UVC chain: OT 5 <- XU 4 (-> XU 10 12
+>> 8 11) <- PU 2 (-> XU 13) <- IT 1
+>> [28036.049978] uvcvideo: Found a valid video chain (1 -> 5).
+>> [28036.083020] input: UVC Camera (046d:09a2) as /class/input/input24
+>> [28036.099224] uvcvideo: UVC device initialized.
+>> [28036.162317] uvcvideo: uvc_v4l2_open
+>> [28036.162319] uvcvideo: uvc_v4l2_ioctl
+>> [28036.162319] VIDIOC_QUERYCAP<7>uvcvideo: uvc_v4l2_ioctl
+>> [28036.180400]
+>> VIDIOCGCAPVIDIOC_QUERYCAPVIDIOC_ENUMINPUTVIDIOC_ENUMINPUTVIDIOC_ENUM_FMTVID
+>>IOC_TRY_FMT<7>uvcvideo: Trying format 0x47504a4d (MJPG): 10000x10000.
+>> [28036.182045] uvcvideo: Using default frame interval 66666.6 us (15.0
+>> fps). [28036.217822] uvcvideo: uvc_v4l2_release
+>>
+>> We can see the "Trying format 0x47504a4d (MJPG): 10000x10000.
+>> It is output by following code lines of uvc_v4l2.c.
+>>
+>>  115         fcc = (__u8 *)&fmt->fmt.pix.pixelformat;
+>>  116         uvc_trace(UVC_TRACE_FORMAT, "Trying format 0x%08x
+>> (%c%c%c%c): %ux%u.\n",
+>>  117                         fmt->fmt.pix.pixelformat,
+>>  118                         fcc[0], fcc[1], fcc[2], fcc[3],
+>>  119                         fmt->fmt.pix.width, fmt->fmt.pix.height);
+>>
+>> I think width and height should not be 10000x10000.
+>> I guess the fmt must be changed somewhere.
+>> Did anyone know this bug or already a patch exist?
+>
+> I've committed a patch to SVN that should fix the issue. Could you please test
+> it ?
+>
+
+Great. It works great. Hope to see it in main stream kernel soon. :)
+Thanks a lot.
+
+> Best regards,
+>
+> Laurent Pinchart
+>
+
+
+From rankincj at yahoo.com  Tue Sep 16 14:33:10 2008
+From: rankincj at yahoo.com (Chris Rankin)
+Date: Tue, 16 Sep 2008 05:33:10 -0700 (PDT)
+Subject: [Linux-uvc-devel] Sometimes the picture is completely black,
+	with Logitech 046d:0992
+In-Reply-To: <48CEEEBA.7090202@astronomicalresearchaustralia.org>
+Message-ID: <849931.74762.qm@web52912.mail.re2.yahoo.com>
+
+--- On Tue, 16/9/08, Brian <bnc at astronomicalresearchaustralia.org> wrote:
+> I get a similar black screen problem but I do not think it
+> has anything to do with the lens cover.
+
+I'm not sure what the actual trigger is, but if I leave the lens-cover down when using the webcam (with ekiga) for the first time then a black screen is what I have been getting.
+
+Cheers,
+Chris
+
+
+
+
+      
+
+
+From laurent.pinchart at skynet.be  Tue Sep 16 22:29:04 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 16 Sep 2008 22:29:04 +0200
+Subject: [Linux-uvc-devel] [PATCH] V4L/DVB:usbvideo:don't use part of
+	buffer for USB transfer #4
+In-Reply-To: <3a6992f8ffa62f7d20c751a01093daf5b3312eab.1221532628.git.tom.leiming@gmail.com>
+References: <3a6992f8ffa62f7d20c751a01093daf5b3312eab.1221532628.git.tom.leiming@gmail.com>
+Message-ID: <200809162229.04520.laurent.pinchart@skynet.be>
+
+On Tuesday 16 September 2008, tom.leiming at gmail.com wrote:
+> From: Ming Lei <tom.leiming at gmail.com>
+>
+> The status[] is part of  uvc_device structure. We can't make sure
+> the address of status is at a cache-line boundary in all archs,so
+> status[] might share a cache-line with some fields in uvc_structure.
+> This can lead to some cache coherence
+> issues(http://lwn.net/Articles/2265/). Use dynamically allocated buffer
+> instead.
+
+Thanks for fixing this.
+
+> Signed-off-by: Ming Lei <tom.leiming at gmail.com>
+
+Acked-by: Laurent Pinchart <laurent.pinchart at skynet.be>
+
+Mauro, can you please apply the patch ?
+
+> ---
+>  drivers/media/video/uvc/uvc_status.c |   11 +++++++++--
+>  drivers/media/video/uvc/uvcvideo.h   |    4 +++-
+>  2 files changed, 12 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/media/video/uvc/uvc_status.c
+> b/drivers/media/video/uvc/uvc_status.c index 75e678a..5d60b26 100644
+> --- a/drivers/media/video/uvc/uvc_status.c
+> +++ b/drivers/media/video/uvc/uvc_status.c
+> @@ -177,9 +177,15 @@ int uvc_status_init(struct uvc_device *dev)
+>
+>  	uvc_input_init(dev);
+>
+> +	dev->status = kzalloc(UVC_MAX_STATUS_SIZE, GFP_KERNEL);
+> +	if (dev->status == NULL)
+> +		return -ENOMEM;
+> +
+>  	dev->int_urb = usb_alloc_urb(0, GFP_KERNEL);
+> -	if (dev->int_urb == NULL)
+> +	if (dev->int_urb == NULL) {
+> +		kfree(dev->status);
+>  		return -ENOMEM;
+> +	}
+>
+>  	pipe = usb_rcvintpipe(dev->udev, ep->desc.bEndpointAddress);
+>
+> @@ -192,7 +198,7 @@ int uvc_status_init(struct uvc_device *dev)
+>  		interval = fls(interval) - 1;
+>
+>  	usb_fill_int_urb(dev->int_urb, dev->udev, pipe,
+> -		dev->status, sizeof dev->status, uvc_status_complete,
+> +		dev->status, UVC_MAX_STATUS_SIZE, uvc_status_complete,
+>  		dev, interval);
+>
+>  	return usb_submit_urb(dev->int_urb, GFP_KERNEL);
+> @@ -202,6 +208,7 @@ void uvc_status_cleanup(struct uvc_device *dev)
+>  {
+>  	usb_kill_urb(dev->int_urb);
+>  	usb_free_urb(dev->int_urb);
+> +	kfree(dev->status);
+>  	uvc_input_cleanup(dev);
+>  }
+>
+> diff --git a/drivers/media/video/uvc/uvcvideo.h
+> b/drivers/media/video/uvc/uvcvideo.h index bafe340..9a6bc1a 100644
+> --- a/drivers/media/video/uvc/uvcvideo.h
+> +++ b/drivers/media/video/uvc/uvcvideo.h
+> @@ -303,6 +303,8 @@ struct uvc_xu_control {
+>  #define UVC_MAX_FRAME_SIZE	(16*1024*1024)
+>  /* Maximum number of video buffers. */
+>  #define UVC_MAX_VIDEO_BUFFERS	32
+> +/* Maximum status buffer size in bytes of interrupt URB. */
+> +#define UVC_MAX_STATUS_SIZE	16
+>
+>  #define UVC_CTRL_CONTROL_TIMEOUT	300
+>  #define UVC_CTRL_STREAMING_TIMEOUT	1000
+> @@ -634,7 +636,7 @@ struct uvc_device {
+>  	/* Status Interrupt Endpoint */
+>  	struct usb_host_endpoint *int_ep;
+>  	struct urb *int_urb;
+> -	__u8 status[16];
+> +	__u8 *status;
+>  	struct input_dev *input;
+>
+>  	/* Video Streaming interfaces */
+
+
+
+
+From laurent.pinchart at skynet.be  Tue Sep 16 22:31:33 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 16 Sep 2008 22:31:33 +0200
+Subject: [Linux-uvc-devel] Resize luvcview causes segmentation fault.
+In-Reply-To: <48CEF06E.9080901@astronomicalresearchaustralia.org>
+References: <163042.73405.qm@web52911.mail.re2.yahoo.com>
+	<48CEF06E.9080901@astronomicalresearchaustralia.org>
+Message-ID: <200809162231.33693.laurent.pinchart@skynet.be>
+
+Hi Brian,
+
+On Tuesday 16 September 2008, Brian wrote:
+> Laurent,
+> Not sure if this is the right list for this and I probably should not
+> have done it anyway:)
+> However I started luvcview in a small window. I then dragged the edge of
+> the window to increase the size. It seems to work up to a point and then
+> crashes. It is repeatable.
+
+I'm not the luvcview maintainer (I actually haven't written a single line of 
+the luvcview code). You should report the problem to Michel Xhaard 
+(mxhaard at free.fr).
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Tue Sep 16 23:13:18 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 16 Sep 2008 23:13:18 +0200
+Subject: [Linux-uvc-devel] hp pavilion dv6000 webcam (064e:a110 - SuYin)
+In-Reply-To: <9aa228cf0809040237l6ffcfcedu6ac6411523db21b@mail.gmail.com>
+References: <9aa228cf0809040225u6270e065pa4d49011bb99904a@mail.gmail.com>
+	<9aa228cf0809040237l6ffcfcedu6ac6411523db21b@mail.gmail.com>
+Message-ID: <200809162313.18146.laurent.pinchart@skynet.be>
+
+Hi Anton,
+
+On Thursday 04 September 2008, Anton Moiseev wrote:
+> Hi,
+>
+> I have Hp Pavilion dv6000 notebook with built-in webcam
+>
+> > lsusb
+>
+> Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+> Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+> Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+> Bus 007 Device 002: ID 03f0:171d Hewlett-Packard Wireless (Bluetooth +
+> WLAN)Interface [Integrated Module]
+> Bus 007 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+> Bus 006 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+> Bus 002 Device 002: ID 064e:a110 Suyin Corp.
+> Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+> Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+>
+>
+> From here it seems that my webcam is this entry:
+> Bus 002 Device 002: ID 064e:a110 Suyin Corp.
+>
+> from here http://linux-uvc.berlios.de/ searching by device id gives
+> the following line:
+> 064e:a110  HP Webcam (HP TX2000 notebooks)  SuYin (supported)
+>
+> I'm using driver compiled from svn
+>
+> I wanted to write that it does not work here for me - luvcview shows
+> blue screen, but just started it again and found interesting thing - it
+> shows blue screen only when the webcam window is located on the left half of
+> the monitor - when I move it to the right half the picture appears!
+> Fullscreen works ok. 
+>
+> KdeTV has exactly the same behavior - blue screen to the left, picture
+> on the right.
+
+The uvcvideo driver handles video acquisition only. Display problems such as 
+the ones you describe here are not caused by the uvcvideo driver. You 
+probably have an issue with related to your GPU driver or the X server 
+configuration.
+
+> Kopete only shows green screen, thought it locks the /dev/video0
+> device and shows hp webcam in the available device list.
+
+Kopete should support V4L2 and the YUYV format streamed by your camera. I 
+would suspect a bug in Kopete, as its video input implementation is not first 
+class.
+
+> Ekiga just shows error message and even does not lock the device.
+>
+> I don't care about ekiga, but having some advice on how to make kopete
+> work with it would be nice.
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Tue Sep 16 23:17:51 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 16 Sep 2008 23:17:51 +0200
+Subject: [Linux-uvc-devel] Acer Travelmate 7720 Crystal Eye webcam not
+	working on Skype 2.0 for Linux
+In-Reply-To: <200809031413.13070.jlorin@synapse.net>
+References: <200809031413.13070.jlorin@synapse.net>
+Message-ID: <200809162317.52040.laurent.pinchart@skynet.be>
+
+Hi Jean-Claude,
+
+On Wednesday 03 September 2008, Jean-Claude Lorin wrote:
+> I have an Acer Travelmate 7720 laptop which includes a Crystal Eye webcam.
+> My Linux system is OpenSuse 11.0 with KDE 3.5.10
+>
+> the webcam is recognized by Linux but does not work under Skype. It works
+> under Kopete. I have compiled the latest uvcvideo from svn but to no avail
+>
+> Other webcams such as Logitech Quickcam Pro work fine
+>
+> Any clues on what to do?
+
+Try to contact the Skype developers and report the issue. While I can't 
+completely rule out uvcvideo bugs in this case, having it work when used by 
+Kopete points to a bug in Skype.
+
+> find below an extract from dmesg
+>
+>
+> uvcvideo: Found UVC 1.00 device Acer Crystal Eye webcam (5986:0105)
+> usbcore: registered new interface driver uvcvideo
+> uvcvideo: Failed to query (130) UVC control 1 (unit 0) : 2 (exp. 26).
+> usbcore: deregistering interface driver uvcvideo
+> uvcvideo: Found UVC 1.00 device Acer Crystal Eye webcam (5986:0105)
+> uvcvideo: Forcing device quirks 0x2 by module parameter for testing
+> purpose. uvcvideo: Please report required quirks to the linux-uvc-devel
+> mailing list. usbcore: registered new interface driver uvcvideo
+> uvcvideo: device Acer Crystal Eye webcam requested null bandwidth,
+> defaulting to lowest.
+> usbcore: deregistering interface driver uvcvideo
+> uvcvideo: Found UVC 1.00 device Acer Crystal Eye webcam (5986:0105)
+> usbcore: registered new interface driver uvcvideo
+
+Could you please send me the output of
+
+lsusb -v -d 5986:0105
+
+with usbutils 0.72 or newer (0.73+ preferred) ?
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Tue Sep 16 23:38:29 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 16 Sep 2008 23:38:29 +0200
+Subject: [Linux-uvc-devel] Recording from two webcams
+In-Reply-To: <48CC7496.2010707@ig.com.br>
+References: <48CC7496.2010707@ig.com.br>
+Message-ID: <200809162338.29133.laurent.pinchart@skynet.be>
+
+Hi Cesar,
+
+On Sunday 14 September 2008, Cesar Maciel wrote:
+> Hello,
+>  I have seen some past e-mails on the subject, but I am experiencing a
+> situation where a specific camera does not work, while other cameras work.
+>  I have tried simultaneously recording using ffmpeg from 3 webcams
+> (different vendors), and was able to record the three streams.
+>  I have tried simultaneously recording using ffmpeg from two Microsoft
+> NX-3000 webcams, and was able to record both streams.
+>  Using a Topspeed camera (lsusb for the device included), I am able to
+> record from a single camera without problems. When I try to record from
+> two Topspeed cameras at the same time, I get the following error from
+> uvcvideo:
+>
+> [video4linux2 @ 0x8417760][3]Capabilities: 4000001
+> [video4linux2 @ 0x8417760]ioctl(VIDIOC_STREAMON): No space left on device
+
+This error is reported by the USB subsystem and means that the two streams 
+would exceed the USB bandwidth capacity.
+
+> and dmesg shows:
+>
+> uvcvideo: Failed to submit URB 0 (-28).
+>
+> I am using SVN 246, and uvcvideo recognizes both cameras:
+>
+> Linux video capture interface: v2.00
+> uvcvideo: Found UVC 1.00 device TOPSPEED USB 2.0 Camera B. (0ac8:3313)
+> input: TOPSPEED USB 2.0 Camera B. as /class/input/input14
+> uvcvideo: Found UVC 1.00 device TOPSPEED USB 2.0 Camera B. (0ac8:3313)
+> input: TOPSPEED USB 2.0 Camera B. as /class/input/input15
+> usbcore: registered new interface driver uvcvideo
+> USB Video Class driver (SVN r246)
+>
+> The ffmpeg command I am using is:
+>
+> ./ffmpeg -y -f video4linux2 -r 5 -s 352x288 -qscale 5 -i /dev/videoX
+> -vcodec msmpeg4v2 -f avi -r $1 /mnt/testeX.avi
+>
+> where "X" is 0 or 1 depending on the device.
+> Both cameras work fine alone, and also work fine recording
+> simultaneously with the Microsoft NX-3000, and/or a Logitech Quickcam 5000.
+>
+> Any ideas?
+
+The required USB bandwidth is reported by the camera when the driver sets the 
+frame format, size and rate. The driver then selects the alternate setting 
+with the lowest bandwidth higher or equal to the required value.
+
+Could you please apply the following patch and report the payload size and 
+alternate setting printed by the driver to the kernel log when you stream 
+video from a Vimicro Topspeed with the above ffmpeg command ?
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Tue Sep 16 23:47:22 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 16 Sep 2008 23:47:22 +0200
+Subject: [Linux-uvc-devel] Two quirks with Logitech Sphere AF.
+In-Reply-To: <20080914122630.2d91ce81@i.geek.nz>
+References: <20080914122630.2d91ce81@i.geek.nz>
+Message-ID: <200809162347.23074.laurent.pinchart@skynet.be>
+
+Hi Ralph,
+
+On Sunday 14 September 2008, Ralph Loader wrote:
+> Hi,
+>
+> First, thanks for the good work with Linux-UVC.
+
+You're welcome :-)
+
+> I've just got myself a Logitech Sphere AF, this is working very well,
+> except for two things:
+>
+>
+> 1.  After running the camera with YUYV output, switching back to MJPG
+> does not work.  E.g., luvcview hangs in an ioctl:
+>
+> gettimeofday({1221351740, 446699}, NULL) = 0
+> ioctl(5, VIDIOC_STREAMON, 0xbf97c0b8)   = 0
+> ioctl(5, VIDIOC_DQBUF <unfinished ...>
+>
+> (The camera initially comes up on MJPG mode, and that works; it is only
+> after switching to YUYV that I cannot use MJPG.)
+
+This is a known problem and has been fixed in the SVN repository. The patch 
+should make it to the mainline kernel soon.
+
+> 2.  The default camera gain is reported as 0, which results in a
+> dark-gray-black-image; the camera actually initialises the gain to
+> about 34, which is much more reasonable.  [I suspect this is a camera
+> bug not a driver bug :-(]
+
+It probably is. I can't get my Logitech Sphere to work anymore due to the 
+infamous Logitech firmware bug so I can't check it myself, but the driver 
+queries the device for the default value. If the camera reports a wrong 
+default value there's not much I can do about it.
+
+My QC for Notebooks Pro reports a default gain of 0 and initialises the 
+control to 0. Changing the gain doesn't seem to have any effect on the image 
+though.
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Tue Sep 16 23:48:27 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 16 Sep 2008 23:48:27 +0200
+Subject: [Linux-uvc-devel] Two quirks with Logitech Sphere AF.
+In-Reply-To: <ee101c360809140328v44a8561dqb938533902f37608@mail.gmail.com>
+References: <20080914122630.2d91ce81@i.geek.nz>
+	<ee101c360809140328v44a8561dqb938533902f37608@mail.gmail.com>
+Message-ID: <200809162348.27456.laurent.pinchart@skynet.be>
+
+Hi,
+
+On Sunday 14 September 2008, Shuduo Sang wrote:
+> On Sun, Sep 14, 2008 at 8:26 AM, Ralph Loader <suckfish at ihug.co.nz> wrote:
+> > Hi,
+> >
+> > First, thanks for the good work with Linux-UVC.
+> >
+> > I've just got myself a Logitech Sphere AF, this is working very well,
+> > except for two things:
+> >
+> >
+> > 1.  After running the camera with YUYV output, switching back to MJPG
+> > does not work.  E.g., luvcview hangs in an ioctl:
+> >
+> > gettimeofday({1221351740, 446699}, NULL) = 0
+> > ioctl(5, VIDIOC_STREAMON, 0xbf97c0b8)   = 0
+> > ioctl(5, VIDIOC_DQBUF <unfinished ...>
+>
+> I have reported same issue to list but no reply. I just see two large
+> width and height
+>  (10000x10000) be received after I set to 640x480 with MJPG format.
+
+Could you please try the latest driver from SVN ? I've committed a fix for the 
+YUYV -> MJPEG issue.
+
+> > (The camera initially comes up on MJPG mode, and that works; it is only
+> > after switching to YUYV that I cannot use MJPG.)
+> >
+> >
+> > 2.  The default camera gain is reported as 0, which results in a
+> > dark-gray-black-image; the camera actually initialises the gain to
+> > about 34, which is much more reasonable.  [I suspect this is a camera
+> > bug not a driver bug :-(]
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Tue Sep 16 23:54:30 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 16 Sep 2008 23:54:30 +0200
+Subject: [Linux-uvc-devel] Fuji FinePix F700 Revisited
+In-Reply-To: <1221055149.8772.4.camel@panda1.christianpatriot.us>
+References: <1221055149.8772.4.camel@panda1.christianpatriot.us>
+Message-ID: <200809162354.30751.laurent.pinchart@skynet.be>
+
+Hi Paul,
+
+On Wednesday 10 September 2008, Paul Hickey wrote:
+> Hello again,
+> I was wondering if the problem with my camera ceasing to work since
+> Gnomemeeting became Ekiga is a kernel issue or application issue? Either
+> way, if I get another camera, will I run the risk of that one working
+> for awhile and then due to some change, it becomes useless as well?
+
+Your camera is not UVC compatible. You should first make sure you have the 
+appropriate driver loaded and that it recognises and initialises the camera 
+properly. A quick search on Google shows that the driver can be found at 
+http://www.zago.net/v4l2/finepix/. Your distribution might package it, or you 
+might have to compile it from source.
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Wed Sep 17 00:00:54 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Wed, 17 Sep 2008 00:00:54 +0200
+Subject: [Linux-uvc-devel] kernel 2.6.26 - webcam doesn't work,
+	stack-trace available
+In-Reply-To: <1220788172.19678.6.camel@localhost.localdomain>
+References: <1220788172.19678.6.camel@localhost.localdomain>
+Message-ID: <200809170000.54284.laurent.pinchart@skynet.be>
+
+Hi Michel,
+
+On Sunday 07 September 2008, Michel Brabants wrote:
+> Hello,
+>
+> I have a logitech , and am having problems with this driver since it is
+> integrated in the kernel (I used to use svn-builds before this). Here is
+> the call-trace when trying to use cheese (gnome program):
+>
+>
+> cheese: page allocation failure. order:5, mode:0x4
+
+This means the driver failed to allocate a 128kB DMA buffer. What resolution 
+do you stream in ?
+
+> Pid: 11446, comm: cheese Not tainted 2.6.26-ARCH #1
+>
+> Call Trace:
+>  [<ffffffff8027d78d>] __alloc_pages_internal+0x3dd/0x4e0
+>  [<ffffffff80212995>] dma_alloc_coherent+0xf5/0x2e0
+>  [<ffffffffa039947b>] :uvcvideo:uvc_alloc_urb_buffers+0x4b/0xe0
+>  [<ffffffffa039965e>] :uvcvideo:uvc_init_video+0x14e/0x3d0
+>  [<ffffffffa0398667>] :uvcvideo:uvc_v4l2_do_ioctl+0x717/0x1180
+>  [<ffffffff80288e1b>] __pte_alloc+0xab/0xf0
+>  [<ffffffff8028a856>] get_locked_pte+0x196/0x1e0
+>  [<ffffffffa0386cf6>] :videodev:video_usercopy+0x176/0x360
+>  [<ffffffffa0397f50>] :uvcvideo:uvc_v4l2_do_ioctl+0x0/0x1180
+>  [<ffffffff802b4225>] vfs_ioctl+0x85/0xb0
+>  [<ffffffff802b44d3>] do_vfs_ioctl+0x283/0x2f0
+>  [<ffffffff802b45e1>] sys_ioctl+0xa1/0xb0
+>  [<ffffffff8020c59a>] system_call_after_swapgs+0x8a/0x8f
+>
+> Mem-info:
+> DMA per-cpu:
+> CPU    0: hi:    0, btch:   1 usd:   0
+> CPU    1: hi:    0, btch:   1 usd:   0
+> DMA32 per-cpu:
+> CPU    0: hi:  186, btch:  31 usd:  89
+> CPU    1: hi:  186, btch:  31 usd:  22
+> Active:177207 inactive:44979 dirty:352 writeback:0 unstable:0
+>  free:2598 slab:16717 mapped:31519 pagetables:6333 bounce:0
+> DMA free:4116kB min:40kB low:48kB high:60kB active:1336kB inactive:44kB
+> present:10576kB pages_scanned:41 all_unreclaimable? no
+> lowmem_reserve[]: 0 994 994
+> 994
+> DMA32 free:6276kB min:4012kB low:5012kB high:6016kB active:707492kB
+> inactive:179872kB present:1017888kB pages_scanned:194 all_unreclaimable?
+> no
+> lowmem_reserve[]: 0 0 0
+> 0
+> DMA: 195*4kB 189*8kB 32*16kB 1*32kB 0*64kB 0*128kB 1*256kB 0*512kB
+> 1*1024kB 0*2048kB 0*4096kB =
+> 4116kB
+> DMA32: 1182*4kB 50*8kB 12*16kB 4*32kB 0*64kB 0*128kB 1*256kB 1*512kB
+> 0*1024kB 0*2048kB 0*4096kB =
+> 6216kB
+> 81579 total pagecache
+> pages
+> Swap cache: add 2119, delete 1700, find
+> 554/667
+> Free swap  =
+> 285724kB
+> Total swap =
+> 289160kB
+> 262096 pages of
+> RAM
+> 7294 reserved
+> pages
+> 194872 pages
+> shared
+> 572 pages swap
+> cached
+> ehci_hcd 0000:00:13.5: dma_pool_free buffer-32, ffff810000aa0000/aa0000
+> (bad dma)
+> ehci_hcd 0000:00:13.5: dma_pool_free buffer-32, ffff810002720000/2720000
+> (bad dma)
+>
+>
+> I saw that someone else also had this problem.
+
+I'd appreciate a link.
+
+> I have an Logitech Ultravision webcam
+
+Can you please post the webcam USB descriptors (retrieved with lsusb -v) ?
+
+> , amd X2 4400, 1 Gig memory and am running in 64-bit-mode. The motherboard
+> is an msi k9a platinum. I'm running kernel 2.6.26 (archlinux).
+>
+> Thank you and kind regards,
+>
+> Michel
+>
+> P.S.: Does anyone know a good video-chat-prgram for linux? I have this
+> nice webcam (when the driver, ... works), but no program that supports
+> decent resolutions for video-chat ...
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Wed Sep 17 00:20:15 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Wed, 17 Sep 2008 00:20:15 +0200
+Subject: [Linux-uvc-devel] Recording from two webcams
+In-Reply-To: <200809162338.29133.laurent.pinchart@skynet.be>
+References: <48CC7496.2010707@ig.com.br>
+	<200809162338.29133.laurent.pinchart@skynet.be>
+Message-ID: <200809170020.15728.laurent.pinchart@skynet.be>
+
+And now with the patch attached :-)
+
+On Tuesday 16 September 2008, Laurent Pinchart wrote:
+> Hi Cesar,
+>
+> On Sunday 14 September 2008, Cesar Maciel wrote:
+> > Hello,
+> >  I have seen some past e-mails on the subject, but I am experiencing a
+> > situation where a specific camera does not work, while other cameras
+> > work. I have tried simultaneously recording using ffmpeg from 3 webcams
+> > (different vendors), and was able to record the three streams.
+> >  I have tried simultaneously recording using ffmpeg from two Microsoft
+> > NX-3000 webcams, and was able to record both streams.
+> >  Using a Topspeed camera (lsusb for the device included), I am able to
+> > record from a single camera without problems. When I try to record from
+> > two Topspeed cameras at the same time, I get the following error from
+> > uvcvideo:
+> >
+> > [video4linux2 @ 0x8417760][3]Capabilities: 4000001
+> > [video4linux2 @ 0x8417760]ioctl(VIDIOC_STREAMON): No space left on device
+>
+> This error is reported by the USB subsystem and means that the two streams
+> would exceed the USB bandwidth capacity.
+>
+> > and dmesg shows:
+> >
+> > uvcvideo: Failed to submit URB 0 (-28).
+> >
+> > I am using SVN 246, and uvcvideo recognizes both cameras:
+> >
+> > Linux video capture interface: v2.00
+> > uvcvideo: Found UVC 1.00 device TOPSPEED USB 2.0 Camera B. (0ac8:3313)
+> > input: TOPSPEED USB 2.0 Camera B. as /class/input/input14
+> > uvcvideo: Found UVC 1.00 device TOPSPEED USB 2.0 Camera B. (0ac8:3313)
+> > input: TOPSPEED USB 2.0 Camera B. as /class/input/input15
+> > usbcore: registered new interface driver uvcvideo
+> > USB Video Class driver (SVN r246)
+> >
+> > The ffmpeg command I am using is:
+> >
+> > ./ffmpeg -y -f video4linux2 -r 5 -s 352x288 -qscale 5 -i /dev/videoX
+> > -vcodec msmpeg4v2 -f avi -r $1 /mnt/testeX.avi
+> >
+> > where "X" is 0 or 1 depending on the device.
+> > Both cameras work fine alone, and also work fine recording
+> > simultaneously with the Microsoft NX-3000, and/or a Logitech Quickcam
+> > 5000.
+> >
+> > Any ideas?
+>
+> The required USB bandwidth is reported by the camera when the driver sets
+> the frame format, size and rate. The driver then selects the alternate
+> setting with the lowest bandwidth higher or equal to the required value.
+>
+> Could you please apply the following patch and report the payload size and
+> alternate setting printed by the driver to the kernel log when you stream
+> video from a Vimicro Topspeed with the above ffmpeg command ?
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: payload-size.diff
+Type: text/x-diff
+Size: 654 bytes
+Desc: not available
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080917/8ecf6a9a/attachment.diff>
+
+From not.an.emo at gmail.com  Wed Sep 17 00:29:33 2008
+From: not.an.emo at gmail.com (=?ISO-8859-1?Q?C=E1ssio_Tales?=)
+Date: Tue, 16 Sep 2008 22:29:33 +0000
+Subject: [Linux-uvc-devel] new UVC device
+In-Reply-To: <mailman.3929.1221603952.5463.linux-uvc-devel@lists.berlios.de>
+References: <mailman.3929.1221603952.5463.linux-uvc-devel@lists.berlios.de>
+Message-ID: <9826f7b20809161529q6e758da8sefdda2a62b5a3d45@mail.gmail.com>
+
+>
+> Hello,
+> This is my first e-mail to this list. Sorry if I'm doing something wrong,
+> but i've read in your website that if my UVC device wasn't listed there, I
+> should send an e-mail to this ml informing it.
+> For now, I have only the device ID (04d6:065f), but I can capture some data
+> with usbsnoopy or some other sniffer, I just need to know exactly what I
+> must do. If there's anything I can help, I'll do my best.
+>
+>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080916/4a6be14a/attachment.html>
+
+From laurent.pinchart at skynet.be  Wed Sep 17 00:43:52 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Wed, 17 Sep 2008 00:43:52 +0200
+Subject: [Linux-uvc-devel] new UVC device
+In-Reply-To: <9826f7b20809161529q6e758da8sefdda2a62b5a3d45@mail.gmail.com>
+References: <mailman.3929.1221603952.5463.linux-uvc-devel@lists.berlios.de>
+	<9826f7b20809161529q6e758da8sefdda2a62b5a3d45@mail.gmail.com>
+Message-ID: <200809170043.52464.laurent.pinchart@skynet.be>
+
+Hi C?ssio,
+
+On Wednesday 17 September 2008, C?ssio Tales wrote:
+> > Hello,
+> > This is my first e-mail to this list. Sorry if I'm doing something wrong,
+> > but i've read in your website that if my UVC device wasn't listed there,
+> > I should send an e-mail to this ml informing it.
+> > For now, I have only the device ID (04d6:065f), but I can capture some
+> > data with usbsnoopy or some other sniffer, I just need to know exactly
+> > what I must do. If there's anything I can help, I'll do my best.
+
+The uvcvideo driver supports UVC compatible devices. To check if your device 
+is UVC compatible, please read http://linux-uvc.berlios.de/faq/.
+
+If your camera is not UVC compatible, I'm afraid there's not much I can do. 
+You will have to find the appropriate driver if one exists (have a look at 
+the gspca driver, it supports many non-UVC webcams).
+
+If your camera is UVC compatible, it should work out of the box. If it doesn't 
+please report any message printed by the uvcvideo driver to the kernel log. 
+Please post the output of
+
+lsusb -v -d 04d6:065f
+
+as well.
+
+Best regards,
+
+Laurent Pinchart
+
+
+From marcel at datkan.net  Wed Sep 17 01:26:18 2008
+From: marcel at datkan.net (Marcel van Beurden)
+Date: Wed, 17 Sep 2008 01:26:18 +0200
+Subject: [Linux-uvc-devel] Sometimes the picture is completely black,
+ with Logitech 046d:0992
+In-Reply-To: <163042.73405.qm@web52911.mail.re2.yahoo.com>
+References: <163042.73405.qm@web52911.mail.re2.yahoo.com>
+Message-ID: <48D0409A.7080007@datkan.net>
+
+Chris Rankin wrote:
+> I have noticed that if leave the lens cover down when I power the camera
+> up *for the first time*, then the picture stays black even after I raise
+> the lens cover. (Yes, the lights *are* on ;-).) This is with a Logitech
+> QuickCam Communicate Deluxe (046b:0992), and the driver version in the
+> Linux 2.6.26.4 kernel.
+> 
+> Once I start getting a completely black picture, the solution is to
+> unload the driver, replug the camera and then reload the drivers,
+> followed by powering the camera up with the lens cover raised this time.
+
+I have reported a similar problem with my S5500 to this list some time ago:
+http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/003928.html
+
+Also I posted the problem on the Logitech forums:
+http://forums.quickcamteam.net/showthread.php?tid=396
+
+The problem is still unresolved.
+
+> I'm not sure what is going on here: some kind of persistent
+> auto-exposure calibration issue, perhaps?
+
+My feeling also says it's something like that.
+
+> Has anyone else seen anything like this, please? Thanks, Chris
+
+Yes :)
+Could you also please mention this issue on the Logitech forums to raise 
+attention from the Logitech guy(s).
+
+Regards,
+Marcel
+
+
+
+From suckfish at ihug.co.nz  Wed Sep 17 07:35:08 2008
+From: suckfish at ihug.co.nz (Ralph Loader)
+Date: Wed, 17 Sep 2008 17:35:08 +1200
+Subject: [Linux-uvc-devel] Two quirks with Logitech Sphere AF.
+In-Reply-To: <200809162347.23074.laurent.pinchart@skynet.be>
+References: <20080914122630.2d91ce81@i.geek.nz>
+	<200809162347.23074.laurent.pinchart@skynet.be>
+Message-ID: <20080917173508.087284b6@i.geek.nz>
+
+> My QC for Notebooks Pro reports a default gain of 0 and initialises
+> the control to 0. Changing the gain doesn't seem to have any effect
+> on the image though.
+
+The gain setting has an effect for me with MJPG but not with YUV.
+Can't get back to MJPG to confirm that at the moment.
+
+> 
+> Best regards,
+> 
+> Laurent Pinchart
+
+
+From suckfish at ihug.co.nz  Sat Sep 20 10:12:58 2008
+From: suckfish at ihug.co.nz (Ralph Loader)
+Date: Sat, 20 Sep 2008 20:12:58 +1200
+Subject: [Linux-uvc-devel] Buffer overflow in uvc-video.
+Message-ID: <20080920201258.66c4c657@i.geek.nz>
+
+Hi,
+
+There appears to be a buffer overflow in
+drivers/media/video/uvc/uvc_ctrl.c:
+
+Sep 20 17:53:12 i kernel: BUG kmalloc-8 (Not tainted): Redzone
+overwritten Sep 20 17:53:12 i kernel:
+--------------------------------------------------------------------
+--------- Sep 20 17:53:12 i kernel:
+Sep 20 17:53:12 i kernel: INFO: 0xf2c5ce08-0xf2c5ce0b. First byte 0xa1
+instead of 0xcc 
+Sep 20 17:53:12 i kernel: INFO: Allocated in
+uvc_query_v4l2_ctrl+0x3c/0x239 [uvcvideo] age=13 cpu=1 pid=4975
+...
+
+
+A fixed size 8-byte buffer is allocated, and a variable size field is
+read into it; there is no particular bound on the size of the field
+(it is dependent on hardware and configuration) and it can overflow
+[also verified by inserting printk's.]
+
+The patch below attempts to size the buffer to the correctly; I do not
+know if sufficient validation of that size is carried out.
+
+Cheers,
+Ralph Loader.
+
+diff --git a/drivers/media/video/uvc/uvc_ctrl.c
+b/drivers/media/video/uvc/uvc_ct rl.c
+index 6ef3e52..feab12a 100644
+--- a/drivers/media/video/uvc/uvc_ctrl.c
++++ b/drivers/media/video/uvc/uvc_ctrl.c
+@@ -592,7 +592,7 @@ int uvc_query_v4l2_ctrl(struct uvc_video_device
+*video, if (ctrl == NULL)
+                return -EINVAL;
+ 
+-       data = kmalloc(8, GFP_KERNEL);
++       data = kmalloc(ctrl->info->size, GFP_KERNEL);
+        if (data == NULL)
+                return -ENOMEM;
+ 
+
+
+From bnc at astronomicalresearchaustralia.org  Sat Sep 20 15:17:58 2008
+From: bnc at astronomicalresearchaustralia.org (Brian)
+Date: Sat, 20 Sep 2008 23:17:58 +1000
+Subject: [Linux-uvc-devel] Sometimes the picture is completely black,
+ with Logitech 046d:0992
+In-Reply-To: <48D0409A.7080007@datkan.net>
+References: <163042.73405.qm@web52911.mail.re2.yahoo.com>
+	<48D0409A.7080007@datkan.net>
+Message-ID: <48D4F806.6020703@astronomicalresearchaustralia.org>
+
+Marcel,
+I have just had this problem in the guvcview application.
+I contacted Paulo who suggested I look at
+http://forums.quickcamteam.net/showthread.php?tid=323
+
+There are a couple of patch options for the UVC driver.
+I have not been able to test this myself yet.
+
+I am running Suse 10.3 with a UVC driver of
+r242_2.6.22.18_0.2-2.2
+So I am not sure if the patch would still apply.
+
+FYI
+Brian
+
+
+Marcel van Beurden wrote:
+> Chris Rankin wrote:
+>> I have noticed that if leave the lens cover down when I power the camera
+>> up *for the first time*, then the picture stays black even after I raise
+>> the lens cover. (Yes, the lights *are* on ;-).) This is with a Logitech
+>> QuickCam Communicate Deluxe (046b:0992), and the driver version in the
+>> Linux 2.6.26.4 kernel.
+>>
+>> Once I start getting a completely black picture, the solution is to
+>> unload the driver, replug the camera and then reload the drivers,
+>> followed by powering the camera up with the lens cover raised this time.
+> 
+> I have reported a similar problem with my S5500 to this list some time ago:
+> http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/003928.html
+> 
+> Also I posted the problem on the Logitech forums:
+> http://forums.quickcamteam.net/showthread.php?tid=396
+> 
+> The problem is still unresolved.
+> 
+>> I'm not sure what is going on here: some kind of persistent
+>> auto-exposure calibration issue, perhaps?
+> 
+> My feeling also says it's something like that.
+> 
+>> Has anyone else seen anything like this, please? Thanks, Chris
+> 
+> Yes :)
+> Could you also please mention this issue on the Logitech forums to raise 
+> attention from the Logitech guy(s).
+> 
+> Regards,
+> Marcel
+> 
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+> 
+
+
+From michel.brabants at euphonynet.be  Sun Sep 21 12:33:07 2008
+From: michel.brabants at euphonynet.be (Michel Brabants)
+Date: Sun, 21 Sep 2008 12:33:07 +0200
+Subject: [Linux-uvc-devel] [Fwd: kernel 2.6.26 - webcam doesn't work,
+	stack-trace available]
+Message-ID: <1221993187.5958.6.camel@localhost.localdomain>
+
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080921/3276be88/attachment.html>
+-------------- next part --------------
+An embedded message was scrubbed...
+From: Michel Brabants <michel.brabants at euphonynet.be>
+Subject: kernel 2.6.26 - webcam doesn't work, stack-trace available
+Date: Sun, 07 Sep 2008 13:49:34 +0200
+Size: 19796
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080921/3276be88/attachment.mht>
+
+From laurent.pinchart at skynet.be  Mon Sep 22 15:22:03 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Mon, 22 Sep 2008 15:22:03 +0200
+Subject: [Linux-uvc-devel] Buffer overflow in uvc-video.
+In-Reply-To: <20080920201258.66c4c657@i.geek.nz>
+References: <20080920201258.66c4c657@i.geek.nz>
+Message-ID: <200809221522.03694.laurent.pinchart@skynet.be>
+
+Hi Ralph,
+
+On Saturday 20 September 2008, Ralph Loader wrote:
+> Hi,
+>
+> There appears to be a buffer overflow in
+> drivers/media/video/uvc/uvc_ctrl.c:
+>
+> Sep 20 17:53:12 i kernel: BUG kmalloc-8 (Not tainted): Redzone
+> overwritten Sep 20 17:53:12 i kernel:
+> --------------------------------------------------------------------
+> --------- Sep 20 17:53:12 i kernel:
+> Sep 20 17:53:12 i kernel: INFO: 0xf2c5ce08-0xf2c5ce0b. First byte 0xa1
+> instead of 0xcc
+> Sep 20 17:53:12 i kernel: INFO: Allocated in
+> uvc_query_v4l2_ctrl+0x3c/0x239 [uvcvideo] age=13 cpu=1 pid=4975
+> ...
+>
+>
+> A fixed size 8-byte buffer is allocated, and a variable size field is
+> read into it; there is no particular bound on the size of the field
+> (it is dependent on hardware and configuration) and it can overflow
+> [also verified by inserting printk's.]
+
+Thanks for catching this.
+
+> The patch below attempts to size the buffer to the correctly; I do not
+> know if sufficient validation of that size is carried out.
+
+UVC control sizes come either from the predefined controls (uvc_ctrls in 
+uvc_ctrl.c) or from user-defined controls.
+
+Predefined controls size doesn't need any validation. User-defined controls 
+size should be validated, but defining a new UVC control from userspace 
+requires root privileges. This currently mitigates the issue. I'll submit a 
+patch with an upper bound check on the size.
+
+> Cheers,
+> Ralph Loader.
+>
+> diff --git a/drivers/media/video/uvc/uvc_ctrl.c
+> b/drivers/media/video/uvc/uvc_ct rl.c
+> index 6ef3e52..feab12a 100644
+> --- a/drivers/media/video/uvc/uvc_ctrl.c
+> +++ b/drivers/media/video/uvc/uvc_ctrl.c
+> @@ -592,7 +592,7 @@ int uvc_query_v4l2_ctrl(struct uvc_video_device
+> *video, if (ctrl == NULL)
+>                 return -EINVAL;
+>
+> -       data = kmalloc(8, GFP_KERNEL);
+> +       data = kmalloc(ctrl->info->size, GFP_KERNEL);
+>         if (data == NULL)
+>                 return -ENOMEM;
+
+Laurent Pinchart
+
+
+From barsnick at gmx.net  Mon Sep 22 16:09:04 2008
+From: barsnick at gmx.net (Moritz Barsnick)
+Date: Mon, 22 Sep 2008 16:09:04 +0200
+Subject: [Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+In-Reply-To: <200704140303.14434.laurent.pinchart@skynet.be>
+References: <EFE3E62A-C489-45B7-A4B2-B0E53E953AB3@federated.com>
+	<200704140303.14434.laurent.pinchart@skynet.be>
+Message-ID: <20080922140904.GA7809@bwwlx086.ibw.intel.com>
+
+Hi Laurent,
+
+On Sat, Apr 14, 2007 at 03:03:13 +0200, Laurent Pinchart wrote:
+
+> > I had a sneaky suspicion my camera was stuck in top quality. Laurent
+> > Pinchart's comments from March 25th confirmed and were a nice
+> > blueprint for this patch.
+> 
+> First of all, thanks for the patch.
+
+[...]
+
+> Great :-) I'll have a look at the code after this weekend, and commit the 
+> changes to SVN.
+> 
+> Thanks a lot for your patch.
+
+Has this patch[*] been obsoleted, or forgotten, or perhaps even rejected?
+
+The recent release of motion mentions this in its CHANGELOG (though I
+think the patch is unrelated to the named issue):
+http://www.lavrsen.dk/twiki/bin/view/Motion/UvcvideoMjpegPatch
+
+Thanks,
+Moritz
+
+[*] The originating message thread is so old, so let me quote the
+    archive:
+    http://lists.berlios.de/pipermail/linux-uvc-devel/2007-April/001578.html
+
+
+From laurent.pinchart at skynet.be  Mon Sep 22 16:52:49 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Mon, 22 Sep 2008 16:52:49 +0200
+Subject: [Linux-uvc-devel] Two quirks with Logitech Sphere AF.
+In-Reply-To: <20080917173508.087284b6@i.geek.nz>
+References: <20080914122630.2d91ce81@i.geek.nz>
+	<200809162347.23074.laurent.pinchart@skynet.be>
+	<20080917173508.087284b6@i.geek.nz>
+Message-ID: <200809221652.49350.laurent.pinchart@skynet.be>
+
+On Wednesday 17 September 2008, Ralph Loader wrote:
+> > My QC for Notebooks Pro reports a default gain of 0 and initialises
+> > the control to 0. Changing the gain doesn't seem to have any effect
+> > on the image though.
+>
+> The gain setting has an effect for me with MJPG but not with YUV.
+> Can't get back to MJPG to confirm that at the moment.
+
+I tried both YUV and MJPEG and failed to see any change to the image when 
+modifying the gain control (Logitech Quickcam Pro for Notebooks).
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Mon Sep 22 17:08:06 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Mon, 22 Sep 2008 17:08:06 +0200
+Subject: [Linux-uvc-devel] Sometimes the picture is completely black,
+	with Logitech 046d:0992
+In-Reply-To: <163042.73405.qm@web52911.mail.re2.yahoo.com>
+References: <163042.73405.qm@web52911.mail.re2.yahoo.com>
+Message-ID: <200809221708.06486.laurent.pinchart@skynet.be>
+
+Hi Chris,
+
+On Tuesday 16 September 2008, Chris Rankin wrote:
+> Hi,
+>
+> I have noticed that if leave the lens cover down when I power the camera up
+> *for the first time*, then the picture stays black even after I raise the
+> lens cover. (Yes, the lights *are* on ;-).) This is with a Logitech
+> QuickCam Communicate Deluxe (046b:0992), and the driver version in the
+> Linux 2.6.26.4 kernel.
+>
+> Once I start getting a completely black picture, the solution is to unload
+> the driver, replug the camera and then reload the drivers, followed by
+> powering the camera up with the lens cover raised this time.
+>
+> I'm not sure what is going on here: some kind of persistent auto-exposure
+> calibration issue, perhaps?
+
+I can't reproduce the issue here but I'd like to make sure you really get 
+black images output by the webcam and not a black window because the 
+application doesn't receive any image.
+
+Could you please test your webcam with luvcview ? It should print the frame 
+rate in the window title bar. If luvcview doesn't receive any image from the 
+camera the frame rate won't be printed.
+
+Best regards,
+
+Laurent Pinchart
+
+
+From rankincj at yahoo.com  Mon Sep 22 17:37:58 2008
+From: rankincj at yahoo.com (Chris Rankin)
+Date: Mon, 22 Sep 2008 08:37:58 -0700 (PDT)
+Subject: [Linux-uvc-devel] Sometimes the picture is completely black,
+	with Logitech 046d:0992
+In-Reply-To: <200809221708.06486.laurent.pinchart@skynet.be>
+Message-ID: <187603.37584.qm@web52903.mail.re2.yahoo.com>
+
+--- On Mon, 22/9/08, Laurent Pinchart <laurent.pinchart at skynet.be> wrote:
+> I can't reproduce the issue here but I'd like to
+> make sure you really get black images output by the webcam and not a
+> black window because the application doesn't receive any image.
+
+Laurent,
+
+I have just replicated the issue here, and have discovered that while ekiga sometimes gets a completely black picture, luvcview is able to receive a properly exposed picture instead. (Mind you, ekiga also uses a much smaller picture size that luvcview - I think it's only qcif 176x144 pixels.) One time, I was actually able to make out "moving bits" in ekiga's video window which corresponded to where I was sitting, so it's definitely receiving an image.
+
+Cheers,
+Chris
+
+
+      
+
+
+From marcel at datkan.net  Mon Sep 22 17:43:32 2008
+From: marcel at datkan.net (Marcel van Beurden)
+Date: Mon, 22 Sep 2008 17:43:32 +0200
+Subject: [Linux-uvc-devel] Sometimes the picture is completely black,
+ with Logitech 046d:0992
+In-Reply-To: <187603.37584.qm@web52903.mail.re2.yahoo.com>
+References: <187603.37584.qm@web52903.mail.re2.yahoo.com>
+Message-ID: <48D7BD24.8060001@datkan.net>
+
+Chris Rankin wrote:
+> --- On Mon, 22/9/08, Laurent Pinchart <laurent.pinchart at skynet.be> wrote:
+>   
+>> I can't reproduce the issue here but I'd like to
+>> make sure you really get black images output by the webcam and not a
+>> black window because the application doesn't receive any image.
+>>     
+>
+> Laurent,
+>
+> I have just replicated the issue here, and have discovered that while ekiga sometimes gets a completely black picture, luvcview is able to receive a properly exposed picture instead. (Mind you, ekiga also uses a much smaller picture size that luvcview - I think it's only qcif 176x144 pixels.) One time, I was actually able to make out "moving bits" in ekiga's video window which corresponded to where I was sitting, so it's definitely receiving an image.
+>
+>   
+I have a similar problem both in aMSN as in luvcview (with Quickcam 
+S5500). Sometimes I get a picture, sometimes I get a black screen and 
+sometimes I get half a image (top half black, bottom half normal).
+
+Regards,
+Marcel
+
+
+From miroco22769 at aim.com  Tue Sep 23 05:07:36 2008
+From: miroco22769 at aim.com (Mike)
+Date: Mon, 22 Sep 2008 23:07:36 -0400
+Subject: [Linux-uvc-devel] Two Logitech Webcams
+Message-ID: <48D85D78.3030203@aim.com>
+
+I have two Logitech webcams installed:
+
+Bus 001 Device 003: ID 046d:08ad Logitech, Inc.
+Bus 001 Device 002: ID 046d:0870 Logitech, Inc. QuickCam Express
+
+Neither one seems to be supported by the UVC driver.
+
+Mike
+
+
+From laurent.pinchart at skynet.be  Tue Sep 23 10:22:30 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 23 Sep 2008 10:22:30 +0200
+Subject: [Linux-uvc-devel] Two Logitech Webcams
+In-Reply-To: <48D85D78.3030203@aim.com>
+References: <48D85D78.3030203@aim.com>
+Message-ID: <200809231022.30539.laurent.pinchart@skynet.be>
+
+On Tuesday 23 September 2008, Mike wrote:
+> I have two Logitech webcams installed:
+> 
+> Bus 001 Device 003: ID 046d:08ad Logitech, Inc.
+> Bus 001 Device 002: ID 046d:0870 Logitech, Inc. QuickCam Express
+> 
+> Neither one seems to be supported by the UVC driver.
+
+Those are not UVC cameras so they won't be supported by the UVC driver.
+
+Have a look at http://www.quickcamteam.net/hcl/linux/logitech-webcams for a list of Logitech webcams and their associated driver.
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Tue Sep 23 23:22:41 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 23 Sep 2008 23:22:41 +0200
+Subject: [Linux-uvc-devel] Two quirks with Logitech Sphere AF.
+In-Reply-To: <200809221652.49350.laurent.pinchart@skynet.be>
+References: <20080914122630.2d91ce81@i.geek.nz>
+	<20080917173508.087284b6@i.geek.nz>
+	<200809221652.49350.laurent.pinchart@skynet.be>
+Message-ID: <200809232322.41348.laurent.pinchart@skynet.be>
+
+On Monday 22 September 2008, Laurent Pinchart wrote:
+> On Wednesday 17 September 2008, Ralph Loader wrote:
+> > > My QC for Notebooks Pro reports a default gain of 0 and initialises
+> > > the control to 0. Changing the gain doesn't seem to have any effect
+> > > on the image though.
+> >
+> > The gain setting has an effect for me with MJPG but not with YUV.
+> > Can't get back to MJPG to confirm that at the moment.
+>
+> I tried both YUV and MJPEG and failed to see any change to the image when
+> modifying the gain control (Logitech Quickcam Pro for Notebooks).
+
+Just for the record, the gain control only works when auto-exposure is 
+disabled.
+
+Best regards,
+
+Laurent Pinchart
+
+
+From unnati.sapre at nokia.com  Thu Sep 25 23:10:22 2008
+From: unnati.sapre at nokia.com (unnati.sapre at nokia.com)
+Date: Thu, 25 Sep 2008 16:10:22 -0500
+Subject: [Linux-uvc-devel] Logitech quickcam communicate delux (046d:0992)
+	not working under linux
+Message-ID: <C7EA9BA2FF739043AB84C42449D887A11F5EFD@daebe102.NOE.Nokia.com>
+
+Hi 
+I have a logitech quickcam communicate delux that I am trying to get
+working under red hat enterprise linux 5
+i checked out all the UVC files from the repository but when i give the
+"make" command i get the following error message 
+Building USB Video Class driver...
+make[1]: Entering directory `/usr/src/kernels/2.6.18-53.el5-i686'
+CC [M] /home/usapre/Desktop/trunk/uvc_driver.o
+/home/usapre/Desktop/trunk/uvc_driver.c: In function
+'uvc_parse_control':
+/home/usapre/Desktop/trunk/uvc_driver.c:1139: error: implicit
+declaration of function 'usb_endpoint_is_int_in'
+make[2]: *** [/home/usapre/Desktop/trunk/uvc_driver.o] Error 1
+make[1]: *** [_module_/home/usapre/Desktop/trunk] Error 2
+make[1]: Leaving directory `/usr/src/kernels/2.6.18-53.el5-i686'
+make: *** [uvcvideo] Error 2
+Also i installed luvcview software for seeing the video from my logitech
+webcam but running luvcview -L gives the following error 
+luvcview -L
+luvcview version 0.2.1
+Video driver: x11
+A window manager is available
+video /dev/video0
+ERROR opening V4L interface
+: No such file or directory
+Can anyone please suggest anything that can be done to resolve these
+errors??
+Thanks
+Unnati 
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080925/6d80b9e4/attachment.html>
+
+From laurent.pinchart at skynet.be  Thu Sep 25 23:48:04 2008
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Thu, 25 Sep 2008 23:48:04 +0200
+Subject: [Linux-uvc-devel] Logitech quickcam communicate delux
+	(046d:0992) not working under linux
+In-Reply-To: <C7EA9BA2FF739043AB84C42449D887A11F5EFD@daebe102.NOE.Nokia.com>
+References: <C7EA9BA2FF739043AB84C42449D887A11F5EFD@daebe102.NOE.Nokia.com>
+Message-ID: <200809252348.04975.laurent.pinchart@skynet.be>
+
+Hi,
+
+On Thursday 25 September 2008, unnati.sapre at nokia.com wrote:
+> Hi
+> I have a logitech quickcam communicate delux that I am trying to get
+> working under red hat enterprise linux 5
+> i checked out all the UVC files from the repository but when i give the
+> "make" command i get the following error message
+> Building USB Video Class driver...
+> make[1]: Entering directory `/usr/src/kernels/2.6.18-53.el5-i686'
+> CC [M] /home/usapre/Desktop/trunk/uvc_driver.o
+> /home/usapre/Desktop/trunk/uvc_driver.c: In function
+> 'uvc_parse_control':
+> /home/usapre/Desktop/trunk/uvc_driver.c:1139: error: implicit
+> declaration of function 'usb_endpoint_is_int_in'
+> make[2]: *** [/home/usapre/Desktop/trunk/uvc_driver.o] Error 1
+> make[1]: *** [_module_/home/usapre/Desktop/trunk] Error 2
+> make[1]: Leaving directory `/usr/src/kernels/2.6.18-53.el5-i686'
+> make: *** [uvcvideo] Error 2
+
+Could you try replacing
+
+#if RHEL_RELEASE_CODE < RHEL_RELEASE_VERSION(5,2)
+
+with
+
+#if RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(5,2)
+
+at line 274 in uvc_compat.h and tell me if it helps ?
+
+> Also i installed luvcview software for seeing the video from my logitech
+> webcam but running luvcview -L gives the following error
+> luvcview -L
+> luvcview version 0.2.1
+> Video driver: x11
+> A window manager is available
+> video /dev/video0
+> ERROR opening V4L interface
+>
+> : No such file or directory
+
+That's pretty normal as the driver hasn't been compiled and installed 
+properly.
+
+> Can anyone please suggest anything that can be done to resolve these
+> errors??
+
+Best regards,
+
+Laurent Pinchart
+
+
+From unnati.sapre at nokia.com  Fri Sep 26 00:26:04 2008
+From: unnati.sapre at nokia.com (unnati.sapre at nokia.com)
+Date: Thu, 25 Sep 2008 17:26:04 -0500
+Subject: [Linux-uvc-devel] Logitech quickcam communicate delux
+	(046d:0992) not working under linux
+In-Reply-To: <200809252348.04975.laurent.pinchart@skynet.be>
+References: <C7EA9BA2FF739043AB84C42449D887A11F5EFD@daebe102.NOE.Nokia.com>
+	<200809252348.04975.laurent.pinchart@skynet.be>
+Message-ID: <C7EA9BA2FF739043AB84C42449D887A11F5F93@daebe102.NOE.Nokia.com>
+
+ 
+Hi 
+I did change the uvc_compat.h file. Now I get the following messages for
+make and make install
+
+# make
+Building USB Video Class driver...
+make[1]: Entering directory `/usr/src/kernels/2.6.18-53.el5-i686'
+  CC [M]  /home/usapre/Desktop/trunk/uvc_driver.o
+  LD [M]  /home/usapre/Desktop/trunk/uvcvideo.o
+  Building modules, stage 2.
+  MODPOST
+WARNING: could not open /home/usapre/Desktop/trunk/version.h: Invalid
+argument
+  LD [M]  /home/usapre/Desktop/trunk/uvcvideo.ko
+make[1]: Leaving directory `/usr/src/kernels/2.6.18-53.el5-i686'
+
+# make install 
+Installing USB Video Class driver...
+make[1]: Entering directory `/usr/src/kernels/2.6.18-53.el5-i686'
+  INSTALL /home/usapre/Desktop/trunk/uvcvideo.ko
+  DEPMOD  2.6.18-53.el5
+make[1]: Leaving directory `/usr/src/kernels/2.6.18-53.el5-i686'
+
+I don't know if that means good or bad though...but I still get the same
+error message for luvcview -L command
+
+Thanks
+Unnati
+
+
+>-----Original Message-----
+>From: ext Laurent Pinchart [mailto:laurent.pinchart at skynet.be] 
+>Sent: Thursday, September 25, 2008 2:48 PM
+>To: linux-uvc-devel at lists.berlios.de
+>Cc: Sapre Unnati (Nokia-M/Vancouver)
+>Subject: Re: [Linux-uvc-devel] Logitech quickcam communicate 
+>delux (046d:0992) not working under linux
+>
+>Hi,
+>
+>On Thursday 25 September 2008, unnati.sapre at nokia.com wrote:
+>> Hi
+>> I have a logitech quickcam communicate delux that I am trying to get 
+>> working under red hat enterprise linux 5 i checked out all the UVC 
+>> files from the repository but when i give the "make" command 
+>i get the 
+>> following error message Building USB Video Class driver...
+>> make[1]: Entering directory `/usr/src/kernels/2.6.18-53.el5-i686'
+>> CC [M] /home/usapre/Desktop/trunk/uvc_driver.o
+>> /home/usapre/Desktop/trunk/uvc_driver.c: In function
+>> 'uvc_parse_control':
+>> /home/usapre/Desktop/trunk/uvc_driver.c:1139: error: implicit 
+>> declaration of function 'usb_endpoint_is_int_in'
+>> make[2]: *** [/home/usapre/Desktop/trunk/uvc_driver.o] Error 1
+>> make[1]: *** [_module_/home/usapre/Desktop/trunk] Error 2
+>> make[1]: Leaving directory `/usr/src/kernels/2.6.18-53.el5-i686'
+>> make: *** [uvcvideo] Error 2
+>
+>Could you try replacing
+>
+>#if RHEL_RELEASE_CODE < RHEL_RELEASE_VERSION(5,2)
+>
+>with
+>
+>#if RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(5,2)
+>
+>at line 274 in uvc_compat.h and tell me if it helps ?
+>
+>> Also i installed luvcview software for seeing the video from my 
+>> logitech webcam but running luvcview -L gives the following error 
+>> luvcview -L luvcview version 0.2.1 Video driver: x11 A 
+>window manager 
+>> is available video /dev/video0 ERROR opening V4L interface
+>>
+>> : No such file or directory
+>
+>That's pretty normal as the driver hasn't been compiled and 
+>installed properly.
+>
+>> Can anyone please suggest anything that can be done to resolve these 
+>> errors??
+>
+>Best regards,
+>
+>Laurent Pinchart
+>
+
+
+From alan-jenkins at tuffmail.co.uk  Fri Sep 26 12:36:02 2008
+From: alan-jenkins at tuffmail.co.uk (Alan Jenkins)
+Date: Fri, 26 Sep 2008 11:36:02 +0100
+Subject: [Linux-uvc-devel] [BUG] NULL pointer dereference caused by uvcvideo
+	stress test
+Message-ID: <gbiduj$9p3$1@ger.gmane.org>
+
+This is is on v2.6.27-rc6.  I originally saw it on todays -tip tree.
+
+# while true; do modprobe uvcvideo; modprobe -r uvcvideo; done
+
+After a few tens of cycles, modprobe gets stuck in "D" state, and the
+following backtrace appears:
+
+[  253.419987] uvcvideo: Found UVC 1.00 device <unnamed> (eb1a:2761)
+[  253.423321] input: UVC Camera (eb1a:2761) as /class/input/input22
+[  253.433324] usbcore: registered new interface driver uvcvideo
+[  253.433324] USB Video Class driver (v0.1.0)
+[  253.453324] BUG: unable to handle kernel NULL pointer dereference at
+00000030
+[  253.453324] IP: [<e02913de>] :videodev:video_open+0x8b/0xe4
+[  253.453324] *pdpt = 000000001e7c3001 *pde = 0000000000000000 
+[  253.453324] Oops: 0000 [#1] 
+[  253.453324] Modules linked in: uvcvideo(-) compat_ioctl32 videodev
+v4l1_compat aes_i586 aes_generic af_packet i915 drm cpufreq_userspace
+cpufreq_powersave cpufreq_ondemand cpufreq_stats freq_table
+cpufreq_conservative fan wmi sbs sbshc ip6t_LOG nf_conntrack_ipv6 ipt_LOG
+xt_limit ipt_addrtype xt_state xt_tcpudp xt_conntrack ip6table_filter
+ip6_tables ipv6 nf_nat_irc nf_conntrack_irc nf_nat_ftp nf_nat
+nf_conntrack_ipv4 nf_conntrack_ftp nf_conntrack iptable_filter ip_tables
+x_tables dm_crypt dm_mod fuse joydev libusual arc4 ecb crypto_blkcipher
+ath5k psmouse mac80211 serio_raw led_class cfg80211 snd_hda_intel pcspkr
+ata_generic snd_pcm_oss snd_mixer_oss iTCO_wdt iTCO_vendor_support ehci_hcd
+uhci_hcd ahci snd_pcm snd_timer usbcore snd_page_alloc snd_hwdep shpchp
+pci_hotplug snd soundcore video output battery ac eeepc_laptop backlight
+button intel_agp agpgart sg evdev thermal processor [last unloaded:
+v4l1_compat]
+[  253.453324] 
+[  253.453324] Pid: 5824, comm: hald-probe-vide Not tainted (2.6.27-rc6eeepc
+#36)
+[  253.453324] EIP: 0060:[<e02913de>] EFLAGS: 00010246 CPU: 0
+[  253.453324] EIP is at video_open+0x8b/0xe4 [videodev]
+[  253.453324] EAX: 00000000 EBX: e02949c4 ECX: e0291353 EDX: de515400
+[  253.453324] ESI: cbd44d00 EDI: 00000000 EBP: de51982c ESP: df1bde98
+[  253.453324]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+[  253.453324] Process hald-probe-vide (pid: 5824, ti=df1bc000 task=deb57810
+task.ti=df1bc000)
+[  253.453324] Stack: 00000000 de4e0940 00000000 de51982c c01602b2 cbd44d00
+00000000 cbd44d00 
+[  253.453324]        de51982c df1bdf14 c01601d2 c015d139 df02cd80 deca4d80
+df1bdf14 cbd44d00 
+[  253.453324]        df1bdf14 00008001 c015d23d cbd44d00 00000000 00000000
+df1bdf14 c01666fa 
+[  253.453324] Call Trace:
+[  253.453324]  [<c01602b2>] chrdev_open+0xe0/0xf6
+[  253.453324]  [<c01601d2>] chrdev_open+0x0/0xf6
+[  253.453324]  [<c015d139>] __dentry_open+0xf2/0x1da
+[  253.453324]  [<c015d23d>] nameidata_to_filp+0x1c/0x2c
+[  253.453324]  [<c01666fa>] do_filp_open+0x343/0x61e
+[  253.453324]  [<c014df91>] handle_mm_fault+0x27d/0x528
+[  253.453324]  [<c016dcf9>] alloc_fd+0x46/0xad
+[  253.453324]  [<c015cf74>] do_sys_open+0x3f/0xb3
+[  253.453324]  [<c015d02c>] sys_open+0x1e/0x23
+[  253.453324]  [<c01035c1>] sysenter_do_call+0x12/0x21
+[  253.453324]  [<c0270000>] clone_policy+0x94/0xe0
+[  253.453324]  =======================
+[  253.453324] Code: c4 0c 85 d2 74 6d 8b 02 8b 5e 10 85 c0 74 15 8b 00 85
+c0 74 0b 83 38 02 74 0a ff 80 40 01 00 00 8b 02 eb 02 31 c0 89 46 10 31 ff
+<8b> 48 30 85 c9 74 36 89 f2 89 e8 ff d1 85 c0 89 c7 74 2a 8b 46 
+[  253.453324] EIP: [<e02913de>] video_open+0x8b/0xe4 [videodev] SS:ESP
+0068:df1bde98
+[  253.453324] ---[ end trace 68c40b35b81e3876 ]---
+[  253.459996] usbcore: deregistering interface driver uvcvideo
+
+SysRQ-W shows where modprobe is stuck:
+
+[  286.043318] SysRq : Show Blocked State
+[  286.043318]   task                PC stack   pid father
+[  286.043318] modprobe      D de4c4600     0  5823   5060
+[  286.043318]        deb89130 00000086 de4c46e4 de4c4600 00000082 00000082
+e0297544 deb89130 
+[  286.043318]        dea0b000 e03eb03c c027e8b2 e0297548 e0297548 deb89130
+e0297544 df024000 
+[  286.043318]        c027e7bb e01853c0 de515400 e029105f df024034 e03e2505
+df024034 e03e24e2 
+[  286.043318] Call Trace:
+[  286.043318]  [<c027e8b2>] __mutex_lock_slowpath+0x3e/0x60
+[  286.043318]  [<c027e7bb>] mutex_lock+0x16/0x19
+[  286.043318]  [<e01853c0>] usb_hcd_flush_endpoint+0x42/0x8c [usbcore]
+[  286.043318]  [<e029105f>] video_unregister_device+0xd/0x46 [videodev]
+[  286.043318]  [<e03e2505>] uvc_delete+0x23/0xad [uvcvideo]
+[  286.043318]  [<e03e24e2>] uvc_delete+0x0/0xad [uvcvideo]
+[  286.043318]  [<c01abef0>] kref_put+0x35/0x3f
+[  286.043318]  [<e01884c5>] usb_unbind_interface+0x43/0x92 [usbcore]
+[  286.043318]  [<c01f618b>] __device_release_driver+0x58/0x76
+[  286.043318]  [<c01f61f3>] driver_detach+0x4a/0x6f
+[  286.043318]  [<c01f5845>] bus_remove_driver+0x60/0x7e
+[  286.043318]  [<e018800e>] usb_deregister+0x6b/0x73 [usbcore]
+[  286.043318]  [<c0132d96>] sys_delete_module+0x15a/0x1b8
+[  286.043318]  [<c01502f0>] remove_vma+0x43/0x48
+[  286.043318]  [<c0150b5d>] do_munmap+0x18a/0x1a4
+[  286.043318]  [<c01035c1>] sysenter_do_call+0x12/0x21
+[  286.043318]  [<c0270000>] clone_policy+0x94/0xe0
+[  286.043318]  =======================
+
+
+
+
+From oliver at neukum.org  Fri Sep 26 15:11:58 2008
+From: oliver at neukum.org (Oliver Neukum)
+Date: Fri, 26 Sep 2008 15:11:58 +0200
+Subject: [Linux-uvc-devel] [BUG] NULL pointer dereference caused by
+	uvcvideo stress test
+In-Reply-To: <gbiduj$9p3$1@ger.gmane.org>
+References: <gbiduj$9p3$1@ger.gmane.org>
+Message-ID: <200809261511.59052.oliver@neukum.org>
+
+Am Freitag, 26. September 2008 12:36:02 schrieb Alan Jenkins:
+> This is is on v2.6.27-rc6. ?I originally saw it on todays -tip tree.
+> 
+> # while true; do modprobe uvcvideo; modprobe -r uvcvideo; done
+> 
+> After a few tens of cycles, modprobe gets stuck in "D" state, and the
+> following backtrace appears:
+
+Can you compile your kernel with lock checking to detect an AB-BA deadlock?
+
+	Regards
+		Oliver
+
+
+
+From unnati.sapre at nokia.com  Fri Sep 26 23:08:10 2008
+From: unnati.sapre at nokia.com (unnati.sapre at nokia.com)
+Date: Fri, 26 Sep 2008 16:08:10 -0500
+Subject: [Linux-uvc-devel] Logitech quickcam communicate delux
+	(046d:0992) not working under linux
+In-Reply-To: <200809252348.04975.laurent.pinchart@skynet.be>
+References: <C7EA9BA2FF739043AB84C42449D887A11F5EFD@daebe102.NOE.Nokia.com>
+	<200809252348.04975.laurent.pinchart@skynet.be>
+Message-ID: <C7EA9BA2FF739043AB84C42449D887A121F724@daebe102.NOE.Nokia.com>
+
+
+ Never mind...my bad...got the camera working...thanks so much :-))))))
+
+Unnati
+
+>-----Original Message-----
+>From: ext Laurent Pinchart [mailto:laurent.pinchart at skynet.be] 
+>Sent: Thursday, September 25, 2008 2:48 PM
+>To: linux-uvc-devel at lists.berlios.de
+>Cc: Sapre Unnati (Nokia-M/Vancouver)
+>Subject: Re: [Linux-uvc-devel] Logitech quickcam communicate 
+>delux (046d:0992) not working under linux
+>
+>Hi,
+>
+>On Thursday 25 September 2008, unnati.sapre at nokia.com wrote:
+>> Hi
+>> I have a logitech quickcam communicate delux that I am trying to get 
+>> working under red hat enterprise linux 5 i checked out all the UVC 
+>> files from the repository but when i give the "make" command 
+>i get the 
+>> following error message Building USB Video Class driver...
+>> make[1]: Entering directory `/usr/src/kernels/2.6.18-53.el5-i686'
+>> CC [M] /home/usapre/Desktop/trunk/uvc_driver.o
+>> /home/usapre/Desktop/trunk/uvc_driver.c: In function
+>> 'uvc_parse_control':
+>> /home/usapre/Desktop/trunk/uvc_driver.c:1139: error: implicit 
+>> declaration of function 'usb_endpoint_is_int_in'
+>> make[2]: *** [/home/usapre/Desktop/trunk/uvc_driver.o] Error 1
+>> make[1]: *** [_module_/home/usapre/Desktop/trunk] Error 2
+>> make[1]: Leaving directory `/usr/src/kernels/2.6.18-53.el5-i686'
+>> make: *** [uvcvideo] Error 2
+>
+>Could you try replacing
+>
+>#if RHEL_RELEASE_CODE < RHEL_RELEASE_VERSION(5,2)
+>
+>with
+>
+>#if RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(5,2)
+>
+>at line 274 in uvc_compat.h and tell me if it helps ?
+>
+>> Also i installed luvcview software for seeing the video from my 
+>> logitech webcam but running luvcview -L gives the following error 
+>> luvcview -L luvcview version 0.2.1 Video driver: x11 A 
+>window manager 
+>> is available video /dev/video0 ERROR opening V4L interface
+>>
+>> : No such file or directory
+>
+>That's pretty normal as the driver hasn't been compiled and 
+>installed properly.
+>
+>> Can anyone please suggest anything that can be done to resolve these 
+>> errors??
+>
+>Best regards,
+>
+>Laurent Pinchart
+>
+
+
+From grifty at gmail.com  Mon Sep 29 17:52:16 2008
+From: grifty at gmail.com (Forrest Vodden)
+Date: Mon, 29 Sep 2008 10:52:16 -0500
+Subject: [Linux-uvc-devel] Random exposure issues while using uvccapture.
+Message-ID: <75ff97e0809290852s7b3c760eoc91910ba3de2a627@mail.gmail.com>
+
+Hey all,
+
+I realize this is the development list for uvc, but couldn't find a
+mailing list for uvccapture and felt that maybe you would have some
+insight into my problem.
+
+I'm using a Logitech Quickcam Communicate Deluxe in USB 1.0 mode to
+avoid the Logitech bug that I've had trouble with in the past. I'm
+scripting uvccapture to capture a 640x480 image every 5 seconds.
+
+This works great for 90% of the pictures taken, but every once in
+awhile the photo's exposure is off the charts. I've tried locking the
+exposure in using the uvccapture option, which helped, but it still
+happens. The camera is outside, so it has to deal with natural light
+variances, but this still happens on generally dark, overcast days.
+
+Is this probably a camera issue and should I looks into other
+brands/models or is there anything on the software side that I could
+try?
+
+Thanks,
+Forrest
+
+
+From unnati.sapre at nokia.com  Mon Sep 29 21:24:54 2008
+From: unnati.sapre at nokia.com (unnati.sapre at nokia.com)
+Date: Mon, 29 Sep 2008 14:24:54 -0500
+Subject: [Linux-uvc-devel] How to run a LED status check?
+Message-ID: <C7EA9BA2FF739043AB84C42449D887A121FDC7@daebe102.NOE.Nokia.com>
+
+
+Hi
+
+I have a logitech quickcam communicate dulux camera which works
+perfectly. I have taken some pictures using it and now I want to run a
+LED status check for those pictures just to know how many led's were on
+and how many were off. How exactly do I perform those tests?? Does
+anyone know the code for debugging a photograph?? A step by step
+explanation would be appreciated
+
+Thanks
+Unnati
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080929/953446e1/attachment.html>
+

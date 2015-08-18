@@ -1,0 +1,213 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] can UVC gadget driver support bulk video	stream?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20can%20UVC%20gadget%20driver%20support%20bulk%20video%0A%09stream%3F&In-Reply-To=%3CAANLkTimnvgA3okJHBGjP-E6%3D1_1%3DtsbLvh_9dXNud6ZC%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006185.html">
+   <LINK REL="Next"  HREF="006165.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] can UVC gadget driver support bulk video	stream?</H1>
+    <B>Barry Song</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20can%20UVC%20gadget%20driver%20support%20bulk%20video%0A%09stream%3F&In-Reply-To=%3CAANLkTimnvgA3okJHBGjP-E6%3D1_1%3DtsbLvh_9dXNud6ZC%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] can UVC gadget driver support bulk video	stream?">21cnbao at gmail.com
+       </A><BR>
+    <I>Sun Jan 23 16:43:06 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006185.html">[Linux-uvc-devel] can UVC gadget driver support bulk video	stream?
+</A></li>
+        <LI>Next message: <A HREF="006165.html">[Linux-uvc-devel] Creative WebCam Live! Chat IM, increase fps
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6220">[ date ]</a>
+              <a href="thread.html#6220">[ thread ]</a>
+              <a href="subject.html#6220">[ subject ]</a>
+              <a href="author.html#6220">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+I make some changes in your drivers to support bulk:
+
+1. in f_uvc.c, delete uvc_streaming_intf alt1 for iso video since bulk
+doesn't need alt1 :
+static struct usb_interface_descriptor uvc_streaming_intf_alt0 __initdata =
+{
+    .bLength        = USB_DT_INTERFACE_SIZE,
+    .bDescriptorType    = USB_DT_INTERFACE,
+    .bInterfaceNumber   = UVC_INTF_VIDEO_STREAMING,
+    .bAlternateSetting  = 0,
+//  .bNumEndpoints      = 0,
+    .bNumEndpoints      = 1,
+    .bInterfaceClass    = USB_CLASS_VIDEO,
+    .bInterfaceSubClass = 0x02,
+    .bInterfaceProtocol = 0x00,
+    .iInterface     = 0,
+};
+
++/*
+static struct usb_interface_descriptor uvc_streaming_intf_alt1 __initdata =
+{
+    .bLength        = USB_DT_INTERFACE_SIZE,
+    .bDescriptorType    = USB_DT_INTERFACE,
+    .bInterfaceNumber   = UVC_INTF_VIDEO_STREAMING,
+    .bAlternateSetting  = 1,
+    .bNumEndpoints      = 1,
+    .bInterfaceClass    = USB_CLASS_VIDEO,
+    .bInterfaceSubClass = 0x02,
+    .bInterfaceProtocol = 0x00,
+    .iInterface     = 0,
+};
++*/
+static struct usb_endpoint_descriptor uvc_streaming_ep = {
+    .bLength        = USB_DT_ENDPOINT_SIZE,
+    .bDescriptorType    = USB_DT_ENDPOINT,
+    .bEndpointAddress   = USB_DIR_IN,
+    .bmAttributes       = USB_ENDPOINT_XFER_BULK,
+    .wMaxPacketSize     = cpu_to_le16(512),
+//  .bInterval      = 1,
+};
+
+static const struct usb_descriptor_header * const uvc_fs_streaming[] = {
+//  (struct usb_descriptor_header *) &amp;uvc_streaming_intf_alt1,
+    (struct usb_descriptor_header *) &amp;uvc_streaming_ep,
+    NULL,
+};
+
+static const struct usb_descriptor_header * const uvc_hs_streaming[] = {
+//  (struct usb_descriptor_header *) &amp;uvc_streaming_intf_alt1,
+    (struct usb_descriptor_header *) &amp;uvc_streaming_ep,
+    NULL,
+};
+
+2.in uvc_video.c, I didn't find you have any chance to initialize
+video-&gt;max_payload_size and move to bulk mode, then i added one line :
++   video-&gt;max_payload_size = 512;
+
+    if (video-&gt;max_payload_size) {
+        video-&gt;encode = uvc_video_encode_bulk;
+        video-&gt;payload_size = 0;
+    } else {
+        video-&gt;encode = uvc_video_encode_isoc;
+    }
+
+Now windows can detect the webcam and even enable video stream, but image is
+not right.
+
+Then i need your help about the right init value for video-&gt;max_payload_size
+in uvc_video.c, and point out the right value for dwMaxPayloadTransferSize in
+userspace program uvc_gadget.c too:
+static void
+uvc_events_init(struct uvc_device *dev)
+{
+    struct v4l2_event_subscription sub;
+
+    uvc_fill_streaming_control(dev, &amp;dev-&gt;probe, 0, 0);
+    uvc_fill_streaming_control(dev, &amp;dev-&gt;commit, 0, 0);
+
+    if (dev-&gt;bulk) {
+        /* FIXME Crude hack, must be negotiated with the driver. */
+        dev-&gt;probe.dwMaxPayloadTransferSize = 16 * 1024;
+        dev-&gt;commit.dwMaxPayloadTransferSize = 16 * 1024;
+    }
+
+    memset(&amp;sub, 0, sizeof sub);
+    sub.type = UVC_EVENT_SETUP;
+    ioctl(dev-&gt;fd, VIDIOC_SUBSCRIBE_EVENT, &amp;sub);
+    sub.type = UVC_EVENT_DATA;
+    ioctl(dev-&gt;fd, VIDIOC_SUBSCRIBE_EVENT, &amp;sub);
+    sub.type = UVC_EVENT_STREAMON;
+    ioctl(dev-&gt;fd, VIDIOC_SUBSCRIBE_EVENT, &amp;sub);
+    sub.type = UVC_EVENT_STREAMOFF;
+    ioctl(dev-&gt;fd, VIDIOC_SUBSCRIBE_EVENT, &amp;sub);
+}
+
+You said &quot;FIXME Crude hack, must be negotiated with the driver&quot;, do you mean
+16*1024 should be the value of video-&gt;max_payload_size in uvc_video.c?
+
+Can you try your best to give us more information about bulk since you have
+already had some bulk codes in both drivers and userspace utilities?
+
+Thanks
+Barry
+
+On Sat, Jan 8, 2011 at 11:22 AM, Barry Song &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">21cnbao at gmail.com</A>&gt; wrote:
+
+&gt;<i> Hi Laurent,
+</I>&gt;<i> Thanks for your reply.
+</I>&gt;<i>
+</I>&gt;<i> On 1/8/11, Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt; wrote:
+</I>&gt;<i> &gt; Hi Barry,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Wednesday 05 January 2011 07:57:46 Barry Song wrote:
+</I>&gt;<i> &gt;&gt; Hi All,
+</I>&gt;<i> &gt;&gt; Most USB device controller drivers don't support ISO endpoints,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Really ? What controller are you talking about ?
+</I>&gt;<i> For example samsung S3C:
+</I>&gt;<i> drivers/usb/gadget/s3c-hsotg.c:
+</I>&gt;<i>        switch (desc-&gt;bmAttributes &amp; USB_ENDPOINT_XFERTYPE_MASK) {
+</I>&gt;<i>        case USB_ENDPOINT_XFER_ISOC:
+</I>&gt;<i>                dev_err(hsotg-&gt;dev, &quot;no current ISOC support\n&quot;);
+</I>&gt;<i>                ret = -EINVAL;
+</I>&gt;<i>                goto out;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;&gt; but BULK is almost supported by all. Has anybody changed UVC gadget to
+</I>&gt;<i> &gt;&gt; support BULK mode?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I haven't tried bulk mode recently, but I know I got it working some time
+</I>&gt;<i> &gt; ago
+</I>&gt;<i> &gt; (maybe with a different code base though).
+</I>&gt;<i> Yes. i have tried to change ISO to BULK, but i haven't made the bulk
+</I>&gt;<i> mode gadget work yet. Do you still remember what you have changed? Or
+</I>&gt;<i> can you find the codes and share with me?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; --
+</I>&gt;<i> &gt; Regards,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Laurent Pinchart
+</I>&gt;<i> &gt;
+</I>&gt;<i> Thanks
+</I>&gt;<i> Barry
+</I>&gt;<i>
+</I>
+
+
+-- 
+Barry Song, Linux Kernel Developer
+<A HREF="http://21cnbao.blog.51cto.com">http://21cnbao.blog.51cto.com</A>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110123/a28d2374/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110123/a28d2374/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006185.html">[Linux-uvc-devel] can UVC gadget driver support bulk video	stream?
+</A></li>
+	<LI>Next message: <A HREF="006165.html">[Linux-uvc-devel] Creative WebCam Live! Chat IM, increase fps
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6220">[ date ]</a>
+              <a href="thread.html#6220">[ thread ]</a>
+              <a href="subject.html#6220">[ subject ]</a>
+              <a href="author.html#6220">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

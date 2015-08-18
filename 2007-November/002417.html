@@ -1,0 +1,181 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Bus 007 Device 002: ID 17ef:1004 ChipsBnk	(fwd)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Bus%20007%20Device%20002%3A%20ID%2017ef%3A1004%20ChipsBnk%0A%09%28fwd%29&In-Reply-To=%3C200711070056.22411.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002401.html">
+   <LINK REL="Next"  HREF="002475.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Bus 007 Device 002: ID 17ef:1004 ChipsBnk	(fwd)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Bus%20007%20Device%20002%3A%20ID%2017ef%3A1004%20ChipsBnk%0A%09%28fwd%29&In-Reply-To=%3C200711070056.22411.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Bus 007 Device 002: ID 17ef:1004 ChipsBnk	(fwd)">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Nov  7 00:56:22 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002401.html">[Linux-uvc-devel] Bus 007 Device 002: ID 17ef:1004 ChipsBnk (fwd)
+</A></li>
+        <LI>Next message: <A HREF="002475.html">[Linux-uvc-devel] Bus 007 Device 002: ID 17ef:1004 ChipsBnk (fwd)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2417">[ date ]</a>
+              <a href="thread.html#2417">[ thread ]</a>
+              <a href="subject.html#2417">[ subject ]</a>
+              <a href="author.html#2417">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Ryan,
+
+On Monday 05 November 2007, Ryan Jud Hughes wrote:
+&gt;<i> Hi.  I just got a ThinkPad R61.  It has a usb webcam which does not seem to
+</I>&gt;<i> work.  It's using the uvc module, so I thought this would be the place.
+</I>&gt;<i>
+</I>&gt;<i> The output from lsusb is the subject of this message.  Here's the output of
+</I>&gt;<i> a few apps:
+</I>&gt;<i>
+</I>&gt;<i> ____ Application:  xawtv (shows black screen) ____
+</I>&gt;<i> This is xawtv-3.95.dfsg.1, running on Linux/x86_64 (2.6.22-14-generic)
+</I>&gt;<i> WARNING: Your X-Server has no DGA support.
+</I>&gt;<i> /dev/video0 [v4l2]: no overlay support
+</I>&gt;<i> v4l-conf had some trouble, trying to continue anyway
+</I>&gt;<i> Warning: Cannot convert string &quot;-*-ledfixed-medium-r-*--39-*-*-*-c-*-*-*&quot;
+</I>&gt;<i> to type FontStruct
+</I>&gt;<i> ioctl: VIDIOC_G_STD(std=0x7fff98783514
+</I>&gt;<i> [PAL_G,PAL_I,PAL_M,PAL_Nc,NTSC_M,NTSC_M_JP,SECAM_H,SECAM_K,SECAM_K1,SECAM_L
+</I>&gt;<i>,(null),(null),(null),(null),(null),(null),(null),(null),(null),(null),(null
+</I>&gt;<i>),(null),(null),(null),(null),(null),(null),(null)]): Invalid argument
+</I>&gt;<i> ioctl: VIDIOC_S_STD(std=0x0 []): Invalid argument
+</I>&gt;<i> ioctl: VIDIOC_DQBUF(index=0;type=VIDEO_CAPTURE;bytesused=0;flags=0x0
+</I>&gt;<i> [];field=ANY;;timecode.type=0;timecode.flags=0;timecode.frames=0;timecode.s
+</I>&gt;<i>econds=0;timecode.minutes=0;timecode.hours=0;timecode.userbits=&quot;&quot;;sequence=0
+</I>&gt;<i>;memory=unknown): Invalid argument
+</I>
+Xawtv 3.95 is known not to work. You could try upgrading to the 4 beta 
+version.
+
+&gt;<i> ____ Application:  gqcam ____
+</I>&gt;<i> Segmentation Fault
+</I>&gt;<i>
+</I>&gt;<i> ____ Application: luvcview ____
+</I>&gt;<i> luvcview version 0.2.1
+</I>&gt;<i> Video driver: x11
+</I>&gt;<i> A window manager is available
+</I>&gt;<i> video /dev/video0
+</I>&gt;<i> Unable to set format: 22.
+</I>&gt;<i>   Init v4L2 failed !! exit fatal
+</I>&gt;<i>
+</I>
+Pretty normal if your webcam support yuv only.
+
+&gt;<i> ____ Application:  luvcview -f yuv ____
+</I>&gt;<i> Shows an image, which is attached.
+</I>
+That's bad :-/ Do you get any suspicious message in the kernel log when 
+running luvcview -f yuv ? Try to set the trace level to 128 ('modprobe 
+uvcvideo trace=128' or 'echo 128 &gt; /sys/modules/uvcvideo/parameters/trace') 
+and see if you get any &quot;Dropping payload&quot; message (warning: this will flood 
+your kernel log).
+
+&gt;<i> ____ Application:  cheese ____
+</I>&gt;<i>
+</I>&gt;<i> ** Message: Probing the webcam, please ignore the following, not
+</I>&gt;<i> applicabable tries
+</I>&gt;<i> ** Message: test pipeline for v4l2src failed:
+</I>&gt;<i> Failed to construct test pipeline for 'v4l2src ! fakesink'
+</I>&gt;<i> ** Message: Error running pipeline 'v4lsrc !
+</I>&gt;<i> video/x-raw-rgb,width=640,height=480 ! fakesink': Could not get/set
+</I>&gt;<i> settings from/on resource. [v4l_calls.c(409): gst_v4l_set_chan_norm ():
+</I>&gt;<i> /pipeline1/v4lsrc0:
+</I>&gt;<i> Error setting the channel/norm settings: Invalid argument]
+</I>&gt;<i> ** Message: test pipeline for v4lsrc failed:
+</I>&gt;<i> [v4lsrc ! video/x-raw-rgb,width=640,height=480 ! fakesink]: Could not
+</I>&gt;<i> get/set settings from/on resource.
+</I>&gt;<i> ** Message: Error running pipeline 'v4lsrc !
+</I>&gt;<i> video/x-raw-yuv,width=640,height=480 ! fakesink': Could not get/set
+</I>&gt;<i> settings from/on resource. [v4l_calls.c(409): gst_v4l_set_chan_norm ():
+</I>&gt;<i> /pipeline2/v4lsrc1:
+</I>&gt;<i> Error setting the channel/norm settings: Invalid argument]
+</I>&gt;<i> ** Message: test pipeline for v4lsrc failed:
+</I>&gt;<i> [v4lsrc ! video/x-raw-yuv,width=640,height=480 ! fakesink]: Could not
+</I>&gt;<i> get/set settings from/on resource.
+</I>&gt;<i> ** Message: Error running pipeline 'v4lsrc !
+</I>&gt;<i> video/x-raw-rgb,width=320,height=240 ! fakesink': Could not get/set
+</I>&gt;<i> settings from/on resource. [v4l_calls.c(409): gst_v4l_set_chan_norm ():
+</I>&gt;<i> /pipeline3/v4lsrc2:
+</I>&gt;<i> Error setting the channel/norm settings: Invalid argument]
+</I>&gt;<i> ** Message: test pipeline for v4lsrc failed:
+</I>&gt;<i> [v4lsrc ! video/x-raw-rgb,width=320,height=240 ! fakesink]: Could not
+</I>&gt;<i> get/set settings from/on resource.
+</I>&gt;<i> ** Message: Error running pipeline 'v4lsrc !
+</I>&gt;<i> video/x-raw-rgb,width=1280,height=960 ! fakesink': Could not get/set
+</I>&gt;<i> settings from/on resource. [v4l_calls.c(409): gst_v4l_set_chan_norm ():
+</I>&gt;<i> /pipeline4/v4lsrc3:
+</I>&gt;<i> Error setting the channel/norm settings: Invalid argument]
+</I>&gt;<i> ** Message: test pipeline for v4lsrc failed:
+</I>&gt;<i> [v4lsrc ! video/x-raw-rgb,width=1280,height=960 ! fakesink]: Could not
+</I>&gt;<i> get/set settings from/on resource.
+</I>&gt;<i> ** Message: Error running pipeline 'v4lsrc !
+</I>&gt;<i> video/x-raw-rgb,width=174,height=144 ! fakesink': Could not get/set
+</I>&gt;<i> settings from/on resource. [v4l_calls.c(409): gst_v4l_set_chan_norm ():
+</I>&gt;<i> /pipeline5/v4lsrc4:
+</I>&gt;<i> Error setting the channel/norm settings: Invalid argument]
+</I>&gt;<i> ** Message: test pipeline for v4lsrc failed:
+</I>&gt;<i> [v4lsrc ! video/x-raw-rgb,width=174,height=144 ! fakesink]: Could not
+</I>&gt;<i> get/set settings from/on resource.
+</I>&gt;<i> ** Message: Error running pipeline 'v4lsrc !
+</I>&gt;<i> video/x-raw-rgb,width=160,height=120 ! fakesink': Could not get/set
+</I>&gt;<i> settings from/on resource. [v4l_calls.c(409): gst_v4l_set_chan_norm ():
+</I>&gt;<i> /pipeline6/v4lsrc5:
+</I>&gt;<i> Error setting the channel/norm settings: Invalid argument]
+</I>&gt;<i> ** Message: test pipeline for v4lsrc failed:
+</I>&gt;<i> [v4lsrc ! video/x-raw-rgb,width=160,height=120 ! fakesink]: Could not
+</I>&gt;<i> get/set settings from/on resource.
+</I>&gt;<i> ** Message: Error running pipeline 'v4lsrc ! fakesink': Could not get/set
+</I>&gt;<i> settings from/on resource. [v4l_calls.c(409): gst_v4l_set_chan_norm ():
+</I>&gt;<i> /pipeline7/v4lsrc6:
+</I>&gt;<i> Error setting the channel/norm settings: Invalid argument]
+</I>&gt;<i> ** Message: test pipeline for v4lsrc failed:
+</I>&gt;<i> [v4lsrc ! fakesink]: Could not get/set settings from/on resource.
+</I>&gt;<i> using source: videotestsrc
+</I>
+I think there's a known issue with some gstreamer versions. Try searching the 
+mailing list archive for more information.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002401.html">[Linux-uvc-devel] Bus 007 Device 002: ID 17ef:1004 ChipsBnk (fwd)
+</A></li>
+	<LI>Next message: <A HREF="002475.html">[Linux-uvc-devel] Bus 007 Device 002: ID 17ef:1004 ChipsBnk (fwd)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2417">[ date ]</a>
+              <a href="thread.html#2417">[ thread ]</a>
+              <a href="subject.html#2417">[ subject ]</a>
+              <a href="author.html#2417">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

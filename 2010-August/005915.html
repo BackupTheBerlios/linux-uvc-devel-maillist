@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Running multiple webcams on the same hub
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Running%20multiple%20webcams%20on%20the%20same%20hub&In-Reply-To=%3C4C77C85C.4040504%40ml1.co.uk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005914.html">
+   <LINK REL="Next"  HREF="005917.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Running multiple webcams on the same hub</H1>
+    <B>Martin</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Running%20multiple%20webcams%20on%20the%20same%20hub&In-Reply-To=%3C4C77C85C.4040504%40ml1.co.uk%3E"
+       TITLE="[Linux-uvc-devel] Running multiple webcams on the same hub">m_uvcdev at ml1.co.uk
+       </A><BR>
+    <I>Fri Aug 27 16:14:52 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005914.html">[Linux-uvc-devel] Bison Webcam on Debian
+</A></li>
+        <LI>Next message: <A HREF="005917.html">[Linux-uvc-devel] Running multiple webcams on the same hub
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5915">[ date ]</a>
+              <a href="thread.html#5915">[ thread ]</a>
+              <a href="subject.html#5915">[ subject ]</a>
+              <a href="author.html#5915">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The problem:
+
+&gt;<i>From reading around this list and elsewhere, it appears that you simply
+</I>cannot run more than one webcam video stream per USB root hub.
+
+When enabled for video streaming, the webcam reserves the full
+isochronous bandwidth needed to stream data at the selected resolution
+and framerate, regardless of whether your application acquires the full
+framerate or just samples at one frame per second. Hence, trying to set
+a low framerate in your user application has no effect to reduce the
+bandwidth from the webcam. The webcam is still streaming at the maximum
+framerate regardless.
+
+I'm guessing that the video stream is being 'pushed' out by the webcam
+firmware and so the UVC driver must take all that it is given...
+
+
+*A possible solution* ?
+
+Instead, could the UVC driver 'simulate' a reduced framerate by instead
+using the &quot;STILL_IMAGE_FRAME&quot; mode of the webcam and grab for itself a
+set number of images per second? Or even only when polled by a read from
+the user application?
+
+On *nix, &quot;everything is a file&quot;... Could the uvc driver accept reading
+of /dev/videoX by the command &quot;cp&quot; so that still image data is copied,
+formatted for a jpg or png?
+
+Could the &quot;quirks&quot; setting be abused to set the image grab rate? Or some
+other neater method?
+
+
+
+Further details:
+
+I'm trying to use two webcams simultaneously:
+
+  iManufacturer           1 Sweex
+  iProduct                2 WC060 Series HD Webcam
+
+
+On separate hubs, they work fine. On the same hub, the second one to
+start shows the error:
+
+&quot;Error starting stream VIDIOC_STREAMON: No space left on device&quot;.
+
+I've only got the one root hub on the system I want to use for the two
+webcams!
+
+
+Their descriptors show:
+
+        bFrameIntervalType                  2
+        dwFrameInterval( 0)           2000000
+        dwFrameInterval( 1)           4000000
+
+
+Can I tweak the UVC driver to preferentially choose the slower frame
+rate available?
+
+Aside: The MJPG format doesn't seem to work, nor are any compression
+settings visible...
+
+
+Given a few hints or a patch, I can hack the kernel module to test :-)
+
+This is running on Gentoo, kernel 2.6.34 using the in-kernel uvc module.
+
+Any comment/ideas welcomed.
+
+Regards,
+Martin
+
+
+
+
+&gt;<i>From lsusb -v (excerpt):
+</I>
+VideoStreaming Interface Descriptor:
+        bLength                            34
+        bDescriptorType                    36
+        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+        bFrameIndex                         9
+        bmCapabilities                   0x00
+          Still image unsupported
+        wWidth                           1600
+        wHeight                          1200
+        dwMinBitRate                   768000
+        dwMaxBitRate                196608000
+        dwMaxVideoFrameBufferSize     3840000
+        dwDefaultFrameInterval        2000000
+        bFrameIntervalType                  2
+        dwFrameInterval( 0)           2000000
+        dwFrameInterval( 1)           4000000
+VideoStreaming Interface Descriptor:
+        bLength                            42
+        bDescriptorType                    36
+        bDescriptorSubtype                  3 (STILL_IMAGE_FRAME)
+        bEndpointAddress                    0
+        bNumImageSizePatterns               9
+        wWidth( 0)                        640
+        wHeight( 0)                       480
+        wWidth( 1)                        352
+        wHeight( 1)                       288
+        wWidth( 2)                        320
+        wHeight( 2)                       240
+        wWidth( 3)                        176
+        wHeight( 3)                       144
+        wWidth( 4)                        160
+        wHeight( 4)                       120
+        wWidth( 5)                        800
+        wHeight( 5)                       600
+        wWidth( 6)                       1280
+        wHeight( 6)                       960
+        wWidth( 7)                       1280
+        wHeight( 7)                      1024
+        wWidth( 8)                       1600
+        wHeight( 8)                      1200
+        bNumCompressionPatterns             9
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005914.html">[Linux-uvc-devel] Bison Webcam on Debian
+</A></li>
+	<LI>Next message: <A HREF="005917.html">[Linux-uvc-devel] Running multiple webcams on the same hub
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5915">[ date ]</a>
+              <a href="thread.html#5915">[ thread ]</a>
+              <a href="subject.html#5915">[ subject ]</a>
+              <a href="author.html#5915">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

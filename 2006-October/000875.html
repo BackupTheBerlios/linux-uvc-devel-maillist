@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] luvcview/motion on Nokia 770 (ARM OMAP)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20luvcview/motion%20on%20Nokia%20770%20%28ARM%20OMAP%29&In-Reply-To=%3Cloom.20061015T190046-3%40post.gmane.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000887.html">
+   <LINK REL="Next"  HREF="000876.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] luvcview/motion on Nokia 770 (ARM OMAP)</H1>
+    <B>Noble Pepper</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20luvcview/motion%20on%20Nokia%20770%20%28ARM%20OMAP%29&In-Reply-To=%3Cloom.20061015T190046-3%40post.gmane.org%3E"
+       TITLE="[Linux-uvc-devel] luvcview/motion on Nokia 770 (ARM OMAP)">noblepepper at bellsouth.net
+       </A><BR>
+    <I>Sun Oct 15 19:37:22 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000887.html">[Linux-uvc-devel] color?
+</A></li>
+        <LI>Next message: <A HREF="000876.html">[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22. Init	v4L2 failed
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#875">[ date ]</a>
+              <a href="thread.html#875">[ thread ]</a>
+              <a href="subject.html#875">[ subject ]</a>
+              <a href="author.html#875">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I hope someone can help me here, any suggestions on how to fix this is greatly
+appreciated.
+
+I am trying to use a Logitech QuickCam Orbit MP on a Nokia 770. First I set this
+up on my desktop and all works fine. I can use either luvcview or motion to
+access the camera.
+
+When I try to use this on the Nokia I get:
+
+from luvcview:
+# /usr/local/bin/luvcview
+uvcview version 0.1.7
+Video driver: x11
+A window manager is available
+video /dev/video0
+Unable to allocate buffers: 22.
+ Init v4L2 failed !! exit fatal
+
+from motion:
+# motion
+[0] Processing thread 0 - config file /usr/local/etc/motion.conf
+[0] Thread is from /usr/local/etc/motion.conf
+[1] Thread started
+[0] motion-httpd/3.2.6 running, accepting connections
+[0] motion-httpd: waiting for data on port TCP 8080
+Opening /dev/video0 as a V4L2 device...Unable to allocate buffers: 22.
+V4L2 init failed.
+[1] Failed to open video device /dev/video0: Device or resource busy
+[1] Capture error calling vid_start
+[1] Thread finishing...
+
+I assume the similarity of the error means I have a problem with the uvcvideo
+or v4L2 module on the Nokia. I have played with the UVC_MAX_VIDEO_BUFFERS in
+uvcvideo.c (tried 16 instead of 32) and NB_BUFFER /v4l2uvc.h (tried 2 &amp; 1
+instead of 4) with no difference.
+
+Some (ir)relevant data, sorry for the length but I'm not sure which will be
+helpful:
+
+I have a Creative Notebook Webcam working with the gspca module and motion
+serving pictures over the wifi from the Nokia. I think this means the problem
+isn't the cpu power or memory available.
+
+kernel info:
+~# uname -a
+Linux Nokia770-26 2.6.16-omap1 #1 PREEMPT Tue Jun 20 18:38:54 EEST 2006
+armv5tejl unknown
+
+
+Hardware spec for the Nokia:
+  Display: 800x480 pixel colour touchscreen 
+           16-bit colour depth (65,536 colours)
+
+      CPU: 250Mhz OMAP1710 powered by ARM926EJ-S and TMS320C55x cores.
+
+   Memory: 64Mb DDR RAM
+
+    Comms: Wireless 802.11b/g
+           Bluetooth (1.2 spec)
+           USB (Device mode) 
+               (Host mode also available with some caveats, 
+                see FrequentlyAskedQuestions #3.4 &quot;Does the device work in USB
+host mode?&quot;
+                Link below) 
+
+  Storage: 128Mb Internal Flash RAM (~64Mb User Space)
+
+lsmod from the Nokia:
+# lsmod
+Module                  Size  Used by
+uvcvideo               30052   0
+v4l2_common             6880   1 uvcvideo
+v4l1_compat            11812   1 uvcvideo
+videodev                7456   1 uvcvideo
+cx3110x                50876   0
+umac                  235364   1 cx3110x
+ext3                  107944   0
+mbcache                 7716   1 ext3
+jbd                    56948   1 ext3
+...etc...
+
+kernel messages:
+[14897.049926] USB cable connected
+[14897.481445] usb 1-1: new full speed USB device using ohci and address 6
+[14897.926727] usb 1-1: device v046d p08c2 is not supported
+[14897.928771] usb 1-1: configuration #1 chosen from 1 choice
+[14897.931610] uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:08c2)
+[15197.169647] hwa742: setting update mode to disabled
+
+
+memory info from the Nokia:
+# free
+              total         used         free       shared      buffers
+  Mem:        62232        59692         2540            0           68
+ Swap:        65528            0        65528
+Total:       127760        59692        68068
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000887.html">[Linux-uvc-devel] color?
+</A></li>
+	<LI>Next message: <A HREF="000876.html">[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22. Init	v4L2 failed
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#875">[ date ]</a>
+              <a href="thread.html#875">[ thread ]</a>
+              <a href="subject.html#875">[ subject ]</a>
+              <a href="author.html#875">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

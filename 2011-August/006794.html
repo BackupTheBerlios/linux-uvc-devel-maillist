@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech C910 camera problems
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20C910%20camera%20problems&In-Reply-To=%3C4E4529B9.7030106%40gladstonefamily.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006788.html">
+   <LINK REL="Next"  HREF="006796.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech C910 camera problems</H1>
+    <B>Philip Gladstone</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20C910%20camera%20problems&In-Reply-To=%3C4E4529B9.7030106%40gladstonefamily.net%3E"
+       TITLE="[Linux-uvc-devel] Logitech C910 camera problems">philip at gladstonefamily.net
+       </A><BR>
+    <I>Fri Aug 12 15:25:13 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006788.html">[Linux-uvc-devel] Logitech C910 camera problems
+</A></li>
+        <LI>Next message: <A HREF="006796.html">[Linux-uvc-devel] Logitech C910 camera problems
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6794">[ date ]</a>
+              <a href="thread.html#6794">[ thread ]</a>
+              <a href="subject.html#6794">[ subject ]</a>
+              <a href="author.html#6794">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>In doing some digging, it also appears that the settings that I am 
+interested in are also being cached by the driver, so I am not really 
+getting the right values.
+
+I suspect that for UVC_CT_EXPOSURE_TIME_ABSOLUTE_CONTROL, 
+UVC_PU_GAIN_CONTROL (at least), I want the UVC_CTRL_FLAG_AUTO_UPDATE 
+set. This won't (I doubt) improve the exposure of the image, but it will 
+improve the reporting.
+
+The output from v4l-ctl -l is
+
+                      brightness (int)  : min=0 max=255 step=1 default=128 value=128
+
+                        contrast (int)  : min=0 max=255 step=1 default=32 value=32
+
+                      saturation (int)  : min=0 max=255 step=1 default=32 value=32
+
+  white_balance_temperature_auto (bool) : default=1 value=1
+
+                            gain (int)  : min=0 max=255 step=1 default=64 value=64
+
+            power_line_frequency (menu) : min=0 max=2 default=2 value=2
+
+       white_balance_temperature (int)  : min=2800 max=6500 step=1 default=4000 value=4000
+
+                       sharpness (int)  : min=0 max=255 step=1 default=72 value=72
+
+          backlight_compensation (int)  : min=0 max=1 step=1 default=0 value=0
+
+                   exposure_auto (menu) : min=0 max=3 default=3 value=3
+
+               exposure_absolute (int)  : min=3 max=2047 step=1 default=166 value=166
+
+          exposure_auto_priority (bool) : default=0 value=1
+
+                    pan_absolute (int)  : min=-36000 max=36000 step=3600 default=0 value=0
+
+                   tilt_absolute (int)  : min=-36000 max=36000 step=3600 default=0 value=0
+
+                  focus_absolute (int)  : min=0 max=255 step=17 default=68 value=68
+
+                      focus_auto (bool) : default=1 value=1
+
+                   zoom_absolute (int)  : min=1 max=5 step=1 default=1 value=1
+
+
+
+Philip
+
+
+On 12-Aug-11 12:35 AM, Carl Michal wrote:
+&gt;<i> Hi Philip,
+</I>&gt;<i>
+</I>&gt;<i> Laurent can correct me if I've got this wrong - but in the latest uvc 
+</I>&gt;<i> driver there are some changes in how the exposure settings are 
+</I>&gt;<i> reported. Before the driver would report settings that the camera 
+</I>&gt;<i> wouldn't support. That is now fixed, but unfortunately the way it 
+</I>&gt;<i> works now seems to confuse a lot of software. Both guvcview and 
+</I>&gt;<i> luvcview are confused by the new driver as well and won't let you 
+</I>&gt;<i> properly turn on or off the auto exposure as well.
+</I>&gt;<i>
+</I>&gt;<i> In luvcview the fix is trivial, and apparently guvcview has been fixed 
+</I>&gt;<i> upstream.  There is some disscussion of this in the list archives a 
+</I>&gt;<i> few weeks ago.
+</I>&gt;<i>
+</I>&gt;<i> Carl
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> On Thu, 11 Aug 2011, Philip Gladstone wrote:
+</I>&gt;<i>
+</I>&gt;&gt;<i> I'm running the latest UVC driver and I find that the auto-exposure 
+</I>&gt;&gt;<i> doesn't work when I use the UVC driver on linux. The controls (as 
+</I>&gt;&gt;<i> reported by fswebcam) are:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Available Controls        Current Value   Range
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> ------------------        -------------   -----
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Brightness                128 (50%)       0 - 255
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Contrast                  32 (12%)        0 - 255
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Saturation                32 (12%)        0 - 255
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> White Balance Temperature, Auto True            True | False
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Gain                      64 (25%)        0 - 255
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Power Line Frequency      60 Hz           Disabled | 50 Hz | 60 Hz
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> White Balance Temperature 4000 (32%)      2800 - 6500
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Sharpness                 72 (28%)        0 - 255
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Backlight Compensation    0               0 - 1
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Exposure, Auto            Aperture Priority Mode Manual Mode | 
+</I>&gt;&gt;<i> Aperture Priority Mode
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Exposure (Absolute)       166 (7%)        3 - 2047
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Exposure, Auto Priority   True            True | False
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Pan (Absolute)            0 (50%)         -36000 - 36000
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Tilt (Absolute)           0 (50%)         -36000 - 36000
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Focus (absolute)          68 (26%)        0 - 255
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Focus, Auto               True            True | False
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Zoom, Absolute            1               1 - 5
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I'm grabbing images in MJPG format and I wonder if that fact is 
+</I>&gt;&gt;<i> confusing the camera. Under windows you can watch it adjust exposure 
+</I>&gt;&gt;<i> and gain until the image looks good (when in auto mode).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> The values above appear to be the default values after a power cycle 
+</I>&gt;&gt;<i> of the camera (plug and unplug the USB).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Does anyone have any idea what is going on? I'd rather not have to 
+</I>&gt;&gt;<i> put the camera in the manual exposure mode and then control it in 
+</I>&gt;&gt;<i> software.....
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Philip
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006788.html">[Linux-uvc-devel] Logitech C910 camera problems
+</A></li>
+	<LI>Next message: <A HREF="006796.html">[Linux-uvc-devel] Logitech C910 camera problems
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6794">[ date ]</a>
+              <a href="thread.html#6794">[ thread ]</a>
+              <a href="subject.html#6794">[ subject ]</a>
+              <a href="author.html#6794">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

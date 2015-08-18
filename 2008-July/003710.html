@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Acer Crystal Eye
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Acer%20Crystal%20Eye&In-Reply-To=%3C200807012307.46328.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003707.html">
+   <LINK REL="Next"  HREF="003715.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Acer Crystal Eye</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Acer%20Crystal%20Eye&In-Reply-To=%3C200807012307.46328.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Acer Crystal Eye">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Jul  1 23:07:46 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003707.html">[Linux-uvc-devel] Acer Crystal Eye
+</A></li>
+        <LI>Next message: <A HREF="003715.html">[Linux-uvc-devel] Acer Crystal Eye
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3710">[ date ]</a>
+              <a href="thread.html#3710">[ thread ]</a>
+              <a href="subject.html#3710">[ subject ]</a>
+              <a href="author.html#3710">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Eduardo,
+
+On Tuesday 01 July 2008, Eduardo wrote:
+&gt;<i> Hi everyone!
+</I>&gt;<i>
+</I>&gt;<i>  I'm having trouble with my webcam. First I will describe the scenario.
+</I>&gt;<i>
+</I>&gt;<i>  I have a Acer Aspire 7520-5949 running Slackware Linux 12.1 with Linux
+</I>&gt;<i> 2.6.25. I have downloaded svn trunk version of uvcvideo driver, which
+</I>&gt;<i> support Suyin webcam.
+</I>&gt;<i>
+</I>&gt;<i>  uname -a: Linux symphony 2.6.25-smp #3 SMP Mon Jun 23 01:13:41 BRT 2008
+</I>&gt;<i> i686 AMD Athlon(tm) 64 X2 Dual-Core Processor TK-53 AuthenticAMD GNU/Linux
+</I>&gt;<i> lsusb: Bus 003 Device 002: ID 064e:a101 Suyin Corp.
+</I>&gt;<i>  cat version.h: #define DRIVER_VERSION&#160; &quot;SVN r220&quot;
+</I>&gt;<i>
+</I>&gt;<i>  I get load without problems the module built as uvcvideo.ko and it
+</I>&gt;<i> generates a device on /dev/v4l/video0, and in dmesg or tail /var/log/syslog
+</I>&gt;<i> appears the following lines: Linux video capture interface: v2.00
+</I>&gt;<i>  uvcvideo: Found UVC 1.00 device Acer CrystalEye webcam (064e:a101)
+</I>&gt;<i>  input: Acer CrystalEye webcam as /class/input/input8
+</I>&gt;<i>  usbcore: registered new interface driver uvcvideo
+</I>&gt;<i>  USB Video Class driver (SVN r217)
+</I>&gt;<i>
+</I>&gt;<i>  I have tried use luvcview to test my webcam, without success:
+</I>&gt;<i>
+</I>&gt;<i>  $ ./luvcview
+</I>&gt;<i>  luvcview version 0.2.1
+</I>&gt;<i>  Video driver: x11
+</I>&gt;<i>  A window manager is available
+</I>&gt;<i>  video /dev/video0
+</I>&gt;<i>  Unable to set format: 22.
+</I>&gt;<i>  &#160;Init v4L2 failed !! exit fatal
+</I>
+This is pretty normal, as luvcview defaults to mjpeg and your camera supports 
+yuv only.
+
+&gt;<i>  Defining format with yuv, I have got the following message in the
+</I>&gt;<i> terminal: $ ./luvcview -f yuv
+</I>&gt;<i>  luvcview version 0.2.1
+</I>&gt;<i>  Video driver: x11
+</I>&gt;<i>  A window manager is available
+</I>&gt;<i>  video /dev/video0
+</I>&gt;<i>  Unable to start capture: 71.
+</I>&gt;<i>  Error grabbing
+</I>&gt;<i>  &#160;Clean Up done Quit
+</I>
+That's less normal. 71 means protocol error, and I hate protocol errors. They 
+are often caused by buggy hardware/firmware (either on the device side, or on 
+the host controller side).
+
+Could you please try the 2.6.26-rc8 kernel ? A few USB host controller (EHCI) 
+changes have made their way in the kernel since 2.6.25 and I'd like to find 
+out if they help.
+
+&gt;<i>  Trying again, I have got a window showing my face. I have closed the
+</I>&gt;<i> window e tried again, without success, and the terminal showed me the same
+</I>&gt;<i> first error with format yuv. I have tried again and I have got success.
+</I>&gt;<i> Conclusion, the luvcview just works when I try twice.
+</I>
+I've had similar reports, but with different webcams and different error 
+codes, so they are probably unrelated.
+
+Michael Sparks posted a mail on June the 4th to the Linux UVC mailing list 
+whose subject was 'PATCH: Acer Crystal Eye WebCam (064e:a101 Suyin Corp.)'. 
+He experienced a similar if not identical issue.
+
+&gt;<i>  Using mplayer with that command line: mplayer <A HREF="tv://">tv://</A> -tv
+</I>&gt;<i> fps=15:width=320:height=240 I have got a green window and mplayer terminal
+</I>&gt;<i> shows me among several informations that errors:
+</I>&gt;<i>
+</I>&gt;<i>  Selected device: Acer CrystalEye webcam
+</I>&gt;<i>  &#160;Capabilites:&#160; video capture&#160; streaming
+</I>&gt;<i>  &#160;supported norms:
+</I>&gt;<i>  &#160;inputs: 0 = Camera 1;
+</I>&gt;<i>  &#160;Current input: 0
+</I>&gt;<i>  &#160;Current format: YUYV
+</I>&gt;<i>  v4l2: ioctl set format failed: Invalid argument
+</I>&gt;<i>  v4l2: ioctl set format failed: Invalid argument
+</I>&gt;<i>  v4l2: ioctl set format failed: Invalid argument
+</I>&gt;<i>  tv.c: norm_from_string(pal): Bogus norm parameter, setting default.
+</I>&gt;<i>  v4l2: ioctl enum norm failed: Invalid argument
+</I>&gt;<i>  Error: Cannot set norm!
+</I>&gt;<i>  Selected input hasn't got a tuner!
+</I>&gt;<i>  v4l2: ioctl streamon failed: Protocol error
+</I>
+Still the same hardware/firmware problem.
+
+&gt;<i>  I would like to know if anyone had success using that webcam with that
+</I>&gt;<i> driver on some softwares as ekiga, kopete, mplayer, among others.
+</I>
+Could you please check the kernel log after the problem arises and report 
+messages printed by the uvcvideo driver ? I'd appreciate if you could check 
+the log using both 2.6.25 and 2.6.26-rc8.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003707.html">[Linux-uvc-devel] Acer Crystal Eye
+</A></li>
+	<LI>Next message: <A HREF="003715.html">[Linux-uvc-devel] Acer Crystal Eye
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3710">[ date ]</a>
+              <a href="thread.html#3710">[ thread ]</a>
+              <a href="subject.html#3710">[ subject ]</a>
+              <a href="author.html#3710">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

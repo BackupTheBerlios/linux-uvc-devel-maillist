@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] How do I set PIXELFORMAT for...
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20How%20do%20I%20set%20PIXELFORMAT%20for...&In-Reply-To=%3C201004121253.21502.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005678.html">
+   <LINK REL="Next"  HREF="005680.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] How do I set PIXELFORMAT for...</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20How%20do%20I%20set%20PIXELFORMAT%20for...&In-Reply-To=%3C201004121253.21502.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] How do I set PIXELFORMAT for...">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Mon Apr 12 12:53:20 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005678.html">[Linux-uvc-devel] How do I set PIXELFORMAT for...
+</A></li>
+        <LI>Next message: <A HREF="005680.html">[Linux-uvc-devel] How do I set PIXELFORMAT for...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5679">[ date ]</a>
+              <a href="thread.html#5679">[ thread ]</a>
+              <a href="subject.html#5679">[ subject ]</a>
+              <a href="author.html#5679">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Ricardo,
+
+On Monday 12 April 2010 12:39:44 Ricardo Martinez Monje wrote:
+&gt;<i> Laurent,
+</I>&gt;<i> 
+</I>&gt;<i> Here is the output for the device 17dc:0202
+</I>&gt;<i> 
+</I>&gt;<i> <A HREF="http://pastebin.com/JU1qLmBS">http://pastebin.com/JU1qLmBS</A>
+</I>
+Thanks. Could you please try the following patch ?
+
+diff --git a/drivers/media/video/uvc/uvc_driver.c b/drivers/media/video/uvc/uvc_driver.c
+index 43892bf..c8dd892 100644
+--- a/drivers/media/video/uvc/uvc_driver.c
++++ b/drivers/media/video/uvc/uvc_driver.c
+@@ -90,10 +90,15 @@ static struct uvc_format_desc uvc_fmts[] = {
+ 		.fcc		= V4L2_PIX_FMT_UYVY,
+ 	},
+ 	{
+-		.name		= &quot;Greyscale&quot;,
++		.name		= &quot;Greyscale (8-bit)&quot;,
+ 		.guid		= UVC_GUID_FORMAT_Y800,
+ 		.fcc		= V4L2_PIX_FMT_GREY,
+ 	},
++	{
++		.name		= &quot;Greyscale (16-bit)&quot;,
++		.guid		= UVC_GUID_FORMAT_Y16,
++		.fcc		= V4L2_PIX_FMT_Y16,
++	},
+ 	{
+ 		.name		= &quot;RGB Bayer&quot;,
+ 		.guid		= UVC_GUID_FORMAT_BY8,
+diff --git a/drivers/media/video/uvc/uvcvideo.h b/drivers/media/video/uvc/uvcvideo.h
+index 2bba059..d1f8840 100644
+--- a/drivers/media/video/uvc/uvcvideo.h
++++ b/drivers/media/video/uvc/uvcvideo.h
+@@ -131,11 +131,13 @@ struct uvc_xu_control {
+ #define UVC_GUID_FORMAT_Y800 \
+ 	{ 'Y',  '8',  '0',  '0', 0x00, 0x00, 0x10, 0x00, \
+ 	 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}
++#define UVC_GUID_FORMAT_Y16 \
++	{ 'Y',  '1',  '6',  ' ', 0x00, 0x00, 0x10, 0x00, \
++	 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}
+ #define UVC_GUID_FORMAT_BY8 \
+ 	{ 'B',  'Y',  '8',  ' ', 0x00, 0x00, 0x10, 0x00, \
+ 	 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}
+ 
+-
+ /* ------------------------------------------------------------------------
+  * Driver specific constants.
+  */
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005678.html">[Linux-uvc-devel] How do I set PIXELFORMAT for...
+</A></li>
+	<LI>Next message: <A HREF="005680.html">[Linux-uvc-devel] How do I set PIXELFORMAT for...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5679">[ date ]</a>
+              <a href="thread.html#5679">[ thread ]</a>
+              <a href="subject.html#5679">[ subject ]</a>
+              <a href="author.html#5679">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

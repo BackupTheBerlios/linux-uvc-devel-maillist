@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] linux-uvc and r5u870
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20linux-uvc%20and%20r5u870&In-Reply-To=%3C200809022329.03683.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004008.html">
+   <LINK REL="Next"  HREF="004009.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] linux-uvc and r5u870</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20linux-uvc%20and%20r5u870&In-Reply-To=%3C200809022329.03683.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] linux-uvc and r5u870">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Sep  2 23:29:03 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004008.html">[Linux-uvc-devel] linux-uvc and r5u870
+</A></li>
+        <LI>Next message: <A HREF="004009.html">[Linux-uvc-devel] Camera Installation
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4013">[ date ]</a>
+              <a href="thread.html#4013">[ thread ]</a>
+              <a href="subject.html#4013">[ subject ]</a>
+              <a href="author.html#4013">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Alex,
+
+On Monday 01 September 2008, Alex Hixon wrote:
+&gt;<i> On 01/09/2008, at 7:15 AM, Laurent Pinchart
+</I>&gt;<i>
+</I>&gt;<i> &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+</I>&gt;<i> &gt; Hi Alex,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Sunday 31 August 2008, Alex Hixon wrote:
+</I>&gt;<i> &gt;&gt; Hi Laurent,
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; Way back in April last year, Sam Revitch sent an email to
+</I>&gt;<i> &gt;&gt; linux-uvc-devel[1] announcing the work he had been doing on r5u870,
+</I>&gt;<i> &gt;&gt; which provided a working webcam to those users with cameras using the
+</I>&gt;<i> &gt;&gt; Ricoh chipset. In January this year, I took up the task of maintaining
+</I>&gt;<i> &gt;&gt; the driver (since Sam had seemingly gone MIA). Maintaining an
+</I>&gt;<i> &gt;&gt; out-of-kernel driver and having very little time to tend to it (we now
+</I>&gt;<i> &gt;&gt; support 15 different camera models, up from 3 ;) has become very
+</I>&gt;<i> &gt;&gt; difficult as of late, and bug reports regarding conflicts between the
+</I>&gt;<i> &gt;&gt; r5u870 and uvcvideo modules seem to becoming more and more frequent.
+</I>&gt;<i> &gt;&gt; uvcvideo also seems to do a better job at the UVC stuff than the other
+</I>&gt;<i> &gt;&gt; driver on most devices, anyway. 
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; I've done a bit of hacking in an effort to retrofit uvcvideo with the
+</I>&gt;<i> &gt;&gt; firmware-loading functionality of the original r5u870 driver. It
+</I>&gt;<i> &gt;&gt; appears to work reasonably well. However, before I go and work on
+</I>&gt;<i> &gt;&gt; something worth committing, I was just curious as to whether I should be
+</I>&gt;<i> &gt;&gt; attempting to implement it in the kernel module (less work for me :) or
+</I>&gt;<i> &gt;&gt; as a userspace application.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I've discussed firmware loading issues previously with iSight
+</I>&gt;<i> &gt; developers, and I wasn't very keen on adding firmware loading support to
+</I>&gt;<i> &gt; the UVC driver, especially with a userspace utility already available (the
+</I>&gt;<i> &gt; iSight is based on a Cypress chip). How do Ricoh webcams enumerate when
+</I>&gt;<i> &gt; the firmware is not loaded ? Is the firmware loading protocol specific to
+</I>&gt;<i> &gt; Ricoh devices ? 
+</I>&gt;<i>
+</I>&gt;<i> As far as I'm aware, all Ricoh devices use the same firmware loading
+</I>&gt;<i> protocol. Looking at the source for the iSight cameras the other day,
+</I>&gt;<i> and found that they also interestingly use the same command while
+</I>&gt;<i> uploading firmware data (although a different format from what I
+</I>&gt;<i> gather).
+</I>&gt;<i>
+</I>&gt;<i> Before the firmware is uploaded to the devices, they still report via
+</I>&gt;<i> the USB descriptor that they are webcam devices, hence why uvcvideo
+</I>&gt;<i> picks it up.
+</I>
+Does the device expose different descriptors after a firmware upgrade ? Does 
+it simulate a disconnection/reconnection when you upload the firmware ?
+
+Could you please provide me with a full USB descriptors dump ('lsusb -v' with 
+usbutils 0.72 or newer) ? If descriptors before and after firmware loading 
+differ please send me both. I would also be interested in having a look at 
+the firmware file.
+
+&gt;<i> &gt;&gt; One thing that might be an issue that I'm not sure was ever resolved in
+</I>&gt;<i> &gt;&gt; the communication between yourself and Chris was that regarding the UVC
+</I>&gt;<i> &gt;&gt; controls. As you might remember, the microcode that gets uploaded to the
+</I>&gt;<i> &gt;&gt; camera doesn't report all the controls it supports. Would it be possible
+</I>&gt;<i> &gt;&gt; to use some of the quirk modes provided by uvcvideo to get around that?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Could you list the Ricoh &quot;features&quot; that are not UVC-compliant ? Are
+</I>&gt;<i> &gt; the non-reported controls addressed with standard UVC requests or with a
+</I>&gt;<i> &gt; proprietary protocol ?
+</I>&gt;<i>
+</I>&gt;<i> For the most part, the controls that aren't reported but supported are
+</I>&gt;<i> all accessible through the standard controls, you just have to know
+</I>&gt;<i> which camera supports which.
+</I>&gt;<i>
+</I>&gt;<i> Once the firmware is uploaded, everything is handled by the UVC
+</I>&gt;<i> specification.
+</I>
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004008.html">[Linux-uvc-devel] linux-uvc and r5u870
+</A></li>
+	<LI>Next message: <A HREF="004009.html">[Linux-uvc-devel] Camera Installation
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4013">[ date ]</a>
+              <a href="thread.html#4013">[ thread ]</a>
+              <a href="subject.html#4013">[ subject ]</a>
+              <a href="author.html#4013">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

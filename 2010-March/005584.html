@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Vimicro USB Camera (Altair)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Vimicro%20USB%20Camera%20%28Altair%29&In-Reply-To=%3C201003091242.37203.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005563.html">
+   <LINK REL="Next"  HREF="005564.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Vimicro USB Camera (Altair)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Vimicro%20USB%20Camera%20%28Altair%29&In-Reply-To=%3C201003091242.37203.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Vimicro USB Camera (Altair)">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Tue Mar  9 12:42:36 CET 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005563.html">[Linux-uvc-devel] Vimicro USB Camera (Altair)
+</A></li>
+        <LI>Next message: <A HREF="005564.html">[Linux-uvc-devel] Fwd: Support for Microsoft Lifecam VX-2000 under	Ubuntu 9.10 Kernel 2.6.31-19
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5584">[ date ]</a>
+              <a href="thread.html#5584">[ thread ]</a>
+              <a href="subject.html#5584">[ subject ]</a>
+              <a href="author.html#5584">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Simon,
+
+On Monday 01 March 2010 19:43:43 Simon Danner wrote:
+&gt;<i> Hello,
+</I>&gt;<i> i own a webcam which is not mentioned on the website.
+</I>
+Thanks for the report.
+
+&gt;<i> It works okay with skype, mplayer and with lucview. (I get some pixels
+</I>&gt;<i> with wrong color), but the image in cheese is totally broken. Is this a
+</I>&gt;<i> cheese bug or a driver bug.
+</I>
+Could be either, or both :-)
+
+If other applications work correctly I would be tempted to say the bug is in 
+Cheese (or possibly in any middleware it uses, such as gstreamer or libv4l). 
+It could still be a driver bug (or worse, webcam bug) that is only triggered 
+by the specific calls sequence Cheese happens to make.
+
+Do you get any error message in the kernel log ?
+
+&gt;<i> The device also has lights built around it, is it possible to turn them
+</I>&gt;<i> on in linux?
+</I>
+It should, but it won't be straightforward. The UVC specification doesn't 
+address lights, so the driver doesn't know about them.
+
+Devices are allowed to extend the UVC specification to expose controls not 
+present in the standard. This is done through extension units, and your device 
+has one of them:
+
+[snip]
+
+&gt;<i>       VideoControl Interface Descriptor:
+</I>&gt;<i>         bLength                28
+</I>&gt;<i>         bDescriptorType        36
+</I>&gt;<i>         bDescriptorSubtype      6 (EXTENSION_UNIT)
+</I>&gt;<i>         bUnitID                 4
+</I>&gt;<i>         guidExtensionCode         {5dc717a9-1941-da11-ae0e-000d56ac7b4c}
+</I>&gt;<i>         bNumControl             8
+</I>&gt;<i>         bNrPins                 1
+</I>&gt;<i>         baSourceID( 0)          1
+</I>&gt;<i>         bControlSize            3
+</I>&gt;<i>         bmControls( 0)       0x59
+</I>&gt;<i>         bmControls( 1)       0x80
+</I>&gt;<i>         bmControls( 2)       0x80
+</I>&gt;<i>         iExtension              0
+</I>
+The bmControls field is a bitmask that lists all supported controls. The 
+values above mean that controls 0, 3, 4, 6, 15 and 23 are supported. 
+Unfortunately no documentation is available to describe those controls. I'm 
+pretty sure that one of them controls the lights. Guessing will be required.
+
+WARNING: This could damage your device. Some vendors export firmware update 
+controls, and accessing them incorrectly could erase the firmware.
+
+You will first need to download and install the uvcdynctrl tool that comes 
+with libwebcam (available through www.quickcamteam.net). Make sure you get the 
+SVN version, last time I checked the tarball was outdated.
+
+Then, you will need to create an XML file that describes mappings between the 
+extension unit controls and V4L2 controls. To do so, take the Logitech sample 
+XML file and adapt it to your extension unit. You can map all the available 
+controls to V4L2 controls (pick some private value). The missing piece of 
+information is the control selector: to access a control, the driver needs to 
+pass a selector value to the device. For extension units selectors are usually 
+equal to the control index in the bmControls bitmask plus 1, but that's not 
+required by the spec. It's a safe first guess though.
+
+The next step is to configure the uvcvideo driver with the extension unit 
+controls information using uvcdynctrl and the XML file you've created. You 
+will then be able to access the controls through the V4L2 API.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005563.html">[Linux-uvc-devel] Vimicro USB Camera (Altair)
+</A></li>
+	<LI>Next message: <A HREF="005564.html">[Linux-uvc-devel] Fwd: Support for Microsoft Lifecam VX-2000 under	Ubuntu 9.10 Kernel 2.6.31-19
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5584">[ date ]</a>
+              <a href="thread.html#5584">[ thread ]</a>
+              <a href="subject.html#5584">[ subject ]</a>
+              <a href="author.html#5584">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

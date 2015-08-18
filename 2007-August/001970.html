@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Patch for USB problem with Logitech webcams?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Patch%20for%20USB%20problem%20with%20Logitech%20webcams%3F&In-Reply-To=%3C200708142118.26535.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001966.html">
+   <LINK REL="Next"  HREF="001961.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Patch for USB problem with Logitech webcams?</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Patch%20for%20USB%20problem%20with%20Logitech%20webcams%3F&In-Reply-To=%3C200708142118.26535.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Patch for USB problem with Logitech webcams?">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Aug 14 21:18:25 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001966.html">[Linux-uvc-devel] Patch for USB problem with Logitech webcams?
+</A></li>
+        <LI>Next message: <A HREF="001961.html">[Linux-uvc-devel] Looking for a streaming too
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1970">[ date ]</a>
+              <a href="thread.html#1970">[ thread ]</a>
+              <a href="subject.html#1970">[ subject ]</a>
+              <a href="author.html#1970">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Morten,
+
+On Monday 13 August 2007, Morten Mortensen wrote:
+&gt;<i> Hi Laurent &amp; all
+</I>&gt;<i>
+</I>&gt;<i> Regarding Logitech-problems, I have just been trying out a number of UVC
+</I>&gt;<i> revisions tonight. As you suggested.
+</I>
+If I had known you would report so much information I might not have suggested 
+that ;-) (just kidding, I've had a long day at work).
+
+&gt;<i> First, I must admit, that my current kernel somehow has advanced from
+</I>&gt;<i> the below mentioned &quot;2.6.21-1.3228.fc7&quot; to a 2.6.22 version; I must have
+</I>&gt;<i> accepted one of the &quot;updates&quot; within FC7 without paying attention.
+</I>
+You might want to try vanilla kernels too. Distributions ship patches that 
+sometimes disturb external kernel modules.
+
+&gt;<i> With this kernel 2.6.22, I am unable to reproduce any Logitech webcams
+</I>&gt;<i> working &quot;for periods of multiple minuttes at a time&quot;. I have tried
+</I>&gt;<i> revisions 120, 119, 118, 115, 114, 112, 111, 110, 92
+</I>
+So this is more likely a kernel issue. As if there wasn't enough space for 
+bugs to hide in the UVC driver :-)
+
+&gt;<i> (I also tried to check out revisions 117, 116, 113 and 91, but the
+</I>&gt;<i> subversion client apparently just... hanged).
+</I>
+Weird...
+
+&gt;<i> I have kept the revisions in separate directories. I have done a lot
+</I>&gt;<i> of &quot;modprobe -r uvcvideo&quot;, &quot;make&quot;, &quot;make install&quot;, &quot;modprobe uvcvideo&quot; to
+</I>&gt;<i> shift between the revisions.
+</I>
+You might find it easier to load the module with insmod. That way you won't 
+have to &quot;make install&quot; it.
+
+&gt;<i> There are minor differences, bot common for all these revisions are, that
+</I>&gt;<i> both my Logitech Fusion and my Logitech Ultra Vision fails within five
+</I>&gt;<i> seconds. I do not see any complete, stable images as seen on screen with
+</I>&gt;<i> &quot;luvcview&quot;. The images have either large rectangles with noise or many
+</I>&gt;<i> small rectangles with noise; the images look really bad.
+</I>
+What do you mean by &quot;fail&quot; ? Do the webcams continue streaming bad images, or 
+does luvcview stop and print an error message ? If it stops, what's the error 
+message ? Do you then get a message in the kernel log ? Which image 
+resolution have you used ?
+
+&gt;<i> The somewhat better results as mentioned below from around Friday 20.
+</I>&gt;<i> July and with the 2.6.21 kernel I can not reproduce. I wonder if this
+</I>&gt;<i> kernel is still floating around upon my system, so I can make grub boot
+</I>&gt;<i> with it??
+</I>
+I have no experience with FC so I can't tell. If you're familiar enough with 
+Linux kernels, I'd suggest trying the vanilla kernel (which you'll have to 
+compile yourself).
+
+&gt;<i> Together with the two Logitech webcams I have attached a Creative Optia
+</I>&gt;<i> AF. The video-stream from this Optia AF webcam is pretty stable
+</I>&gt;<i> throughout all the revisions tried tonight. However, the stream does
+</I>&gt;<i> tend to produce a single bad image with an interval of about 5-10
+</I>&gt;<i> seconds. From some point in the middle of the frame, the rest of the
+</I>&gt;<i> frame does not look right. Except from this, the video-stream from the
+</I>&gt;<i> Creative webcam is really, really good.
+</I>
+Errors can happen when a packet is lost or otherwise corrupted. There's not 
+much we can do there.
+
+Early Logitech UVC webcams are known to suffer from timing issues, so I'm not 
+surprised the Optia AF works better.
+
+&gt;<i> I have also tried playing around with the Logitech webcams and image
+</I>&gt;<i> sizes - just to see if I could trigger some better or worse response.
+</I>&gt;<i> The one Logitech would not display 960x720, while trying to access the
+</I>&gt;<i> second with this resolution made my computer lock up completely! No more
+</I>&gt;<i> keyboard or mouse. Pressing the power-button on the chasses did produce
+</I>&gt;<i> some kind of fc-shutdown dialog, but still with no keyboard. I have
+</I>&gt;<i> mouse and keyboard attached through USB, not PS/2. This was with
+</I>&gt;<i> revision 120.
+</I>
+Your kernel might have crashed in an interrupt handler. You will have to 
+compile the kernel with serial console or net console support to get the oops 
+message on the serial console or on the network.
+
+&gt;<i> As of right now, I can not reproduce any of my Logitech webcams working
+</I>&gt;<i> &quot;for periods of multiple minuttes&quot;. But they did, once.
+</I>
+As this is probably a kernel issue, could you try with vanilla 2.6.21 (and, if 
+it still doesn't work, with vanilla 2.6.22) ?
+
+&gt;<i> Below is a listing of the kernel version (I am running Fedora 7 - and my
+</I>&gt;<i> installation should be completely up-to-date) together with a listing of
+</I>&gt;<i> the USB devices and the hieracy. The three webcams have at all times
+</I>&gt;<i> been attached through a USB hub.
+</I>
+Could you try attaching a Logitech webcam directly to your computer and see if 
+it works better ?
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001966.html">[Linux-uvc-devel] Patch for USB problem with Logitech webcams?
+</A></li>
+	<LI>Next message: <A HREF="001961.html">[Linux-uvc-devel] Looking for a streaming too
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1970">[ date ]</a>
+              <a href="thread.html#1970">[ thread ]</a>
+              <a href="subject.html#1970">[ subject ]</a>
+              <a href="author.html#1970">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

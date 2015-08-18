@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Trying to use a camera plugged into a USB3	socket
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Trying%20to%20use%20a%20camera%20plugged%20into%20a%20USB3%0A%09socket&In-Reply-To=%3CAANLkTi%3DG82ReA7KE-LmqzhdV07Rw9Fjhy%3DU738DtJm%3DO%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006087.html">
+   <LINK REL="Next"  HREF="006094.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Trying to use a camera plugged into a USB3	socket</H1>
+    <B>Neil Benn</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Trying%20to%20use%20a%20camera%20plugged%20into%20a%20USB3%0A%09socket&In-Reply-To=%3CAANLkTi%3DG82ReA7KE-LmqzhdV07Rw9Fjhy%3DU738DtJm%3DO%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Trying to use a camera plugged into a USB3	socket">neil.benn at gmail.com
+       </A><BR>
+    <I>Thu Nov 18 16:54:42 CET 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006087.html">[Linux-uvc-devel] Trying to use a camera plugged into a USB3	socket
+</A></li>
+        <LI>Next message: <A HREF="006094.html">[Linux-uvc-devel] Trying to use a camera plugged into a USB3	socket
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6088">[ date ]</a>
+              <a href="thread.html#6088">[ thread ]</a>
+              <a href="subject.html#6088">[ subject ]</a>
+              <a href="author.html#6088">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+
+       Here goes:
+
+This is the default dmesg:
+
+[13927.704305] usb 17-3: new high speed USB device using xhci_hcd and address 0
+[13927.938697] xhci_hcd 0000:03:00.0: WARN: short transfer on control ep
+[13927.941687] xhci_hcd 0000:03:00.0: WARN: short transfer on control ep
+[13927.942584] usb 17-3: ep 0x87 - rounding interval to 128 microframes
+[13927.943287] uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:0825)
+[13928.040986] input: UVC Camera (046d:0825) as
+/devices/pci0000:00/0000:00:1c.3/0000:03:00.0/usb17/17-3/17-3:1.0/input/input9
+[13928.041323] usb 17-3: ep 0x86 - rounding interval to 8 microframes
+[13929.036720] 2:3:1: cannot set freq 16000 to ep 0x86
+[13929.036739] usb 17-3: ep 0x86 - rounding interval to 8 microframes
+[13929.176933] usb 17-3: ep 0x86 - rounding interval to 8 microframes
+[13929.181913] usb 17-3: ep 0x86 - rounding interval to 8 microframes
+
+To increase the verbosity I used the following commands and then
+plugged the camera into the USB3 port again, dmesg now shows more
+information....
+
+rmmod uvcvideo
+modprobe uvcvideo quirks=2 trace=65535
+
+[14590.335099] usb 17-3: new high speed USB device using xhci_hcd and address 0
+[14590.569652] xhci_hcd 0000:03:00.0: WARN: short transfer on control ep
+[14590.572641] xhci_hcd 0000:03:00.0: WARN: short transfer on control ep
+[14590.573570] usb 17-3: ep 0x87 - rounding interval to 128 microframes
+[14590.574224] uvcvideo: Probing generic UVC device 3
+[14590.574238] uvcvideo: Found format YUV 4:2:2 (YUYV).
+[14590.574244] uvcvideo: - 640x480 (30.0 fps)
+[14590.574249] uvcvideo: - 160x120 (30.0 fps)
+[14590.574253] uvcvideo: - 176x144 (30.0 fps)
+[14590.574258] uvcvideo: - 320x176 (30.0 fps)
+[14590.574263] uvcvideo: - 320x240 (30.0 fps)
+[14590.574268] uvcvideo: - 352x288 (30.0 fps)
+[14590.574272] uvcvideo: - 432x240 (30.0 fps)
+[14590.574277] uvcvideo: - 544x288 (30.0 fps)
+[14590.574282] uvcvideo: - 640x360 (30.0 fps)
+[14590.574286] uvcvideo: - 752x416 (25.0 fps)
+[14590.574291] uvcvideo: - 800x448 (25.0 fps)
+[14590.574296] uvcvideo: - 800x600 (20.0 fps)
+[14590.574301] uvcvideo: - 864x480 (20.0 fps)
+[14590.574305] uvcvideo: - 960x544 (15.0 fps)
+[14590.574310] uvcvideo: - 960x720 (10.0 fps)
+[14590.574315] uvcvideo: - 1024x576 (10.0 fps)
+[14590.574319] uvcvideo: - 1184x656 (10.0 fps)
+[14590.574324] uvcvideo: - 1280x720 (10.0 fps)
+[14590.574329] uvcvideo: - 1280x960 (5.0 fps)
+[14590.574333] uvcvideo: Found format MJPEG.
+[14590.574338] uvcvideo: - 640x480 (30.0 fps)
+[14590.574343] uvcvideo: - 160x120 (30.0 fps)
+[14590.574347] uvcvideo: - 176x144 (30.0 fps)
+[14590.574352] uvcvideo: - 320x176 (30.0 fps)
+[14590.574357] uvcvideo: - 320x240 (30.0 fps)
+[14590.574362] uvcvideo: - 352x288 (30.0 fps)
+[14590.574366] uvcvideo: - 432x240 (30.0 fps)
+[14590.574371] uvcvideo: - 544x288 (30.0 fps)
+[14590.574375] uvcvideo: - 640x360 (30.0 fps)
+[14590.574380] uvcvideo: - 752x416 (30.0 fps)
+[14590.574385] uvcvideo: - 800x448 (30.0 fps)
+[14590.574390] uvcvideo: - 800x600 (30.0 fps)
+[14590.574394] uvcvideo: - 864x480 (30.0 fps)
+[14590.574399] uvcvideo: - 960x544 (30.0 fps)
+[14590.574403] uvcvideo: - 960x720 (30.0 fps)
+[14590.574408] uvcvideo: - 1024x576 (30.0 fps)
+[14590.574413] uvcvideo: - 1184x656 (30.0 fps)
+[14590.574418] uvcvideo: - 1280x720 (30.0 fps)
+[14590.574422] uvcvideo: - 1280x960 (30.0 fps)
+[14590.574435] uvcvideo: Found a Status endpoint (addr 87).
+[14590.574441] uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:0825)
+[14590.574446] uvcvideo: Forcing device quirks to 0x2 by module
+parameter for testing purpose.
+[14590.574451] uvcvideo: Please report required quirks to the
+linux-uvc-devel mailing list.
+[14590.574463] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/2 to device 3 entity 2
+[14590.574471] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/3 to device 3 entity 2
+[14590.574478] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/7 to device 3 entity 2
+[14590.574485] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/8 to device 3 entity 2
+[14590.574493] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/10 to device 3 entity 2
+[14590.574500] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/1 to device 3 entity 2
+[14590.574507] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/4 to device 3 entity 2
+[14590.574514] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/5 to device 3 entity 2
+[14590.574522] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/11 to device 3 entity 2
+[14590.574532] uvcvideo: Added control
+00000000-0000-0000-0000-000000000001/2 to device 3 entity 1
+[14590.574539] uvcvideo: Added control
+00000000-0000-0000-0000-000000000001/3 to device 3 entity 1
+[14590.574546] uvcvideo: Added control
+00000000-0000-0000-0000-000000000001/4 to device 3 entity 1
+[14590.574558] uvcvideo: Scanning UVC chain: OT 5 &lt;- XU 4 (-&gt; XU 6 XU
+7) &lt;- PU 2 (-&gt; XU 3) &lt;- IT 1
+[14590.574579] uvcvideo: Found a valid video chain (1 -&gt; 5).
+[14590.672417] input: UVC Camera (046d:0825) as
+/devices/pci0000:00/0000:00:1c.3/0000:03:00.0/usb17/17-3/17-3:1.0/input/input12
+[14590.672475] uvcvideo: UVC device initialized.
+[14590.672658] usb 17-3: ep 0x86 - rounding interval to 8 microframes
+[14590.675498] uvcvideo: uvc_v4l2_open
+[14590.675521] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCAP)
+[14590.675576] uvcvideo: uvc_v4l2_release
+[14591.668045] 2:3:1: cannot set freq 16000 to ep 0x86
+[14591.668066] usb 17-3: ep 0x86 - rounding interval to 8 microframes
+[14591.808261] usb 17-3: ep 0x86 - rounding interval to 8 microframes
+[14591.813345] usb 17-3: ep 0x86 - rounding interval to 8 microframes
+
+  Thanks, in advance for your assistance.
+
+Cheers,
+
+Neil
+
+On Thu, Nov 18, 2010 at 3:00 PM, Paulo Assis &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">pj.assis at gmail.com</A>&gt; wrote:
+&gt;<i> Neil Hi,
+</I>&gt;<i>
+</I>&gt;<i> Could you please post the relevant dmesg output.
+</I>&gt;<i> Increasing uvcvideo verbosity would also be a good help.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> --- snip ---
+</I>&gt;&gt;<i> libv4lconvert: warning more framesizes then I can handle!
+</I>&gt;&gt;<i> libv4lconvert: warning more framesizes then I can handle!
+</I>&gt;<i> --- snip ---
+</I>&gt;<i>
+</I>&gt;<i> No problem with this, libv4l only handles a limit number of
+</I>&gt;<i> resolutions when enumerating video formats (apparently the limit is
+</I>&gt;<i> rather low for the current uvc camera models).
+</I>&gt;<i>
+</I>&gt;&gt;<i> libv4l2: error turning on stream: Invalid argument
+</I>&gt;&gt;<i> Unable to start capture: Invalid argument
+</I>&gt;<i>
+</I>&gt;<i> This seems to be the problem, but you need to check dmesg for the
+</I>&gt;<i> cause of the invalid argument error.
+</I>&gt;<i> Most likely this is related to the usb core and not to the driver
+</I>&gt;<i> itself, but it's hard to say without more info.
+</I>&gt;<i>
+</I>&gt;<i> Best regards,
+</I>&gt;<i> Paulo
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006087.html">[Linux-uvc-devel] Trying to use a camera plugged into a USB3	socket
+</A></li>
+	<LI>Next message: <A HREF="006094.html">[Linux-uvc-devel] Trying to use a camera plugged into a USB3	socket
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6088">[ date ]</a>
+              <a href="thread.html#6088">[ thread ]</a>
+              <a href="subject.html#6088">[ subject ]</a>
+              <a href="author.html#6088">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Ricoh UVC webcams
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Ricoh%20UVC%20webcams&In-Reply-To=%3C200704112253.28859.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001563.html">
+   <LINK REL="Next"  HREF="001583.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Ricoh UVC webcams</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Ricoh%20UVC%20webcams&In-Reply-To=%3C200704112253.28859.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Ricoh UVC webcams">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Apr 11 22:53:28 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001563.html">[Linux-uvc-devel] Ricoh UVC webcams
+</A></li>
+        <LI>Next message: <A HREF="001583.html">[Linux-uvc-devel] Ricoh UVC webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1572">[ date ]</a>
+              <a href="thread.html#1572">[ thread ]</a>
+              <a href="subject.html#1572">[ subject ]</a>
+              <a href="author.html#1572">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Sam,
+
+&gt;<i> I'm currently working on a V4L driver for Ricoh webcams.  I write to
+</I>&gt;<i> you because there is some apparent device support overlap that should
+</I>&gt;<i> be resolved.
+</I>&gt;<i>
+</I>&gt;<i> To give a brief description of this type of hardware, all known
+</I>&gt;<i> webcams of this sort are built in to laptops, including a handful of
+</I>&gt;<i> models from Sony and HP, and they are built around an 8051
+</I>&gt;<i> microcontroller.  Some of these devices report video class interface
+</I>&gt;<i> descriptors.  Older devices report some sort of interface descriptor
+</I>&gt;<i> claiming to be image class, but are nothing of the sort, and they even
+</I>&gt;<i> managed to create at least two distinct non-UVC devices that report
+</I>&gt;<i> the same 05ca:1870 device ID.
+</I>
+This explains why many users reported problems with their Ricoh webcams being 
+unsupported.
+
+&gt;<i> The Ricoh webcams that claim to support UVC indeed behave as true UVC
+</I>&gt;<i> devices, and even work with uvcvideo, but with two caveats:
+</I>&gt;<i>
+</I>&gt;<i> 1. A microcode image must be uploaded the first time the device is
+</I>&gt;<i> used since the machine has been powered on.
+</I>
+We already had to deal with this issue for the iSight webcams integrated in 
+the mactel notebooks.
+
+&gt;<i> 2. Some picture controls are not described in the UVC interface
+</I>&gt;<i> descriptors, and in fact these picture controls are set using the same
+</I>&gt;<i> commands as non-UVC Ricoh webcams.
+</I>
+Is there any known reason for that ? That sounds a bit against the UVC spec.
+
+&gt;<i> I have implemented complete support for three Ricoh UVC devices in my
+</I>&gt;<i> driver, using a minimal UVC implementation.  These include:
+</I>&gt;<i>
+</I>&gt;<i> 05ca:1810 - HP Pavilion Webcam
+</I>&gt;<i> 05ca:1835 - Sony VGP-VCC5
+</I>&gt;<i> 05ca:1836 - Sony VGP-VCC4
+</I>&gt;<i>
+</I>&gt;<i> Getting to the point, a system with both uvcvideo and r5u870 installed
+</I>&gt;<i> will be a source of confusion.  Both uvcvideo and r5u870 will try to
+</I>&gt;<i> attach to the above devices -- uvcvideo because of the video class
+</I>&gt;<i> interface, r5u870 because of the device ID.  If the webcam does not
+</I>&gt;<i> have microcode, uvcvideo will fail and r5u870 will succeed.  If the
+</I>&gt;<i> webcam does have microcode, such as after unloading r5u870 and loading
+</I>&gt;<i> uvcvideo, or after a warm boot, uvcvideo will succeed.  This is very
+</I>&gt;<i> inconsistent.
+</I>
+Indeed. Users will get confused.
+
+&gt;<i> Either uvcvideo should fully support these three devices and future
+</I>&gt;<i> Ricoh UVC devices, or it should blacklist them.
+</I>
+Agreed. I'd rather go for the first solution.
+
+&gt;<i> Adding support to uvcvideo should not be terribly difficult and I'm willing
+</I>&gt;<i> to propose a patch -- but if we go this route, I will grill other aspects of
+</I>&gt;<i> uvcvideo to ensure that my users don't lose any application support.
+</I>
+Can we discuss the issues you mentioned, as well as all other issues you can 
+foresee ?
+
+&gt;<i> Aside, the Windows drivers for these devices are apparently
+</I>&gt;<i> implemented as a pair of filter drivers around usbvideo.sys.  The
+</I>&gt;<i> lower filter contains the microcode and handles the upload process,
+</I>&gt;<i> and also handles the non-UVC picture control requests.
+</I>
+I'm still not sure if the firmware download operation should be handled by the 
+driver or by a userspace utility. The fxload software from the usbutils 
+package is meant to be called by the hotplug system. This would obviously be 
+easier for the driver :-)
+
+Do all Ricoh devices advertise a different class and/or USB pid before and 
+after loading the firmware ?
+
+We will also have to sort out legal problems associated with firmware 
+redistribution.
+
+Thank you for your work on UVC Ricoh devices. I hope to find a way to support 
+those devices in the Linux UVC driver.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001563.html">[Linux-uvc-devel] Ricoh UVC webcams
+</A></li>
+	<LI>Next message: <A HREF="001583.html">[Linux-uvc-devel] Ricoh UVC webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1572">[ date ]</a>
+              <a href="thread.html#1572">[ thread ]</a>
+              <a href="subject.html#1572">[ subject ]</a>
+              <a href="author.html#1572">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

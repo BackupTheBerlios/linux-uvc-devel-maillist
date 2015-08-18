@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] V4L/DVB:usbvideo:don't use part of	buffer for USB transfer #4
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20V4L/DVB%3Ausbvideo%3Adon%27t%20use%20part%20of%0A%09buffer%20for%20USB%20transfer%20%234&In-Reply-To=%3C200809162229.04520.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004069.html">
+   <LINK REL="Next"  HREF="004057.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] V4L/DVB:usbvideo:don't use part of	buffer for USB transfer #4</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20V4L/DVB%3Ausbvideo%3Adon%27t%20use%20part%20of%0A%09buffer%20for%20USB%20transfer%20%234&In-Reply-To=%3C200809162229.04520.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] V4L/DVB:usbvideo:don't use part of	buffer for USB transfer #4">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Sep 16 22:29:04 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004069.html">[Linux-uvc-devel] Sometimes the picture is completely black, with Logitech 046d:0992
+</A></li>
+        <LI>Next message: <A HREF="004057.html">[Linux-uvc-devel] new UVC device
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4047">[ date ]</a>
+              <a href="thread.html#4047">[ thread ]</a>
+              <a href="subject.html#4047">[ subject ]</a>
+              <a href="author.html#4047">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Tuesday 16 September 2008, <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">tom.leiming at gmail.com</A> wrote:
+&gt;<i> From: Ming Lei &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">tom.leiming at gmail.com</A>&gt;
+</I>&gt;<i>
+</I>&gt;<i> The status[] is part of  uvc_device structure. We can't make sure
+</I>&gt;<i> the address of status is at a cache-line boundary in all archs,so
+</I>&gt;<i> status[] might share a cache-line with some fields in uvc_structure.
+</I>&gt;<i> This can lead to some cache coherence
+</I>&gt;<i> issues(<A HREF="http://lwn.net/Articles/2265/">http://lwn.net/Articles/2265/</A>). Use dynamically allocated buffer
+</I>&gt;<i> instead.
+</I>
+Thanks for fixing this.
+
+&gt;<i> Signed-off-by: Ming Lei &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">tom.leiming at gmail.com</A>&gt;
+</I>
+Acked-by: Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt;
+
+Mauro, can you please apply the patch ?
+
+&gt;<i> ---
+</I>&gt;<i>  drivers/media/video/uvc/uvc_status.c |   11 +++++++++--
+</I>&gt;<i>  drivers/media/video/uvc/uvcvideo.h   |    4 +++-
+</I>&gt;<i>  2 files changed, 12 insertions(+), 3 deletions(-)
+</I>&gt;<i>
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvc_status.c
+</I>&gt;<i> b/drivers/media/video/uvc/uvc_status.c index 75e678a..5d60b26 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_status.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_status.c
+</I>&gt;<i> @@ -177,9 +177,15 @@ int uvc_status_init(struct uvc_device *dev)
+</I>&gt;<i>
+</I>&gt;<i>  	uvc_input_init(dev);
+</I>&gt;<i>
+</I>&gt;<i> +	dev-&gt;status = kzalloc(UVC_MAX_STATUS_SIZE, GFP_KERNEL);
+</I>&gt;<i> +	if (dev-&gt;status == NULL)
+</I>&gt;<i> +		return -ENOMEM;
+</I>&gt;<i> +
+</I>&gt;<i>  	dev-&gt;int_urb = usb_alloc_urb(0, GFP_KERNEL);
+</I>&gt;<i> -	if (dev-&gt;int_urb == NULL)
+</I>&gt;<i> +	if (dev-&gt;int_urb == NULL) {
+</I>&gt;<i> +		kfree(dev-&gt;status);
+</I>&gt;<i>  		return -ENOMEM;
+</I>&gt;<i> +	}
+</I>&gt;<i>
+</I>&gt;<i>  	pipe = usb_rcvintpipe(dev-&gt;udev, ep-&gt;desc.bEndpointAddress);
+</I>&gt;<i>
+</I>&gt;<i> @@ -192,7 +198,7 @@ int uvc_status_init(struct uvc_device *dev)
+</I>&gt;<i>  		interval = fls(interval) - 1;
+</I>&gt;<i>
+</I>&gt;<i>  	usb_fill_int_urb(dev-&gt;int_urb, dev-&gt;udev, pipe,
+</I>&gt;<i> -		dev-&gt;status, sizeof dev-&gt;status, uvc_status_complete,
+</I>&gt;<i> +		dev-&gt;status, UVC_MAX_STATUS_SIZE, uvc_status_complete,
+</I>&gt;<i>  		dev, interval);
+</I>&gt;<i>
+</I>&gt;<i>  	return usb_submit_urb(dev-&gt;int_urb, GFP_KERNEL);
+</I>&gt;<i> @@ -202,6 +208,7 @@ void uvc_status_cleanup(struct uvc_device *dev)
+</I>&gt;<i>  {
+</I>&gt;<i>  	usb_kill_urb(dev-&gt;int_urb);
+</I>&gt;<i>  	usb_free_urb(dev-&gt;int_urb);
+</I>&gt;<i> +	kfree(dev-&gt;status);
+</I>&gt;<i>  	uvc_input_cleanup(dev);
+</I>&gt;<i>  }
+</I>&gt;<i>
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvcvideo.h
+</I>&gt;<i> b/drivers/media/video/uvc/uvcvideo.h index bafe340..9a6bc1a 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvcvideo.h
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvcvideo.h
+</I>&gt;<i> @@ -303,6 +303,8 @@ struct uvc_xu_control {
+</I>&gt;<i>  #define UVC_MAX_FRAME_SIZE	(16*1024*1024)
+</I>&gt;<i>  /* Maximum number of video buffers. */
+</I>&gt;<i>  #define UVC_MAX_VIDEO_BUFFERS	32
+</I>&gt;<i> +/* Maximum status buffer size in bytes of interrupt URB. */
+</I>&gt;<i> +#define UVC_MAX_STATUS_SIZE	16
+</I>&gt;<i>
+</I>&gt;<i>  #define UVC_CTRL_CONTROL_TIMEOUT	300
+</I>&gt;<i>  #define UVC_CTRL_STREAMING_TIMEOUT	1000
+</I>&gt;<i> @@ -634,7 +636,7 @@ struct uvc_device {
+</I>&gt;<i>  	/* Status Interrupt Endpoint */
+</I>&gt;<i>  	struct usb_host_endpoint *int_ep;
+</I>&gt;<i>  	struct urb *int_urb;
+</I>&gt;<i> -	__u8 status[16];
+</I>&gt;<i> +	__u8 *status;
+</I>&gt;<i>  	struct input_dev *input;
+</I>&gt;<i>
+</I>&gt;<i>  	/* Video Streaming interfaces */
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004069.html">[Linux-uvc-devel] Sometimes the picture is completely black, with Logitech 046d:0992
+</A></li>
+	<LI>Next message: <A HREF="004057.html">[Linux-uvc-devel] new UVC device
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4047">[ date ]</a>
+              <a href="thread.html#4047">[ thread ]</a>
+              <a href="subject.html#4047">[ subject ]</a>
+              <a href="author.html#4047">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

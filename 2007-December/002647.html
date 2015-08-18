@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] BUG with uvcvideo SVN and 2.6.23.11
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20BUG%20with%20uvcvideo%20SVN%20and%202.6.23.11&In-Reply-To=%3C613695.87540.qm%40web52907.mail.re2.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002691.html">
+   <LINK REL="Next"  HREF="002666.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] BUG with uvcvideo SVN and 2.6.23.11</H1>
+    <B>Chris Rankin</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20BUG%20with%20uvcvideo%20SVN%20and%202.6.23.11&In-Reply-To=%3C613695.87540.qm%40web52907.mail.re2.yahoo.com%3E"
+       TITLE="[Linux-uvc-devel] BUG with uvcvideo SVN and 2.6.23.11">rankincj at yahoo.com
+       </A><BR>
+    <I>Sun Dec 23 14:53:12 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002691.html">[Linux-uvc-devel] about number of packets inside URB..
+</A></li>
+        <LI>Next message: <A HREF="002666.html">[Linux-uvc-devel] BUG with uvcvideo SVN and 2.6.23.11
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2647">[ date ]</a>
+              <a href="thread.html#2647">[ thread ]</a>
+              <a href="subject.html#2647">[ subject ]</a>
+              <a href="author.html#2647">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I am running the uvcvideo module from subversion with Linux 2.6.23.11, and I have just found this
+BUG in my message log:
+
+usb 4-3: new high speed USB device using ehci_hcd and address 4
+usb 4-3: configuration #1 chosen from 1 choice
+uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:0992)
+BUG: atomic counter underflow at:
+ [&lt;f89c3ee4&gt;] uvc_acquire_privileges+0x34/0x66 [uvcvideo]
+ [&lt;f89c4647&gt;] uvc_v4l2_do_ioctl+0x60d/0xcd6 [uvcvideo]
+ [&lt;c015ae59&gt;] __slab_free+0xaa/0x2ca
+ [&lt;f892303b&gt;] v4l_compat_translate_ioctl+0x1ea3/0x1ebc [v4l1_compat]
+ [&lt;f89212ea&gt;] v4l_compat_translate_ioctl+0x152/0x1ebc [v4l1_compat]
+ [&lt;f892303b&gt;] v4l_compat_translate_ioctl+0x1ea3/0x1ebc [v4l1_compat]
+ [&lt;f892303b&gt;] v4l_compat_translate_ioctl+0x1ea3/0x1ebc [v4l1_compat]
+ [&lt;f8921510&gt;] v4l_compat_translate_ioctl+0x378/0x1ebc [v4l1_compat]
+ [&lt;c02770b7&gt;] _spin_unlock_irqrestore+0xf/0x23
+ [&lt;c01fbd2f&gt;] dma_pool_alloc+0x171/0x17e
+ [&lt;c011ae0f&gt;] find_busiest_group+0x1c4/0x547
+ [&lt;c011ae0f&gt;] find_busiest_group+0x1c4/0x547
+ [&lt;f8848bf6&gt;] qh_append_tds+0x366/0x452 [ehci_hcd]
+ [&lt;f88487e3&gt;] qh_urb_transaction+0x2be/0x2fd [ehci_hcd]
+ [&lt;c02770b7&gt;] _spin_unlock_irqrestore+0xf/0x23
+ [&lt;c01fbd2f&gt;] dma_pool_alloc+0x171/0x17e
+ [&lt;c02770b7&gt;] _spin_unlock_irqrestore+0xf/0x23
+ [&lt;f8849308&gt;] ehci_urb_enqueue+0x123/0xce1 [ehci_hcd]
+ [&lt;c012b727&gt;] __atomic_notifier_call_chain+0x3f/0x5a
+ [&lt;c012b759&gt;] atomic_notifier_call_chain+0x17/0x1a
+ [&lt;c01ac9f4&gt;] __next_cpu+0x12/0x21
+ [&lt;c011ae0f&gt;] find_busiest_group+0x1c4/0x547
+ [&lt;c02770b7&gt;] _spin_unlock_irqrestore+0xf/0x23
+ [&lt;c0128377&gt;] lock_timer_base+0x19/0x35
+ [&lt;c01b0328&gt;] number+0x159/0x231
+ [&lt;c02770b7&gt;] _spin_unlock_irqrestore+0xf/0x23
+ [&lt;c011a131&gt;] enqueue_entity+0x1d2/0x1f3
+ [&lt;c011a3ee&gt;] __check_preempt_curr_fair+0x4d/0x7e
+ [&lt;c011dda8&gt;] check_preempt_curr_fair+0x6b/0x71
+ [&lt;c0119c2c&gt;] balance_tasks+0xe1/0x10b
+ [&lt;c0119cbd&gt;] load_balance_fair+0x67/0x78
+ [&lt;c011ddae&gt;] load_balance_start_fair+0x0/0x21
+ [&lt;c011a2a2&gt;] load_balance_next_fair+0x0/0x21
+ [&lt;c01198ac&gt;] update_stats_wait_end+0x9b/0xbe
+ [&lt;c0103038&gt;] __switch_to+0x23/0x13f
+ [&lt;c02771f0&gt;] __reacquire_kernel_lock+0x43/0x4b
+ [&lt;c0275247&gt;] __sched_text_start+0x5d7/0x5f1
+ [&lt;c01ac9f4&gt;] __next_cpu+0x12/0x21
+ [&lt;c011ae0f&gt;] find_busiest_group+0x1c4/0x547
+ [&lt;c02770b7&gt;] _spin_unlock_irqrestore+0xf/0x23
+ [&lt;c016d56e&gt;] __d_lookup+0xee/0x10b
+ [&lt;c0164da6&gt;] do_lookup+0x4f/0x140
+ [&lt;f89c4c81&gt;] uvc_v4l2_do_ioctl+0xc47/0xcd6 [uvcvideo]
+ [&lt;f89c403a&gt;] uvc_v4l2_do_ioctl+0x0/0xcd6 [uvcvideo]
+ [&lt;c0170c22&gt;] mntput_no_expire+0x11/0x63
+ [&lt;f8a57fc1&gt;] pwc_camera_power+0x6d/0x76 [pwc]
+ [&lt;c02761dd&gt;] __mutex_lock_slowpath+0x212/0x21a
+ [&lt;f898cb67&gt;] video_usercopy+0x178/0x23d [videodev]
+ [&lt;c015d58a&gt;] nameidata_to_filp+0x24/0x33
+ [&lt;c015d5cb&gt;] do_filp_open+0x32/0x39
+ [&lt;f8a57fc1&gt;] pwc_camera_power+0x6d/0x76 [pwc]
+ [&lt;f89c3bb9&gt;] uvc_v4l2_ioctl+0x3b/0x41 [uvcvideo]
+ [&lt;f89c403a&gt;] uvc_v4l2_do_ioctl+0x0/0xcd6 [uvcvideo]
+ [&lt;c0168954&gt;] do_ioctl+0x4c/0x62
+ [&lt;c0168b98&gt;] vfs_ioctl+0x22e/0x240
+ [&lt;c0168bdd&gt;] sys_ioctl+0x33/0x4a
+ [&lt;c0103f66&gt;] sysenter_past_esp+0x5f/0x85
+ [&lt;c027007b&gt;] unix_seq_start+0x2b/0x5a
+ =======================
+
+Cheers,
+Chris
+
+
+
+      ___________________________________________________________
+Support the World Aids Awareness campaign this month with Yahoo! For Good <A HREF="http://uk.promotions.yahoo.com/forgood/">http://uk.promotions.yahoo.com/forgood/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002691.html">[Linux-uvc-devel] about number of packets inside URB..
+</A></li>
+	<LI>Next message: <A HREF="002666.html">[Linux-uvc-devel] BUG with uvcvideo SVN and 2.6.23.11
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2647">[ date ]</a>
+              <a href="thread.html#2647">[ thread ]</a>
+              <a href="subject.html#2647">[ subject ]</a>
+              <a href="author.html#2647">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

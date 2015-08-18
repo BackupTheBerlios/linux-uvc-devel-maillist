@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo module crashes on load attempt
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20module%20crashes%20on%20load%20attempt&In-Reply-To=%3C200901071605.55527.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004455.html">
+   <LINK REL="Next"  HREF="004469.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo module crashes on load attempt</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20module%20crashes%20on%20load%20attempt&In-Reply-To=%3C200901071605.55527.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo module crashes on load attempt">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Jan  7 16:05:55 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004455.html">[Linux-uvc-devel] uvcvideo module crashes on load attempt
+</A></li>
+        <LI>Next message: <A HREF="004469.html">[Linux-uvc-devel] uvcvideo module crashes on load attempt
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4467">[ date ]</a>
+              <a href="thread.html#4467">[ thread ]</a>
+              <a href="subject.html#4467">[ subject ]</a>
+              <a href="author.html#4467">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Joe,
+
+On Tuesday 06 January 2009, jmk wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> I&#185;ve been successfully using a Logitech QuickCam Pro 9000 with the
+</I>&gt;<i> linux-uvc module (iirc, linux-uvc-0.1.0_pre173) for a while. Recently, I
+</I>&gt;<i> installed the devel version of v4l in order to test out the new hd-pvr
+</I>&gt;<i> driver.
+</I>&gt;<i> Unfortunately, while the hd-pvr module is working nicely for me, it appears
+</I>&gt;<i> that the new version of uvcvideo isn&#185;t. Below is the dmesg output when the
+</I>&gt;<i> system attempts to load the module. Any suggestions on what might be
+</I>&gt;<i> causing the issue or what steps to take to work around it would be greatly
+</I>&gt;<i> appreciated.
+</I>&gt;<i>
+</I>&gt;<i> Thanks,
+</I>&gt;<i> Joe
+</I>&gt;<i>
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:0990)
+</I>&gt;<i> ------------[ cut here ]------------
+</I>&gt;<i> kernel BUG at /h/downloads/multimedia/myth/hd-pvr/hdpvr/v4l/v4l2-dev.c:261!
+</I>
+Where did you get the source from ? I had a look at the 
+<A HREF="http://hg.jannau.net/hdpvr/">http://hg.jannau.net/hdpvr/</A> repository, and v4l2-dev.c:261 tests for 
+vdev-&gt;release being on NULL. This is quite unlikely, as the uvcvideo driver 
+provides a release callback.
+
+Could you please try the latest uvcvideo sources available from the 
+linuxtv.org/hg/~pinchartl/uvcvideo repository ?
+
+&gt;<i> invalid opcode: 0000 [#1] PREEMPT SMP
+</I>&gt;<i> Modules linked in: snd_usb_lib uvcvideo snd_rawmidi snd_hwdep sr_mod bttv
+</I>&gt;<i> ir_common videobuf_dma_sg videobuf_core btcx_risc geode_aes snd_seq_oss
+</I>&gt;<i> snd_seq_midi_event
+</I>&gt;<i>  snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss lirc_serial lirc_dev
+</I>&gt;<i> dv1394 wm8775 cx25840 msp3400 saa7127 saa7115 tuner tea5767 tda8290
+</I>&gt;<i> tuner_xc2028 xc5000 tda9887 tuner_simple tuner_types mt20xx tea5761 ivtv
+</I>&gt;<i> snd_hda_intel snd_pcm firmware_class nvidia(P) snd_timer snd cx2341x hdpvr
+</I>&gt;<i> snd_page_alloc parport_pc videodev v4l2_compat_ioctl32 parport pl2303
+</I>&gt;<i> mct_u232 v4l1_compat usbserial v4l2_common forcedeth tveeprom ohci1394 sg
+</I>&gt;<i> k8temp i2c_nforce2
+</I>&gt;<i>
+</I>&gt;<i> Pid: 7305, comm: modprobe Tainted: P        (2.6.24-gentoo-r8 #3)
+</I>&gt;<i> EIP: 0060:[&lt;f0fca538&gt;] EFLAGS: 00010246 CPU: 0
+</I>&gt;<i> EIP is at video_register_device_index+0x408/0x450 [videodev]
+</I>&gt;<i> EAX: 00000000 EBX: 00000000 ECX: ffffffff EDX: ee937200
+</I>&gt;<i> ESI: ffffffff EDI: 00000000 EBP: dfb910c0 ESP: de2a5c6c
+</I>&gt;<i>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+</I>&gt;<i> Process modprobe (pid: 7305, ti=de2a4000 task=e3c90000 task.ti=de2a4000)
+</I>&gt;<i> Stack: 000035b6 00000010 000000c0 00000000 ee937200 ffffffff eeea8800
+</I>&gt;<i> 00000000
+</I>&gt;<i>        ffffffff 00000000 ee937200 00000001 dfb910c0 f0fca58f ffffffff
+</I>&gt;<i> f12f1ad1
+</I>&gt;<i>        ee937348 00000020 f12faa53 0000046d 00000990 df8ec000 df8ec030
+</I>&gt;<i> df8ec028
+</I>&gt;<i> Call Trace:
+</I>&gt;<i>  [&lt;f0fca58f&gt;] video_register_device+0xf/0x20 [videodev]
+</I>&gt;<i>  [&lt;f12f1ad1&gt;] uvc_simplify_fraction+0x6f1/0x790 [uvcvideo]
+</I>&gt;<i>  [&lt;f12f27bf&gt;] uvc_delete+0xc4f/0x1eb0 [uvcvideo]
+</I>
+The stacktrace appears to be corrupted.
+
+&gt;<i>  [&lt;c02fa01a&gt;] idr_get_empty_slot+0xea/0x270
+</I>&gt;<i>  [&lt;c02fa227&gt;] ida_get_new_above+0x87/0x180
+</I>&gt;<i>  [&lt;c03e5d65&gt;] usb_probe_interface+0x75/0x100
+</I>&gt;<i>  [&lt;c037f598&gt;] driver_sysfs_add+0x58/0x80
+</I>&gt;<i>  [&lt;c037f6ce&gt;] driver_probe_device+0x8e/0x190
+</I>&gt;<i>  [&lt;c04ccc3d&gt;] klist_next+0x5d/0xa0
+</I>&gt;<i>  [&lt;c037f910&gt;] __driver_attach+0x80/0x90
+</I>&gt;<i>  [&lt;c037eaaa&gt;] bus_for_each_dev+0x3a/0x60
+</I>&gt;<i>  [&lt;c037f536&gt;] driver_attach+0x16/0x20
+</I>&gt;<i>  [&lt;c037f890&gt;] __driver_attach+0x0/0x90
+</I>&gt;<i>  [&lt;c037ee5b&gt;] bus_add_driver+0x8b/0x1e0
+</I>&gt;<i>  [&lt;c03e5cf0&gt;] usb_probe_interface+0x0/0x100
+</I>&gt;<i>  [&lt;c03e58e5&gt;] usb_register_driver+0x95/0x110
+</I>&gt;<i>  [&lt;f127d06f&gt;] init_module+0x6f/0x86 [uvcvideo]
+</I>&gt;<i>  [&lt;c014a28b&gt;] sys_init_module+0x16b/0x1930
+</I>&gt;<i>  [&lt;c010437e&gt;] sysenter_past_esp+0x5f/0x85
+</I>&gt;<i>  =======================
+</I>&gt;<i> Code: 15 fd f0 89 81 5c 01 00 00 e9 89 fc ff ff 8b 4c 24 38 b8 b0 15 fd f0
+</I>&gt;<i> 8b 54 24 10 89 8a b0 01 00 00 e8 0d 3c 50 cf e9 14 ff ff ff &lt;0f&gt; 0b eb fe
+</I>&gt;<i> bb c0 e9 fc f0 89 5c 24 04 c7 04 24 cf f0 fc f0 e8
+</I>&gt;<i> EIP: [&lt;f0fca538&gt;] video_register_device_index+0x408/0x450 [videodev] SS:ESP
+</I>&gt;<i> 0068:de2a5c6c
+</I>&gt;<i> ---[ end trace fae1aa80ab5d0dfd ]---
+</I>
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004455.html">[Linux-uvc-devel] uvcvideo module crashes on load attempt
+</A></li>
+	<LI>Next message: <A HREF="004469.html">[Linux-uvc-devel] uvcvideo module crashes on load attempt
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4467">[ date ]</a>
+              <a href="thread.html#4467">[ thread ]</a>
+              <a href="subject.html#4467">[ subject ]</a>
+              <a href="author.html#4467">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

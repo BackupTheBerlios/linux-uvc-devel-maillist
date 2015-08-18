@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Problem with webcam: 18ec:3288 (Arkmikro	chipset)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problem%20with%20webcam%3A%2018ec%3A3288%20%28Arkmikro%0A%09chipset%29&In-Reply-To=%3C200812291121.23120.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004410.html">
+   <LINK REL="Next"  HREF="004436.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Problem with webcam: 18ec:3288 (Arkmikro	chipset)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problem%20with%20webcam%3A%2018ec%3A3288%20%28Arkmikro%0A%09chipset%29&In-Reply-To=%3C200812291121.23120.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Problem with webcam: 18ec:3288 (Arkmikro	chipset)">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Dec 29 11:21:22 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004410.html">[Linux-uvc-devel] Problem with webcam: 18ec:3288 (Arkmikro chipset)
+</A></li>
+        <LI>Next message: <A HREF="004436.html">[Linux-uvc-devel] Problem with webcam: 18ec:3288 (Arkmikro	chipset)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4424">[ date ]</a>
+              <a href="thread.html#4424">[ thread ]</a>
+              <a href="subject.html#4424">[ subject ]</a>
+              <a href="author.html#4424">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Thursday 25 December 2008, K wrote:
+&gt;<i> Hi all,
+</I>&gt;<i>
+</I>&gt;<i> I tried to setup a very cheap webcam (
+</I>&gt;<i> <A HREF="http://photos.imageevent.com/eunion4u/ebay/L01-G.jpg">http://photos.imageevent.com/eunion4u/ebay/L01-G.jpg</A>) with the latest
+</I>&gt;<i> version of the UVC driver source tree (revision 9904). I haven't been able
+</I>&gt;<i> to make it work with Motion (complaining about mmap) though the /dev/video1
+</I>&gt;<i> device has been created. I have another UVC webcam that works well at
+</I>&gt;<i> /dev/video0 (it's an Hercules Dualpix II).
+</I>&gt;<i>
+</I>&gt;<i> There is one odd thing when using the command &quot;v4l2-ctl -d 1 --all&quot; (full
+</I>&gt;<i> output is below), I get an unknown colorspace which could be one of the
+</I>&gt;<i> issues:
+</I>&gt;<i>
+</I>&gt;<i> Format Video Capture:
+</I>&gt;<i>         Width/Height  : 640/480
+</I>&gt;<i>         Pixel Format  : 'MJPG'
+</I>&gt;<i>         Field         : None
+</I>&gt;<i>         Bytes per Line: 0
+</I>&gt;<i>         Size Image    : 614400
+</I>&gt;<i>         Colorspace    : Unknown (00000000)     &lt;------------------- looks
+</I>&gt;<i> weird, I was expecting SRGB ou YUV or at least a non-null value..
+</I>
+If you look at the UVC descriptors (from your lsusb output):
+
+&gt;<i>       VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                             6
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                 13 (COLORFORMAT)
+</I>&gt;<i>         bColorPrimaries                     0 (Unspecified)
+</I>&gt;<i>         bTransferCharacteristics            0 (Unspecified)
+</I>&gt;<i>         bMatrixCoefficients                 0 (Unspecified)
+</I>
+The device doesn't report color primaries so the driver can't report a valid 
+colorspace (I refuse to generate a random value :-)).
+
+&gt;<i> I am developer though I don't have much experience with drivers under
+</I>&gt;<i> Linux. Any technical hint is welcome.
+</I>
+[snip]
+
+&gt;<i> dmesg output when loading uvcvideo module, looks similar to my working
+</I>&gt;<i> Hercules camera:
+</I>&gt;<i> ------------------------------------
+</I>&gt;<i> Linux video capture interface: v2.00
+</I>&gt;<i> uvcvideo 5-1:1.0: usb_probe_interface
+</I>&gt;<i> uvcvideo 5-1:1.0: usb_probe_interface - got id
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device Hercules Dualpix Exchange (06f8:3005)
+</I>&gt;<i> uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling
+</I>&gt;<i> workaround.
+</I>&gt;<i> input: Hercules Dualpix Exchange as /class/input/input26
+</I>&gt;<i> usb 5-1: link qh4-0001/efbcd100 start 3 [1/0 us]
+</I>&gt;<i> uvcvideo 4-1:1.0: usb_probe_interface
+</I>&gt;<i> uvcvideo 4-1:1.0: usb_probe_interface - got id
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device USB2.0 PC CAMERA (18ec:3288)
+</I>&gt;<i> uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling
+</I>&gt;<i> workaround.
+</I>&gt;<i> input: USB2.0 PC CAMERA as /class/input/input27
+</I>&gt;<i> uhci_hcd 0000:00:09.1: reserve dev 4 ep81-INT, period 8, phase 4, 23 us
+</I>&gt;<i> usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> USB Video Class driver (v0.1.0)
+</I>&gt;<i> ------------------------------------
+</I>
+Nothing unexpected there.
+
+&gt;<i> Trying to launch it with Motion, dmesg shows some errors:
+</I>&gt;<i> ------------------------------------
+</I>&gt;<i> uvcvideo: Failed to query (130) UVC probe control : 0 (exp. 26).
+</I>&gt;<i> uvcvideo: Failed to query (130) UVC probe control : 0 (exp. 26).
+</I>&gt;<i> uvcvideo: Failed to query (130) UVC probe control : 0 (exp. 26).
+</I>&gt;<i> uvcvideo: Failed to query (130) UVC probe control : 0 (exp. 26).
+</I>&gt;<i> ------------------------------------
+</I>
+Try setting the quirks parameter to 2 before plugging your webcam (either 
+with 'modprobe uvcvideo quirks=2' if the driver is not already loaded, or 
+with 'echo 2 &gt; /sys/modules/uvcvideo/parameters/quirks' if the driver is 
+already loaded).
+
+&gt;<i> Motion itself complains:
+</I>&gt;<i> -------------------------------------
+</I>&gt;<i> [0] Motion 3.2.11 Started
+</I>&gt;<i> [0] Thread 1 is from /usr/local/etc/motion.conf
+</I>&gt;<i> [1] Thread 1 started
+</I>&gt;<i> [1] cap.driver: &quot;uvcvideo&quot;
+</I>&gt;<i> [1] cap.card: &quot;USB2.0 PC CAMERA&quot;
+</I>&gt;<i> [1] cap.bus_info: &quot;0000:00:09.1&quot;
+</I>&gt;<i> [1] cap.capabilities=0x04000001
+</I>&gt;<i> [1] - VIDEO_CAPTURE
+</I>&gt;<i> [1] - STREAMING
+</I>&gt;<i> [1] Supported palettes:
+</I>&gt;<i> [1] 0: MJPG (MJPEG)
+</I>&gt;<i> [1] VIDIOC_TRY_FMT failed for format MJPG: Input/output error
+</I>
+This is the real problem, and it should be fixed by quirks=2. I'll fix the 
+driver after getting confirmation this is the real issue.
+
+&gt;<i> [1] ioctl(VIDIOCGMBUF) - Error device does not support memory map
+</I>
+As VIDIOC_TRY_FMT failed Motion probably falls back to V4L1 which is not 
+supported by the uvcvideo driver. Fixing the above problem should get rid of 
+this one as well.
+
+&gt;<i> [1] V4L capturing using read is deprecated!
+</I>&gt;<i> [1] Motion only supports mmap.
+</I>&gt;<i> [1] Could not fetch initial image from camera
+</I>&gt;<i> [1] Motion continues using width and height from config file(s)
+</I>&gt;<i> [1] Resizing pre_capture buffer to 1 items
+</I>&gt;<i> [1] Started stream webcam server in port 8080
+</I>&gt;<i> [1] Resizing pre_capture buffer to 3 items
+</I>&gt;<i> [1] Retrying until successful connection with camera
+</I>&gt;<i> ------------------------------------
+</I>
+[snip]
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004410.html">[Linux-uvc-devel] Problem with webcam: 18ec:3288 (Arkmikro chipset)
+</A></li>
+	<LI>Next message: <A HREF="004436.html">[Linux-uvc-devel] Problem with webcam: 18ec:3288 (Arkmikro	chipset)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4424">[ date ]</a>
+              <a href="thread.html#4424">[ thread ]</a>
+              <a href="subject.html#4424">[ subject ]</a>
+              <a href="author.html#4424">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

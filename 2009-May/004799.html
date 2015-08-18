@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] BisonCam, NB Pro (5986:0241)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20BisonCam%2C%20NB%20Pro%20%285986%3A0241%29&In-Reply-To=%3C200905281521.53139.jezz%40sysmic.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004796.html">
+   <LINK REL="Next"  HREF="004800.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] BisonCam, NB Pro (5986:0241)</H1>
+    <B>J&#233;r&#244;me Pouiller</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20BisonCam%2C%20NB%20Pro%20%285986%3A0241%29&In-Reply-To=%3C200905281521.53139.jezz%40sysmic.org%3E"
+       TITLE="[Linux-uvc-devel] BisonCam, NB Pro (5986:0241)">jezz at sysmic.org
+       </A><BR>
+    <I>Thu May 28 15:21:52 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004796.html">[Linux-uvc-devel] Compilation error
+</A></li>
+        <LI>Next message: <A HREF="004800.html">[Linux-uvc-devel] BisonCam, NB Pro (5986:0241)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4799">[ date ]</a>
+              <a href="thread.html#4799">[ thread ]</a>
+              <a href="subject.html#4799">[ subject ]</a>
+              <a href="author.html#4799">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent, 
+
+On Wednesday 27 May 2009 17:11:03 Laurent Pinchart wrote:
+[...]
+&gt;<i> On Tuesday 26 May 2009 17:49:14 J&#233;r&#244;me Pouiller wrote:
+</I>[...]
+&gt;<i> &gt; 2. It looks like a hardware bug, but how to prove it?
+</I>&gt;<i>
+</I>&gt;<i> The camera stalls a GET_DEF request  on the hue control. First of all,
+</I>&gt;<i> does the problem occur every time  the hue control is queried, or only
+</I>&gt;<i> from times to times ?
+</I>100% reproducible.
+
+&gt;<i> If the problem is 100% reproducible, I'd like to try other requests to
+</I>&gt;<i> see if the camera stalls GET_DEF(hue)  only or all GET requests on the
+</I>&gt;<i> hue control.
+</I>Only happens with HUE (see test-BisonCam.c and test-output).
+
+&gt;<i> Could you try to read the value (VIDIOC_G_CTRL) of the hue control ?
+</I>It   return  EIO   and   uvcvideo  driver   print   same  message   (see
+test-BisonCam.c and test-output).
+
+&gt;<i> If  it doesn't  work, could  you  modify the  PU_HUE_CONTROL entry  in
+</I>&gt;<i> uvc_ctrls (uvc_ctrl.c) and retest VIDIOC_QUERYCTRL ?
+</I>&gt;<i>
+</I>&gt;<i> Set the flags field to
+</I>&gt;<i>
+</I>&gt;<i> UVC_CONTROL_GET_DEF |
+</I>&gt;<i> UVC_CONTROL_GET_MIN |
+</I>&gt;<i> UVC_CONTROL_GET_MAX |
+</I>&gt;<i> UVC_CONTROL_GET_RES |
+</I>&gt;<i> UVC_CONTROL_GET_CUR | 
+</I>&gt;<i> UVC_CONTROL_SET_CUR |
+</I>&gt;<i> UVC_CONTROL_RESTORE |
+</I>&gt;<i> UVC_CONTROL_AUTO_UPDATE
+</I>&gt;<i>
+</I>&gt;<i> at first  and remove the  GET_DEF, GET_MIN, GET_MAX and  GET_RES flags
+</I>&gt;<i> one by one, trying VIDIOC_QUERYCTRL at each step. The driver will only
+</I>&gt;<i> perform the listed requests in  the GET_DEF, GET_MIN, GET_MAX, GET_RES
+</I>&gt;<i> order. I'd like to know which of those work or fail.
+</I>VIDIOC_QUERYCTRL  success only  if  I remove  GET_DEF, GET_MIN,  GET_MAX
+and  GET_RES flags.  In  all  other cases,  my  test  program give  same
+output as  in test-output. (Except:  if I remove UVC_CONTROL_GET* flags,
+VIDIOC_G_CTRL return EINVAL).
+
+
+Best regards,
+
+-- 
+J&#233;r&#244;me Pouiller (jezz AT sysmic DOT org)
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: test-BisonCam.c
+Type: text/x-csrc
+Size: 1170 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090528/f9bee26f/attachment.c">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090528/f9bee26f/attachment.c</A>&gt;
+-------------- next part --------------
+Enumerate all controls:
+  id:0x980900, ret:0, flags:0x0, name:Brightness
+  id:0x980901, ret:0, flags:0x0, name:Contrast
+  id:0x980902, ret:0, flags:0x0, name:Saturation
+  id:0x980903, ret:-1, flags:0x0, err:5 (Input/output error)
+  id:0x980904, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x980905, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x980906, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x980907, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x980908, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x980909, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x98090A, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x98090B, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x98090C, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x98090D, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x98090E, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x98090F, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x980910, ret:0, flags:0x0, name:Gamma
+  id:0x980911, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x980912, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x980913, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x980914, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x980915, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x980916, ret:-1, flags:0x0, err:22 (Invalid argument)
+  id:0x980917, ret:-1, flags:0x0, err:22 (Invalid argument)
+Try to control Hue:
+  id:0x980903, ret:-1, value:-1208459276, err:5 (Input/output error)
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004796.html">[Linux-uvc-devel] Compilation error
+</A></li>
+	<LI>Next message: <A HREF="004800.html">[Linux-uvc-devel] BisonCam, NB Pro (5986:0241)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4799">[ date ]</a>
+              <a href="thread.html#4799">[ thread ]</a>
+              <a href="subject.html#4799">[ subject ]</a>
+              <a href="author.html#4799">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

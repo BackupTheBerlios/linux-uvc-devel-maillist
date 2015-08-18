@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Minoru stereo webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Minoru%20stereo%20webcam&In-Reply-To=%3C200902012252.12834.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004515.html">
+   <LINK REL="Next"  HREF="004517.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Minoru stereo webcam</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Minoru%20stereo%20webcam&In-Reply-To=%3C200902012252.12834.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Minoru stereo webcam">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sun Feb  1 22:52:12 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004515.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+        <LI>Next message: <A HREF="004517.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4516">[ date ]</a>
+              <a href="thread.html#4516">[ thread ]</a>
+              <a href="subject.html#4516">[ subject ]</a>
+              <a href="author.html#4516">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Yann,
+
+On Saturday 31 January 2009, Yann LeCun wrote:
+&gt;<i> Laurent and all,
+</I>&gt;<i>
+</I>&gt;<i> I just got one of those new Minoru stereo webcams.  At 90 bucks from
+</I>&gt;<i> Amazon, the Minoru is several times cheaper than any alternative, and
+</I>&gt;<i> there are lots of cool things you could do with a stereo camera under
+</I>&gt;<i> Linux (see <A HREF="http://www.minoru3d.com/">http://www.minoru3d.com/</A> ).
+</I>&gt;<i>
+</I>&gt;<i> The good news is that uvcvideo recognizes the stereo camera as two
+</I>&gt;<i> separate cameras (which appear as /dev/video0 and /dev/video1 in my
+</I>&gt;<i> laptop with Ubuntu 8.10). I can grab video from the left and right
+</I>&gt;<i> camera separately with no problem.  I'm using the standard uvcvideo
+</I>&gt;<i> driver that comes with Ubuntu 8.10 Intrepid.
+</I>&gt;<i>
+</I>&gt;<i> The problem is that I cannot seem to be able to grab from both cameras
+</I>&gt;<i> simultaneously.  If I turn on streaming on one camera, the second
+</I>&gt;<i> camera refuses to turn on streaming. In other words &quot;
+</I>&gt;<i> ioctl(fd, VIDIOC_STREAMON, &amp;type)&quot; with
+</I>&gt;<i> &quot;type = V4L2_BUF_TYPE_VIDEO_CAPTURE&quot; fails (it returns -2).
+</I>&gt;<i>
+</I>&gt;<i> dmesg says:
+</I>&gt;<i> uvcvideo: Failed to submit URB 0 (-28).
+</I>&gt;<i>
+</I>&gt;<i> Similarly, if I have luvcview running on one camera and I try to start
+</I>&gt;<i> luvcview on the other camera, I get the error message:
+</I>&gt;<i> &quot;Unable to start capture: No space left on device&quot;
+</I>&gt;<i>
+</I>&gt;<i> I suspect this is a problem with the USB bus bandwidth.
+</I>
+That's right. The webcams request more bandwidth than the USB can allocate (or 
+the driver mistakenly believes so).
+
+&gt;<i> The problem with luvcview occurs even if I reduce the
+</I>&gt;<i> resolution to 160x120 with &quot;luvcview -d /dev/video0 -s 160x120&quot;
+</I>&gt;<i>
+</I>&gt;<i> Is there an easy fix? A difficult fix?
+</I>
+Could you please apply the attached patch ? It adds a print statement to log 
+the requested bandwidth when starting the video stream. Please check the 
+kernel log (using dmesg) after starting luvcview in various resolutions and 
+report the requested bandwidths.
+
+Best regards,
+
+Laurent Pinchart
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: bandwidth.patch
+Type: text/x-diff
+Size: 507 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090201/d0f5f075/attachment.patch">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090201/d0f5f075/attachment.patch</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004515.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+	<LI>Next message: <A HREF="004517.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4516">[ date ]</a>
+              <a href="thread.html#4516">[ thread ]</a>
+              <a href="subject.html#4516">[ subject ]</a>
+              <a href="author.html#4516">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

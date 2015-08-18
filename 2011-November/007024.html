@@ -1,0 +1,246 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH 1/2] uvcvideo: Add debugfs support
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%201/2%5D%20uvcvideo%3A%20Add%20debugfs%20support&In-Reply-To=%3C1320337641-27084-2-git-send-email-laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007023.html">
+   <LINK REL="Next"  HREF="007028.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH 1/2] uvcvideo: Add debugfs support</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%201/2%5D%20uvcvideo%3A%20Add%20debugfs%20support&In-Reply-To=%3C1320337641-27084-2-git-send-email-laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] [PATCH 1/2] uvcvideo: Add debugfs support">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu Nov  3 17:27:20 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007023.html">[Linux-uvc-devel] [RFC PATCH]  uvc debugfs interface,	initial patch
+</A></li>
+        <LI>Next message: <A HREF="007028.html">[Linux-uvc-devel] [PATCH 1/2] uvcvideo: Add debugfs support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7024">[ date ]</a>
+              <a href="thread.html#7024">[ thread ]</a>
+              <a href="subject.html#7024">[ subject ]</a>
+              <a href="author.html#7024">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Create a debugfs entry per UVC stream. This will be used to export
+stream statistics.
+
+Signed-off-by: Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt;
+---
+ drivers/media/video/uvc/Makefile      |    2 +-
+ drivers/media/video/uvc/uvc_debugfs.c |   76 +++++++++++++++++++++++++++++++++
+ drivers/media/video/uvc/uvc_driver.c  |   21 +++++++--
+ drivers/media/video/uvc/uvcvideo.h    |    9 ++++
+ 4 files changed, 102 insertions(+), 6 deletions(-)
+ create mode 100644 drivers/media/video/uvc/uvc_debugfs.c
+
+diff --git a/drivers/media/video/uvc/Makefile b/drivers/media/video/uvc/Makefile
+index 2071ca8..c26d12f 100644
+--- a/drivers/media/video/uvc/Makefile
++++ b/drivers/media/video/uvc/Makefile
+@@ -1,5 +1,5 @@
+ uvcvideo-objs  := uvc_driver.o uvc_queue.o uvc_v4l2.o uvc_video.o uvc_ctrl.o \
+-		  uvc_status.o uvc_isight.o
++		  uvc_status.o uvc_isight.o uvc_debugfs.o
+ ifeq ($(CONFIG_MEDIA_CONTROLLER),y)
+ uvcvideo-objs  += uvc_entity.o
+ endif
+diff --git a/drivers/media/video/uvc/uvc_debugfs.c b/drivers/media/video/uvc/uvc_debugfs.c
+new file mode 100644
+index 0000000..f58969a
+--- /dev/null
++++ b/drivers/media/video/uvc/uvc_debugfs.c
+@@ -0,0 +1,76 @@
++/*
++ *      uvc_debugfs.c --  USB Video Class driver - Debugging support
++ *
++ *      Copyright (C) 2011
++ *          Laurent Pinchart (<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>)
++ *
++ *      This program is free software; you can redistribute it and/or modify
++ *      it under the terms of the GNU General Public License as published by
++ *      the Free Software Foundation; either version 2 of the License, or
++ *      (at your option) any later version.
++ *
++ */
++
++#include &lt;linux/debugfs.h&gt;
++#include &lt;linux/slab.h&gt;
++#include &lt;linux/usb.h&gt;
++
++#include &quot;uvcvideo.h&quot;
++
++/* -----------------------------------------------------------------------------
++ * Global and stream initialization/cleanup
++ */
++
++static struct dentry *uvc_debugfs_root_dir;
++
++int uvc_debugfs_init_stream(struct uvc_streaming *stream)
++{
++	struct usb_device *udev = stream-&gt;dev-&gt;udev;
++	struct dentry *dent;
++	char dir_name[32];
++
++	if (uvc_debugfs_root_dir == NULL)
++		return -ENODEV;
++
++	sprintf(dir_name, &quot;%u-%u&quot;, udev-&gt;bus-&gt;busnum, udev-&gt;devnum);
++
++	dent = debugfs_create_dir(dir_name, uvc_debugfs_root_dir);
++	if (IS_ERR_OR_NULL(dent)) {
++		uvc_printk(KERN_INFO, &quot;Unable to create debugfs %s directory.\n&quot;,
++			   dir_name);
++		return -ENODEV;
++	}
++
++	stream-&gt;debugfs_dir = dent;
++
++	return 0;
++}
++
++void uvc_debugfs_cleanup_stream(struct uvc_streaming *stream)
++{
++	if (stream-&gt;debugfs_dir == NULL)
++		return;
++
++	debugfs_remove_recursive(stream-&gt;debugfs_dir);
++	stream-&gt;debugfs_dir = NULL;
++}
++
++int uvc_debugfs_init(void)
++{
++	struct dentry *dir;
++
++	dir = debugfs_create_dir(&quot;uvcvideo&quot;, usb_debug_root);
++	if (IS_ERR_OR_NULL(dir)) {
++		uvc_printk(KERN_INFO, &quot;Unable to create debugfs directory\n&quot;);
++		return -ENODATA;
++	}
++
++	uvc_debugfs_root_dir = dir;
++	return 0;
++}
++
++void uvc_debugfs_cleanup(void)
++{
++	if (uvc_debugfs_root_dir != NULL)
++		debugfs_remove_recursive(uvc_debugfs_root_dir);
++}
+diff --git a/drivers/media/video/uvc/uvc_driver.c b/drivers/media/video/uvc/uvc_driver.c
+index 750ab68..a240d43 100644
+--- a/drivers/media/video/uvc/uvc_driver.c
++++ b/drivers/media/video/uvc/uvc_driver.c
+@@ -1675,6 +1675,8 @@ static void uvc_unregister_video(struct uvc_device *dev)
+ 
+ 		video_unregister_device(stream-&gt;vdev);
+ 		stream-&gt;vdev = NULL;
++
++		uvc_debugfs_cleanup_stream(stream);
+ 	}
+ 
+ 	/* Decrement the stream count and call uvc_delete explicitly if there
+@@ -1700,6 +1702,8 @@ static int uvc_register_video(struct uvc_device *dev,
+ 		return ret;
+ 	}
+ 
++	uvc_debugfs_init_stream(stream);
++
+ 	/* Register the device with V4L. */
+ 	vdev = video_device_alloc();
+ 	if (vdev == NULL) {
+@@ -2405,17 +2409,24 @@ struct uvc_driver uvc_driver = {
+ 
+ static int __init uvc_init(void)
+ {
+-	int result;
++	int ret;
+ 
+-	result = usb_register(&amp;uvc_driver.driver);
+-	if (result == 0)
+-		printk(KERN_INFO DRIVER_DESC &quot; (&quot; DRIVER_VERSION &quot;)\n&quot;);
+-	return result;
++	uvc_debugfs_init();
++
++	ret = usb_register(&amp;uvc_driver.driver);
++	if (ret &lt; 0) {
++		uvc_debugfs_cleanup();
++		return ret;
++	}
++
++	printk(KERN_INFO DRIVER_DESC &quot; (&quot; DRIVER_VERSION &quot;)\n&quot;);
++	return 0;
+ }
+ 
+ static void __exit uvc_cleanup(void)
+ {
+ 	usb_deregister(&amp;uvc_driver.driver);
++	uvc_debugfs_cleanup();
+ }
+ 
+ module_init(uvc_init);
+diff --git a/drivers/media/video/uvc/uvcvideo.h b/drivers/media/video/uvc/uvcvideo.h
+index 882159a..2d45e58 100644
+--- a/drivers/media/video/uvc/uvcvideo.h
++++ b/drivers/media/video/uvc/uvcvideo.h
+@@ -403,6 +403,9 @@ struct uvc_streaming {
+ 
+ 	__u32 sequence;
+ 	__u8 last_fid;
++
++	/* debugfs */
++	struct dentry *debugfs_dir;
+ };
+ 
+ enum uvc_device_state {
+@@ -605,4 +608,10 @@ extern struct usb_host_endpoint *uvc_find_endpoint(
+ void uvc_video_decode_isight(struct urb *urb, struct uvc_streaming *stream,
+ 		struct uvc_buffer *buf);
+ 
++/* debugfs */
++int uvc_debugfs_init(void);
++void uvc_debugfs_cleanup(void);
++int uvc_debugfs_init_stream(struct uvc_streaming *stream);
++void uvc_debugfs_cleanup_stream(struct uvc_streaming *stream);
++
+ #endif
+-- 
+1.7.3.4
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007023.html">[Linux-uvc-devel] [RFC PATCH]  uvc debugfs interface,	initial patch
+</A></li>
+	<LI>Next message: <A HREF="007028.html">[Linux-uvc-devel] [PATCH 1/2] uvcvideo: Add debugfs support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7024">[ date ]</a>
+              <a href="thread.html#7024">[ thread ]</a>
+              <a href="subject.html#7024">[ subject ]</a>
+              <a href="author.html#7024">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

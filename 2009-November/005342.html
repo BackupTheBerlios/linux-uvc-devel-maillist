@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Timestamp Accuracy Patch
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Timestamp%20Accuracy%20Patch&In-Reply-To=%3C59cf47a80911270304i19c8eb17je35ed648c04065a4%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005329.html">
+   <LINK REL="Next"  HREF="005344.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Timestamp Accuracy Patch</H1>
+    <B>Paulo Assis</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Timestamp%20Accuracy%20Patch&In-Reply-To=%3C59cf47a80911270304i19c8eb17je35ed648c04065a4%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Timestamp Accuracy Patch">pj.assis at gmail.com
+       </A><BR>
+    <I>Fri Nov 27 12:04:40 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005329.html">[Linux-uvc-devel] Timestamp Accuracy Patch
+</A></li>
+        <LI>Next message: <A HREF="005344.html">[Linux-uvc-devel] Timestamp Accuracy Patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5342">[ date ]</a>
+              <a href="thread.html#5342">[ thread ]</a>
+              <a href="subject.html#5342">[ subject ]</a>
+              <a href="author.html#5342">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Laurent,
+I've notice that the buffer timestamps are obtained with
+do_gettimeofday, this makes me a bit worried, if the system time
+changes while streaming I believe this can cause a major error in the
+time stamps, also on many systems gettimeofday uses the TSC, but on
+some multicore systems the TSC on each core may be out of sync, in
+which case the cpu you are running on may give a different
+gettimeofday result than another cpu (this may explain the time drift
+between consecutive frames in my quad processor)
+You should use clock_gettime(CLOCK_MONOTONIC) instead of
+gettimeofday() for interval timing, or just do like gspca and use
+jiffies, this works very well since it's reference is boot time and
+it's monotonic, it also seems more accurate than uvc, at least I don't
+notice the same clock drift between consecutive clock frames.
+The change for uvc should be easy enough:
+
+--- uvc_queue.c 2009-11-27 00:26:13 +0000
++++ uvc_queue_patched.c 2009-11-27 10:06:47 +0000
+@@ -20,6 +20,7 @@
+ #include &lt;linux/vmalloc.h&gt;
+ #include &lt;linux/wait.h&gt;
+ #include &lt;asm/atomic.h&gt;
++#include &lt;linux/jiffies.h&gt;
+
+ #include &quot;uvcvideo.h&quot;
+
+@@ -497,7 +498,8 @@
+        spin_unlock_irqrestore(&amp;queue-&gt;irqlock, flags);
+
+        buf-&gt;buf.sequence = queue-&gt;sequence++;
+-       do_gettimeofday(&amp;buf-&gt;buf.timestamp);
++       jiffies_to_timeval(get_jiffies_64(),
++                                  &amp;buf-&gt;buf.timestamp);
+
+        wake_up(&amp;buf-&gt;wait);
+        return nextbuf;
+
+This change would be very much appreciated, since I'm struggling a bit
+with matroska files in some video players (mplayer, vlc) they seem to
+require perfectly synced timestamps, I guess they set the internal
+clock to the given fps, gstreamer in the other hand works without
+problems, it probably uses a higher and fixed resolution clock ( 1ms
+??).
+Video Captures from the few gspca cameras I've tested work without
+major problems in any of these players.
+AVI since it doesn't contain time stamps also works without issues.
+
+Best regards,
+Paulo
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005329.html">[Linux-uvc-devel] Timestamp Accuracy Patch
+</A></li>
+	<LI>Next message: <A HREF="005344.html">[Linux-uvc-devel] Timestamp Accuracy Patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5342">[ date ]</a>
+              <a href="thread.html#5342">[ thread ]</a>
+              <a href="subject.html#5342">[ subject ]</a>
+              <a href="author.html#5342">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

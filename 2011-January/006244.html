@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH RFC] uvcvideo: Add support for MPEG-2 TS	payload
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%20RFC%5D%20uvcvideo%3A%20Add%20support%20for%20MPEG-2%20TS%0A%09payload&In-Reply-To=%3C1296243305.17673.20.camel%40svmlwks101%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006245.html">
+   <LINK REL="Next"  HREF="006243.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH RFC] uvcvideo: Add support for MPEG-2 TS	payload</H1>
+    <B>Stephan Lachowsky</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%20RFC%5D%20uvcvideo%3A%20Add%20support%20for%20MPEG-2%20TS%0A%09payload&In-Reply-To=%3C1296243305.17673.20.camel%40svmlwks101%3E"
+       TITLE="[Linux-uvc-devel] [PATCH RFC] uvcvideo: Add support for MPEG-2 TS	payload">stephan.lachowsky at maxim-ic.com
+       </A><BR>
+    <I>Fri Jan 28 20:35:05 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006245.html">[Linux-uvc-devel] Root permissions
+</A></li>
+        <LI>Next message: <A HREF="006243.html">[Linux-uvc-devel] [PATCH RFC] uvcvideo: Add a mapping for H.264	payloads
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6244">[ date ]</a>
+              <a href="thread.html#6244">[ thread ]</a>
+              <a href="subject.html#6244">[ subject ]</a>
+              <a href="author.html#6244">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Parse the UVC 1.0 and UVC 1.1 VS_FORMAT_MPEG2TS descriptors.
+This a stream based format, so we generate a dummy frame descriptor
+with a dummy frame interval range.
+---
+ drivers/media/video/uvc/uvc_driver.c |   41 ++++++++++++++++++++++++++++++++++
+ drivers/media/video/uvc/uvcvideo.h   |    3 ++
+ 2 files changed, 44 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/media/video/uvc/uvc_driver.c b/drivers/media/video/uvc/uvc_driver.c
+index a1e9dfb..6bcb9e1 100644
+--- a/drivers/media/video/uvc/uvc_driver.c
++++ b/drivers/media/video/uvc/uvc_driver.c
+@@ -103,6 +103,11 @@ static struct uvc_format_desc uvc_fmts[] = {
+ 		.guid		= UVC_GUID_FORMAT_BY8,
+ 		.fcc		= V4L2_PIX_FMT_SBGGR8,
+ 	},
++	{
++		.name		= &quot;MPEG2 TS&quot;,
++		.guid		= UVC_GUID_FORMAT_MPEG,
++		.fcc		= V4L2_PIX_FMT_MPEG,
++	},
+ };
+ 
+ /* ------------------------------------------------------------------------
+@@ -398,6 +403,33 @@ static int uvc_parse_format(struct uvc_device *dev,
+ 		break;
+ 
+ 	case UVC_VS_FORMAT_MPEG2TS:
++		n = dev-&gt;uvc_version &gt;= 0x0110 ? 23 : 7;
++		if (buflen &lt; n) {
++			uvc_trace(UVC_TRACE_DESCR, &quot;device %d videostreaming &quot;
++			       &quot;interface %d FORMAT error\n&quot;,
++			       dev-&gt;udev-&gt;devnum,
++			       alts-&gt;desc.bInterfaceNumber);
++			return -EINVAL;
++		}
++
++		strlcpy(format-&gt;name, &quot;MPEG2 TS&quot;, sizeof format-&gt;name);
++		format-&gt;fcc = V4L2_PIX_FMT_MPEG;
++		format-&gt;flags = UVC_FMT_FLAG_COMPRESSED | UVC_FMT_FLAG_STREAM;
++		format-&gt;bpp = 0;
++		ftype = 0;
++
++		/* Create a dummy frame descriptor. */
++		frame = &amp;format-&gt;frame[0];
++		memset(&amp;format-&gt;frame[0], 0, sizeof format-&gt;frame[0]);
++		frame-&gt;bFrameIntervalType = 0;
++		frame-&gt;dwDefaultFrameInterval = 1;
++		frame-&gt;dwFrameInterval = *intervals;
++		*(*intervals)++ = 1;
++		*(*intervals)++ = 10000000;
++		*(*intervals)++ = 1;
++		format-&gt;nframes = 1;
++		break;
++
+ 	case UVC_VS_FORMAT_STREAM_BASED:
+ 		/* Not supported yet. */
+ 	default:
+@@ -673,6 +705,14 @@ static int uvc_parse_streaming(struct uvc_device *dev,
+ 			break;
+ 
+ 		case UVC_VS_FORMAT_MPEG2TS:
++			/* MPEG2TS format has no frame descriptor. We will create a
++			 * dummy frame descriptor with a dummy frame interval range.
++			 */
++			nformats++;
++			nframes++;
++			nintervals += 3;
++			break;
++
+ 		case UVC_VS_FORMAT_STREAM_BASED:
+ 			uvc_trace(UVC_TRACE_DESCR, &quot;device %d videostreaming &quot;
+ 				&quot;interface %d FORMAT %u is not supported.\n&quot;,
+@@ -724,6 +764,7 @@ static int uvc_parse_streaming(struct uvc_device *dev,
+ 		switch (buffer[2]) {
+ 		case UVC_VS_FORMAT_UNCOMPRESSED:
+ 		case UVC_VS_FORMAT_MJPEG:
++		case UVC_VS_FORMAT_MPEG2TS:
+ 		case UVC_VS_FORMAT_DV:
+ 		case UVC_VS_FORMAT_FRAME_BASED:
+ 			format-&gt;frame = frame;
+diff --git a/drivers/media/video/uvc/uvcvideo.h b/drivers/media/video/uvc/uvcvideo.h
+index 45f01e7..e522f99 100644
+--- a/drivers/media/video/uvc/uvcvideo.h
++++ b/drivers/media/video/uvc/uvcvideo.h
+@@ -152,6 +152,9 @@ struct uvc_xu_control {
+ #define UVC_GUID_FORMAT_BY8 \
+ 	{ 'B',  'Y',  '8',  ' ', 0x00, 0x00, 0x10, 0x00, \
+ 	 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}
++#define UVC_GUID_FORMAT_MPEG \
++	{ 'M',  'P',  'E',  'G', 0x00, 0x00, 0x10, 0x00, \
++	 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}
+ 
+ /* ------------------------------------------------------------------------
+  * Driver specific constants.
+-- 
+1.7.3.5
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006245.html">[Linux-uvc-devel] Root permissions
+</A></li>
+	<LI>Next message: <A HREF="006243.html">[Linux-uvc-devel] [PATCH RFC] uvcvideo: Add a mapping for H.264	payloads
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6244">[ date ]</a>
+              <a href="thread.html#6244">[ thread ]</a>
+              <a href="subject.html#6244">[ subject ]</a>
+              <a href="author.html#6244">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

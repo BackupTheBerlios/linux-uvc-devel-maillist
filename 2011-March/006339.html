@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Add GUID to UVC
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Add%20GUID%20to%20UVC&In-Reply-To=%3C201103061234.39032.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006327.html">
+   <LINK REL="Next"  HREF="006328.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Add GUID to UVC</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Add%20GUID%20to%20UVC&In-Reply-To=%3C201103061234.39032.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Add GUID to UVC">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Sun Mar  6 12:34:38 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006327.html">[Linux-uvc-devel] Add GUID to UVC
+</A></li>
+        <LI>Next message: <A HREF="006328.html">[Linux-uvc-devel] Creative VF0700 support?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6339">[ date ]</a>
+              <a href="thread.html#6339">[ thread ]</a>
+              <a href="subject.html#6339">[ subject ]</a>
+              <a href="author.html#6339">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Robert,
+
+On Wednesday 02 March 2011 15:08:49 Robert Lukassen wrote:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> I have a request to add support for a particular pixel-format (RGB565) to
+</I>&gt;<i> the list of recognized formats in UVC. This format is known in video for
+</I>&gt;<i> linux, but UVC does not list it.
+</I>&gt;<i> 
+</I>&gt;<i> Here are the (rather minimal) patches with respect to the latest version of
+</I>&gt;<i> the UVC driver as used in Ubuntu 10.04 (kernel 2.6.32-28):
+</I>
+Thanks for the patch.
+
+&gt;<i> diff -uN /usr/src/linux-source-2.6.32/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> uvc-new/uvc_driver.c
+</I>&gt;<i> ---
+</I>&gt;<i> /usr/src/linux-source-2.6.32/drivers/media/video/uvc/uvc_driver.c	2009-12-
+</I>&gt;<i> 03 04:51:21.000000000 +0100
+</I>&gt;<i> +++ uvc-new/uvc_driver.c	2011-03-02 14:54:36.000000000 +0100
+</I>&gt;<i> @@ -92,6 +92,11 @@
+</I>&gt;<i>  		.guid		= UVC_GUID_FORMAT_BY8,
+</I>&gt;<i>  		.fcc		= V4L2_PIX_FMT_SBGGR8,
+</I>&gt;<i>  	},
+</I>&gt;<i> +	{
+</I>&gt;<i> +		.name		= &quot;RGB565&quot;,
+</I>&gt;<i> +		.guid		= UVC_GUID_FORMAT_RGBP,
+</I>&gt;<i> +		.fcc		= V4L2_PIX_FMT_RGB565,
+</I>&gt;<i> +	},
+</I>&gt;<i>  };
+</I>&gt;<i> 
+</I>&gt;<i>  /*
+</I>&gt;<i> ------------------------------------------------------------------------
+</I>&gt;<i> diff -uN /usr/src/linux-source-2.6.32/drivers/media/video/uvc/uvcvideo.h
+</I>&gt;<i> uvc-new/uvcvideo.h
+</I>&gt;<i> ---
+</I>&gt;<i> /usr/src/linux-source-2.6.32/drivers/media/video/uvc/uvcvideo.h	2009-12-03
+</I>&gt;<i> 04:51:21.000000000 +0100
+</I>&gt;<i> +++ uvc-new/uvcvideo.h	2011-03-02 14:55:14.000000000 +0100
+</I>&gt;<i> @@ -130,7 +130,9 @@
+</I>&gt;<i>  #define UVC_GUID_FORMAT_BY8 \
+</I>&gt;<i>  	{ 'B',  'Y',  '8',  ' ', 0x00, 0x00, 0x10, 0x00, \
+</I>&gt;<i>  	 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}
+</I>&gt;<i> -
+</I>&gt;<i> +#define UVC_GUID_FORMAT_RGBP \
+</I>&gt;<i> +	{ 'R',  'G',  'B',  'P', 0x00, 0x00, 0x10, 0x00, \
+</I>&gt;<i> +	 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}
+</I>&gt;<i> 
+</I>&gt;<i>  /*
+</I>&gt;<i> ------------------------------------------------------------------------ *
+</I>&gt;<i> Driver specific constants.
+</I>&gt;<i> 
+</I>&gt;<i> There is a product in the market that uses this pixel format, but as the
+</I>&gt;<i> RGBP format is not supported out-of-the-box by UVC, we need to patch the
+</I>&gt;<i> kernel driver each time we go along with a kernel upgrade.
+</I>
+Can I ask you which product ?
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006327.html">[Linux-uvc-devel] Add GUID to UVC
+</A></li>
+	<LI>Next message: <A HREF="006328.html">[Linux-uvc-devel] Creative VF0700 support?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6339">[ date ]</a>
+              <a href="thread.html#6339">[ thread ]</a>
+              <a href="subject.html#6339">[ subject ]</a>
+              <a href="author.html#6339">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20suyin%20crystal%20eye%20webcam%20064e%3Aa103%20not%20working&In-Reply-To=%3Cebff8ece0905141946r67c21dbtd0d9a653df082cf3%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004767.html">
+   <LINK REL="Next"  HREF="004783.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working</H1>
+    <B>bruce m beach</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20suyin%20crystal%20eye%20webcam%20064e%3Aa103%20not%20working&In-Reply-To=%3Cebff8ece0905141946r67c21dbtd0d9a653df082cf3%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working">brucembeach at gmail.com
+       </A><BR>
+    <I>Fri May 15 04:46:16 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004767.html">[Linux-uvc-devel] Compile UVC for embedded system
+</A></li>
+        <LI>Next message: <A HREF="004783.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4772">[ date ]</a>
+              <a href="thread.html#4772">[ thread ]</a>
+              <a href="subject.html#4772">[ subject ]</a>
+              <a href="author.html#4772">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE> Hello Laurent
+
+&gt;&gt;<i>  On Wednesday 06 May 2009 01:24:25 bruce m beach wrote:
+</I>&gt;&gt;<i>  I have a Suyin crystal eye webcam that lsusb give as
+</I>&gt;&gt;<i>  Bus 004 Device 002: ID 064e:a103 Suyin Corp ....
+</I>
+&gt;&gt;<i> 1) sh-4.0# luvcview -f yuv
+</I>&gt;&gt;<i>               Init v4L2 failed !! exit fatal
+</I>
+&gt;<i> Your device only supports MJPEG so this is expected.
+</I>
+  Given that if this webcam was working  should I expect the command
+
+     &gt;luvcview
+
+  to then work?
+
+&gt;&gt;<i> 2) sh-4.0# luvcview
+</I>&gt;&gt;<i> The green light is  on and I have  a green screen.
+</I>
+&gt;<i> This probably means that the driver doesn't receive enough
+</I>&gt;<i> data to fill a video frame. Are you running the latest
+</I>&gt;<i> driver ? There is a known bug in older versions that cause frames to be
+</I>&gt;<i> incorrectly dropped under specific circumstances.
+</I>
+  Okay. I did a:
+
+      hg clone <A HREF="http://linuxtv.org/hg/~pinchartl/uvcvideo/">http://linuxtv.org/hg/~pinchartl/uvcvideo/</A>
+
+ Then I did
+
+ mv /lib/modules /lib/modules.HIDE
+ make modules (from the kernel tree)
+ etc.
+
+to get rid of any modules.  I don't use modules if I can help it and a
+a search for *.ko gave a dummy.ko and some scsi_something_or_other.ko
+I then built the  tree and installed it.
+   make
+   make install
+
+and after booting:
+
+  modprobe  uvcvideo
+
+dmesg gives
+
+   uvcvideo 4-1:1.0: usb_probe_interface
+   uvcvideo 4-1:1.0: usb_probe_interface - got id
+   uvcvideo: Found UVC 1.00 device Crystal Eye webcam (064e:a103)
+   input: Crystal Eye webcam as /class/input/input7
+   usbcore: registered new interface driver uvcvideo
+   USB Video Class driver (v0.1.0)
+
+   (Begin: lsusb stuff)
+&gt;&gt;<i> which is the same as my webcam but the devices are not the same. Below I
+</I>&gt;&gt;<i> includea diff of the two listings.
+</I>
+&gt;<i>     That doesn't surprise me much, vendors often change devices
+</I>&gt;<i>     without modifying the PID or the version.
+</I>
+Okay. I then assume even though the USB listing is different
+the webcam should function. If you do want a complete lsusb
+listing for your records let me know.
+   (End: lsusb stuff)
+
+I have been looking at this frontwards, backwards,
+upsidedown and around and still haven't got it working. At
+this point my feeling is that there is nothing wrong with
+the uvcvideo driver ( at least in terms of getting crystal
+eye webcam basic functionality ) but that there is
+something wrong with my system. Somehow the webcam driver
+is not getting something that it needs. Supporting this is
+another webcam ( 0c45:6009 Microdia VideoCAM ExpressII) that
+I have been using for testing giving the same results as the
+crystal eye which is puzzling to me:
+
+  &gt;xawtv
+sh-4.0# xawtv
+        This is xawtv-3.95, running on Linux/i686 (2.6.29.2)
+        xinerama 0: 1280x800+0+0
+        /dev/video0 [v4l2]: no overlay support
+        v4l-conf had some trouble, trying to continue anyway
+        Warning: Cannot convert string
+               &quot;-*-ledfixed-medium-r-*--39-*-*-*-c-*-*-*&quot; to type FontStruct
+        ioctl: VIDIOC_G_STD(std=0xafcbe0d0a7d612b0
+        [PAL_I,PAL_D,PAL_K,PAL_N,NTSC_M,
+        SECAM_D,SECAM_G,SECAM_K,SECAM_L,?ATSC_8_VSB,ATSC_16_VSB,
+        (null),(null),(null),(null),(null),(null),(null),(null),(null),(null),
+        (null),(null),(null),(null),(null),(null),(null),(null),(null),(null),
+        (null)]): Invalid argument
+        ioctl: VIDIOC_S_STD(std=0x0 []): Invalid argument
+
+and then on an attempt  to grab (ppm) (jpeg)
+
+    (no cut and paste here because the webcam just died with :
+        sh-4.0# xawtv
+        This is xawtv-3.95, running on Linux/i686 (2.6.29.2)
+        xinerama 0: 1280x800+0+0
+        X Error of failed request:  XF86DGANoDirectVideoMode
+        Major opcode of failed request:  136 (XFree86-DGA)
+        Minor opcode of failed request:  1 (XF86DGAGetVideoLL)
+        Serial number of failed request:  67
+        Current serial number in output stream:  67
+     )
+
+why is the ioctl call failing and why does it keep telling me
+     no way to get: 384x288 16 bit TrueColor (LE)
+     no way to get: 2048x1572 24 bit TrueColor (BE: rgb)
+
+I have a &quot;Logitech, Inc. QuickCam Pro 4000&quot; that uses
+   the pwc.ko module and it works fine.
+
+One issue could be that the ATI RS690M X1200 Series chip
+doesn't have enough support. As of the  last time I wrote I
+was looking for a source of  the problem and I notice to my
+horror that  the XFree86 driver was &quot;vesa&quot;
+ (from XFree86 -configure)
+and that XFree didn't have any support whatsoever for the
+video chip. There was one of those horrific proprietory
+drivers that I tried to build but soon realized that even
+Knuth would never get the thing built.  Fortunately Xorg has
+good support for the chip so I rebuilt the x-system using
+Xorg code.
+
+Anyway any ideas as to how to proceed are appreciated.
+
+Bruce
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004767.html">[Linux-uvc-devel] Compile UVC for embedded system
+</A></li>
+	<LI>Next message: <A HREF="004783.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4772">[ date ]</a>
+              <a href="thread.html#4772">[ thread ]</a>
+              <a href="subject.html#4772">[ subject ]</a>
+              <a href="author.html#4772">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

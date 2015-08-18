@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Input/Output error setting	V4L2_CID_EXPOSURE_AUTO values
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Input/Output%20error%20setting%0A%09V4L2_CID_EXPOSURE_AUTO%20values&In-Reply-To=%3C201104291036.41730.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006498.html">
+   <LINK REL="Next"  HREF="006520.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Input/Output error setting	V4L2_CID_EXPOSURE_AUTO values</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Input/Output%20error%20setting%0A%09V4L2_CID_EXPOSURE_AUTO%20values&In-Reply-To=%3C201104291036.41730.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Input/Output error setting	V4L2_CID_EXPOSURE_AUTO values">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Fri Apr 29 10:36:41 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006498.html">[Linux-uvc-devel] Input/Output error setting V4L2_CID_EXPOSURE_AUTO	values
+</A></li>
+        <LI>Next message: <A HREF="006520.html">[Linux-uvc-devel] Input/Output error setting	V4L2_CID_EXPOSURE_AUTO values
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6512">[ date ]</a>
+              <a href="thread.html#6512">[ thread ]</a>
+              <a href="subject.html#6512">[ subject ]</a>
+              <a href="author.html#6512">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Ben,
+
+On Saturday 23 April 2011 00:13:27 Ben Mesander wrote:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> I'm porting an application which uses the uvc video driver for a logitech
+</I>&gt;<i> webcam from Ubuntu 8.04 LTS to Ubuntu 10.04 LTS.
+</I>&gt;<i> 
+</I>&gt;<i> In the 8.04 release, there was some mismatch in the UVC driver from the
+</I>&gt;<i> V4L2 driver for a few of the ioctl values. The V4L2 headers had:
+</I>&gt;<i> 
+</I>&gt;<i> #define V4L2_CID_EXPOSURE_AUTO (V4L2_CID_CAMERA_CLASS_BASE+1)
+</I>&gt;<i> #define V4L2_CID_EXPOSURE_ABSOLUTE (V4L2_CID_CAMERA_CLASS_BASE+2)
+</I>&gt;<i> #define V4L2_CID_EXPOSURE_AUTO_PRIORITY (V4L2_CID_CAMERA_CLASS_BASE+3)
+</I>&gt;<i> 
+</I>&gt;<i> But the uvcvideo driver expected:
+</I>&gt;<i> 
+</I>&gt;<i> #define V4L2_CID_EXPOSURE_AUTO (V4L2_CID_PRIVATE_BASE+10)
+</I>&gt;<i> #define V4L2_CID_EXPOSURE_ABSOLUTE (V4L2_CID_PRIVATE_BASE + 11)
+</I>&gt;<i> #define V4L2_CID_EXPOSURE_AUTO_PRIORITY (V4L2_CID_PRIVATE_BASE+14)
+</I>&gt;<i> 
+</I>&gt;<i> I found these values in the private header files that came with the
+</I>&gt;<i> luvcview software, and similar defines in the logitech libwebcam source,
+</I>&gt;<i> which also had a comment &quot;Old uvcvideo pre-r178 control IDs&quot;
+</I>&gt;<i> See
+</I>&gt;<i> here:
+</I>&gt;<i> <A HREF="http://svn.quickcamteam.net/svn/qct/webcam-tools/trunk/libwebcam/compat.h">http://svn.quickcamteam.net/svn/qct/webcam-tools/trunk/libwebcam/compat.h</A>
+</I>&gt;<i> 
+</I>&gt;<i> My desired camera behavior is to allow the camera to control aperture as
+</I>&gt;<i> necessary to handle lighting conditions, but my application must run at a
+</I>&gt;<i> fixed frame rate (30fps, set elsewhere), so it must not change the frame
+</I>&gt;<i> rate. By experimenting &amp; reading sources mentioned above, I finally found
+</I>&gt;<i> that if I did:
+</I>&gt;<i> 
+</I>&gt;<i> request.id = (V4L2_CID_PRIVATE_BASE+10);
+</I>&gt;<i> request.value = 8;
+</I>&gt;<i> if (ioctl(fd, VIDIOC_S_CTRL, &amp;request) &lt; 0) {
+</I>&gt;<i> ...
+</I>&gt;<i> }
+</I>&gt;<i> 
+</I>&gt;<i> request.id = (V4L2_CID_PRIVATE_BASE+14);
+</I>&gt;<i> request.value = 0;
+</I>&gt;<i> if (ioctl(fd, VIDIOC_S_CTRL, &amp;request) &lt; 0 {
+</I>&gt;<i> ...
+</I>&gt;<i> }
+</I>&gt;<i> 
+</I>&gt;<i> I achieved the desired effect. Note that 8 is not defined in
+</I>&gt;<i> v4l2_exposure_auto_type, but I'm not the only person who's used it,
+</I>&gt;<i> see <A HREF="http://forums.quickcamteam.net/showthread.php?tid=1227">http://forums.quickcamteam.net/showthread.php?tid=1227</A> for an example
+</I>&gt;<i> of where it seems to mean aperture priority.
+</I>&gt;<i> 
+</I>&gt;<i> OK, fine, but under Ubuntu 10.04, the ioctls above return EINVAL. So I
+</I>&gt;<i> figured it was time to use the correct request values in the requests. So
+</I>&gt;<i> I tried:
+</I>&gt;<i> 
+</I>&gt;<i> request.id = V4L2_CID_EXPOSURE_AUTO;
+</I>&gt;<i> request.value = V4L2_EXPOSURE_APERTURE_PRIORITY;
+</I>&gt;<i> if (ioctl(fd, VIDIOC_S_CTRL, &amp;request) &lt; 0) {
+</I>&gt;<i> ... I end up here with &quot;Input / Output Error&quot; errno ...
+</I>&gt;<i> }
+</I>&gt;<i> 
+</I>&gt;<i> request.id = V4L2_CID_EXPOSURE_AUTO_PRIORITY;
+</I>&gt;<i> request.value = 0;
+</I>&gt;<i> if (ioctl(fd, VIDIOC_S_CTRL, &amp;request) &lt; 0 {
+</I>&gt;<i> ...
+</I>&gt;<i> }
+</I>
+The interface changed over time as it was getting standardized. You should now 
+use the V4L2_CID_EXPOSURE_AUTO and V4L2_CID_EXPOSURE_AUTO_PRIORITY ioctls as 
+defined in videodev2.h, so your code is correct.
+
+&gt;<i> No luck - initially I thought it worked, but after trying in a darkened
+</I>&gt;<i> room and bright sunlight and rebooting to clear out the current values in
+</I>&gt;<i> the driver, I see that it is no longer adapting to the lighting
+</I>&gt;<i> conditions, although it does seem to be correctly pinned to the framerate
+</I>&gt;<i> I set. Also, the
+</I>&gt;<i> V4L2_CID_EXPOSURE_AUTO ioctl() always returns &quot;I/O error&quot; - I have tried
+</I>&gt;<i> various values for the request.value - 0, 1, 3, 8, etc. without any
+</I>&gt;<i> success.
+</I>&gt;<i> 
+</I>&gt;<i> I see other people have reported similar issues in the past, but I see no
+</I>&gt;<i> resolution, for
+</I>&gt;<i> example:
+</I>&gt;<i> <A HREF="../2008-March/003251.html">http://lists.berlios.de/pipermail/linux-uvc-devel/2008-March/003251.html</A> -
+</I>&gt;<i> for example in that thread this is mentioned:
+</I>&gt;<i> enum  v4l2_exposure_auto_type {
+</I>&gt;<i> 	V4L2_EXPOSURE_MANUAL = 0,
+</I>&gt;<i> 	V4L2_EXPOSURE_AUTO = 1,
+</I>&gt;<i> 	V4L2_EXPOSURE_SHUTTER_PRIORITY = 2,
+</I>&gt;<i> 	V4L2_EXPOSURE_APERTURE_PRIORITY = 3
+</I>&gt;<i> };
+</I>&gt;<i> But in my V4L2 headers, MANUAL = 1, and AUTO = 0.
+</I>
+The uvcvideo driver had a bug until 2.6.27 that caused the manual and auto 
+values to be inverted. Ubuntu 10.04 ships a 2.6.32 kernel, so the bug 
+shouldn't be present there.
+
+&gt;<i> I also tried the VIDIOC_S_EXT_CTRLS flavor of setting the exposure values,
+</I>&gt;<i> but no luck - same I/O error.
+</I>
+VIDIOC_S_EXT_CTRLS lets you set several controls in an atomic way, it won't 
+help here if the device returns an error.
+
+&gt;<i> Any idea on how I can set V4L2_CID_EXPOSURE_AUTO on uvcvideo driver in
+</I>&gt;<i> Ubuntu 10.04 LTS without getting an Input/Output error?
+</I>
+Have you tried setting the control with a command line application such as 
+v4l2-ctl, yavta or uvcdynctrl ? If you don't get an error with them there 
+might be an issue with your code. Otherwise we will need to look somewhere 
+else.
+
+What Logitech webcam are you using ?
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006498.html">[Linux-uvc-devel] Input/Output error setting V4L2_CID_EXPOSURE_AUTO	values
+</A></li>
+	<LI>Next message: <A HREF="006520.html">[Linux-uvc-devel] Input/Output error setting	V4L2_CID_EXPOSURE_AUTO values
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6512">[ date ]</a>
+              <a href="thread.html#6512">[ thread ]</a>
+              <a href="subject.html#6512">[ subject ]</a>
+              <a href="author.html#6512">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

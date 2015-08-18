@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] ViMicro Webcam 0ac8:3420 bug+fix
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20ViMicro%20Webcam%200ac8%3A3420%20bug%2Bfix&In-Reply-To=%3C20091029180249.GA23230%40geggus.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005255.html">
+   <LINK REL="Next"  HREF="005243.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] ViMicro Webcam 0ac8:3420 bug+fix</H1>
+    <B>Sven Geggus</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20ViMicro%20Webcam%200ac8%3A3420%20bug%2Bfix&In-Reply-To=%3C20091029180249.GA23230%40geggus.net%3E"
+       TITLE="[Linux-uvc-devel] ViMicro Webcam 0ac8:3420 bug+fix">lists at fuchsschwanzdomain.de
+       </A><BR>
+    <I>Thu Oct 29 19:02:50 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005255.html">[Linux-uvc-devel] ViMicro Webcam 0ac8:3420 bug+fix
+</A></li>
+        <LI>Next message: <A HREF="005243.html">[Linux-uvc-devel] Hardware Report - Logitech Webcam Pro 9000 US
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5258">[ date ]</a>
+              <a href="thread.html#5258">[ thread ]</a>
+              <a href="subject.html#5258">[ subject ]</a>
+              <a href="author.html#5258">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Laurent Pinchart schrieb am Mittwoch, den 28. Oktober um 13:44 Uhr:
+
+&gt;<i> Could you please try the following patch ? It disables the quirk for
+</I>&gt;<i> compressed formats.
+</I>
+This patch does not apply here (Vanilla Kernel Linux 2.6.31.5).
+
+I suppose this would be equivalent:
+
+diff --git a/drivers/media/video/uvc/uvc_video.c
+b/drivers/media/video/uvc/uvc_video.c
+index 01b633c..df8a335 100644
+--- a/drivers/media/video/uvc/uvc_video.c
++++ b/drivers/media/video/uvc/uvc_video.c
+@@ -90,7 +90,8 @@ static void uvc_fixup_video_ctrl(struct uvc_video_device
+*video,
+                ctrl-&gt;dwMaxVideoFrameSize =
+                        frame-&gt;dwMaxVideoFrameBufferSize;
+ 
+-       if (video-&gt;dev-&gt;quirks &amp; UVC_QUIRK_FIX_BANDWIDTH &amp;&amp;
++       if (!(format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) &amp;&amp;
++           video-&gt;dev-&gt;quirks &amp; UVC_QUIRK_FIX_BANDWIDTH &amp;&amp;
+            video-&gt;streaming-&gt;intf-&gt;num_altsetting &gt; 1) {
+                u32 interval;
+                u32 bandwidth;
+
+The above change _does_ make it work the same as getting rid of the quirks
+altogether. There might be different firmware Version of the devices
+around.
+
+BTW wouldn't it be better to make the quirks module parameter _overwrite_
+camera specific quirks altogether instead of adding them with xor? This way
+I would have been able to disable the quirks without patching the module.
+
+
+Sven
+
+-- 
+&quot;Those who do not understand Unix are condemned to reinvent it, poorly&quot;
+(Henry Spencer)
+
+/me is <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">giggls at ircnet</A>, <A HREF="http://sven.gegg.us/">http://sven.gegg.us/</A> on the Web
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005255.html">[Linux-uvc-devel] ViMicro Webcam 0ac8:3420 bug+fix
+</A></li>
+	<LI>Next message: <A HREF="005243.html">[Linux-uvc-devel] Hardware Report - Logitech Webcam Pro 9000 US
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5258">[ date ]</a>
+              <a href="thread.html#5258">[ thread ]</a>
+              <a href="subject.html#5258">[ subject ]</a>
+              <a href="author.html#5258">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

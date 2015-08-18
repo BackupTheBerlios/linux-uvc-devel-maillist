@@ -1,0 +1,227 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] uvc: kmalloc failure ignored in	uvc_ctrl_add_ctrl()
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvc%3A%20kmalloc%20failure%20ignored%20in%0A%09uvc_ctrl_add_ctrl%28%29&In-Reply-To=%3C200909240820.54291.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005145.html">
+   <LINK REL="Next"  HREF="005144.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] uvc: kmalloc failure ignored in	uvc_ctrl_add_ctrl()</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvc%3A%20kmalloc%20failure%20ignored%20in%0A%09uvc_ctrl_add_ctrl%28%29&In-Reply-To=%3C200909240820.54291.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] uvc: kmalloc failure ignored in	uvc_ctrl_add_ctrl()">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu Sep 24 08:20:54 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005145.html">[Linux-uvc-devel] Logitech E 3500
+</A></li>
+        <LI>Next message: <A HREF="005144.html">[Linux-uvc-devel] [PATCH] uvc: kmalloc failure ignored in	uvc_ctrl_add_ctrl()
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5136">[ date ]</a>
+              <a href="thread.html#5136">[ thread ]</a>
+              <a href="subject.html#5136">[ subject ]</a>
+              <a href="author.html#5136">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Roel,
+
+thanks for noticing the problem and providing a patch. Some comments inlined.
+
+On Saturday 19 September 2009 03:13:37 Roel Kluin wrote:
+&gt;<i> Produce an error if kmalloc() fails.
+</I>&gt;<i> 
+</I>&gt;<i> Signed-off-by: Roel Kluin &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">roel.kluin at gmail.com</A>&gt;
+</I>&gt;<i> ---
+</I>&gt;<i> Found with sed: <A HREF="http://kernelnewbies.org/roelkluin">http://kernelnewbies.org/roelkluin</A>
+</I>&gt;<i> 
+</I>&gt;<i> Build tested. Please review
+</I>&gt;<i> 
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvc_ctrl.c
+</I>&gt;<i>  b/drivers/media/video/uvc/uvc_ctrl.c index c3225a5..dda80b5 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_ctrl.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_ctrl.c
+</I>&gt;<i> @@ -1189,7 +1189,7 @@ int uvc_ctrl_resume_device(struct uvc_device *dev)
+</I>&gt;<i>   * Control and mapping handling
+</I>&gt;<i>   */
+</I>&gt;<i> 
+</I>&gt;<i> -static void uvc_ctrl_add_ctrl(struct uvc_device *dev,
+</I>&gt;<i> +static int uvc_ctrl_add_ctrl(struct uvc_device *dev,
+</I>&gt;<i>  	struct uvc_control_info *info)
+</I>&gt;<i>  {
+</I>&gt;<i>  	struct uvc_entity *entity;
+</I>&gt;<i> @@ -1214,7 +1214,7 @@ static void uvc_ctrl_add_ctrl(struct uvc_device *dev,
+</I>&gt;<i>  	}
+</I>&gt;<i> 
+</I>&gt;<i>  	if (!found)
+</I>&gt;<i> -		return;
+</I>&gt;<i> +		return 0;
+</I>&gt;<i> 
+</I>&gt;<i>  	if (UVC_ENTITY_TYPE(entity) == UVC_VC_EXTENSION_UNIT) {
+</I>&gt;<i>  		/* Check if the device control information and length match
+</I>&gt;<i> @@ -1231,7 +1231,7 @@ static void uvc_ctrl_add_ctrl(struct uvc_device *dev,
+</I>&gt;<i>  				&quot;control &quot; UVC_GUID_FORMAT &quot;/%u (%d).\n&quot;,
+</I>&gt;<i>  				UVC_GUID_ARGS(info-&gt;entity), info-&gt;selector,
+</I>&gt;<i>  				ret);
+</I>&gt;<i> -			return;
+</I>&gt;<i> +			return -EINVAL;
+</I>
+uvc_query_ctrl returns an error code on failure, so
+
+return ret;
+
+might be more appropriate.
+
+&gt;<i>  		}
+</I>&gt;<i> 
+</I>&gt;<i>  		if (info-&gt;size != le16_to_cpu(size)) {
+</I>&gt;<i> @@ -1239,7 +1239,7 @@ static void uvc_ctrl_add_ctrl(struct uvc_device *dev,
+</I>&gt;<i>  				&quot;/%u size doesn't match user supplied &quot;
+</I>&gt;<i>  				&quot;value.\n&quot;, UVC_GUID_ARGS(info-&gt;entity),
+</I>&gt;<i>  				info-&gt;selector);
+</I>&gt;<i> -			return;
+</I>&gt;<i> +			return -EINVAL;
+</I>&gt;<i>  		}
+</I>&gt;<i> 
+</I>&gt;<i>  		ret = uvc_query_ctrl(dev, UVC_GET_INFO, ctrl-&gt;entity-&gt;id,
+</I>&gt;<i> @@ -1249,7 +1249,7 @@ static void uvc_ctrl_add_ctrl(struct uvc_device *dev,
+</I>&gt;<i>  				&quot;control &quot; UVC_GUID_FORMAT &quot;/%u (%d).\n&quot;,
+</I>&gt;<i>  				UVC_GUID_ARGS(info-&gt;entity), info-&gt;selector,
+</I>&gt;<i>  				ret);
+</I>&gt;<i> -			return;
+</I>&gt;<i> +			return -EINVAL;
+</I>&gt;<i>  		}
+</I>
+Ditto,
+
+return ret;
+ 
+&gt;<i>  		flags = info-&gt;flags;
+</I>&gt;<i> @@ -1259,15 +1259,18 @@ static void uvc_ctrl_add_ctrl(struct uvc_device
+</I>&gt;<i>  *dev, UVC_GUID_FORMAT &quot;/%u flags don't match &quot;
+</I>&gt;<i>  				&quot;supported operations.\n&quot;,
+</I>&gt;<i>  				UVC_GUID_ARGS(info-&gt;entity), info-&gt;selector);
+</I>&gt;<i> -			return;
+</I>&gt;<i> +			return -EINVAL;
+</I>&gt;<i>  		}
+</I>&gt;<i>  	}
+</I>&gt;<i> 
+</I>&gt;<i>  	ctrl-&gt;info = info;
+</I>&gt;<i>  	ctrl-&gt;data = kmalloc(ctrl-&gt;info-&gt;size * UVC_CTRL_NDATA, GFP_KERNEL);
+</I>&gt;<i> +	if (ctrl-&gt;data == NULL)
+</I>&gt;<i> +		return -ENOMEM;
+</I>
+That's not enough to prevent a kernel crash. The driver can try to dereference 
+ctrl-&gt;data if ctrl-&gt;info isn't NULL. You should only set ctrl-&gt;info if 
+allocationg succeeds. Something like
+
+  	ctrl-&gt;data = kmalloc(ctrl-&gt;info-&gt;size * UVC_CTRL_NDATA, GFP_KERNEL);
+	if (ctrl-&gt;data == NULL)
+		return -ENOMEM;
+
+  	ctrl-&gt;info = info;
+
+&gt;<i>  	uvc_trace(UVC_TRACE_CONTROL, &quot;Added control &quot; UVC_GUID_FORMAT &quot;/%u &quot;
+</I>&gt;<i>  		&quot;to device %s entity %u\n&quot;, UVC_GUID_ARGS(ctrl-&gt;info-&gt;entity),
+</I>&gt;<i>  		ctrl-&gt;info-&gt;selector, dev-&gt;udev-&gt;devpath, entity-&gt;id);
+</I>&gt;<i> +	return 0;
+</I>&gt;<i>  }
+</I>&gt;<i> 
+</I>&gt;<i>  /*
+</I>&gt;<i> @@ -1309,8 +1312,11 @@ int uvc_ctrl_add_info(struct uvc_control_info *info)
+</I>&gt;<i>  		}
+</I>&gt;<i>  	}
+</I>&gt;<i> 
+</I>&gt;<i> -	list_for_each_entry(dev, &amp;uvc_driver.devices, list)
+</I>&gt;<i> -		uvc_ctrl_add_ctrl(dev, info);
+</I>&gt;<i> +	list_for_each_entry(dev, &amp;uvc_driver.devices, list) {
+</I>&gt;<i> +		ret = uvc_ctrl_add_ctrl(dev, info);
+</I>&gt;<i> +		if (ret == -ENOMEM)
+</I>&gt;<i> +			goto end;
+</I>&gt;<i> +	}
+</I>
+This could lead to a memory leak.
+
+Let's suppose you have two connected devices and try to add a control that 
+both devices support. Let's also suppose the call to uvc_ctrl_add_ctrl() 
+succeeds for the first device, but fails with -ENOMEM for the second. 
+UVCIOC_CTRL_ADD will then return with an error without adding the control 
+information to the uvc_driver.controls list.
+
+The userspace application receives an -ENOMEM error an retries the call. 
+uvc_ctrl_add_ctrl() will then overwrite ctrl-&gt;data with newly kmalloc'ed 
+memory, leaking the previously allocated instance.
+
+I'm not sure if we should really bail out here. The current situation is 
+clearly not optimal, in the sense that UVCIOC_CTRL_ADD will succeed even if 
+allocation fails for some control instances. On the other hand, your patch 
+introduces a memory leak, which is not good either.
+
+If we decide to bail out with an error we probably need to free ctrl-&gt;data 
+memory allocated by the UVCIOC_CTRL_ADD call (and reset ctrl-&gt;info to NULL), 
+or at least make sure we properly kfree ctrl-&gt;data on the next call if it's 
+not NULL. We would also need to handle other errors, I don't see why -ENOMEM 
+should get a special treatment.
+
+This might be a bit too complex. It would be simpler just to keep on looping 
+over devices and adding controls even if an error occurs.
+
+&gt;<i>  	INIT_LIST_HEAD(&amp;info-&gt;mappings);
+</I>&gt;<i>  	list_add_tail(&amp;info-&gt;list, &amp;uvc_driver.controls);
+</I>&gt;<i> 
+</I>
+uvc_ctrl_add_ctrl() is also called in uvc_ctrl_init_device(). If we're going 
+to handle errors in uvc_ctrl_add_info(), they should be handled in 
+uvc_ctrl_init_device() as well.
+
+My opinion is that we should probably not care about uvc_ctrl_add_ctrl() 
+errors, but we certainly need to prevent ctrl-&gt;info from being modified if 
+ctrl-&gt;data allocation fails. In that case uvc_ctrl_add_ctrl() can still be a 
+void function, all we would need to do would be
+
+-  	ctrl-&gt;info = info;
+  	ctrl-&gt;data = kmalloc(ctrl-&gt;info-&gt;size * UVC_CTRL_NDATA, GFP_KERNEL);
++	if (ctrl-&gt;data == NULL)
++		return -ENOMEM;
++
++  	ctrl-&gt;info = info;
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005145.html">[Linux-uvc-devel] Logitech E 3500
+</A></li>
+	<LI>Next message: <A HREF="005144.html">[Linux-uvc-devel] [PATCH] uvc: kmalloc failure ignored in	uvc_ctrl_add_ctrl()
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5136">[ date ]</a>
+              <a href="thread.html#5136">[ thread ]</a>
+              <a href="subject.html#5136">[ subject ]</a>
+              <a href="author.html#5136">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

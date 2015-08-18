@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] 174f:1420 Syntek malfunctions
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20174f%3A1420%20Syntek%20malfunctions&In-Reply-To=%3C4EE1B8AC.7060807%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007116.html">
+   <LINK REL="Next"  HREF="007118.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] 174f:1420 Syntek malfunctions</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20174f%3A1420%20Syntek%20malfunctions&In-Reply-To=%3C4EE1B8AC.7060807%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] 174f:1420 Syntek malfunctions">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Fri Dec  9 08:28:44 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007116.html">[Linux-uvc-devel] 174f:1420 Syntek malfunctions
+</A></li>
+        <LI>Next message: <A HREF="007118.html">[Linux-uvc-devel] [faq] test cases
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7117">[ date ]</a>
+              <a href="thread.html#7117">[ thread ]</a>
+              <a href="subject.html#7117">[ subject ]</a>
+              <a href="author.html#7117">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Hi,
+
+Am 08.12.2011 20:52, schrieb Andres Cimmarusti:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;&gt;<i> try UVC_QUIRK_PROBE_DEF:
+</I>&gt;&gt;<i> sudo rmmod uvcvideo &amp;&amp; sudo modprobe uvcvideo quirks=0x100
+</I>&gt;<i> 
+</I>&gt;&gt;<i> if it still not work, please send also dmesg with working configuration. Do luvcvideo works?
+</I>&gt;<i> 
+</I>&gt;<i> Thanks for your reply. I tried what you suggested, but with no luck.
+</I>&gt;<i> Webcam is left in an unusable state after opening jitsi and trying to
+</I>&gt;<i> test video or establish a video call.
+</I>&gt;<i> 
+</I>&gt;<i> I've also noticed that, upon a fresh reboot, the framerate is
+</I>&gt;<i> abhorrent. Using luvcview (I assumed that's what you meant by
+</I>&gt;<i> luvcvideo), I was only able to get 5 fps and then the program froze
+</I>&gt;<i> within 10 seconds of opening. Cheese doesn't freeze, but framerate is
+</I>&gt;<i> terrible, I tried recording a small video and it looked more like a
+</I>&gt;<i> collection of pictures every 2 seconds or so. I've attached the
+</I>&gt;<i> PRE-jitsi console output of luvcview and the POST-jitsi one.
+</I>&gt;<i> 
+</I>&gt;<i> I'm curious about something. When I upgraded to kernel 3.0.12, this
+</I>&gt;<i> was the lkml announcement:
+</I>&gt;<i> 
+</I>&gt;<i> <A HREF="https://lkml.org/lkml/2011/11/28/562">https://lkml.org/lkml/2011/11/28/562</A>
+</I>&gt;<i> 
+</I>&gt;<i> The commit that was reverted is this one:
+</I>&gt;<i> <A HREF="http://git.kernel.org/?p=linux/kernel/git/stable/linux-stable.git;a=commit;h=317451c11fefcb0e05383f0a0080bb7f5445cfcf">http://git.kernel.org/?p=linux/kernel/git/stable/linux-stable.git;a=commit;h=317451c11fefcb0e05383f0a0080bb7f5445cfcf</A>
+</I>&gt;<i> 
+</I>&gt;<i> Could this still be affecting me here by any chance?
+</I>
+
+It sounds plausibly. But in this case i would expect error -28 (no
+space), rather then -110 (time out).
+Any way, currently only you can test if it's true. If you use debian you
+can probably use precompiled ubuntu kernels:
+<A HREF="http://kernel.ubuntu.com/~kernel-ppa/mainline/">http://kernel.ubuntu.com/~kernel-ppa/mainline/</A>
+
+plese test nest and older kernels.
+
+If still no results, then try other quirks:
+#define UVC_QUIRK_STATUS_INTERVAL	0x00000001
+#define UVC_QUIRK_PROBE_MINMAX		0x00000002
+#define UVC_QUIRK_PROBE_EXTRAFIELDS	0x00000004
+#define UVC_QUIRK_BUILTIN_ISIGHT	0x00000008
+#define UVC_QUIRK_STREAM_NO_FID		0x00000010
+#define UVC_QUIRK_IGNORE_SELECTOR_UNIT	0x00000020
+#define UVC_QUIRK_FIX_BANDWIDTH		0x00000080
+#define UVC_QUIRK_PROBE_DEF		0x00000100
+#define UVC_QUIRK_RESTRICT_FRAME_RATE	0x00000200
+
+then if no results, test if device works at all with some alternate OS :)
+
+- -- 
+Regards,
+Alexey
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - <A HREF="http://enigmail.mozdev.org/">http://enigmail.mozdev.org/</A>
+
+iEYEARECAAYFAk7huKkACgkQw8E0jNwoJm9kuwCgk17XJVEcdZRn3cpCOjRGp4B/
+xgMAn1ymggANBE71tmLDLwBG1wi6Ckqi
+=oODy
+-----END PGP SIGNATURE-----
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007116.html">[Linux-uvc-devel] 174f:1420 Syntek malfunctions
+</A></li>
+	<LI>Next message: <A HREF="007118.html">[Linux-uvc-devel] [faq] test cases
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7117">[ date ]</a>
+              <a href="thread.html#7117">[ thread ]</a>
+              <a href="subject.html#7117">[ subject ]</a>
+              <a href="author.html#7117">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

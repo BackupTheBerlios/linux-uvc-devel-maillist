@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] issues with syntek usb webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20issues%20with%20syntek%20usb%20webcam&In-Reply-To=%3C200903191550.35299.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004672.html">
+   <LINK REL="Next"  HREF="004659.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] issues with syntek usb webcam</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20issues%20with%20syntek%20usb%20webcam&In-Reply-To=%3C200903191550.35299.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] issues with syntek usb webcam">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Thu Mar 19 15:50:35 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004672.html">[Linux-uvc-devel] issues with syntek usb webcam
+</A></li>
+        <LI>Next message: <A HREF="004659.html">[Linux-uvc-devel] how to get mencoder en mplayer working	with	uvc v4l2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4673">[ date ]</a>
+              <a href="thread.html#4673">[ thread ]</a>
+              <a href="subject.html#4673">[ subject ]</a>
+              <a href="author.html#4673">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Riccardo,
+
+On Thursday 19 March 2009 15:37:10 Riccardo Magliocchetti wrote:
+&gt;<i> On Thu, Mar 19, 2009 at 2:38 PM, Laurent Pinchart
+</I>&gt;<i>
+</I>&gt;<i> &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+</I>&gt;<i> &gt; On Wednesday 18 March 2009 20:35:28 Riccardo Magliocchetti wrote:
+</I>&gt;<i> &gt;&gt; Laurent Pinchart ha scritto:
+</I>&gt;<i> &gt;&gt; &gt; On Monday 16 March 2009 21:43:41 Riccardo Magliocchetti wrote:
+</I>&gt;<i> &gt;&gt; &gt;&gt; hi,
+</I>&gt;<i> &gt;&gt; &gt;&gt;
+</I>&gt;<i> &gt;&gt; &gt;&gt; my syntek webcam (174f:5931) does not work with ekiga and cheese but
+</I>&gt;<i> &gt;&gt; &gt;&gt; it works fine with luvcview.
+</I>&gt;<i> &gt;&gt; &gt;&gt;
+</I>&gt;<i> &gt;&gt; &gt;&gt; The kernel is latest linus git tree v2.6.29-rc8-124-g5bee17f , libv4l
+</I>&gt;<i> &gt;&gt; &gt;&gt; is 0.5.9.
+</I>&gt;<i> &gt;&gt; &gt;&gt;
+</I>&gt;<i> &gt;&gt; &gt;&gt; I've attached lsusb -v output and this is cheese output:
+</I>&gt;<i> &gt;&gt; &gt;&gt; [snip]
+</I>&gt;<i> &gt;&gt; &gt;&gt; v4l2src name=video_source device=/dev/video0 ! capsfilter
+</I>&gt;<i> &gt;&gt; &gt;&gt; name=capsfilter
+</I>&gt;<i> &gt;&gt; &gt;&gt; caps=video/x-raw-rgb,width=800,height=600,framerate=7/1;video/x-raw-y
+</I>&gt;<i> &gt;&gt; &gt;&gt;uv, wid th=800,height=600,framerate=7/1 ! identity
+</I>&gt;<i> &gt;&gt; &gt;&gt; libv4l2: error setting pixformat: Device or resource busy
+</I>&gt;<i> &gt;&gt; &gt;&gt; libv4l2: error requesting 4 buffers: Device or resource busy
+</I>&gt;<i> &gt;&gt; &gt;
+</I>&gt;<i> &gt;&gt; &gt; The device seems to be already open. Use fuser to find out if an
+</I>&gt;<i> &gt;&gt; &gt; application is using the video device.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; Unfortunately fuser reports the device opened only by cheese.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; The driver returns -EBUSY either when the device is already opened or if
+</I>&gt;<i> &gt; the camera is streaming.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Try to set the trace parameter to 255 (echo 255 &gt;
+</I>&gt;<i> &gt; /sys/modules/uvcvideo/parameters/trace). The driver will then print debug
+</I>&gt;<i> &gt; messages to the kernel log, including a trace of the functions called by
+</I>&gt;<i> &gt; the userspace application. You should then be able to check if the device
+</I>&gt;<i> &gt; is opened twice, or if streaming has been started prior to the failed set
+</I>&gt;<i> &gt; format call.
+</I>&gt;<i>
+</I>&gt;<i> Yes, i see the device opened twice but i cannot see more :)
+</I>
+That's definitely the problem. After calling VIDIOC_STREAMOFF to stop 
+streaming, cheese doesn't close the device and opens another instance. This is 
+likely a bug in cheese or libv4l2.
+
+&gt;<i> One thing i've missed to report is that i have this on boot:
+</I>&gt;<i>
+</I>&gt;<i> Mar 19 14:59:13 montag kernel: [    5.639794] uvcvideo: UVC non
+</I>&gt;<i> compliance - GET_DEF(PROBE) not supported. Enabling workaround.
+</I>
+No need to worry about that. Your device isn't 100% UVC compliant, but the 
+driver enables a workaround to fix the issue.
+
+Best regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004672.html">[Linux-uvc-devel] issues with syntek usb webcam
+</A></li>
+	<LI>Next message: <A HREF="004659.html">[Linux-uvc-devel] how to get mencoder en mplayer working	with	uvc v4l2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4673">[ date ]</a>
+              <a href="thread.html#4673">[ thread ]</a>
+              <a href="subject.html#4673">[ subject ]</a>
+              <a href="author.html#4673">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

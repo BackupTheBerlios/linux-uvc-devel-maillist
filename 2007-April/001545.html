@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo driver for x86_64
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20driver%20for%20x86_64&In-Reply-To=%3C200704021153.50682.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001544.html">
+   <LINK REL="Next"  HREF="001546.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo driver for x86_64</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20driver%20for%20x86_64&In-Reply-To=%3C200704021153.50682.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo driver for x86_64">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Apr  2 11:53:50 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001544.html">[Linux-uvc-devel] Sony DCR-HC40(E) camcoer live video streaming	from usb port
+</A></li>
+        <LI>Next message: <A HREF="001546.html">[Linux-uvc-devel] (no subject)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1545">[ date ]</a>
+              <a href="thread.html#1545">[ thread ]</a>
+              <a href="subject.html#1545">[ subject ]</a>
+              <a href="author.html#1545">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Natalie,
+
+&gt;<i> I am trying to use Logitech Pro 5000 web cam under Linux x86_64. I don't
+</I>&gt;<i> seem to have any problems with the webcam under Linux i386. But when I am
+</I>&gt;<i> trying to run it under x86_64, the application doesn't work. I heard some
+</I>&gt;<i> opinions about no support for video4linux L2 in the uvcvideo driver, but
+</I>&gt;<i> both the application and the driver seem to use l2 calls and have full L2
+</I>&gt;<i> support. However, the driver doesn't work which makes me think that this
+</I>&gt;<i> might be  the compat_ioctl32 layer in the linux kernel. The kernel level is
+</I>&gt;<i> 2.6.18.5, and I am also planning to test with the newest kernel, either -rc
+</I>&gt;<i> or even -mm tree.
+</I>&gt;<i> I've collected some traces to check if something is missing still in
+</I>&gt;<i> the UVCapplication/driver/kernel chain, or this is just some bugs in
+</I>&gt;<i> the compat
+</I>&gt;<i> layers.
+</I>&gt;<i> I was using Marratech application, uvccapture, and luvcview with similar
+</I>&gt;<i> results.
+</I>&gt;<i> Here some sample traces (with my debug):
+</I>&gt;<i>
+</I>&gt;<i> Marratech conferencing application:
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">natalie at 4300-test</A>:~/Desktop/uvccapture-0.4$ /usr/local/marratech/Marratech6
+</I>&gt;<i> .1/bin/Marratech
+</I>&gt;<i> Virtual screensize: java.awt.Rectangle[x=0,y=0,width=1600,height=1024]
+</I>&gt;<i> ALSA lib control.c:817:(snd_ctl_open_noupdate) Invalid CTL
+</I>&gt;<i> ioctl VIDIOCGCHAN: Invalid argument
+</I>&gt;<i> V4l: failed to find a supported format.
+</I>&gt;<i> ioctl VIDIOCGCHAN: Invalid argument
+</I>&gt;<i> ioctl VIDIOCGMBUF: Invalid argument
+</I>&gt;<i> mmap: Invalid argument
+</I>&gt;<i> V4l: device has no mmap support
+</I>&gt;<i> ioctl VIDIOCSWIN: Input/output error
+</I>&gt;<i> ioctl VIDIOCGWIN: Invalid argument
+</I>&gt;<i> ioctl VIDIOCGCHAN: Invalid argument
+</I>&gt;<i> ioctl VIDIOCGWIN: Invalid argument
+</I>&gt;<i> yuvgrab, read failed!
+</I>&gt;<i> yuvgrab, read failed!
+</I>&gt;<i> yuvgrab, read failed!
+</I>
+Those ioctls are from the V4L1 API, which the Linux UVC driver doesn't 
+support. It might be possible to use the V4L1 compatibility layer, and that's 
+probably what you're doing already (maybe without even being aware) if 
+Marratech works on a 32 bits machine. In that case, there might be some 
+issues with the V4L1 compatibility layer on 64 bit architectures.
+
+&gt;<i> uvccapture and luvcview:
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">nataliep at 4300-test</A>:/tmp$ ./uvccapture
+</I>&gt;<i> sending ioctl VIDIOC_QUERYCAP
+</I>&gt;<i> sending ioctl VIDIOC_S_FMT
+</I>&gt;<i> Unable to set format: 22.
+</I>&gt;<i>  Init v4L2 failed !! exit fatal
+</I>
+Those are definitely V4L2 calls. -22 means invalid argument. There might again 
+be some issue with 64 bit architectures, either in the driver or in luvcview. 
+I can't help you much as I have no 64 bit machine to test this on.
+
+&gt;<i> I also have a kernel trace with my debug, this is a part of it that shows
+</I>&gt;<i> that the driver calls into the l1 compat layer, which seems odd to me since
+</I>&gt;<i> everything from application to kernel is all l2:
+</I>
+compat_ioctl32 is the 32bit/64bit compatibility layer, not the V4L1 
+compatibility layer.
+
+[snip]
+&gt;<i> Mar 27 19:07:36 4300-test kernel: [  587.417071] uvcvideo: Unknown ioctl
+</I>&gt;<i> 0xc0cc5605
+</I>&gt;<i> Mar 27 19:07:36 4300-test kernel: [  587.417075] NBP: compat_ioctl32:ret
+</I>&gt;<i> ffffffea -
+</I>&gt;<i>
+</I>&gt;<i> and the compat_ioctl32 fails, which makes me think this is a culprit.
+</I>
+compat_ioctl32 fails because the requested ioctl is not recognised by the 
+Linux UVC driver. The issue is either the user space application calling an 
+unsupported ioctl (seems to be VIDIOC_G_FBUF), or the 32bit/64bit 
+compatibility layer failing to translate the ioctl properly.
+
+&gt;<i> I will sure appreciate some help with all this...
+</I>
+I have no idea why the 32bit/64bit compatibility layer is called, as it is not 
+explicitly supported by the driver (that might be a bug though). Do you use 
+the vanilla driver, or some patched version provided by your distribution ?
+
+Compiling the user space applications as native 64 bit binaries might help as 
+well.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001544.html">[Linux-uvc-devel] Sony DCR-HC40(E) camcoer live video streaming	from usb port
+</A></li>
+	<LI>Next message: <A HREF="001546.html">[Linux-uvc-devel] (no subject)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1545">[ date ]</a>
+              <a href="thread.html#1545">[ thread ]</a>
+              <a href="subject.html#1545">[ subject ]</a>
+              <a href="author.html#1545">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvcvideo%3A%20workaround%20invalid%20formats%0A%09exposed%20by%20buggy%20webcam&In-Reply-To=%3C200906041241.03791.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004837.html">
+   <LINK REL="Next"  HREF="004847.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvcvideo%3A%20workaround%20invalid%20formats%0A%09exposed%20by%20buggy%20webcam&In-Reply-To=%3C200906041241.03791.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Thu Jun  4 12:41:03 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004837.html">[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam
+</A></li>
+        <LI>Next message: <A HREF="004847.html">[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4840">[ date ]</a>
+              <a href="thread.html#4840">[ thread ]</a>
+              <a href="subject.html#4840">[ subject ]</a>
+              <a href="author.html#4840">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Herton,
+
+On Wednesday 03 June 2009 23:02:33 Herton Ronaldo Krzesinski wrote:
+&gt;<i> One webcam I have here exposes an invalid videostreaming interface
+</I>&gt;<i> format, with trace=0x2 this output is shown on kernel log:
+</I>&gt;<i>
+</I>&gt;<i> USB Video Class driver (v0.1.0)
+</I>&gt;<i> usb 3-7: new high speed USB device using ehci_hcd and address 5
+</I>&gt;<i> usb 3-7: configuration #1 chosen from 1 choice
+</I>&gt;<i> uvcvideo: Found format YUV 4:2:2 (YUYV).
+</I>&gt;<i> uvcvideo: - 640x480 (18.0 fps)
+</I>&gt;<i> uvcvideo: - 320x240 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 160x120 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 352x288 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 176x144 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 1280x1024 (8.0 fps)
+</I>&gt;<i> uvcvideo: device 5 videostreaminginterface 1 FORMAT error
+</I>&gt;<i> uvcvideo: Found a Status endpoint (addr 82).
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device BisonCam, NB Pro (5986:0241)
+</I>&gt;<i> uvcvideo: No valid video chain found.
+</I>&gt;<i>
+</I>&gt;<i> There is an invalid videostreaming interface format exposed, which makes
+</I>&gt;<i> the webcam to fail to work as the error is treated as fatal, even if we
+</I>&gt;<i> have already found a valid format.
+</I>
+The invalid descriptor (I'm not sure if it's actually invalid, or just
+vendor-specific and unsupported) isn't a Class Specific Interface descriptor
+(bDescriptorType != 36), so it might make sense not to try to parse it instead
+of trying and failing.
+
+&gt;<i> Fix this by not failing entirely if we have found an invalid format, as
+</I>&gt;<i> we can still have a valid format. The initial problem and solution
+</I>&gt;<i> (patch) was debugged and done by Clevo (probably by Michael Wang),
+</I>&gt;<i> which uses the affected webcam in one of their laptops. I'm forwarding
+</I>&gt;<i> their fix plus additional code that I noticed to be needed for generic
+</I>&gt;<i> cases that decrements properly streaming-&gt;nformats and checks later if
+</I>&gt;<i> we really found at least one valid format, and if there were really no
+</I>&gt;<i> valid formats we make sure then to return with error.
+</I>
+What about modifying uvc_parse_streaming() to stop parsing the interface
+descriptors when it encounters a non CS Interface descriptor instead ?
+Something like
+
+diff -r 66a270023c26 linux/drivers/media/video/uvc/uvc_driver.c
+--- a/linux/drivers/media/video/uvc/uvc_driver.c	Sun May 31 22:05:55 2009 +0200
++++ b/linux/drivers/media/video/uvc/uvc_driver.c	Thu Jun 04 12:40:09 2009 +0200
+@@ -644,7 +644,7 @@
+ 	_buflen = buflen;
+ 
+ 	/* Count the format and frame descriptors. */
+-	while (_buflen &gt; 2) {
++	while (_buflen &gt; 2 &amp;&amp; _buffer[1] == CS_INTERFACE) {
+ 		switch (_buffer[2]) {
+ 		case VS_FORMAT_UNCOMPRESSED:
+ 		case VS_FORMAT_MJPEG:
+@@ -709,7 +709,7 @@
+ 	streaming-&gt;nformats = nformats;
+ 
+ 	/* Parse the format descriptors. */
+-	while (buflen &gt; 2) {
++	while (buflen &gt; 2 &amp;&amp; buffer[1] == CS_INTERFACE) {
+ 		switch (buffer[2]) {
+ 		case VS_FORMAT_UNCOMPRESSED:
+ 		case VS_FORMAT_MJPEG:
+
+Best regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004837.html">[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam
+</A></li>
+	<LI>Next message: <A HREF="004847.html">[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4840">[ date ]</a>
+              <a href="thread.html#4840">[ thread ]</a>
+              <a href="subject.html#4840">[ subject ]</a>
+              <a href="author.html#4840">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

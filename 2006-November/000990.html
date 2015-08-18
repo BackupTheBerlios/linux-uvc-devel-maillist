@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Trouble recording from two webcams
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Trouble%20recording%20from%20two%20webcams&In-Reply-To=%3C1163460430.14157.6.camel%40virgo.csail.mit.edu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001040.html">
+   <LINK REL="Next"  HREF="000991.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Trouble recording from two webcams</H1>
+    <B>David Moore</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Trouble%20recording%20from%20two%20webcams&In-Reply-To=%3C1163460430.14157.6.camel%40virgo.csail.mit.edu%3E"
+       TITLE="[Linux-uvc-devel] Trouble recording from two webcams">dcm at MIT.EDU
+       </A><BR>
+    <I>Tue Nov 14 00:27:10 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001040.html">[Linux-uvc-devel] Trouble recording from two webcams
+</A></li>
+        <LI>Next message: <A HREF="000991.html">[Linux-uvc-devel] Trouble recording from two webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#990">[ date ]</a>
+              <a href="thread.html#990">[ thread ]</a>
+              <a href="subject.html#990">[ subject ]</a>
+              <a href="author.html#990">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The Logitech cameras I've used only support YUV streaming at the highest
+possible resolution.  Thus, ffmpeg is always streaming at 1024x576 from
+the driver, no matter what resolution you request.
+
+In order to capture lower resolutions, you would have to use the MJPEG
+mode instead of YUV.  However, I have no idea if ffmpeg would support
+such a method.
+
+I am not sure why the bitrate is still high despite the lower framerate.
+Perhaps ffmpeg doesn't know about the new framerate controls that have
+been added to the V4L2 API.  In other words, ffmpeg might always be
+capturing at the max framerate.  It might be possible to fix that with a
+patch to ffmpeg.
+
+-David
+
+On Mon, 2006-11-13 at 23:04 +0100, Vidar Normann wrote:
+&gt;<i> Thanks for your replies Luca and Martin, I really appreciate it.
+</I>&gt;<i> Although lowering frames-per-second
+</I>&gt;<i> and resolution does not help at all. See paste at end of post.
+</I>&gt;<i> 
+</I>&gt;<i> On 11/13/06, Martin Rubli &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux at rubli.info</A>&gt; wrote:
+</I>&gt;<i>         On Mon, 13 Nov 2006 19:46:25 +0100, Vidar Normann
+</I>&gt;<i>         &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">vidarno at gmail.com</A>&gt;
+</I>&gt;<i>         wrote:
+</I>&gt;<i>         
+</I>&gt;<i>         &gt; after a discussion on ffmpeg's mailing-list it seems the
+</I>&gt;<i>         reason I'm
+</I>&gt;<i>         &gt; unable to record 
+</I>&gt;<i>         &gt; from two webcams at the same time lies in the uvc-driver..
+</I>&gt;<i>         &gt; I am able to record from either of the webcams, but if I try
+</I>&gt;<i>         to record at
+</I>&gt;<i>         &gt; the same time
+</I>&gt;<i>         &gt; I get the following error when invoking the ffmpeg-command
+</I>&gt;<i>         to record from 
+</I>&gt;<i>         &gt; /dev/video1
+</I>&gt;<i>         &gt; while another ffmpeg is recording from /dev/video0:
+</I>&gt;<i>         &gt; --
+</I>&gt;<i>         &gt; ioctl(VIDIOC_STREAMON): No space left on device
+</I>&gt;<i>         &gt; Could not find video grab device
+</I>&gt;<i>         &gt; --
+</I>&gt;<i>         &gt; I notice that the last entry in dmesg is this: 
+</I>&gt;<i>         &gt; --
+</I>&gt;<i>         &gt; uvcvideo: Failed to submit isoc URB 0 (-28).
+</I>&gt;<i>         &gt; --
+</I>&gt;<i>         &gt;
+</I>&gt;<i>         &gt; Is there a bug in uvc or is there another explanation?
+</I>&gt;<i>         &gt; FYI I'm using the Logitech QuickCam for Notebooks for Pro
+</I>&gt;<i>         and
+</I>&gt;<i>         &gt; using the newest CVS of the Split-branch of UVC. 
+</I>&gt;<i>         
+</I>&gt;<i>         What resolutions and frame rates are you using? Have you tried
+</I>&gt;<i>         QVGA? I
+</I>&gt;<i>         know I had two cameras work at the same time but I may never
+</I>&gt;<i>         have tried
+</I>&gt;<i>         resolutions above QVGA.
+</I>&gt;<i>         
+</I>&gt;<i>         Cheers,
+</I>&gt;<i>         Martin
+</I>&gt;<i> 
+</I>&gt;<i> I reran both commands:
+</I>&gt;<i> ffmpeg -vd &quot;/dev/video1&quot; -an -vcodec mpeg4 -s 320x240 -r 5 -y
+</I>&gt;<i> &quot;test2.avi&quot;
+</I>&gt;<i> FFmpeg version SVN-r7012, Copyright (c) 2000-2006 Fabrice Bellard, et
+</I>&gt;<i> al.
+</I>&gt;<i>   configuration:  --enable-xvid --enable-gpl 
+</I>&gt;<i>   libavutil version: 49.0.2
+</I>&gt;<i>   libavcodec version: 51.25.0
+</I>&gt;<i>   libavformat version: 51.6.0
+</I>&gt;<i>   built on Nov 13 2006 15:34:26, gcc: 3.3.5 (Debian 1:3.3.5-13)
+</I>&gt;<i> [video4linux2 @ 0x83a81f0][4]Capabilities: 4000001
+</I>&gt;<i> The V4L2 driver changed the video from 320x240 to 1024x576
+</I>&gt;<i> Input #0, video4linux2, from '':
+</I>&gt;<i>   Duration: N/A, bitrate: N/A
+</I>&gt;<i>   Stream #0.0: Video: rawvideo, yuv422, 1024x576, 47185 kb/s,  5.00
+</I>&gt;<i> fps(r)
+</I>&gt;<i> PIX_FMT_YUV420P will be used as an intermediate format for rescaling 
+</I>&gt;<i> Output #0, avi, to 'test2.avi':
+</I>&gt;<i>   Stream #0.0: Video: mpeg4, yuv420p, 320x240, q=2-31, 200 kb/s,  5.00
+</I>&gt;<i> fps(c)
+</I>&gt;<i> Stream mapping:
+</I>&gt;<i>   Stream #0.0 -&gt; #0.0
+</I>&gt;<i> Press [q] to stop encoding
+</I>&gt;<i> frame=   80 q=2.0 Lsize=     221kB time= 16.0 bitrate= 113.0kbits/s
+</I>&gt;<i> video:213kB audio:0kB global headers:0kB muxing overhead 3.500250%
+</I>&gt;<i> 
+</I>&gt;<i> --
+</I>&gt;<i> So far so good, it records until I press 'q', the problem arises when
+</I>&gt;<i> I try to record from the other
+</I>&gt;<i> webcam as well: 
+</I>&gt;<i> --
+</I>&gt;<i> ffmpeg -vd &quot;/dev/video0&quot; -an -vcodec mpeg4 -s 320x240 -r 5 -y
+</I>&gt;<i> &quot;test1.avi&quot;
+</I>&gt;<i> FFmpeg version SVN-r7012, Copyright (c) 2000-2006 Fabrice Bellard, et
+</I>&gt;<i> al.
+</I>&gt;<i>   configuration:  --enable-xvid --enable-gpl 
+</I>&gt;<i>   libavutil version: 49.0.2
+</I>&gt;<i>   libavcodec version: 51.25.0
+</I>&gt;<i>   libavformat version: 51.6.0
+</I>&gt;<i>   built on Nov 13 2006 15:34:26, gcc: 3.3.5 (Debian 1:3.3.5-13)
+</I>&gt;<i> [video4linux2 @ 0x83a81f0][4]Capabilities: 4000001
+</I>&gt;<i> The V4L2 driver changed the video from 320x240 to 1024x576
+</I>&gt;<i> ioctl(VIDIOC_STREAMON): No space left on device
+</I>&gt;<i> Could not find video grab device
+</I>&gt;<i> --
+</I>&gt;<i> 
+</I>&gt;<i> The thing that I notice is the third last line, seems the v4l2-driver
+</I>&gt;<i> forces transfer in a 1024x576 
+</I>&gt;<i> resolution? Other than that, I have no idea and I don't know what to
+</I>&gt;<i> do. 
+</I>&gt;<i> 
+</I>&gt;<i> Regards,
+</I>&gt;<i> Vidar 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001040.html">[Linux-uvc-devel] Trouble recording from two webcams
+</A></li>
+	<LI>Next message: <A HREF="000991.html">[Linux-uvc-devel] Trouble recording from two webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#990">[ date ]</a>
+              <a href="thread.html#990">[ thread ]</a>
+              <a href="subject.html#990">[ subject ]</a>
+              <a href="author.html#990">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

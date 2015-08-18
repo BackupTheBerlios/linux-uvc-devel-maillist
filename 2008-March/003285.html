@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Unable%20to%20set%20auto%20exposure%20and%20white%20balance%0A%09with%20svn%20revision%20193&In-Reply-To=%3C200803242204.06143.trigger%40space-based.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003257.html">
+   <LINK REL="Next"  HREF="003286.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193</H1>
+    <B>Armin Berres</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Unable%20to%20set%20auto%20exposure%20and%20white%20balance%0A%09with%20svn%20revision%20193&In-Reply-To=%3C200803242204.06143.trigger%40space-based.de%3E"
+       TITLE="[Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193">trigger at space-based.de
+       </A><BR>
+    <I>Mon Mar 24 22:04:05 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003257.html">[Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193
+</A></li>
+        <LI>Next message: <A HREF="003286.html">[Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3285">[ date ]</a>
+              <a href="thread.html#3285">[ thread ]</a>
+              <a href="subject.html#3285">[ subject ]</a>
+              <a href="author.html#3285">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+thanks for the answer!
+
+On Sunday 23 March 2008 21:26:07 Laurent Pinchart wrote:
+&gt;<i> &gt; After noticing that the private controls are gone and updating some
+</I>&gt;<i> &gt; keys everything but one thing works again: I can't set the auto exposure
+</I>&gt;<i> &gt; any more. When I query V4L2_CID_EXPOSURE_AUTO it is set to 3.
+</I>&gt;<i> &gt; V4L2_EXPOSURE_AUTO and V4L2_EXPOSURE_MANUAL at the same time?
+</I>&gt;<i>
+</I>&gt;<i> 3 is actually supposed to mean V4L2_EXPOSURE_APERTURE_PRIORITY. The control
+</I>&gt;<i> values were not properly defined in uvc_compat.h, I've just committed a fix
+</I>&gt;<i> to SVN.
+</I>
+Ah, ok. great. Problem seems to be gone :)
+
+&gt;<i> &gt; Now my other problem: When reading r187 I hoped to be able to manually
+</I>&gt;<i> &gt; set the white balance, but it doesn't seem to be possible.
+</I>&gt;<i> &gt; Setting V4L2_CID_AUTO_WHITE_BALANCE to 0 doesn't seem to have an effect.
+</I>&gt;<i> &gt; The control seems to be neither V4L2_CTRL_TYPE_BOOLEAN nor
+</I>&gt;<i> &gt; V4L2_CTRL_TYPE_INTEGER, so what else it is?
+</I>&gt;<i>
+</I>&gt;<i> The control is boolean, and is supposed to work. Do you get an error when
+</I>&gt;<i> you try to modify it ? Is anything printed to the kernel log ? Do you get
+</I>&gt;<i> the previously written value when you read the control back ?
+</I>
+Hehe, indeed, it is boolean. I had a typo in my code.
+&gt;<i>
+</I>&gt;<i> &gt; When trying to get V4L2_CID_RED_BALANCE or V4L2_CID_BLUE_BALANCE I get
+</I>&gt;<i> &gt; the error code 22, Invalid argument. In the syslog I find
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; | uvcvideo: Control 0x0098090e not found.
+</I>&gt;<i> &gt; | uvcvideo: Control 0x0098090f not found.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Is this expected to work, or can't this work? It is quite important for
+</I>&gt;<i> &gt; me, to get the manual white balance running.
+</I>&gt;<i>
+</I>&gt;<i> The SPC1300NC has a white balance temperature control, you should use
+</I>&gt;<i> V4L2_CID_WHITE_BALANCE_TEMPERATURE instead of V4L2_CID_RED_BALANCE and
+</I>&gt;<i> V4L2_CID_BLUE_BALANCE.
+</I>
+Hm, ok.
+Setting V4L2_CID_WHITE_BALANCE_TEMPERATURE seems to work, but the image has a 
+red cast. The closer the value is to 2800 (6500 seems to be the default), the 
+better the image looks, but even at 2800 Kelvin the red cast is not gone. In 
+my use case a red cast is the worst case (blue would be much better)...
+I think I once tried the camera with Windows and I could adjust the red and 
+blue temperature -- any idea how this is possible? Maybe Philips implemented 
+this part somewhere in their driver/user space tool?
+What is even worse: The white balance doesn't seem to be fixed if 
+V4L2_CID_AUTO_WHITE_BALANCE  is set. The camera still changes the colour 
+temperature, when the lighting conditions change. Weird, isn't it? If you 
+want I can make a little video to show the effect.
+
+&gt;<i> &gt; Any help is welcome :)
+</I>&gt;<i>
+</I>&gt;<i> Hope this helped :-)
+</I>
+Definitely :-)
+
+Greetings,
+Armin
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003257.html">[Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193
+</A></li>
+	<LI>Next message: <A HREF="003286.html">[Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3285">[ date ]</a>
+              <a href="thread.html#3285">[ thread ]</a>
+              <a href="subject.html#3285">[ subject ]</a>
+              <a href="author.html#3285">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

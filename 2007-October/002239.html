@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] sample code? &quot;hello world&quot; for linux video?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20sample%20code%3F%20%22hello%20world%22%20for%20linux%20video%3F&In-Reply-To=%3C21f71af10710051046n7e7da022t351ce33e4dca27f1%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002236.html">
+   <LINK REL="Next"  HREF="002241.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] sample code? &quot;hello world&quot; for linux video?</H1>
+    <B>Geoffrey Plitt</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20sample%20code%3F%20%22hello%20world%22%20for%20linux%20video%3F&In-Reply-To=%3C21f71af10710051046n7e7da022t351ce33e4dca27f1%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] sample code? &quot;hello world&quot; for linux video?">geoff at gweb.org
+       </A><BR>
+    <I>Fri Oct  5 19:46:15 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002236.html">[Linux-uvc-devel] sample code? &quot;hello world&quot; for linux video?
+</A></li>
+        <LI>Next message: <A HREF="002241.html">[Linux-uvc-devel] sample code? &quot;hello world&quot; for linux video?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2239">[ date ]</a>
+              <a href="thread.html#2239">[ thread ]</a>
+              <a href="subject.html#2239">[ subject ]</a>
+              <a href="author.html#2239">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks Nate! likewise, I will see if this helps and let you guys know!
+-Geoff
+
+On 10/5/07, Nathanael Galpin &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">NathanaelGalpin at smarttech.com</A>&gt; wrote:
+&gt;<i>
+</I>&gt;<i>  Hey Geoff,
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> This is a great file to start with. In fact it's what I used first. Couple
+</I>&gt;<i> things make it a bit tricky. One is that he's using switch statements to
+</I>&gt;<i> separate different ways to read from the cameras, so you'll want to note
+</I>&gt;<i> which method you're using, (should be MMAP).
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> The line where he actually captures a frame is in the read_frame function.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> (-1 == xioctl (fd, VIDIOC_DQBUF, &amp;buf))
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> This blocks until it's able to deque a frame from the camera (unless you
+</I>&gt;<i> specify non-blocking when you open the cam file, in which case it returns -1
+</I>&gt;<i> when it can't immediately deque a frame). You can get at the raw frame data
+</I>&gt;<i> through the buf struct.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> A little farther down, he re-enques the buffer after he's finished with
+</I>&gt;<i> with this line:
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> (-1 == xioctl (fd, VIDIOC_QBUF, &amp;buf))
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> You can read through the V4L2 spec a bit at bytesex.org to check out the
+</I>&gt;<i> parameters of the buf struct.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> If you want to display this data, a quick way to do it would be to pull
+</I>&gt;<i> the Y values from the buffer and use these to write a grayscale image to the
+</I>&gt;<i> screen. I used a Qt picture object when I first started doing this, and that
+</I>&gt;<i> actually worked quite well.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Hope that helps, and good luck!
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>   -- Nathanael
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>  ------------------------------
+</I>&gt;<i>
+</I>&gt;<i> *From:* <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel-bounces at lists.berlios.de</A> [mailto:
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel-bounces at lists.berlios.de</A>] *On Behalf Of *Geoffrey Plitt
+</I>&gt;<i> *Sent:* Thursday, October 04, 2007 9:18 PM
+</I>&gt;<i>
+</I>&gt;<i>  hey christopher. this file looks promising, but it doesn't do anything
+</I>&gt;<i> with the frames. i compiled/ran and it just prints dots, you have to take as
+</I>&gt;<i> faith that it's capturing - it doesn't output or save the frames. in fact, i
+</I>&gt;<i> can't tell exactly where in the code it actually grabs a frame and has
+</I>&gt;<i> access to the frame's pixel buffer. any clues?
+</I>&gt;<i> -geoff
+</I>&gt;<i>
+</I>&gt;<i> On 10/4/07, *Christopher HORLER* &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">chris.horler at clara.co.uk</A>&gt; wrote:
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="http://v4l2spec.bytesex.org/v4l2spec/capture.c">http://v4l2spec.bytesex.org/v4l2spec/capture.c</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20071005/29cf9e1e/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20071005/29cf9e1e/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002236.html">[Linux-uvc-devel] sample code? &quot;hello world&quot; for linux video?
+</A></li>
+	<LI>Next message: <A HREF="002241.html">[Linux-uvc-devel] sample code? &quot;hello world&quot; for linux video?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2239">[ date ]</a>
+              <a href="thread.html#2239">[ thread ]</a>
+              <a href="subject.html#2239">[ subject ]</a>
+              <a href="author.html#2239">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

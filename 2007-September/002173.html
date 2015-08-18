@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo: Failed to query (135)...
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%3A%20Failed%20to%20query%20%28135%29...&In-Reply-To=%3C20070926205417.GA11404%40pinux.info%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002171.html">
+   <LINK REL="Next"  HREF="002192.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo: Failed to query (135)...</H1>
+    <B>Carles Pina i Estany</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%3A%20Failed%20to%20query%20%28135%29...&In-Reply-To=%3C20070926205417.GA11404%40pinux.info%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo: Failed to query (135)...">carles at pina.cat
+       </A><BR>
+    <I>Wed Sep 26 22:54:17 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002171.html">[Linux-uvc-devel] uvcvideo: Failed to query (135)...
+</A></li>
+        <LI>Next message: <A HREF="002192.html">[Linux-uvc-devel] uvcvideo: Failed to query (135)...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2173">[ date ]</a>
+              <a href="thread.html#2173">[ thread ]</a>
+              <a href="subject.html#2173">[ subject ]</a>
+              <a href="author.html#2173">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Hello again,
+
+
+On Sep/26/2007, Laurent Pinchart wrote:
+
+&gt;<i> &gt; &gt; &gt; I have a Logitech Quickcam Pro for Notebooks, that seems that is well
+</I>&gt;<i> &gt; &gt; &gt; supported.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; But is not working. I'm using a Kernel 2.6.22, compiled myself, with
+</I>&gt;<i> &gt; &gt; &gt; Video4Linux enabled. In dmesg I can see:
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; ------------------
+</I>&gt;<i> &gt; &gt; &gt; Linux video capture interface: v2.00
+</I>&gt;<i> &gt; &gt; &gt; uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:08c3)
+</I>&gt;<i> &gt; &gt; &gt; uvcvideo: Failed to query (135) UVC control 1 (unit 0) : -110 (exp.
+</I>&gt;<i> &gt; &gt; &gt; 26). uvcvideo: Failed to query (129) UVC control 1 (unit 0) : -110
+</I>&gt;<i> &gt; &gt; &gt; (exp. 26). uvcvideo: Failed to initialize the device (-5).
+</I>&gt;<i> &gt; &gt; &gt; usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> &gt; &gt; &gt; USB Video Class driver (v0.1.0)
+</I>&gt;<i> &gt; &gt; &gt; ----------------
+</I>&gt;<i> &gt; &gt; &gt; /dev/video0 is not created
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; What can I do? I've read something about firmware bug, etc. but last
+</I>&gt;<i> &gt; &gt; &gt; year this camera worked :-) just I have not used and now... not
+</I>&gt;<i> &gt; &gt; &gt; working.
+</I>
+&gt;<i> &gt; If I load in usual way (modprobe, etc.) I guess that loads some other
+</I>&gt;<i> &gt; modules and I don't have the &quot;Unkown symbol&quot; error. If I unload and then
+</I>&gt;<i> &gt; I load again, I get the same error in dmesg (Failed to query (135) UVC
+</I>&gt;<i> &gt; control)
+</I>&gt;<i> 
+</I>&gt;<i> You have to make sure the system won't load the module automatically when you 
+</I>&gt;<i> plug your webcam in, otherwise uvcvideo.ko will be associated with the camera 
+</I>&gt;<i> before usbaudio.ko, and initialisation will fail.
+</I>
+I'm 100% sure that has not been loaded before, this time.
+And even when is not working, usbaudio.ko is not loaded:
+pinux:/lib/modules/2.6.22# find . -iname &quot;*usbadio*&quot;
+pinux:/lib/modules/2.6.22# 
+
+
+&gt;<i> &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">carles at pinux</A>:~$ lsmod|grep -i video
+</I>&gt;<i> &gt; uvcvideo               44804  0
+</I>&gt;<i> &gt; compat_ioctl32          1408  1 uvcvideo
+</I>&gt;<i> &gt; videodev               26112  1 uvcvideo
+</I>&gt;<i> &gt; v4l2_common            14464  2 uvcvideo,videodev
+</I>&gt;<i> &gt; usbcore               117896  5 uvcvideo,usb_storage,usbhid,uhci_hcd
+</I>&gt;<i> &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">carles at pinux</A>:~$
+</I>&gt;<i> 
+</I>&gt;<i> Try to load videodev and compat_ioctl32 (using modprobe) before you 
+</I>&gt;<i> insmod ./uvcvideo.ko. uvcvideo.ko depends on videodev and compat_ioctl32, but 
+</I>&gt;<i> insmod doesn't load dependencies automatically.
+</I>
+I loaded it, then I plugged the camera, then I insmoded uvcvideo.ko
+(which one is in other directory, not in /lib/modules/...). But not
+worked :-(
+
+What else I can do? I think that should be some software problem, one
+year ago worked :-)
+
+Thank you very much!
+
+-- 
+Carles Pina i Estany		GPG id: 0x8CBDAE64
+	<A HREF="http://pinux.info">http://pinux.info</A>	Manresa - Barcelona
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002171.html">[Linux-uvc-devel] uvcvideo: Failed to query (135)...
+</A></li>
+	<LI>Next message: <A HREF="002192.html">[Linux-uvc-devel] uvcvideo: Failed to query (135)...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2173">[ date ]</a>
+              <a href="thread.html#2173">[ thread ]</a>
+              <a href="subject.html#2173">[ subject ]</a>
+              <a href="author.html#2173">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

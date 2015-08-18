@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] BisonCam 5986:0203 kills USB
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20BisonCam%205986%3A0203%20kills%20USB&In-Reply-To=%3C200911171604.14059.oliver%40neukum.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005310.html">
+   <LINK REL="Next"  HREF="005316.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] BisonCam 5986:0203 kills USB</H1>
+    <B>Oliver Neukum</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20BisonCam%205986%3A0203%20kills%20USB&In-Reply-To=%3C200911171604.14059.oliver%40neukum.org%3E"
+       TITLE="[Linux-uvc-devel] BisonCam 5986:0203 kills USB">oliver at neukum.org
+       </A><BR>
+    <I>Tue Nov 17 16:04:14 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005310.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+        <LI>Next message: <A HREF="005316.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5311">[ date ]</a>
+              <a href="thread.html#5311">[ thread ]</a>
+              <a href="subject.html#5311">[ subject ]</a>
+              <a href="author.html#5311">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Am Dienstag, 17. November 2009 12:11:39 schrieb Stephan Diestelhorst:
+&gt;<i> Alan Stern wrote:
+</I>&gt;<i> &gt; On Wed, 11 Nov 2009, Stephan Diestelhorst wrote:
+</I>&gt;<i> &gt; &gt; &gt; &gt; This issue is with the built-in Bison web cam in an MSI Wind
+</I>&gt;<i> &gt; &gt; &gt; &gt; U100. Once the camera is enabled (via hotkey), the entire USB
+</I>&gt;<i> &gt; &gt; &gt; &gt; subsystem is not responding anymore, causing non-detection of
+</I>&gt;<i> &gt; &gt; &gt; &gt; freshly attached USB devices and prevents suspending the box.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Once again no apologize needed. You should keep cross-posting and
+</I>&gt;<i> &gt; &gt; &gt; report the problem to the linux-usb mailing list. I'm not familiar
+</I>&gt;<i> &gt; &gt; &gt; enough with the EHCI architecture to work on a fix, so the solution
+</I>&gt;<i> &gt; &gt; &gt; will likely come from linux-usb developers.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Any help?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; There's a temporary solution (in one of the threads mentioned above)
+</I>&gt;<i> &gt; described here (the udelay(2000) call):
+</I>&gt;<i> &gt; You should experiment and see if the 2000 can be replaced with a
+</I>&gt;<i> &gt; smaller number.
+</I>&gt;<i> 
+</I>&gt;<i> Several volunteers and me have experimented with the udelay values.
+</I>&gt;<i> See
+</I>&gt;<i>  <A HREF="https://bugs.launchpad.net/ubuntu/+source/linux/+bug/435352/comments/167">https://bugs.launchpad.net/ubuntu/+source/linux/+bug/435352/comments/167</A>
+</I>&gt;<i> 
+</I>&gt;<i> udelay(2000) - works (&gt; 2 people)
+</I>&gt;<i> udelay(1000) - works (knuutsen, catscrash)
+</I>&gt;<i> udelay(600) - works (catcrash)
+</I>&gt;<i> udelay(500) - works (deChrLam with method see # 148, stephan d.)
+</I>&gt;<i> udelay(400)- works (knuutsen, stephan d.)
+</I>&gt;<i> udelay(375) - breaks (stephan d.)
+</I>&gt;<i> udelay(350) - breaks (stephan d.)
+</I>&gt;<i> udelay(300) - breaks (catscrash)
+</I>&gt;<i> udelay(250) - breaks (stephan d.)
+</I>&gt;<i> udelay(100) - breaks (catscrash, stephan d.)
+</I>&gt;<i> udelay(50) - breaks (stephan d., jbob)
+</I>&gt;<i> udelay(48) - breaks (knuutsen)
+</I>&gt;<i> 
+</I>&gt;<i> It seems that a delay of 400 usec fixes the thing, and that we're
+</I>&gt;<i> nowhere near the requested 50 usecs.
+</I>&gt;<i> 
+</I>&gt;<i> Seems like someone either adds the udelay(400) or introduces a proper
+</I>&gt;<i> fix  (with timers). I am too inexperienced in USB things to fully
+</I>&gt;<i> understand the negative implications of the former or do the latter.
+</I>
+Alan,
+
+as this affects only buggy chipsets, I'd prefer to just add the required
+udelay conditional on a chipset quirk. Do you concur? Do you want me
+to do it and close this bug?
+
+	Regards
+		Oliver
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005310.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+	<LI>Next message: <A HREF="005316.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5311">[ date ]</a>
+              <a href="thread.html#5311">[ thread ]</a>
+              <a href="subject.html#5311">[ subject ]</a>
+              <a href="author.html#5311">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

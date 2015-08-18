@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Quickcam Fusion with debian not working...
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quickcam%20Fusion%20with%20debian%20not%20working...&In-Reply-To=%3C44C9343F.8090004%40datkan.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000666.html">
+   <LINK REL="Next"  HREF="000637.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Quickcam Fusion with debian not working...</H1>
+    <B>Marcel van Beurden</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quickcam%20Fusion%20with%20debian%20not%20working...&In-Reply-To=%3C44C9343F.8090004%40datkan.net%3E"
+       TITLE="[Linux-uvc-devel] Quickcam Fusion with debian not working...">marcel at datkan.net
+       </A><BR>
+    <I>Thu Jul 27 23:46:39 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000666.html">[Linux-uvc-devel] Logitech QuickcamPro USB Notebook an debian
+</A></li>
+        <LI>Next message: <A HREF="000637.html">[Linux-uvc-devel] Quickcam Fusion with debian not working...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#634">[ date ]</a>
+              <a href="thread.html#634">[ thread ]</a>
+              <a href="subject.html#634">[ subject ]</a>
+              <a href="author.html#634">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all,
+
+Since the UVC driver was not working with the 2.4 kernel I upgraded my 
+debian system to kernel 2.6.16. I used the source package 
+linux-uvc-source, version 0.1.0-2. But unfortunately, it doesn't seem to 
+work with my Logitech Quickcam Fusion.
+
+When I load the driver I get:
+
+uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:08c1)
+usbcore: registered new driver uvcvideo
+USB Video Class driver (v0.1.0-b)
+
+When I plug in my cam I get:
+
+usb 1-1: new full speed USB device using uhci_hcd and address 19
+usb 1-1: configuration #1 chosen from 1 choice
+usb 1-2: new full speed USB device using uhci_hcd and address 20
+usb 1-2: configuration #1 chosen from 1 choice
+uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:08c1)
+20:3:1: cannot set freq 0 to ep 0x86
+20:3:2: cannot set freq 0 to ep 0x86
+20:3:3: cannot set freq 16000 to ep 0x86
+
+My system:
+
+debian:/usr/src/modules# uname -a
+Linux debian 2.6.16-2-686 #1 Sat Jul 15 21:59:21 UTC 2006 i686 GNU/Linux
+
+I used the webcam command line utility to test:
+
+debian:/usr/src/modules# webcam
+reading config file: /root/.webcamrc
+can't get rgb24 data
+
+My USB devices:
+
+debian:/usr/src/modules# lsusb
+Bus 001 Device 020: ID 046d:08c1 Logitech, Inc.
+Bus 001 Device 019: ID 06a5:d812 Divio
+Bus 001 Device 001: ID 0000:0000
+
+My loaded modules:
+
+debian:/usr/src/modules# lsmod
+Module                  Size  Used by
+uvcvideo               29412  0
+v4l1_compat            12068  1 uvcvideo
+videodev                8640  1 uvcvideo
+v4l2_common             7360  1 uvcvideo
+nfsd                  199524  13
+exportfs                5024  1 nfsd
+lockd                  53672  2 nfsd
+nfs_acl                 3264  1 nfsd
+sunrpc                132612  9 nfsd,lockd,nfs_acl
+ipv6                  217760  38
+reiserfs              216784  2
+dm_mod                 47892  0
+shpchp                 39200  0
+pci_hotplug            24180  1 shpchp
+audio                  37472  0
+snd_usb_audio          67488  0
+snd_usb_lib            13984  1 snd_usb_audio
+snd_ens1371            22400  0
+gameport               13480  1 snd_ens1371
+snd_rawmidi            22048  2 snd_usb_lib,snd_ens1371
+snd_seq_device          8236  1 snd_rawmidi
+snd_ac97_codec         82784  1 snd_ens1371
+snd_ac97_bus            2048  1 snd_ac97_codec
+evdev                   8736  0
+psmouse                34248  0
+i2c_viapro              7892  0
+snd_hwdep               8516  1 snd_usb_audio
+snd_pcm                74408  3 snd_usb_audio,snd_ens1371,snd_ac97_codec
+snd_timer              20292  1 snd_pcm
+snd                    46080  8 
+snd_usb_audio,snd_ens1371,snd_rawmidi,snd_seq_device,snd_ac97_codec,snd_hwdep,snd_pcm,snd_timer
+soundcore               8672  2 audio,snd
+snd_page_alloc          9800  1 snd_pcm
+serio_raw               6436  0
+i2c_core               19312  1 i2c_viapro
+via_agp                 9312  1
+agpgart                29232  1 via_agp
+pcspkr                  2948  0
+rtc                    11252  0
+parport_pc             31472  0
+parport                31720  1 parport_pc
+floppy                 55628  0
+ext3                  115880  1
+jbd                    46932  1 ext3
+mbcache                 7652  1 ext3
+ide_cd                 35328  0
+cdrom                  31888  1 ide_cd
+ide_disk               14528  6
+via82cxxx               7940  0 [permanent]
+generic                 4164  0 [permanent]
+uhci_hcd               26640  0
+ide_core              111440  4 ide_cd,ide_disk,via82cxxx,generic
+usbcore               110560  6 
+uvcvideo,audio,snd_usb_audio,snd_usb_lib,uhci_hcd
+8139too                24160  0
+8139cp                 19488  0
+mii                     5056  2 8139too,8139cp
+thermal                12968  0
+processor              21696  1 thermal
+fan                     4452  0
+
+Anyone knows what is going wrong?
+
+Regards,
+Marcel
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000666.html">[Linux-uvc-devel] Logitech QuickcamPro USB Notebook an debian
+</A></li>
+	<LI>Next message: <A HREF="000637.html">[Linux-uvc-devel] Quickcam Fusion with debian not working...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#634">[ date ]</a>
+              <a href="thread.html#634">[ thread ]</a>
+              <a href="subject.html#634">[ subject ]</a>
+              <a href="author.html#634">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

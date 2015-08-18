@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Fuji Finepix S5500 -- kernel call trace
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Fuji%20Finepix%20S5500%20--%20kernel%20call%20trace&In-Reply-To=%3C200602021009.18537.Maarten.Wisse%40urz.uni-heidelberg.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000191.html">
+   <LINK REL="Next"  HREF="000194.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Fuji Finepix S5500 -- kernel call trace</H1>
+    <B>Maarten Wisse</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Fuji%20Finepix%20S5500%20--%20kernel%20call%20trace&In-Reply-To=%3C200602021009.18537.Maarten.Wisse%40urz.uni-heidelberg.de%3E"
+       TITLE="[Linux-uvc-devel] Fuji Finepix S5500 -- kernel call trace">Maarten.Wisse at urz.uni-heidelberg.de
+       </A><BR>
+    <I>Thu Feb  2 10:09:18 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000191.html">[Linux-uvc-devel] Fuji Finepix S5500 -- kernel call trace
+</A></li>
+        <LI>Next message: <A HREF="000194.html">[Linux-uvc-devel] Fuji Finepix S5500 -- kernel call trace
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#192">[ date ]</a>
+              <a href="thread.html#192">[ thread ]</a>
+              <a href="subject.html#192">[ subject ]</a>
+              <a href="author.html#192">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Dear linux-uvc developers,
+
+first, thanks for developing this driver. I've been looking for it for some 
+time, since I have a Fuji Finepix S5500 with a webcam mode based on uvc.
+
+I've tried the driver on 2.6.15-suspend2-r3 Gentoo kernel--driver from SVN 
+from yesterday, version 0.1.0. It compiles properly, loads properly (it may 
+help for some to know that multimedia support needs to be a module or 
+compiled into the kernel---otherwise, the driver compiles with some warnings 
+but doesn't load due to missing symbols). It even recognizes the device as a 
+web camera:
+
+uvcvideo: Found UVC 1.00 device USB Web Camera (04cb:016f)
+
+but when I try uvcview on it, uvcview segfaults and I get a trace in dmesg. I 
+attached the trace for your information.
+
+Best regards,
+
+Maarten Wisse
+
+
+-- 
+Dr. Maarten Wisse
+NWO TALENT Research Fellow
+Ecumenical Institute
+Faculty of Theology
+University of Heidelberg
+
+Editor of
+Ars Disputandi
+The Online Journal for Philosophy of Religion
+<A HREF="http://www.ArsDisputandi.org">http://www.ArsDisputandi.org</A>
+Hosted by Utrecht University Library
+<A HREF="http://www.igitur.uu.nl">http://www.igitur.uu.nl</A>
+-------------- next part --------------
+Linux video capture interface: v1.00
+usbcore: registered new driver usbvideo
+USB Video Class driver (v0.1.0)
+spurious 8259A interrupt: IRQ7.
+usb 1-2: new full speed USB device using uhci_hcd and address 2
+uvcvideo: Found UVC 1.00 device USB Web Camera (04cb:016f)
+divide error: 0000 [#1]
+PREEMPT 
+Modules linked in: uvcvideo videodev v4l2_common savage drm snd_pcm_oss snd_mixer_oss snd_seq_oss snd_seq_midi_event snd_seq snd_via82xx snd_ac97_codec snd_ac97_bus snd_pcm snd_timer snd_page_alloc snd_mpu401_uart snd_rawmidi snd_seq_device snd soundcore atmel_cs atmel firmware_class yenta_socket rsrc_nonstatic pcmcia pcmcia_core via_agp agpgart ehci_hcd uhci_hcd usbcore via_rhine mii ide_cd cdrom loop cpufreq_ondemand cpufreq_userspace powernow_k7
+CPU:    0
+EIP:    0060:[&lt;dee0466a&gt;]    Not tainted VLI
+EFLAGS: 00210256   (2.6.15-suspend2-r3) 
+EIP is at uvc_v4l2_try_format+0x290/0x4ac [uvcvideo]
+eax: 00000000   ebx: 000f4240   ecx: 000f4240   edx: 00000000
+esi: 00000000   edi: 00000000   ebp: dc5234f4   esp: cd849d4c
+ds: 007b   es: 007b   ss: 0068
+Process uvcview (pid: 10335, threadinfo=cd848000 task=ce2a35a0)
+Stack: 0120e2d0 00000020 00000001 8d407300 00000001 00006000 014000f0 dc5234f4 
+       dc5234c0 d22c4aa8 cd849f2c c17fa1a0 c01648e3 ddfe4d48 c031c750 c17fa1a0 
+       00000000 c0159279 ddfe4d20 c17fa1a0 ddfe4d20 00200286 d1a75000 00000013 
+Call Trace:
+ [&lt;c01648e3&gt;] mntput_no_expire+0x14/0x83
+ [&lt;c0159279&gt;] link_path_walk+0xa5/0xaf
+ [&lt;c01f36c3&gt;] write_chan+0x0/0x1ab
+ [&lt;dee04935&gt;] uvc_v4l2_set_format+0x2e/0x77 [uvcvideo]
+ [&lt;c011f546&gt;] __rcu_process_callbacks+0x98/0xb3
+ [&lt;c011f589&gt;] rcu_process_callbacks+0x28/0x2c
+ [&lt;dee04db9&gt;] uvc_v4l2_do_ioctl+0x344/0x463 [uvcvideo]
+ [&lt;c01159ef&gt;] tasklet_action+0x3a/0x57
+ [&lt;c0115794&gt;] __do_softirq+0x34/0x7d
+ [&lt;c01b5ee6&gt;] copy_from_user+0x3a/0x60
+ [&lt;dedd0354&gt;] video_usercopy+0x9e/0xf7 [videodev]
+ [&lt;dee04f06&gt;] uvc_v4l2_ioctl+0x2e/0x32 [uvcvideo]
+ [&lt;dee04a75&gt;] uvc_v4l2_do_ioctl+0x0/0x463 [uvcvideo]
+ [&lt;c015c288&gt;] do_ioctl+0x54/0x65
+ [&lt;c015c51f&gt;] vfs_ioctl+0x180/0x18e
+ [&lt;c015c558&gt;] sys_ioctl+0x2b/0x47
+ [&lt;c01025a7&gt;] sysenter_past_esp+0x54/0x75
+Code: 8b 5c 24 1c 8b 54 24 10 8b 43 1c 8b 74 90 fc eb 27 8b 4c 24 1c 31 d2 8b 41 1c 8b 78 08 8b 08 8b 58 04 89 f8 29 ce d1 e8 8d 04 06 &lt;f7&gt; f7 0f af c7 8d 34 01 39 de 0f 47 f3 31 c0 b9 09 00 00 00 8b 
+ &lt;1&gt;divide error: 0000 [#2]
+PREEMPT 
+Modules linked in: uvcvideo videodev v4l2_common savage drm snd_pcm_oss snd_mixer_oss snd_seq_oss snd_seq_midi_event snd_seq snd_via82xx snd_ac97_codec snd_ac97_bus snd_pcm snd_timer snd_page_alloc snd_mpu401_uart snd_rawmidi snd_seq_device snd soundcore atmel_cs atmel firmware_class yenta_socket rsrc_nonstatic pcmcia pcmcia_core via_agp agpgart ehci_hcd uhci_hcd usbcore via_rhine mii ide_cd cdrom loop cpufreq_ondemand cpufreq_userspace powernow_k7
+CPU:    0
+EIP:    0060:[&lt;dee0466a&gt;]    Not tainted VLI
+EFLAGS: 00210256   (2.6.15-suspend2-r3) 
+EIP is at uvc_v4l2_try_format+0x290/0x4ac [uvcvideo]
+eax: 00000000   ebx: 000f4240   ecx: 000f4240   edx: 00000000
+esi: 00000000   edi: 00000000   ebp: dc5234f4   esp: cfc27d4c
+ds: 007b   es: 007b   ss: 0068
+Process uvcview (pid: 10348, threadinfo=cfc26000 task=cf414a50)
+Stack: 0120e748 00000020 00000001 8bb0f000 00000001 00006000 014000f0 dc5234f4 
+       dc5234c0 d22c4aa8 cfc27f2c c17fa1a0 c01648e3 ddfe4d48 c031c750 c17fa1a0 
+       00000000 c0159279 ddfe4d20 c17fa1a0 ddfe4d20 00200286 d1a75000 00000013 
+Call Trace:
+ [&lt;c01648e3&gt;] mntput_no_expire+0x14/0x83
+ [&lt;c0159279&gt;] link_path_walk+0xa5/0xaf
+ [&lt;c01f36c3&gt;] write_chan+0x0/0x1ab
+ [&lt;dee04935&gt;] uvc_v4l2_set_format+0x2e/0x77 [uvcvideo]
+ [&lt;c01f2d5b&gt;] n_tty_receive_buf+0xb25/0xb58
+ [&lt;c01648e3&gt;] mntput_no_expire+0x14/0x83
+ [&lt;dee04db9&gt;] uvc_v4l2_do_ioctl+0x344/0x463 [uvcvideo]
+ [&lt;c01b5ee6&gt;] copy_from_user+0x3a/0x60
+ [&lt;dedd0354&gt;] video_usercopy+0x9e/0xf7 [videodev]
+ [&lt;dee04f06&gt;] uvc_v4l2_ioctl+0x2e/0x32 [uvcvideo]
+ [&lt;dee04a75&gt;] uvc_v4l2_do_ioctl+0x0/0x463 [uvcvideo]
+ [&lt;c015c288&gt;] do_ioctl+0x54/0x65
+ [&lt;c015c51f&gt;] vfs_ioctl+0x180/0x18e
+ [&lt;c015c558&gt;] sys_ioctl+0x2b/0x47
+ [&lt;c01025a7&gt;] sysenter_past_esp+0x54/0x75
+Code: 8b 5c 24 1c 8b 54 24 10 8b 43 1c 8b 74 90 fc eb 27 8b 4c 24 1c 31 d2 8b 41 1c 8b 78 08 8b 08 8b 58 04 89 f8 29 ce d1 e8 8d 04 06 &lt;f7&gt; f7 0f af c7 8d 34 01 39 de 0f 47 f3 31 c0 b9 09 00 00 00 8b 
+ 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000191.html">[Linux-uvc-devel] Fuji Finepix S5500 -- kernel call trace
+</A></li>
+	<LI>Next message: <A HREF="000194.html">[Linux-uvc-devel] Fuji Finepix S5500 -- kernel call trace
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#192">[ date ]</a>
+              <a href="thread.html#192">[ thread ]</a>
+              <a href="subject.html#192">[ subject ]</a>
+              <a href="author.html#192">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

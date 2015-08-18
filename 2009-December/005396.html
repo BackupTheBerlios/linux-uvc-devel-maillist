@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] control black list
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20control%20black%20list&In-Reply-To=%3C200912100232.50042.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005381.html">
+   <LINK REL="Next"  HREF="005382.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] control black list</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20control%20black%20list&In-Reply-To=%3C200912100232.50042.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] control black list">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu Dec 10 02:32:49 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005381.html">[Linux-uvc-devel] control black list
+</A></li>
+        <LI>Next message: <A HREF="005382.html">[Linux-uvc-devel]  Looking for upside down uvc cams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5396">[ date ]</a>
+              <a href="thread.html#5396">[ thread ]</a>
+              <a href="subject.html#5396">[ subject ]</a>
+              <a href="author.html#5396">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Paulo,
+
+thanks a lot for the bug report and the proposed fixes.
+
+From 2.6.21 onwards the kernel provides a usb_match_one_id() function that 
+matches perfectly what the driver needs here. In order to keep compatibility 
+with &lt; 2.6.21 kernels on the linuxtv.org tree, I've committed a patch that 
+checks the idVendor and idProduct values directly (after converting them from 
+little-endian to cpu-endian, which was forgotten in your first patch).
+
+For the record, here's the patch.
+
+# HG changeset patch
+# User Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt;
+# Date 1260408681 -3600
+# Node ID 0826158f044cfc144681aa2e716a3825d8d84ce7
+# Parent  065f9e34e07bea91007d787ae75ada7570cccf5c
+uvcvideo: Fix controls blacklisting
+
+From: Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt;
+
+The control blacklisting code erroneously used usb_match_id() by passing
+a pointer to a usb_device_id structure instead of an array of such
+structures.
+
+Replace the usb_match_id() call by usb_match_id_one().
+
+Thanks to Paulo Assis for diagnosing the bug and providing an initial
+fix.
+
+Priority: normal
+
+Signed-off-by: Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt;
+
+diff -r 065f9e34e07b -r 0826158f044c linux/drivers/media/video/uvc/uvc_ctrl.c
+--- a/linux/drivers/media/video/uvc/uvc_ctrl.c	Mon Dec 07 10:08:33 2009 -0200
++++ b/linux/drivers/media/video/uvc/uvc_ctrl.c	Thu Dec 10 02:31:21 2009 +0100
+@@ -1395,7 +1395,14 @@
+ 	size = entity-&gt;processing.bControlSize;
+ 
+ 	for (i = 0; i &lt; ARRAY_SIZE(blacklist); ++i) {
+-		if (!usb_match_id(dev-&gt;intf, &amp;blacklist[i].id))
++#if LINUX_VERSION_CODE &lt; KERNEL_VERSION(2, 6, 21)
++		if ((blacklist[i].id.idVendor !=
++		     le16_to_cpu(dev-&gt;udev-&gt;descriptor.idVendor)) ||
++		    (blacklist[i].id.idProduct !=
++		     le16_to_cpu(dev-&gt;udev-&gt;descriptor.idProduct)))
++#else
++		if (!usb_match_one_id(dev-&gt;intf, &amp;blacklist[i].id))
++#endif
+ 			continue;
+ 
+ 		if (blacklist[i].index &gt;= 8 * size ||
+
+-- 
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005381.html">[Linux-uvc-devel] control black list
+</A></li>
+	<LI>Next message: <A HREF="005382.html">[Linux-uvc-devel]  Looking for upside down uvc cams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5396">[ date ]</a>
+              <a href="thread.html#5396">[ thread ]</a>
+              <a href="subject.html#5396">[ subject ]</a>
+              <a href="author.html#5396">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

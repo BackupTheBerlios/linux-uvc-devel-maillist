@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] How to avoid negotiation loop..
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20How%20to%20avoid%20negotiation%20loop..&In-Reply-To=%3Ca81f87bb0907202353i1cc59d3and2c9c9154b9e4293%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004983.html">
+   <LINK REL="Next"  HREF="004987.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] How to avoid negotiation loop..</H1>
+    <B>Brian Pin</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20How%20to%20avoid%20negotiation%20loop..&In-Reply-To=%3Ca81f87bb0907202353i1cc59d3and2c9c9154b9e4293%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] How to avoid negotiation loop..">shaohuang at gmail.com
+       </A><BR>
+    <I>Tue Jul 21 08:53:42 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004983.html">[Linux-uvc-devel] searching a way to get an image from webcam
+</A></li>
+        <LI>Next message: <A HREF="004987.html">[Linux-uvc-devel]  settings for Device 002: ID 0402:5606 ALi Corp
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4980">[ date ]</a>
+              <a href="thread.html#4980">[ thread ]</a>
+              <a href="subject.html#4980">[ subject ]</a>
+              <a href="author.html#4980">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Dear developers...
+I am recently building a UVC webcam and have encountered a problem with
+streaming negotiation. The host is M$ Windows. UVC firmware is using my own
+Linux-based firmware.
+I get the following PROBE_GET -&gt; PROBE_SET loop, and it never get finished.
+
+   0h00m33s606: (T) Pb_GET: fmt:1 frame:1 Int:333333 F_SZ:276480 PayL:1024
+   0h00m33s607: (T) Pb_SET: fmt:1 frame:1 Int:333333 F_SZ:276480 PayL:0
+   0h00m33s608: (T) Pb_GET: fmt:1 frame:1 Int:333333 F_SZ:276480 PayL:992
+   0h00m33s610: (T) Pb_GET: fmt:1 frame:1 Int:333333 F_SZ:276480 PayL:992
+   0h00m33s611: (T) Pb_SET: fmt:1 frame:1 Int:333333 F_SZ:276480 PayL:0
+   0h00m33s611: (T) Pb_GET: fmt:1 frame:1 Int:333333 F_SZ:276480 PayL:960
+   0h00m33s612: (T) Pb_GET: fmt:1 frame:1 Int:333333 F_SZ:276480 PayL:960
+   0h00m33s613: (T) Pb_SET: fmt:1 frame:2 Int:333333 F_SZ:276480 PayL:0
+   0h00m33s613: (T) Pb_GET: fmt:1 frame:2 Int:333333 F_SZ:144000 PayL:1024
+   0h00m33s614: (T) Pb_GET: fmt:1 frame:2 Int:333333 F_SZ:144000 PayL:1024
+   0h00m33s615: (T) Pb_SET: fmt:1 frame:2 Int:333333 F_SZ:144000 PayL:0
+   0h00m33s616: (T) Pb_GET: fmt:1 frame:2 Int:333333 F_SZ:144000 PayL:992
+   :
+   :
+frame 1 is a MJPEG frame with
+resolution 1280x720. frame 2 is a smaller frame with resolution 800x600(I
+have more frame descriptor, I am not including them because of simplicity)
+F_SZ is the maximum possible frame size for this frame index chosen.
+PayL is the maximum payload size for the corresponding streaming parameter
+field.
+All the other field: quality, key/p-framerate are considered unrelated
+because it is set to 0 by device.
+Pb_GET/Pb_SET is to represent PROBE_GET and PROBE_SET.
+The decreasing of PayL is by my negotiation code. I originally hope
+negotiation can be done by decrease PayL by 32 everytime.
+I am using only one kind of alternate interface. That is 1 ISOC packet every
+micro frame and maxpacketsize is 1024.
+Don't have a clue on how to make it done.
+Thanks for helping me or giving me some comments.
+
+
+
+
+-- 
+Best Regards
+Brian
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090720/4206274d/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090720/4206274d/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004983.html">[Linux-uvc-devel] searching a way to get an image from webcam
+</A></li>
+	<LI>Next message: <A HREF="004987.html">[Linux-uvc-devel]  settings for Device 002: ID 0402:5606 ALi Corp
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4980">[ date ]</a>
+              <a href="thread.html#4980">[ thread ]</a>
+              <a href="subject.html#4980">[ subject ]</a>
+              <a href="author.html#4980">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

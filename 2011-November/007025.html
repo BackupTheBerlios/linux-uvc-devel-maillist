@@ -1,0 +1,369 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH 2/2] uvcvideo: Extract video stream	statistics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%202/2%5D%20uvcvideo%3A%20Extract%20video%20stream%0A%09statistics&In-Reply-To=%3C1320337641-27084-3-git-send-email-laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007032.html">
+   <LINK REL="Next"  HREF="007029.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH 2/2] uvcvideo: Extract video stream	statistics</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%202/2%5D%20uvcvideo%3A%20Extract%20video%20stream%0A%09statistics&In-Reply-To=%3C1320337641-27084-3-git-send-email-laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] [PATCH 2/2] uvcvideo: Extract video stream	statistics">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu Nov  3 17:27:21 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007032.html">[Linux-uvc-devel] [PATCH 1/2] uvcvideo: Add debugfs support
+</A></li>
+        <LI>Next message: <A HREF="007029.html">[Linux-uvc-devel] [PATCH 2/2] uvcvideo: Extract video stream	statistics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7025">[ date ]</a>
+              <a href="thread.html#7025">[ thread ]</a>
+              <a href="subject.html#7025">[ subject ]</a>
+              <a href="author.html#7025">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Export the statistics through debugfs.
+
+Signed-off-by: Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt;
+---
+ drivers/media/video/uvc/uvc_debugfs.c |   60 ++++++++++++++++++
+ drivers/media/video/uvc/uvc_video.c   |  111 ++++++++++++++++++++++++++++++++-
+ drivers/media/video/uvc/uvcvideo.h    |   32 +++++++++-
+ 3 files changed, 201 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/media/video/uvc/uvc_debugfs.c b/drivers/media/video/uvc/uvc_debugfs.c
+index f58969a..bdba016 100644
+--- a/drivers/media/video/uvc/uvc_debugfs.c
++++ b/drivers/media/video/uvc/uvc_debugfs.c
+@@ -18,6 +18,57 @@
+ #include &quot;uvcvideo.h&quot;
+ 
+ /* -----------------------------------------------------------------------------
++ * Statistics
++ */
++
++#define UVC_DEBUGFS_BUF_SIZE	1024
++
++struct uvc_debugfs_buffer {
++	size_t count;
++	char data[UVC_DEBUGFS_BUF_SIZE];
++};
++
++static int uvc_debugfs_stats_open(struct inode *inode, struct file *file)
++{
++	struct uvc_streaming *stream = inode-&gt;i_private;
++	struct uvc_debugfs_buffer *buf;
++
++	buf = kmalloc(sizeof(*buf), GFP_KERNEL);
++	if (buf == NULL)
++		return -ENOMEM;
++
++	buf-&gt;count = uvc_video_stats_dump(stream, buf-&gt;data, sizeof(buf-&gt;data));
++
++	file-&gt;private_data = buf;
++	return 0;
++}
++
++static ssize_t uvc_debugfs_stats_read(struct file *file, char __user *user_buf,
++				      size_t nbytes, loff_t *ppos)
++{
++	struct uvc_debugfs_buffer *buf = file-&gt;private_data;
++
++	return simple_read_from_buffer(user_buf, nbytes, ppos, buf-&gt;data,
++				       buf-&gt;count);
++}
++
++static int uvc_debugfs_stats_release(struct inode *inode, struct file *file)
++{
++	kfree(file-&gt;private_data);
++	file-&gt;private_data = NULL;
++
++	return 0;
++}
++
++static const struct file_operations uvc_debugfs_stats_fops = {
++	.owner = THIS_MODULE,
++	.open = uvc_debugfs_stats_open,
++	.llseek = no_llseek,
++	.read = uvc_debugfs_stats_read,
++	.release = uvc_debugfs_stats_release,
++};
++
++/* -----------------------------------------------------------------------------
+  * Global and stream initialization/cleanup
+  */
+ 
+@@ -43,6 +94,15 @@ int uvc_debugfs_init_stream(struct uvc_streaming *stream)
+ 
+ 	stream-&gt;debugfs_dir = dent;
+ 
++	dent = debugfs_create_file(&quot;stats&quot;, 0600, stream-&gt;debugfs_dir,
++				   stream, &amp;uvc_debugfs_stats_fops);
++	if (IS_ERR_OR_NULL(dent)) {
++		uvc_printk(KERN_INFO, &quot;Unable to create debugfs %s directory.\n&quot;,
++			   dir_name);
++		uvc_debugfs_cleanup_stream(stream);
++		return -ENODEV;
++	}
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/media/video/uvc/uvc_video.c b/drivers/media/video/uvc/uvc_video.c
+index a57f813..2ab92a7 100644
+--- a/drivers/media/video/uvc/uvc_video.c
++++ b/drivers/media/video/uvc/uvc_video.c
+@@ -358,6 +358,106 @@ static int uvc_commit_video(struct uvc_streaming *stream,
+ }
+ 
+ /* ------------------------------------------------------------------------
++ * Timestamp statistics
++ */
++
++static void uvc_video_stats_decode(struct uvc_streaming *stream,
++		const __u8 *data, int len)
++{
++	unsigned int header_size;
++
++	if (stream-&gt;stats.stream.nb_frames == 0 &amp;&amp;
++	    stream-&gt;stats.frame.nb_packets == 0)
++		ktime_get_ts(&amp;stream-&gt;stats.stream.start_ts);
++
++	/* Make sure we have at least 2 bytes of header. */
++	if (len &lt; 2) {
++		stream-&gt;stats.frame.nb_invalid++;
++		return;
++	}
++
++	switch (data[1] &amp; (UVC_STREAM_PTS | UVC_STREAM_SCR)) {
++	case UVC_STREAM_PTS | UVC_STREAM_SCR:
++		header_size = 12;
++		break;
++	case UVC_STREAM_PTS:
++		header_size = 6;
++		break;
++	case UVC_STREAM_SCR:
++		header_size = 8;
++		break;
++	default:
++		header_size = 2;
++		break;
++	}
++
++	/* Check for invalid headers. */
++	if (len &lt; header_size || data[0] &lt; header_size) {
++		stream-&gt;stats.frame.nb_invalid++;
++		return;
++	}
++
++	/* Record the first non-empty packet number. */
++	if (stream-&gt;stats.frame.size == 0 &amp;&amp; len &gt; header_size)
++		stream-&gt;stats.frame.first_data = stream-&gt;stats.frame.nb_packets;
++
++	/* Update the frame size. */
++	stream-&gt;stats.frame.size += len - header_size;
++
++	/* Update the packets counters. */
++	stream-&gt;stats.frame.nb_packets++;
++	if (len &gt; header_size)
++		stream-&gt;stats.frame.nb_empty++;
++
++	if (data[1] &amp; UVC_STREAM_ERR)
++		stream-&gt;stats.frame.nb_errors++;
++}
++
++static void uvc_video_stats_update(struct uvc_streaming *stream)
++{
++	struct uvc_stats_frame *frame = &amp;stream-&gt;stats.frame;
++
++	uvc_trace(UVC_TRACE_STATS, &quot;frame %u stats: %u/%u/%u packets\n&quot;,
++		  stream-&gt;sequence, frame-&gt;first_data,
++		  frame-&gt;nb_packets - frame-&gt;nb_empty, frame-&gt;nb_packets);
++
++	stream-&gt;stats.stream.nb_frames++;
++	stream-&gt;stats.stream.nb_packets += stream-&gt;stats.frame.nb_packets;
++	stream-&gt;stats.stream.nb_empty += stream-&gt;stats.frame.nb_empty;
++	stream-&gt;stats.stream.nb_errors += stream-&gt;stats.frame.nb_errors;
++	stream-&gt;stats.stream.nb_invalid += stream-&gt;stats.frame.nb_invalid;
++
++	memset(&amp;stream-&gt;stats.frame, 0, sizeof(stream-&gt;stats.frame));
++}
++
++size_t uvc_video_stats_dump(struct uvc_streaming *stream, char *buf,
++			    size_t size)
++{
++	size_t count = 0;
++
++	count += scnprintf(buf + count, size - count,
++			   &quot;frames:  %u\npackets: %u\nempty:   %u\n&quot;
++			   &quot;errors:  %u\ninvalid: %u\n&quot;,
++			   stream-&gt;stats.stream.nb_frames,
++			   stream-&gt;stats.stream.nb_packets,
++			   stream-&gt;stats.stream.nb_empty,
++			   stream-&gt;stats.stream.nb_errors,
++			   stream-&gt;stats.stream.nb_invalid);
++
++	return count;
++}
++
++static void uvc_video_stats_start(struct uvc_streaming *stream)
++{
++	memset(&amp;stream-&gt;stats, 0, sizeof(stream-&gt;stats));
++}
++
++static void uvc_video_stats_stop(struct uvc_streaming *stream)
++{
++	ktime_get_ts(&amp;stream-&gt;stats.stream.stop_ts);
++}
++
++/* ------------------------------------------------------------------------
+  * Video codecs
+  */
+ 
+@@ -401,6 +501,8 @@ static int uvc_video_decode_start(struct uvc_streaming *stream,
+ {
+ 	__u8 fid;
+ 
++	uvc_video_stats_decode(stream, data, len);
++
+ 	/* Sanity checks:
+ 	 * - packet must be at least 2 bytes long
+ 	 * - bHeaderLength value must be at least 2 bytes (see above)
+@@ -414,8 +516,11 @@ static int uvc_video_decode_start(struct uvc_streaming *stream,
+ 	/* Increase the sequence number regardless of any buffer states, so
+ 	 * that discontinuous sequence numbers always indicate lost frames.
+ 	 */
+-	if (stream-&gt;last_fid != fid)
++	if (stream-&gt;last_fid != fid) {
+ 		stream-&gt;sequence++;
++		if (stream-&gt;sequence)
++			uvc_video_stats_update(stream);
++	}
+ 
+ 	/* Store the payload FID bit and return immediately when the buffer is
+ 	 * NULL.
+@@ -860,6 +965,8 @@ static void uvc_uninit_video(struct uvc_streaming *stream, int free_buffers)
+ 	struct urb *urb;
+ 	unsigned int i;
+ 
++	uvc_video_stats_stop(stream);
++
+ 	for (i = 0; i &lt; UVC_URBS; ++i) {
+ 		urb = stream-&gt;urb[i];
+ 		if (urb == NULL)
+@@ -999,6 +1106,8 @@ static int uvc_init_video(struct uvc_streaming *stream, gfp_t gfp_flags)
+ 	stream-&gt;bulk.skip_payload = 0;
+ 	stream-&gt;bulk.payload_size = 0;
+ 
++	uvc_video_stats_start(stream);
++
+ 	if (intf-&gt;num_altsetting &gt; 1) {
+ 		struct usb_host_endpoint *best_ep = NULL;
+ 		unsigned int best_psize = 3 * 1024;
+diff --git a/drivers/media/video/uvc/uvcvideo.h b/drivers/media/video/uvc/uvcvideo.h
+index 2d45e58..e2da57b 100644
+--- a/drivers/media/video/uvc/uvcvideo.h
++++ b/drivers/media/video/uvc/uvcvideo.h
+@@ -356,6 +356,28 @@ struct uvc_video_chain {
+ 	struct mutex ctrl_mutex;		/* Protects ctrl.info */
+ };
+ 
++struct uvc_stats_frame {
++	unsigned int size;		/* Number of bytes captured */
++	unsigned int first_data;	/* Index of the first non-empty packet */
++
++	unsigned int nb_packets;	/* Number of packets */
++	unsigned int nb_empty;		/* Number of empty packets */
++	unsigned int nb_invalid;	/* Number of packets with an invalid header */
++	unsigned int nb_errors;		/* Number of packets with the error bit set */
++};
++
++struct uvc_stats_stream {
++	struct timespec start_ts;	/* Stream start timestamp */
++	struct timespec stop_ts;	/* Stream stop timestamp */
++
++	unsigned int nb_frames;		/* Number of frames */
++
++	unsigned int nb_packets;	/* Number of packets */
++	unsigned int nb_empty;		/* Number of empty packets */
++	unsigned int nb_invalid;	/* Number of packets with an invalid header */
++	unsigned int nb_errors;		/* Number of packets with the error bit set */
++};
++
+ struct uvc_streaming {
+ 	struct list_head list;
+ 	struct uvc_device *dev;
+@@ -406,6 +428,10 @@ struct uvc_streaming {
+ 
+ 	/* debugfs */
+ 	struct dentry *debugfs_dir;
++	struct {
++		struct uvc_stats_frame frame;
++		struct uvc_stats_stream stream;
++	} stats;
+ };
+ 
+ enum uvc_device_state {
+@@ -477,6 +503,7 @@ struct uvc_driver {
+ #define UVC_TRACE_SUSPEND	(1 &lt;&lt; 8)
+ #define UVC_TRACE_STATUS	(1 &lt;&lt; 9)
+ #define UVC_TRACE_VIDEO		(1 &lt;&lt; 10)
++#define UVC_TRACE_STATS		(1 &lt;&lt; 11)
+ 
+ #define UVC_WARN_MINMAX		0
+ #define UVC_WARN_PROBE_DEF	1
+@@ -608,10 +635,13 @@ extern struct usb_host_endpoint *uvc_find_endpoint(
+ void uvc_video_decode_isight(struct urb *urb, struct uvc_streaming *stream,
+ 		struct uvc_buffer *buf);
+ 
+-/* debugfs */
++/* debugfs and statistics */
+ int uvc_debugfs_init(void);
+ void uvc_debugfs_cleanup(void);
+ int uvc_debugfs_init_stream(struct uvc_streaming *stream);
+ void uvc_debugfs_cleanup_stream(struct uvc_streaming *stream);
+ 
++size_t uvc_video_stats_dump(struct uvc_streaming *stream, char *buf,
++			    size_t size);
++
+ #endif
+-- 
+1.7.3.4
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007032.html">[Linux-uvc-devel] [PATCH 1/2] uvcvideo: Add debugfs support
+</A></li>
+	<LI>Next message: <A HREF="007029.html">[Linux-uvc-devel] [PATCH 2/2] uvcvideo: Extract video stream	statistics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7025">[ date ]</a>
+              <a href="thread.html#7025">[ thread ]</a>
+              <a href="subject.html#7025">[ subject ]</a>
+              <a href="author.html#7025">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

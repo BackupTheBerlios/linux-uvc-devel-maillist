@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] xawtv crash
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20xawtv%20crash&In-Reply-To=%3C200802062146.43972.jice%40free.fr%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002979.html">
+   <LINK REL="Next"  HREF="002980.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] xawtv crash</H1>
+    <B>Jean-Christophe Jice Cardot</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20xawtv%20crash&In-Reply-To=%3C200802062146.43972.jice%40free.fr%3E"
+       TITLE="[Linux-uvc-devel] xawtv crash">jice at free.fr
+       </A><BR>
+    <I>Wed Feb  6 21:46:39 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002979.html">[Linux-uvc-devel] AMSN crashes (Was: xawtv crashes)
+</A></li>
+        <LI>Next message: <A HREF="002980.html">[Linux-uvc-devel] xawtv crash
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2945">[ date ]</a>
+              <a href="thread.html#2945">[ thread ]</a>
+              <a href="subject.html#2945">[ subject ]</a>
+              <a href="author.html#2945">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>ok here it is. xawtv crash with uvcvideo rel 173, webcam philips spc1000nc.
+
+the crash must be a bug in xawtv (?). In libng/grab-ng.c, line 235 says:
+for (i = 0; attr-&gt;choices[i].str != NULL; i++)
+
+but for one of the attr(ibutes), attr-&gt;choices is NULL, which leads to 
+segfault. For information, the attribute's name is &quot;Exposure, Auto&quot; (which 
+must be different from another attribute whose name is &quot;Exposure, Auto 
+Priority&quot; and whose possible values are true/false).
+
+this attribute comes from the following v4l init code (add_attrs):
+
+static void
+grabber_init(void)
+{
+    drv = ng_vid_open(ng_dev.video,NULL,NULL,0,&amp;h_drv);
+    if (NULL == drv) {
+        fprintf(stderr,&quot;no grabber device available\n&quot;);
+        exit(1);
+    }
+    f_drv = drv-&gt;capabilities(h_drv);
+    add_attrs(drv-&gt;list_attrs(h_drv));
+}
+
+where list_attrs is :
+static struct ng_attribute* v4l2_attrs(void *handle)
+{
+    struct v4l2_handle *h = handle;
+    return h-&gt;attr;
+}
+
+hence the faulty attribute comes directly from the driver (if I get it right). 
+Is it normal that the attribute has no possible choice (so it would be an 
+xawtv bug) or could it be a driver's bug? (I must admit I'm stuck there...)
+
+TIA
+-- 
+Jean-Christophe &quot;Jic&#233;&quot; Cardot - cofondateur de <A HREF="http://lea-linux.org">http://lea-linux.org</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: This is a digitally signed message part.
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080206/04f1792d/attachment.pgp">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080206/04f1792d/attachment.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002979.html">[Linux-uvc-devel] AMSN crashes (Was: xawtv crashes)
+</A></li>
+	<LI>Next message: <A HREF="002980.html">[Linux-uvc-devel] xawtv crash
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2945">[ date ]</a>
+              <a href="thread.html#2945">[ thread ]</a>
+              <a href="subject.html#2945">[ subject ]</a>
+              <a href="author.html#2945">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

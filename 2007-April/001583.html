@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Ricoh UVC webcams
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Ricoh%20UVC%20webcams&In-Reply-To=%3C8d4807d50704131726l405d20fbr8b945ca726cbdda0%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001572.html">
+   <LINK REL="Next"  HREF="001601.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Ricoh UVC webcams</H1>
+    <B>Sam Revitch</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Ricoh%20UVC%20webcams&In-Reply-To=%3C8d4807d50704131726l405d20fbr8b945ca726cbdda0%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Ricoh UVC webcams">sam.revitch at gmail.com
+       </A><BR>
+    <I>Sat Apr 14 02:26:52 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001572.html">[Linux-uvc-devel] Ricoh UVC webcams
+</A></li>
+        <LI>Next message: <A HREF="001601.html">[Linux-uvc-devel] Ricoh UVC webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1583">[ date ]</a>
+              <a href="thread.html#1583">[ thread ]</a>
+              <a href="subject.html#1583">[ subject ]</a>
+              <a href="author.html#1583">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 4/11/07, Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+&gt;<i> Is there any known reason for that ? That sounds a bit against the UVC spec.
+</I>
+Laurent,
+
+Thanks for your reply.
+
+Good question.  I'd guess that Ricoh webcams have non-UVC controls
+because the manufacturer couldn't fit the required functionality into
+the limited code space.  Some of these controls (but no UVC controls)
+support auto-adjustment -- Exposure/AEC, Component WB/AWB, Gain/AGC.
+There is no reason for these devices to support control change events,
+but there would be if the auto controls were UVC.
+
+Realistically, for full support, the driver needs a hard-coded list of
+non-UVC controls for each device, and of course needs to be able to
+issue private non-UVC set commands for these controls.  It's unclear
+how to fit this into uvcvideo's clean, orderly control model, and
+seems like a relatively large device-specific concession for an
+otherwise generic driver.
+
+&gt;<i> Agreed. I'd rather go for the first solution.
+</I>&gt;<i>
+</I>&gt;<i> Can we discuss the issues you mentioned, as well as all other issues you can
+</I>&gt;<i> foresee ?
+</I>
+If uvcvideo had more complete frame buffer access methods, including
+read and VIDIOCGMBUF, apps like camstream, motion, and wengophone
+might work.
+
+One way to do this would be to link uvcvideo against video-buf, and
+implement a short VIDIOCGMBUF handler.
+
+xawtv working would be another plus.
+
+I also have a module used by r5u870 that takes care of common webcam
+problems, called usbcam.  It handles device registration, file
+operations, and V4L frame buffer access calls via video-buf.  It's
+also the foundation for another driver under development for a more
+exotic sq930b device.  I've been through many cycles tuning this
+layer, listening to user complaints, tracing apps and figuring out how
+to work around bugs, and refining its minidriver interface.  To try to
+integrate it with uvcvideo would be interesting, and I'm willing to
+adapt it to your liking.  This would be another way to fix the frame
+buffer problems, and perhaps in a more reusable way.
+
+&gt;<i> I'm still not sure if the firmware download operation should be handled by the
+</I>&gt;<i> driver or by a userspace utility. The fxload software from the usbutils
+</I>&gt;<i> package is meant to be called by the hotplug system. This would obviously be
+</I>&gt;<i> easier for the driver :-)
+</I>&gt;<i>
+</I>&gt;<i> Do all Ricoh devices advertise a different class and/or USB pid before and
+</I>&gt;<i> after loading the firmware ?
+</I>
+Indeed, so you started a big thread about this a few months ago.
+
+Regarding the descriptor tables, the microcode and other volatile
+state does not seem to have an effect on what is reported by Ricoh
+webcam devices, so they don't behave like isight or ezusb devices.
+This doesn't make it more difficult to do the microcode upload at user
+level though -- the kernel driver must fail gracefully anyway when
+probing a device without microcode, and a microcode uploader in this
+case would have the additional problem of forcing the kernel driver to
+re-probe the device, which isn't difficult.
+
+I wrote up a prototype upload utility, including a solution for the
+device re-probe problem, and tested it with my non-UVC camera.  This
+utility should be enough to allow an unmodified uvcvideo to at least
+grab frames from a Ricoh UVC camera.
+
+There is little question that it is easier for the driver to outsource
+microcode upload functions to a user level program.  Overall it sounds
+much more complicated, because one must also create, maintain,
+evangelize, and support a separate package.  If there is some other
+reason that this sort of package must exist, fine, and if so, it might
+be best to integrate the microcode upload functionality for as many
+devices as possible into this package.
+
+As for the other problems, the Ricoh cameras do appear to be evolving.
+ Future models will probably follow the standard more completely and
+do away with the non-UVC controls, and less device specific code might
+be required of uvcvideo.  Where do you feel comfortable drawing the
+line?
+
+Thanks.
+-Sam Revitch
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001572.html">[Linux-uvc-devel] Ricoh UVC webcams
+</A></li>
+	<LI>Next message: <A HREF="001601.html">[Linux-uvc-devel] Ricoh UVC webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1583">[ date ]</a>
+              <a href="thread.html#1583">[ thread ]</a>
+              <a href="subject.html#1583">[ subject ]</a>
+              <a href="author.html#1583">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

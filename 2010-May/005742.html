@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Stream from multimple cameras
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Stream%20from%20multimple%20cameras&In-Reply-To=%3C915879.55685.qm%40web27706.mail.ukl.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005741.html">
+   <LINK REL="Next"  HREF="005743.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Stream from multimple cameras</H1>
+    <B>Adrian Sergiu Darabant</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Stream%20from%20multimple%20cameras&In-Reply-To=%3C915879.55685.qm%40web27706.mail.ukl.yahoo.com%3E"
+       TITLE="[Linux-uvc-devel] Stream from multimple cameras">asergiu at yahoo.co.uk
+       </A><BR>
+    <I>Sun May 16 13:48:02 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005741.html">[Linux-uvc-devel] Looking for upside down uvc cams
+</A></li>
+        <LI>Next message: <A HREF="005743.html">[Linux-uvc-devel] Stream from multimple cameras
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5742">[ date ]</a>
+              <a href="thread.html#5742">[ thread ]</a>
+              <a href="subject.html#5742">[ subject ]</a>
+              <a href="author.html#5742">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello all , Laurent,
+I have problem that I think was encountered by many others. 
+I have 2 2MPix uvc cameras - both working individually. Their individual resolutions range from 160x120 up to 1600x1200 frame sizes (discrete increments) and using only packed YUV formats (not MJPEG).
+
+
+My need is to stream from both cameras in the same time. Maybe not at the full camera advertised speed (15, 30 fps etc) but still stream from multiple cameras. 
+
+I tried to do that and I am succeeding up to query and map buffers but then when doing VIDIOC_STREAMON - the first camera starts and the second one always gets 
+
+kernel: uvcvideo: Failed to submit URB 0 (-28).
+
+which seems to be linked with the usb bandwidth.
+
+Now as I tried that at 1600x1200 YUYV(packed) at around 4-5fps - that means approx 17.5 Mbytes/sec. That multiplied by 2 would of course go beyond the USB 2.0 bandwidth limit which should be practically around 32 Mbytes/sec.
+
+The issue is the same for 640x480 YUYV 30 fps which yields approx the same bandwidth.  On the other hand this should work for 320x240 no matter the fps (don't think that camera cand do more than 30 fps - 30 fps is the only framerate given with ENUMFRAMESIZES for all resolutions ) as in this case even at 60 fps we get approx 9 Mbytes/sec /camera
+
+In all cases I get the same behavior - failing to submit URB !
+
+Is there any way of making this possible ? 
+What about for the cases where the bandwidth is exceeded ? 
+
+I don't know all the details about the USB transfer protocol but my understanding is that - the driver should request a static bandwidth allocation before starting streaming. Would it be possible to force the streaming at a lower rate - maybe loosing some frames from the camera but still allow multiple camera streaming ?
+
+For ex I could supply capture buffers slower than the camera capture speed and skip frames this way. Still even using one 
+memory mapped buffer I cannot start the capture process as STREAMON fails !
+
+
+      
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100516/449b6bb3/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100516/449b6bb3/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005741.html">[Linux-uvc-devel] Looking for upside down uvc cams
+</A></li>
+	<LI>Next message: <A HREF="005743.html">[Linux-uvc-devel] Stream from multimple cameras
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5742">[ date ]</a>
+              <a href="thread.html#5742">[ thread ]</a>
+              <a href="subject.html#5742">[ subject ]</a>
+              <a href="author.html#5742">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

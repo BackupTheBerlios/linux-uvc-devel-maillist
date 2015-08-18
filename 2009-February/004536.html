@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] How to tell the difference of single/multiple	bulk transfer?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20How%20to%20tell%20the%20difference%20of%20single/multiple%0A%09bulk%20transfer%3F&In-Reply-To=%3C200902081353.46007.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004532.html">
+   <LINK REL="Next"  HREF="004533.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] How to tell the difference of single/multiple	bulk transfer?</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20How%20to%20tell%20the%20difference%20of%20single/multiple%0A%09bulk%20transfer%3F&In-Reply-To=%3C200902081353.46007.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] How to tell the difference of single/multiple	bulk transfer?">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sun Feb  8 13:53:45 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004532.html">[Linux-uvc-devel] How to tell the difference of single/multiple	bulk transfer?
+</A></li>
+        <LI>Next message: <A HREF="004533.html">[Linux-uvc-devel] Pan and Tilt controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4536">[ date ]</a>
+              <a href="thread.html#4536">[ thread ]</a>
+              <a href="subject.html#4536">[ subject ]</a>
+              <a href="author.html#4536">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Saturday 07 February 2009 08:28:34 Brian Pin wrote:
+&gt;<i> Hi all,
+</I>&gt;<i>
+</I>&gt;<i> I am going to make a UVC gadget, and we would like to make some bulk
+</I>&gt;<i> transferred video device first.
+</I>&gt;<i> Reviewing the UVC spec 1.1, There is payload header added to each bulk
+</I>&gt;<i> transfer, and there is only one payload header when I have a single bulk
+</I>&gt;<i> transfer. (Please refer to spec Figure 2-10, 2-11) My question is how to
+</I>&gt;<i> tell if this transfer is a single bulk xfer or a multiple bulk xfer?
+</I>
+Your device determines the maximum UVC payload size by setting the 
+dwMaxPayloadTransferSize field in the video probe/commit control structure. 
+You can either set dwMaxPayloadTransferSize to the size of your UVC frame 
+(including the header), in which case you can send the frame in a single 
+payload, or use a smaller size in which case you will cut your frame into 
+chunks of (dwMaxPayloadTransferSize - sizeof(header)) at most and prepend each 
+of them with a header.
+
+Don't forget to terminate each payload by a bulk transfer smaller than the 
+bulk endpoint maximum packet size (possibly a zero packet if the payload size 
+is a multiple of the maximum packet size).
+
+Best regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004532.html">[Linux-uvc-devel] How to tell the difference of single/multiple	bulk transfer?
+</A></li>
+	<LI>Next message: <A HREF="004533.html">[Linux-uvc-devel] Pan and Tilt controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4536">[ date ]</a>
+              <a href="thread.html#4536">[ thread ]</a>
+              <a href="subject.html#4536">[ subject ]</a>
+              <a href="author.html#4536">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

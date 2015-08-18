@@ -1,0 +1,175 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d) bandwidth	reservation issues?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20LifeCam%20Cinema%20%28045e%3A075d%29%20bandwidth%0A%09reservation%20issues%3F&In-Reply-To=%3Ce77a8d391001050754h69f2886of2ab391d74169bc1%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005473.html">
+   <LINK REL="Next"  HREF="005470.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d) bandwidth	reservation issues?</H1>
+    <B>Seth W</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20LifeCam%20Cinema%20%28045e%3A075d%29%20bandwidth%0A%09reservation%20issues%3F&In-Reply-To=%3Ce77a8d391001050754h69f2886of2ab391d74169bc1%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d) bandwidth	reservation issues?">oztiks at yewnix.net
+       </A><BR>
+    <I>Tue Jan  5 16:54:20 CET 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005473.html">[Linux-uvc-devel] Disconnect video out device from non-root hub.
+</A></li>
+        <LI>Next message: <A HREF="005470.html">[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5464">[ date ]</a>
+              <a href="thread.html#5464">[ thread ]</a>
+              <a href="subject.html#5464">[ subject ]</a>
+              <a href="author.html#5464">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Greetings,
+
+I have two Microsoft LifeCam Cinema Cameras attached to a single system
+(only one USB 2.0 controller). I have set trace=1024 on uvcvideo and find
+that the driver allocates the same amount of bandwidth regardless of what I
+specify for resolution, fps, or codec in ffmpeg, vlc, etc.
+
+Example:
+
+[<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at fedora11-test</A> ~]# ffmpeg   -f video4linux2 -s 1280x800 -r 30 -i
+/dev/video1 -f m4v 2-1280-800-maxfps.m4v
+FFmpeg version SVN-r20557-snapshot, Copyright (c) 2000-2009 Fabrice Bellard,
+et al.
+  built on Nov 22 2009 01:51:55 with gcc 4.4.1 20090725 (Red Hat 4.4.1-2)
+  configuration: --prefix=/usr --libdir=/usr/lib --shlibdir=/usr/lib
+--mandir=/usr/share/man --enable-shared --enable-gpl --enable-version3
+--enable-nonfree --enable-postproc --enable-avfilter --enable-avfilter-lavf
+--enable-pthreads --enable-x11grab --enable-vdpau --disable-avisynth
+--enable-libdc1394 --enable-libdirac --enable-libfaac --enable-libfaad
+--enable-libfaadbin --enable-libgsm --enable-libmp3lame --enable-libnut
+--enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg
+--enable-libschroedinger --enable-libspeex --enable-libtheora
+--enable-libvorbis --enable-libx264 --enable-libxvid --extra-cflags='-O2 -g
+-pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector
+--param=ssp-buffer-size=4 -m32 -march=i586 -mtune=generic
+-fasynchronous-unwind-tables' --disable-stripping
+  libavutil     50. 4. 0 / 50. 4. 0
+  libavcodec    52.41. 0 / 52.41. 0
+  libavformat   52.39. 2 / 52.39. 2
+  libavdevice   52. 2. 0 / 52. 2. 0
+  libavfilter    1. 8. 0 /  1. 8. 0
+  libswscale     0. 7. 1 /  0. 7. 1
+  libpostproc   51. 2. 0 / 51. 2. 0
+[video4linux2 @ 0x858a860][3]Capabilities: 4000001
+Input #0, video4linux2, from '/dev/video1':
+  Duration: N/A, start: 1262673238.027945, bitrate: 491519 kb/s
+    Stream #0.0: Video: rawvideo, yuyv422, 1280x800, 491519 kb/s, 30 tbr,
+1000k tbn, 30 tbc
+Output #0, m4v, to '2-1280-800-maxfps.m4v':
+    Stream #0.0: Video: mpeg4, yuv420p, 1280x800, q=2-31, 200 kb/s, 90k tbn,
+30 tbc
+Stream mapping:
+  Stream #0.0 -&gt; #0.0
+Press [q] to stop encoding
+frame=  147 fps= 30 q=31.0 Lsize=     356kB time=4.90 bitrate= 595.6kbits/s
+video:356kB audio:0kB global headers:0kB muxing overhead 0.000000%
+
+And from dmesg:
+
+uvcvideo: Device requested 3072 B/frame bandwidth.
+uvcvideo: Allocated 5 URB buffers of 32x3072 bytes each.
+
+---
+
+[<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at fedora11-test</A> ~]# ffmpeg   -f video4linux2 -s 640x480 -r 30 -i
+/dev/video1 -f m4v 2-640x480.m4v
+FFmpeg version SVN-r20557-snapshot, Copyright (c) 2000-2009 Fabrice Bellard,
+et al.
+  built on Nov 22 2009 01:51:55 with gcc 4.4.1 20090725 (Red Hat 4.4.1-2)
+  configuration: --prefix=/usr --libdir=/usr/lib --shlibdir=/usr/lib
+--mandir=/usr/share/man --enable-shared --enable-gpl --enable-version3
+--enable-nonfree --enable-postproc --enable-avfilter --enable-avfilter-lavf
+--enable-pthreads --enable-x11grab --enable-vdpau --disable-avisynth
+--enable-libdc1394 --enable-libdirac --enable-libfaac --enable-libfaad
+--enable-libfaadbin --enable-libgsm --enable-libmp3lame --enable-libnut
+--enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg
+--enable-libschroedinger --enable-libspeex --enable-libtheora
+--enable-libvorbis --enable-libx264 --enable-libxvid --extra-cflags='-O2 -g
+-pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector
+--param=ssp-buffer-size=4 -m32 -march=i586 -mtune=generic
+-fasynchronous-unwind-tables' --disable-stripping
+  libavutil     50. 4. 0 / 50. 4. 0
+  libavcodec    52.41. 0 / 52.41. 0
+  libavformat   52.39. 2 / 52.39. 2
+  libavdevice   52. 2. 0 / 52. 2. 0
+  libavfilter    1. 8. 0 /  1. 8. 0
+  libswscale     0. 7. 1 /  0. 7. 1
+  libpostproc   51. 2. 0 / 51. 2. 0
+[video4linux2 @ 0x9a15860][3]Capabilities: 4000001
+Input #0, video4linux2, from '/dev/video1':
+  Duration: N/A, start: 1262673302.162194, bitrate: 147456 kb/s
+    Stream #0.0: Video: rawvideo, yuyv422, 640x480, 147456 kb/s, 30 tbr,
+1000k tbn, 30 tbc
+Output #0, m4v, to '2-640x480.m4v':
+    Stream #0.0: Video: mpeg4, yuv420p, 640x480, q=2-31, 200 kb/s, 90k tbn,
+30 tbc
+Stream mapping:
+  Stream #0.0 -&gt; #0.0
+Press [q] to stop encoding
+frame=  152 fps= 30 q=5.2 Lsize=     347kB time=5.07 bitrate= 561.4kbits/s
+video:347kB audio:0kB global headers:0kB muxing overhead 0.000000%
+
+
+and from dmesg:
+
+vcvideo: Device requested 3072 B/frame bandwidth.
+uvcvideo: Allocated 5 URB buffers of 32x3072 bytes each.
+
+
+----
+
+I had planned on showing the example from dmesg of the same allocation when
+using mencoder with --v4l2-chroma=mjpeg ; but unfortunately the machine is
+remote and just died...
+
+At any rate, if anyone can verify that this is the (in)correct behavior of
+uvcvideo i would appreciate it (but I am under the impression it is not
+supposed to work this way, and is supposed to allocate bandwidth based on
+the input parameters). I would be happy to provide any debugging information
+necessary.
+
+Thanks in advance.
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100105/b46983b4/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100105/b46983b4/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005473.html">[Linux-uvc-devel] Disconnect video out device from non-root hub.
+</A></li>
+	<LI>Next message: <A HREF="005470.html">[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5464">[ date ]</a>
+              <a href="thread.html#5464">[ thread ]</a>
+              <a href="subject.html#5464">[ subject ]</a>
+              <a href="author.html#5464">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

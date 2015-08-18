@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Acer HD Crystal Eye webcam (064e:a117 Suyin	Corp.) and Ubuntu 9.04 problems
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Acer%20HD%20Crystal%20Eye%20webcam%20%28064e%3Aa117%20Suyin%0A%09Corp.%29%20and%20Ubuntu%209.04%20problems&In-Reply-To=%3C200909242344.11214.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005153.html">
+   <LINK REL="Next"  HREF="005165.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Acer HD Crystal Eye webcam (064e:a117 Suyin	Corp.) and Ubuntu 9.04 problems</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Acer%20HD%20Crystal%20Eye%20webcam%20%28064e%3Aa117%20Suyin%0A%09Corp.%29%20and%20Ubuntu%209.04%20problems&In-Reply-To=%3C200909242344.11214.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Acer HD Crystal Eye webcam (064e:a117 Suyin	Corp.) and Ubuntu 9.04 problems">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu Sep 24 23:44:11 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005153.html">[Linux-uvc-devel] Acer HD Crystal Eye webcam (064e:a117 Suyin	Corp.) and Ubuntu 9.04 problems
+</A></li>
+        <LI>Next message: <A HREF="005165.html">[Linux-uvc-devel] Acer HD Crystal Eye webcam (064e:a117 Suyin	Corp.) and Ubuntu 9.04 problems
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5157">[ date ]</a>
+              <a href="thread.html#5157">[ thread ]</a>
+              <a href="subject.html#5157">[ subject ]</a>
+              <a href="author.html#5157">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Andrea,
+
+On Thursday 24 September 2009 23:03:17 Andrea Grandi wrote:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> 2009/9/24 Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt;:
+</I>&gt;<i> &gt; Hi Andrea,
+</I>&gt;<i> &gt; Your log is truncated. Can you set the trace parameter to 127 and capture
+</I>&gt;<i> &gt; the kernel log again ?
+</I>&gt;<i> 
+</I>&gt;<i> sorry, this was the right link: <A HREF="http://pastebin.com/m18f4f623">http://pastebin.com/m18f4f623</A>
+</I>&gt;<i> 
+</I>&gt;<i> I hope this is ok.
+</I>
+Yes it is, thanks.
+
+The log shows the Cheese opens the device four times to stream video data.
+
+[ 2222.650758] uvcvideo: Trying format 0x56595559 (YUYV): 1280x800.
+[ 2222.650761] uvcvideo: Using default frame interval 111111.1 us (9.0 fps).
+...
+[ 2224.759563] uvcvideo: Trying format 0x47504a4d (MJPG): 1280x800.
+[ 2224.759566] uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+...
+[ 2230.361550] uvcvideo: Trying format 0x47504a4d (MJPG): 1280x800.
+[ 2230.361553] uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+...
+[ 2241.682398] uvcvideo: Trying format 0x47504a4d (MJPG): 1280x800.
+[ 2241.682401] uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+
+The first time it captures a single YUV 1280x800 frame, the next three times 
+it captures several MJPG 1280x800 frames.
+
+The third capture run gets quite slow after some time:
+
+[ 2232.317576] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2232.317586] uvcvideo: Queuing buffer 1.
+[ 2232.317835] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[ 2232.317840] uvcvideo: Dequeuing buffer 0 (3, 154384 bytes).
+[ 2232.382032] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2232.382041] uvcvideo: Queuing buffer 0.
+
+There's a two seconds delay here between the time when buffer 0 is queued and 
+the time the next buffer is dequeued. If the application waits two seconds 
+before calling VIDIOC_DQBUF the driver can't do much about it.
+
+[ 2234.067161] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[ 2234.067170] uvcvideo: Dequeuing buffer 1 (3, 157576 bytes).
+[ 2234.119014] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2234.119024] uvcvideo: Queuing buffer 1.
+[ 2234.561870] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[ 2234.561879] uvcvideo: Dequeuing buffer 0 (3, 161384 bytes).
+[ 2234.613641] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2234.613650] uvcvideo: Queuing buffer 0.
+[ 2235.859377] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[ 2235.859385] uvcvideo: Dequeuing buffer 1 (3, 159096 bytes).
+[ 2235.910547] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2235.910555] uvcvideo: Queuing buffer 1.
+[ 2235.910742] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+[ 2235.910747] uvcvideo: Dequeuing buffer 0 (3, 146648 bytes).
+[ 2236.005059] uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+[ 2236.005068] uvcvideo: Queuing buffer 0.
+
+I suspect that you're running into different issues with Cheese and Skype. As 
+Skype is closed source, you should probably try to solve the Cheese problem 
+first. I suspect it comes from userspace so you'll have to look there (either 
+in Cheese itself, in gstreamer or in libv4l). strace might help.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005153.html">[Linux-uvc-devel] Acer HD Crystal Eye webcam (064e:a117 Suyin	Corp.) and Ubuntu 9.04 problems
+</A></li>
+	<LI>Next message: <A HREF="005165.html">[Linux-uvc-devel] Acer HD Crystal Eye webcam (064e:a117 Suyin	Corp.) and Ubuntu 9.04 problems
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5157">[ date ]</a>
+              <a href="thread.html#5157">[ thread ]</a>
+              <a href="subject.html#5157">[ subject ]</a>
+              <a href="author.html#5157">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,248 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Sony Vaio VGN-SZ3VWP/X built-in laptop webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Sony%20Vaio%20VGN-SZ3VWP/X%20built-in%20laptop%20webcam&In-Reply-To=%3C000101c7463e%24ed7d5880%24c8780980%24%40info%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001328.html">
+   <LINK REL="Next"  HREF="001334.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Sony Vaio VGN-SZ3VWP/X built-in laptop webcam</H1>
+    <B>Martin Rubli</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Sony%20Vaio%20VGN-SZ3VWP/X%20built-in%20laptop%20webcam&In-Reply-To=%3C000101c7463e%24ed7d5880%24c8780980%24%40info%3E"
+       TITLE="[Linux-uvc-devel] Sony Vaio VGN-SZ3VWP/X built-in laptop webcam">linux at rubli.info
+       </A><BR>
+    <I>Thu Feb  1 21:24:04 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001328.html">[Linux-uvc-devel] Control mappings
+</A></li>
+        <LI>Next message: <A HREF="001334.html">[Linux-uvc-devel] Sony Vaio VGN-SZ3VWP/X built-in laptop webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1320">[ date ]</a>
+              <a href="thread.html#1320">[ thread ]</a>
+              <a href="subject.html#1320">[ subject ]</a>
+              <a href="author.html#1320">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Daniel,
+
+Unfortunately, this camera isn't a UVC webcam either. Below are instructions
+how you can find out ...
+
+Unless you know what kind of chipset the camera uses you might have a hard
+time finding a driver. Maybe you can tell from the Windows driver?
+
+Cheers,
+Martin
+
+
+Use the lsusb tool and look for video class interfaces like this: (In this
+example, the VID is 046d and the PID is 08cb.)
+
+lsusb -d 046d:08cb -v | grep &quot;14 Video&quot;
+
+If your device is a UVC device, you should see a number of lines that look
+like this: 
+bFunctionClass         14 Video
+bInterfaceClass        14 Video
+bInterfaceClass        14 Video
+bInterfaceClass        14 Video
+
+In this case the Linux UVC driver should recognize your camera when you plug
+it in. 
+
+If there are no such lines, your device is not a UVC device.
+
+
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Daniel Storm [mailto:<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">daniel at verbena.co.uk</A>]
+</I>&gt;<i> Sent: Monday, January 29, 2007 9:54 AM
+</I>&gt;<i> To: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux at rubli.info</A>
+</I>&gt;<i> Subject: [Linux-uvc-devel] HP Pavillon dv6000 built-in laptop webcam
+</I>&gt;<i> 
+</I>&gt;<i> Hi Martin,
+</I>&gt;<i> 
+</I>&gt;<i> Apologies for the direct mail, rather than to the uvc-devel list (I'm
+</I>&gt;<i> not a member right now).
+</I>&gt;<i> 
+</I>&gt;<i> Here's another Ricoh built in webcam from a Sony Vaio PCG-6N1M (or
+</I>&gt;<i> VGN-SZ3VWP/X if you prefer). It's a different model to the one you
+</I>&gt;<i> listed in your post.
+</I>&gt;<i> 
+</I>&gt;<i> I don't know whether this card is already supported by the uvc driver,
+</I>&gt;<i> the source didn't build or mention Ricoh, so I hope this mail isn't a
+</I>&gt;<i> waste of your time.
+</I>&gt;<i> 
+</I>&gt;<i> Please feel free to pass my details to anyone constructing a letter to
+</I>&gt;<i> Ricoh requesting technical details (as long as my email isn't
+</I>&gt;<i> published).
+</I>&gt;<i> 
+</I>&gt;<i> Dan
+</I>&gt;<i> 
+</I>&gt;<i> # lsusb -v -s 005:003
+</I>&gt;<i> 
+</I>&gt;<i> Bus 005 Device 003: ID 05ca:1830 Ricoh Co., Ltd
+</I>&gt;<i> Device Descriptor:
+</I>&gt;<i>   bLength                18
+</I>&gt;<i>   bDescriptorType         1
+</I>&gt;<i>   bcdUSB               2.00
+</I>&gt;<i>   bDeviceClass            0 (Defined at Interface level)
+</I>&gt;<i>   bDeviceSubClass         0
+</I>&gt;<i>   bDeviceProtocol         0
+</I>&gt;<i>   bMaxPacketSize0        64
+</I>&gt;<i>   idVendor           0x05ca Ricoh Co., Ltd
+</I>&gt;<i>   idProduct          0x1830
+</I>&gt;<i>   bcdDevice            1.00
+</I>&gt;<i>   iManufacturer           0
+</I>&gt;<i>   iProduct                0
+</I>&gt;<i>   iSerial                 0
+</I>&gt;<i>   bNumConfigurations      1
+</I>&gt;<i>   Configuration Descriptor:
+</I>&gt;<i>     bLength                 9
+</I>&gt;<i>     bDescriptorType         2
+</I>&gt;<i>     wTotalLength           78
+</I>&gt;<i>     bNumInterfaces          1
+</I>&gt;<i>     bConfigurationValue     1
+</I>&gt;<i>     iConfiguration          0
+</I>&gt;<i>     bmAttributes         0x80
+</I>&gt;<i>       (Bus Powered)
+</I>&gt;<i>     MaxPower              100mA
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        0
+</I>&gt;<i>       bAlternateSetting       0
+</I>&gt;<i>       bNumEndpoints           2
+</I>&gt;<i>       bInterfaceClass         6 Imaging
+</I>&gt;<i>       bInterfaceSubClass      0
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x81  EP 1 IN
+</I>&gt;<i>         bmAttributes            3
+</I>&gt;<i>           Transfer Type            Interrupt
+</I>&gt;<i>           Synch Type               None
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x0040  1x 64 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x86  EP 6 IN
+</I>&gt;<i>         bmAttributes            1
+</I>&gt;<i>           Transfer Type            Isochronous
+</I>&gt;<i>           Synch Type               None
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x0000  1x 0 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        0
+</I>&gt;<i>       bAlternateSetting       1
+</I>&gt;<i>       bNumEndpoints           2
+</I>&gt;<i>       bInterfaceClass         6 Imaging
+</I>&gt;<i>       bInterfaceSubClass      0
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x81  EP 1 IN
+</I>&gt;<i>         bmAttributes            3
+</I>&gt;<i>           Transfer Type            Interrupt
+</I>&gt;<i>           Synch Type               None
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x0040  1x 64 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x86  EP 6 IN
+</I>&gt;<i>         bmAttributes            1
+</I>&gt;<i>           Transfer Type            Isochronous
+</I>&gt;<i>           Synch Type               None
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x0c00  2x 0 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i>     Interface Descriptor:
+</I>&gt;<i>       bLength                 9
+</I>&gt;<i>       bDescriptorType         4
+</I>&gt;<i>       bInterfaceNumber        0
+</I>&gt;<i>       bAlternateSetting       2
+</I>&gt;<i>       bNumEndpoints           2
+</I>&gt;<i>       bInterfaceClass         6 Imaging
+</I>&gt;<i>       bInterfaceSubClass      0
+</I>&gt;<i>       bInterfaceProtocol      0
+</I>&gt;<i>       iInterface              0
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x81  EP 1 IN
+</I>&gt;<i>         bmAttributes            3
+</I>&gt;<i>           Transfer Type            Interrupt
+</I>&gt;<i>           Synch Type               None
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x0040  1x 64 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i>       Endpoint Descriptor:
+</I>&gt;<i>         bLength                 7
+</I>&gt;<i>         bDescriptorType         5
+</I>&gt;<i>         bEndpointAddress     0x86  EP 6 IN
+</I>&gt;<i>         bmAttributes            1
+</I>&gt;<i>           Transfer Type            Isochronous
+</I>&gt;<i>           Synch Type               None
+</I>&gt;<i>           Usage Type               Data
+</I>&gt;<i>         wMaxPacketSize     0x1400  3x 0 bytes
+</I>&gt;<i>         bInterval               1
+</I>&gt;<i> Device Qualifier (for other device speed):
+</I>&gt;<i>   bLength                10
+</I>&gt;<i>   bDescriptorType         6
+</I>&gt;<i>   bcdUSB               2.00
+</I>&gt;<i>   bDeviceClass            0 (Defined at Interface level)
+</I>&gt;<i>   bDeviceSubClass         0
+</I>&gt;<i>   bDeviceProtocol         0
+</I>&gt;<i>   bMaxPacketSize0        64
+</I>&gt;<i>   bNumConfigurations      1
+</I>&gt;<i> Device Status:     0x0000
+</I>&gt;<i>   (Bus Powered)
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001328.html">[Linux-uvc-devel] Control mappings
+</A></li>
+	<LI>Next message: <A HREF="001334.html">[Linux-uvc-devel] Sony Vaio VGN-SZ3VWP/X built-in laptop webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1320">[ date ]</a>
+              <a href="thread.html#1320">[ thread ]</a>
+              <a href="subject.html#1320">[ subject ]</a>
+              <a href="author.html#1320">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

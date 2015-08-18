@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%0A%09%3D%3Fiso-8859-1%3Fq%3Fuvcvideo_-_Unable_to_allocate_bu%3F%3D%0A%09%3D%3Fiso-8859-1%3Fq%3Fffers%3D3A_22%3D2E%3D09Init_v4L2_failed%3F%3D&In-Reply-To=%3C200610292129.17169.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000904.html">
+   <LINK REL="Next"  HREF="000908.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%0A%09%3D%3Fiso-8859-1%3Fq%3Fuvcvideo_-_Unable_to_allocate_bu%3F%3D%0A%09%3D%3Fiso-8859-1%3Fq%3Fffers%3D3A_22%3D2E%3D09Init_v4L2_failed%3F%3D&In-Reply-To=%3C200610292129.17169.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sun Oct 29 21:29:16 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000904.html">[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+</A></li>
+        <LI>Next message: <A HREF="000908.html">[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#905">[ date ]</a>
+              <a href="thread.html#905">[ thread ]</a>
+              <a href="subject.html#905">[ subject ]</a>
+              <a href="author.html#905">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+&gt;<i> &gt; &gt; Try to add a print statement before and after the check. If the check
+</I>&gt;<i> &gt; &gt; fails, print rb-&gt;type and rb-&gt;memory.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Ok, here's what I did, results were not as expected. I am totally
+</I>&gt;<i> &gt; confused at this point.
+</I>&gt;<i>
+</I>&gt;<i> &lt;snip&gt;
+</I>&gt;<i>
+</I>&gt;<i> &gt; I hope this means something to you, I am lost. Thanks again for your
+</I>&gt;<i> &gt; help.
+</I>&gt;<i>
+</I>&gt;<i> Well I have made some more progress, apparently I have a problem with where
+</I>&gt;<i> the constants are getting their values.
+</I>&gt;<i>
+</I>&gt;<i> I put in these printk's
+</I>&gt;<i>
+</I>&gt;<i> static int uvc_v4l2_do_ioctl(struct inode *inode, struct file *file,
+</I>&gt;<i>                      unsigned int cmd, void *arg)
+</I>&gt;<i> {
+</I>&gt;<i>         struct video_device *vdev = video_devdata(file);
+</I>&gt;<i>         struct uvc_video_device *video = video_get_drvdata(vdev);
+</I>&gt;<i>         int ret;
+</I>&gt;<i>         unsigned int testvidio;
+</I>&gt;<i>         testvidio = VIDIOC_REQBUFS;
+</I>&gt;<i>         printk(KERN_DEBUG &quot;Vidioc_reqbufs = %x\ncmd = %x\n&quot;,
+</I>&gt;<i> testvidio,cmd);
+</I>&gt;<i>
+</I>&gt;<i> now dmesg gives me on the device:
+</I>[snip]
+&gt;<i> [52266.016326] Vidioc_reqbufs = c0105608
+</I>&gt;<i> [52266.016357] cmd = c0145608
+</I>[snip]
+&gt;<i>
+</I>&gt;<i> So, I think there is a problem with the includes, somehow I am getting one
+</I>&gt;<i> set of constants when compiling the video4linux2 modules and another when
+</I>&gt;<i> compiling uvcvideo. Arrggghhh!!!!!
+</I>&gt;<i>
+</I>&gt;<i> If you have any suggestions on how to trace these down I would appreciate
+</I>&gt;<i> it but at this point I think the problem is probably specific to my cross
+</I>&gt;<i> compiling setup.
+</I>
+The 32 bits ioctl number are made of 4 fields, one of them being the size of 
+the parameter in bytes. It seems your kernel and userspace tools don't agree 
+on the number of bytes an enumeration should take.
+
+This is a known problem. Search the v4l mailing list archives for a thread 
+started on 13/04/2006 which subject was
+
+[PATCH] [RFC] videodev2.h: ARM's old ABI support on EABI kernels
+
+If this helps, please report the problem on the v4l mailing list and bug them 
+until a valid solution is found and applied to the kernel.
+
+Cheers,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000904.html">[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+</A></li>
+	<LI>Next message: <A HREF="000908.html">[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#905">[ date ]</a>
+              <a href="thread.html#905">[ thread ]</a>
+              <a href="subject.html#905">[ subject ]</a>
+              <a href="author.html#905">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

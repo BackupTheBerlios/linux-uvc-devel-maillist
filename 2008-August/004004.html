@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] USB microphone breaks Logitech QuickCam Pro	9000
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20USB%20microphone%20breaks%20Logitech%20QuickCam%20Pro%0A%099000&In-Reply-To=%3C200808292333.53108.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003976.html">
+   <LINK REL="Next"  HREF="003977.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] USB microphone breaks Logitech QuickCam Pro	9000</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20USB%20microphone%20breaks%20Logitech%20QuickCam%20Pro%0A%099000&In-Reply-To=%3C200808292333.53108.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] USB microphone breaks Logitech QuickCam Pro	9000">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Fri Aug 29 23:33:52 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003976.html">[Linux-uvc-devel] USB microphone breaks Logitech QuickCam Pro 9000
+</A></li>
+        <LI>Next message: <A HREF="003977.html">[Linux-uvc-devel] UVC-compliant USB video capture card
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4004">[ date ]</a>
+              <a href="thread.html#4004">[ thread ]</a>
+              <a href="subject.html#4004">[ subject ]</a>
+              <a href="author.html#4004">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Robert,
+
+On Wednesday 20 August 2008, Robert Watkins wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> I think I may have the same problem as detailed in
+</I>&gt;<i> <A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/003765.html">https://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/003765.html</A>
+</I>&gt;<i> but I haven't got the space to fit an extra pci card. I'm hoping there is
+</I>&gt;<i> another answer.
+</I>&gt;<i>
+</I>&gt;<i> The webcam appears to work excellently...
+</I>&gt;<i>
+</I>&gt;<i> 	<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">watkins at watkins-desktop</A>:~$ luvcview -d /dev/video1
+</I>&gt;<i> 	luvcview version 0.2.1
+</I>&gt;<i> 	Video driver: x11
+</I>&gt;<i> 	A window manager is available
+</I>&gt;<i> 	video /dev/video1
+</I>&gt;<i>
+</I>&gt;<i> until any application uses a USB microphone, i.e.
+</I>&gt;<i>
+</I>&gt;<i> 	<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">watkins at watkins-desktop</A>:~$ cat /dev/dsp4
+</I>&gt;<i>
+</I>&gt;<i> then the picture breaks up, freezes and luvcview dies a few seconds later.
+</I>&gt;<i>
+</I>&gt;<i> 	<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">watkins at watkins-desktop</A>:~$ luvcview -d /dev/video1
+</I>&gt;<i> 	luvcview version 0.2.1
+</I>&gt;<i> 	Video driver: x11
+</I>&gt;<i> 	A window manager is available
+</I>&gt;<i> 	video /dev/video1
+</I>&gt;<i> 	Ignoring empty buffer ...
+</I>&gt;<i> 	Ignoring empty buffer ...
+</I>&gt;<i> 	Ignoring empty buffer ...
+</I>&gt;<i> 	Ignoring empty buffer ...
+</I>&gt;<i> 	Unable to dequeue buffer (22).
+</I>&gt;<i> 	Error grabbing
+</I>&gt;<i> 	 Clean Up done Quit
+</I>&gt;<i> 	<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">watkins at watkins-desktop</A>:~$
+</I>&gt;<i>
+</I>&gt;<i> I tried using a different USB microphone, i.e. cat /dev/dsp3, but it dies
+</I>&gt;<i> just the same. I tried with and without USB hubs, but it dies just the
+</I>&gt;<i> same.
+</I>&gt;<i>
+</I>&gt;<i> I tried the webcam in my old Toshiba Satellite laptop, and it doesn't
+</I>&gt;<i> appear to have the problem. (Unfortunately 400MHz and 198M of ram is not
+</I>&gt;<i> going to work well with Skype.)
+</I>&gt;<i>
+</I>&gt;<i> Any help would be greatly appreciated.
+</I>&gt;<i> Will any USB webcam work for me and my box of ATI chips?
+</I>
+The short answer is: probably.
+
+Most webcam vendors test their products with Windows only (fortunately the 
+situation is slowly evolving with Linux getting more vendor awareness - the 
+Logitech webcam team getting is very Linux friendly). This leads to subtle 
+timing-related bugs in the webcams to stay undetected when the cameras are 
+used with Windows, but to crash the device when plugged into a Linux box. As 
+the bugs are timing-related, the crashes frequency depends on the hardware 
+configuration.
+
+Some Logitech webcams are known to suffer from such firmware bugs. There is 
+unfortunately no fix.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003976.html">[Linux-uvc-devel] USB microphone breaks Logitech QuickCam Pro 9000
+</A></li>
+	<LI>Next message: <A HREF="003977.html">[Linux-uvc-devel] UVC-compliant USB video capture card
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4004">[ date ]</a>
+              <a href="thread.html#4004">[ thread ]</a>
+              <a href="subject.html#4004">[ subject ]</a>
+              <a href="author.html#4004">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

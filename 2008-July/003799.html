@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Linux 2.6.26-rc9 circular lock with uvcvideo	on resume from hibernation
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Linux%202.6.26-rc9%20circular%20lock%20with%20uvcvideo%0A%09on%20resume%20from%20hibernation&In-Reply-To=%3C200807092210.56678.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003798.html">
+   <LINK REL="Next"  HREF="003803.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Linux 2.6.26-rc9 circular lock with uvcvideo	on resume from hibernation</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Linux%202.6.26-rc9%20circular%20lock%20with%20uvcvideo%0A%09on%20resume%20from%20hibernation&In-Reply-To=%3C200807092210.56678.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Linux 2.6.26-rc9 circular lock with uvcvideo	on resume from hibernation">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Jul  9 22:10:56 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003798.html">[Linux-uvc-devel] Linux 2.6.26-rc9 circular lock with uvcvideo	on resume from hibernation
+</A></li>
+        <LI>Next message: <A HREF="003803.html">[Linux-uvc-devel] Is this a UVC device and can it be supported ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3799">[ date ]</a>
+              <a href="thread.html#3799">[ thread ]</a>
+              <a href="subject.html#3799">[ subject ]</a>
+              <a href="author.html#3799">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wednesday 09 July 2008, Roland Dreier wrote:
+&gt;<i>  &gt; uvc_disconnect()                      | uvc_v4l2_open()
+</I>&gt;<i>  &gt; ...                                   |
+</I>&gt;<i>  &gt; mutex_lock(&amp;uvc_driver.open_mutex);   |
+</I>&gt;<i>  &gt; dev-&gt;state |= UVC_DEV_DISCONNECTED;   |
+</I>&gt;<i>  &gt; mutex_unlock(&amp;uvc_driver.open_mutex); |
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt;                                       | mutex_lock(&amp;uvc_driver.open_mute
+</I>&gt;<i>  &gt;                                       |x); vdev = video_devdata(file);
+</I>&gt;<i>  &gt;                                       | video = video_get_drvdata(vdev);
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt; kref_put(&amp;dev-&gt;kref, uvc_delete);     |
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt;                                       | if (video-&gt;dev-&gt;state...)
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt; kref_put() in uvc_disconnect() will call uvc_delete(), which will in
+</I>&gt;<i>  &gt; turn free the video structure. uvc_v4l2_open() will then dereference
+</I>&gt;<i>  &gt; freed memory when testing the device state.
+</I>&gt;<i>
+</I>&gt;<i> I don't believe this is correct.  I tried to explain it in my
+</I>&gt;<i> changelog by saying &quot;uvc_delete() does uvc_unregister_video() (and
+</I>&gt;<i> hence video_unregister_device(), which is synchronized with
+</I>&gt;<i> videodev_lock) as its first thing, so there is no risk of
+</I>&gt;<i> use-after-free in uvc_v4l2_open().&quot;
+</I>&gt;<i>
+</I>&gt;<i> In other words, the first thing uvc_delete() does is call
+</I>&gt;<i> uvc_unregister_video(), which will video_unregister_device().  Since
+</I>&gt;<i> this needs to take videodev_lock, it will wait until uvc_v4l2_open()
+</I>&gt;<i> returns (which it will do, since state is now UVC_DEV_DISCONNECTED).
+</I>&gt;<i> So the video struct will not be freed until after uvc_v4l2_open()
+</I>&gt;<i> returns.
+</I>&gt;<i>
+</I>&gt;<i> As far as I can see there is no use-after-free.
+</I>
+My bad, you seem to be right. I'll apply your patch.
+
+Have you checked David's videodev patch ? Any opinion ?
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003798.html">[Linux-uvc-devel] Linux 2.6.26-rc9 circular lock with uvcvideo	on resume from hibernation
+</A></li>
+	<LI>Next message: <A HREF="003803.html">[Linux-uvc-devel] Is this a UVC device and can it be supported ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3799">[ date ]</a>
+              <a href="thread.html#3799">[ thread ]</a>
+              <a href="subject.html#3799">[ subject ]</a>
+              <a href="author.html#3799">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

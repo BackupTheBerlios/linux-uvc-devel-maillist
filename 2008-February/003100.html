@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo and mercurial v4l-dvb conflicts..
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20and%20mercurial%20v4l-dvb%20conflicts..&In-Reply-To=%3C1203667338.8548.6.camel%40tux%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003091.html">
+   <LINK REL="Next"  HREF="003104.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo and mercurial v4l-dvb conflicts..</H1>
+    <B>Filippo Argiolas</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20and%20mercurial%20v4l-dvb%20conflicts..&In-Reply-To=%3C1203667338.8548.6.camel%40tux%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo and mercurial v4l-dvb conflicts..">filippo.argiolas at gmail.com
+       </A><BR>
+    <I>Fri Feb 22 09:02:17 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003091.html">[Linux-uvc-devel] uvcvideo and mercurial v4l-dvb conflicts..
+</A></li>
+        <LI>Next message: <A HREF="003104.html">[Linux-uvc-devel] uvcvideo and mercurial v4l-dvb conflicts..
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3100">[ date ]</a>
+              <a href="thread.html#3100">[ thread ]</a>
+              <a href="subject.html#3100">[ subject ]</a>
+              <a href="author.html#3100">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Il giorno gio, 21/02/2008 alle 23.45 +0100, Laurent Pinchart ha scritto:
+&gt;<i> uvc_compat.h defines macros, structures and functions not available in older 
+</I>&gt;<i> kernels to enable the UVC driver to be built on Linux kernels starting at 
+</I>&gt;<i> 2.6.15.
+</I>&gt;<i> 
+</I>&gt;<i> Which macros are defined depends on the kernel version. As the v4l-dvb tree 
+</I>&gt;<i> includes V4L2 headers more recent than the kernel you are building for, 
+</I>&gt;<i> uvc_compat.h will redefine symbols.
+</I>&gt;<i> 
+</I>&gt;<i> You can safely modify uvc_compat.h to remove all macros and structures that 
+</I>&gt;<i> are already defined in v4l-dvb.
+</I>
+I've removed all redefinitions from uvc_compat.h untill I got no
+warnings and errors, the driver compiled successfully but if I try to
+insmod it gives me again an unknonw symbol error:
+
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">pippo at tux</A>:~/linux-uvc$ sudo insmod uvcvideo.ko
+insmod: error inserting 'uvcvideo.ko': -1 Unknown symbol in module
+
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">pippo at tux</A>:~/linux-uvc$ dmesg
+[ 1402.632000] uvcvideo: disagrees about version of symbol video_devdata
+[ 1402.632000] uvcvideo: Unknown symbol video_devdata
+[ 1402.632000] uvcvideo: disagrees about version of symbol
+video_unregister_device
+[ 1402.632000] uvcvideo: Unknown symbol video_unregister_device
+[ 1402.632000] uvcvideo: disagrees about version of symbol
+video_device_alloc
+[ 1402.632000] uvcvideo: Unknown symbol video_device_alloc
+[ 1402.632000] uvcvideo: disagrees about version of symbol
+video_register_device
+[ 1402.632000] uvcvideo: Unknown symbol video_register_device
+[ 1402.632000] uvcvideo: disagrees about version of symbol
+video_device_release
+[ 1402.632000] uvcvideo: Unknown symbol video_device_release
+
+Note that I tried removing redefinitions one by one and even changing
+line 143: 
+#if LINUX_VERSION_CODE &lt; KERNEL_VERSION(2,6,26) to 
+#if LINUX_VERSION_CODE &gt; KERNEL_VERSION(2,6,26)
+
+Both methods give no compile errors but the unknown symbol error is the
+same.
+Any idea?
+Thank you again!
+
+Filippo
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003091.html">[Linux-uvc-devel] uvcvideo and mercurial v4l-dvb conflicts..
+</A></li>
+	<LI>Next message: <A HREF="003104.html">[Linux-uvc-devel] uvcvideo and mercurial v4l-dvb conflicts..
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3100">[ date ]</a>
+              <a href="thread.html#3100">[ thread ]</a>
+              <a href="subject.html#3100">[ subject ]</a>
+              <a href="author.html#3100">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

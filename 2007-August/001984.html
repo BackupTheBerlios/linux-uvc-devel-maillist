@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Acer Webcam/ linux fedora 7
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Acer%20Webcam/%20linux%20fedora%207&In-Reply-To=%3Ce4b61e4b0708170653qd56ff6ava767cba9744467b9%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001977.html">
+   <LINK REL="Next"  HREF="001988.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Acer Webcam/ linux fedora 7</H1>
+    <B>Mickael Drean</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Acer%20Webcam/%20linux%20fedora%207&In-Reply-To=%3Ce4b61e4b0708170653qd56ff6ava767cba9744467b9%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Acer Webcam/ linux fedora 7">mickael.drean at gmail.com
+       </A><BR>
+    <I>Fri Aug 17 15:53:21 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001977.html">[Linux-uvc-devel] Acer Webcam/ linux fedora 7
+</A></li>
+        <LI>Next message: <A HREF="001988.html">[Linux-uvc-devel] Acer Webcam/ linux fedora 7
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1984">[ date ]</a>
+              <a href="thread.html#1984">[ thread ]</a>
+              <a href="subject.html#1984">[ subject ]</a>
+              <a href="author.html#1984">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+
+I've found something which may help
+
+i've done a 'modprobe -v uvcvideo' and i get that result :
+
+insmod /lib/modules/2.6.22.1-41.fc7/kernel/drivers/media/video/v4l2-
+common.ko
+insmod /lib/modules/2.6.22.1-41.fc7/kernel/drivers/media/video/v4l1-
+compat.ko
+insmod /lib/modules/2.6.22.1-41.fc7/kernel/drivers/media/video/videodev.ko
+insmod /lib/modules/2.6.22.1-41.fc7/extra/uvc/uvcvideo.ko
+
+
+now what I can say is that the last line is not the module I compiled. So i
+made a link of my module in the 'lib/modules/2.6.22.1-41.fc7/extra/uvc'
+directory to load my module.
+
+Now I have a /dev/video and a /dev/video0. So my cam seems to be
+recognized.... in the dmeg
+
+Linux video capture interface: v2.00
+uvcvideo: Found UVC 1.00 device USB2.0 Camera (5986:0100)
+usbcore: registered new interface driver uvcvideo
+USB Video Class driver (v0.1.0)
+
+
+
+But if i try to use it (with camstream for example) , i got a error message
+'The device experienced an error-19(Aucun p&#233;riph&#233;rique de ce type). The
+Window will be closed&quot;. Here is the termlog trace:
+
+
+[<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">root at localhost</A> luvcview-20060207]# camstream
+CVideoDeviceInput: Warning: no channel info available.
+CCamWindow::CCamWindow()
+CWebCamViewer::CWebCamViewer(0x705b90, 0x0)
+CVideoDevice::Init()
+Allocating own buffer.
+Trying to find video options for USB2.0 Camera:/dev/video0
+searching USB2.0 Camera
+CSnapshotSettingsDlg::CSnapshotSettingsDlg(...)
+QFont::setRawName(): Invalid XLFD: &quot;system&quot;
+CVideoSettingsDlg::SizeChanged(320x240)
+CVideoSettingsDlg::FramerateChanged(10)
+CCamPanel::SetSize(320x240)
+CCamPanel::SetImageSize(320x240)
+CCamPanel::SetVisibleSize(320x240)
+CCamPanel::SetSize(320x240)
+CCamPanel::SetImageSize(320x240)
+CCamPanel::SetVisibleSize(320x240)
+RecalcTotalViewSize: resize viewport(320x240)
+EnableRGB: +
+CVideoDevice::SetPalette picked palette 0 []
+CVideoDevice::CreateImagesRGB()
+ allocating space for RGB
+CVideoDevice::StartCapture() go!
+CVideoDevice::LoadImage() Error loading image; errorcode=-19
+
+
+And with luvcview, I get a black screen....
+
+
+Thanks for your help.
+
+Mick
+
+
+2007/8/15, Mickael Dr&#233;an &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">mickael.drean at gmail.com</A>&gt;:
+&gt;<i>
+</I>&gt;<i>  Laurent Pinchart a &#233;crit :
+</I>&gt;<i>
+</I>&gt;<i> Hi Micka&#235;l,
+</I>&gt;<i>
+</I>&gt;<i> On Tuesday 14 August 2007, Mickael Drean wrote:
+</I>&gt;<i>
+</I>&gt;<i>  Hello Laurent,
+</I>&gt;<i>
+</I>&gt;<i>      If it still doesn't work, please post the output of lsusb -v (with
+</I>&gt;<i> usbutils 0.72 or newer).
+</I>&gt;<i>
+</I>&gt;<i>  here is the  0.72 output of lsusb :
+</I>&gt;<i>
+</I>&gt;<i>  Thanks.
+</I>&gt;<i>
+</I>&gt;<i> [snip]
+</I>&gt;<i>
+</I>&gt;<i> Your webcam should definitely be supported. Make sure you're loading the
+</I>&gt;<i> module you compiled and not an old version that still dwells somewhere.
+</I>&gt;<i>
+</I>&gt;<i> If everything else fails, load the module with the trace parameter set to 255
+</I>&gt;<i> and see if dmesg reports additional information.
+</I>&gt;<i>
+</I>&gt;<i> Best regards,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i>
+</I>&gt;<i>    Hello Laurent,
+</I>&gt;<i>
+</I>&gt;<i> Thanks for all those informations,
+</I>&gt;<i>
+</I>&gt;<i> Is there any incompatibility with another modules or anything which could
+</I>&gt;<i> make some problems with the module?
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Micka&#235;l
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070817/511d01c9/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20070817/511d01c9/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001977.html">[Linux-uvc-devel] Acer Webcam/ linux fedora 7
+</A></li>
+	<LI>Next message: <A HREF="001988.html">[Linux-uvc-devel] Acer Webcam/ linux fedora 7
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1984">[ date ]</a>
+              <a href="thread.html#1984">[ thread ]</a>
+              <a href="subject.html#1984">[ subject ]</a>
+              <a href="author.html#1984">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

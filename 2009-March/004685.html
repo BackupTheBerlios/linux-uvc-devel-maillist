@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Access extension unit controls
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Access%20extension%20unit%20controls&In-Reply-To=%3CSNT103-W6816EEB9DB52D7B5B0F2B9D4920%40phx.gbl%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004683.html">
+   <LINK REL="Next"  HREF="004694.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Access extension unit controls</H1>
+    <B>ZhangDaniel</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Access%20extension%20unit%20controls&In-Reply-To=%3CSNT103-W6816EEB9DB52D7B5B0F2B9D4920%40phx.gbl%3E"
+       TITLE="[Linux-uvc-devel] Access extension unit controls">danieljzhang at hotmail.com
+       </A><BR>
+    <I>Mon Mar 23 23:20:54 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004683.html">[Linux-uvc-devel] Fwd: can't get exposure parameters for 093a:2700
+</A></li>
+        <LI>Next message: <A HREF="004694.html">[Linux-uvc-devel] Access extension unit controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4685">[ date ]</a>
+              <a href="thread.html#4685">[ thread ]</a>
+              <a href="subject.html#4685">[ subject ]</a>
+              <a href="author.html#4685">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+
+        Hi,
+I tried to access controls on the second extension unit by UVCIOC_CTRL_ADD, but they all failed with error code 1
+
+For example, for the fist control: 
+
+    // These settings are common to all XU Controls...
+    memcpy(ci.entity, EXT_UNIT_GUID, GUID_SIZE);
+    ci.size = 2;
+    ci.flags = UVC_CONTROL_SET_CUR | UVC_CONTROL_GET_CUR;
+
+    ci.index = 1;  
+    ci.selector =1;
+
+    if (xioctl(hCamera, UVCIOC_CTRL_ADD, &amp;ci) == -1)
+    {
+        if (errno != 17)
+        {
+            CLogStream::LogErrorMessage(&quot;MapExtUnitControls Failed!.&quot;, errno);
+        }
+        //return -1;
+    }
+
+Getting or setting this first control is ok. But failed on other controls.
+
+By dmesg, it shows:
+[28045.674782] uvcvideo: uvc_v4l2_ioctl(unknown ioctl 'U', dir=rw, #3 (0xc0085503))
+[28045.675530] uvcvideo: uvc_v4l2_ioctl(unknown ioctl 'U', dir=rw, #3 (0xc0085503))
+[28045.675540] uvcvideo: Control 2812ae3f-bcd7-4e11-a357-6f1edef7d61d/2 not found.
+[28045.675987] uvcvideo: uvc_v4l2_ioctl(unknown ioctl 'U', dir=rw, #3 (0xc0085503))
+[28045.675999] uvcvideo: Control 2812ae3f-bcd7-4e11-a357-6f1edef7d61d/5 not found.
+[28045.676348] uvcvideo: uvc_v4l2_ioctl(unknown ioctl 'U', dir=rw, #3 (0xc0085503))
+[28045.676359] uvcvideo: Control 2812ae3f-bcd7-4e11-a357-6f1edef7d61d/3 not found.
+
+May I know why? Is there any flag I need turn on? Please help!
+
+Daniel Zhang
+
+_________________________________________________________________
+&#19978;Windows Live &#20013;&#22269;&#39318;&#39029;&#65292;&#19979;&#36733;&#26368;&#26032;&#29256; MSN&#65281;
+<A HREF="http://im.live.cn/">http://im.live.cn/</A>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090323/7b2a3ade/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090323/7b2a3ade/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004683.html">[Linux-uvc-devel] Fwd: can't get exposure parameters for 093a:2700
+</A></li>
+	<LI>Next message: <A HREF="004694.html">[Linux-uvc-devel] Access extension unit controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4685">[ date ]</a>
+              <a href="thread.html#4685">[ thread ]</a>
+              <a href="subject.html#4685">[ subject ]</a>
+              <a href="author.html#4685">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

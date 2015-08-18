@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Audio Problem / USB disconnects
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Audio%20Problem%20/%20USB%20disconnects&In-Reply-To=%3C200906021522.24298.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004820.html">
+   <LINK REL="Next"  HREF="004832.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Audio Problem / USB disconnects</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Audio%20Problem%20/%20USB%20disconnects&In-Reply-To=%3C200906021522.24298.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Audio Problem / USB disconnects">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Jun  2 15:22:24 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004820.html">[Linux-uvc-devel] BisonCam, NB Pro (5986:0241)
+</A></li>
+        <LI>Next message: <A HREF="004832.html">[Linux-uvc-devel] Fwd: Fwd:  Compilation error
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4818">[ date ]</a>
+              <a href="thread.html#4818">[ thread ]</a>
+              <a href="subject.html#4818">[ subject ]</a>
+              <a href="author.html#4818">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Christopher,
+
+On Sunday 31 May 2009 23:09:34 Christopher HORLER wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> I'm experiencing some difficulty with the Logitech Sphere AF. (I can
+</I>&gt;<i> temporarily reset the camera by removing the uvcvideo and
+</I>&gt;<i> snd_usb_audio modules from the kernel).
+</I>&gt;<i> Details below:
+</I>&gt;<i>
+</I>&gt;<i> Chris
+</I>&gt;<i>
+</I>&gt;<i> I'm running openSuSE 11.1, SuSE kernel 2.6.27.21-0.1-default, if it
+</I>&gt;<i> would help I can update the module to the latest version from the
+</I>&gt;<i> project page.
+</I>&gt;<i>
+</I>&gt;<i> I have added the following line to modprobe.conf.local - which
+</I>&gt;<i> initially allows the video and audio to function:
+</I>&gt;<i> install uvcvideo /sbin/modprobe snd_usb_audio; /sbin/modprobe
+</I>&gt;<i> --ignore-install uvcvideo
+</I>&gt;<i>
+</I>&gt;<i> The system is showing spontaneous 'USB disconnects' at random
+</I>&gt;<i> intervals (e.g. the first disconnect below).  I also notice 'Failed to
+</I>&gt;<i> query ... control ...' from uvcvideo.
+</I>
+The &quot;Failed to query&quot; messages are unfortunately not surprising. Many &quot;old&quot; 
+Logitech UVC webcams suffer from a firmware bug that has no known 100% 
+reliable workaround.
+
+The spontaneous disconnection troubles me. I've never noticed, or even heard 
+of, such a problem with Logitech UVC webcams.
+
+&gt;<i> dmesg:
+</I>&gt;<i> usb 4-4: new high speed USB device using ehci_hcd and address 2
+</I>&gt;<i> usb 4-4: configuration #1 chosen from 1 choice
+</I>&gt;<i> usb 4-4: New USB device found, idVendor=046d, idProduct=0994
+</I>&gt;<i> usb 4-4: New USB device strings: Mfr=0, Product=0, SerialNumber=2
+</I>&gt;<i> usb 4-4: SerialNumber: BB56BCEC
+</I>&gt;<i> Linux video capture interface: v2.00
+</I>&gt;<i> usbcore: registered new interface driver snd-usb-audio
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:0994)
+</I>&gt;<i> input: UVC Camera (046d:0994) as
+</I>&gt;<i> /devices/pci0000:00/0000:00:1d.7/usb4/4-4/4-4:1.0/input/input8
+</I>&gt;<i> usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> USB Video Class driver (v0.1.0)
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 2 (unit 2) : -110 (exp. 2).
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 7 (unit 2) : -110 (exp. 2).
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 3 (unit 2) : -110 (exp. 2).
+</I>&gt;<i> usb 4-4: USB disconnect, address 2
+</I>&gt;<i> ALSA sound/usb/usbaudio.c:351: frame 0 active: -71
+</I>&gt;<i> ALSA sound/usb/usbaudio.c:696: cannot submit urb (err = -19)
+</I>&gt;<i> ALSA sound/usb/usbaudio.c:868: cannot submit datapipe for urb 0, error
+</I>&gt;<i> -19: no device
+</I>&gt;<i>
+</I>&gt;<i> &lt;repeated many times...&gt;
+</I>&gt;<i>
+</I>&gt;<i> ALSA sound/usb/usbaudio.c:868: cannot submit datapipe for urb 0, error
+</I>&gt;<i> -19: no device
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Subsequent physical replugging of the camera leads to events like these:
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> usb 4-4: new high speed USB device using ehci_hcd and address 3
+</I>&gt;<i> usb 4-4: configuration #1 chosen from 1 choice
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:0994)
+</I>&gt;<i> input: UVC Camera (046d:0994) as
+</I>&gt;<i> /devices/pci0000:00/0000:00:1d.7/usb4/4-4/4-4:1.0/input/input9
+</I>&gt;<i> usb 4-4: New USB device found, idVendor=046d, idProduct=0994
+</I>&gt;<i> usb 4-4: New USB device strings: Mfr=0, Product=0, SerialNumber=2
+</I>&gt;<i> usb 4-4: SerialNumber: BB56BCEC
+</I>&gt;<i> uvcvideo: Failed to query (130) UVC control 2 (unit 2) : -110 (exp. 2).
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 7 (unit 2) : -110 (exp. 2).
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 3 (unit 2) : -110 (exp. 2).
+</I>&gt;<i> ALSA sound/usb/usbmixer.c:803: cannot get current value for control 1
+</I>&gt;<i> master ch: err = -22
+</I>
+In what time frame does the problem occur (especially the spontaneous 
+disconnection) ? Could you try the camera on another machine ?
+
+Best regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004820.html">[Linux-uvc-devel] BisonCam, NB Pro (5986:0241)
+</A></li>
+	<LI>Next message: <A HREF="004832.html">[Linux-uvc-devel] Fwd: Fwd:  Compilation error
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4818">[ date ]</a>
+              <a href="thread.html#4818">[ thread ]</a>
+              <a href="subject.html#4818">[ subject ]</a>
+              <a href="author.html#4818">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

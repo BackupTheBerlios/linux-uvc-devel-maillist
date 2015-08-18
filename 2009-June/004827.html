@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20VIDIOC_%5BGS%5D_JPEGCOMP%20support&In-Reply-To=%3C59cf47a80906021105s7959ed34m123920b781bbf934%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004823.html">
+   <LINK REL="Next"  HREF="004828.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support</H1>
+    <B>Paulo Assis</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20VIDIOC_%5BGS%5D_JPEGCOMP%20support&In-Reply-To=%3C59cf47a80906021105s7959ed34m123920b781bbf934%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support">pj.assis at gmail.com
+       </A><BR>
+    <I>Tue Jun  2 20:05:00 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004823.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+        <LI>Next message: <A HREF="004828.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4827">[ date ]</a>
+              <a href="thread.html#4827">[ thread ]</a>
+              <a href="subject.html#4827">[ subject ]</a>
+              <a href="author.html#4827">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>OK,
+Here are my test results:
+
+ VIDIOC_G_JPEGCOMP:
+
+MJPEG compression:
+    quality:  100
+    APPn:     0
+    APP_len:  0
+    APP_data:
+    COM_len:  0
+    COM_data:
+    markers:  0x10
+vid:046d
+pid:0808
+driver:uvcvideo
+
+  VIDIOC_S_JPEGCOMP: Device or Resource Busy
+
+So I can't set the quality value, I'll try it later on other cameras, but I
+don't expect this to change
+
+Best regards,
+Paulo
+
+
+2009/6/2 Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt;
+
+&gt;<i> Hi Paulo,
+</I>&gt;<i>
+</I>&gt;<i> On Tuesday 02 June 2009 17:35:17 Paulo Assis wrote:
+</I>&gt;<i> &gt; Hi,
+</I>&gt;<i> &gt; I think I can add this to guvcview and run some tests, but I would like
+</I>&gt;<i> &gt; some info on the v4l2_jpegcompression struct, especially on the
+</I>&gt;<i> &gt; **jpeg_markers flag, I believe for mjpeg I should set all flags, except
+</I>&gt;<i> &gt; V4l2_JPEG_MARKER_DHT, since huffman tables are not included in the video
+</I>&gt;<i> &gt; stream, is this correct, or it just doesn't make any difference?
+</I>&gt;<i>
+</I>&gt;<i> It won't make any difference with the uvcvideo driver. The driver ignores
+</I>&gt;<i> the
+</I>&gt;<i> flags on VIDIOC_S_JPEGCOMP and returns V4L2_JPEG_MARKER_DQT only on
+</I>&gt;<i> VIDIOC_G_JPEGCOMP. The DHT, DRI and COM segments are not included in the
+</I>&gt;<i> MJPEG
+</I>&gt;<i> stream, and the APP0 segment is not user-configurable.
+</I>&gt;<i>
+</I>&gt;<i> &gt; Also is the correct aproach a call to VIDIOC_G_JPEGCOMP for filling the
+</I>&gt;<i> &gt; struct and then just change the quality entry and call VIDIOC_S_JPEGCOMP?
+</I>&gt;<i>
+</I>&gt;<i> This is still unclear in the specification. I would assume that drivers
+</I>&gt;<i> will
+</I>&gt;<i> fix the flags if the requested value is unsupported. If you want to make
+</I>&gt;<i> sure
+</I>&gt;<i> you don't modify them, calling G_JPEGCOMP prior to S_JPEGCOMP sounds good.
+</I>&gt;<i>
+</I>&gt;<i> Best regards,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i>
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090602/57664647/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090602/57664647/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004823.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+	<LI>Next message: <A HREF="004828.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4827">[ date ]</a>
+              <a href="thread.html#4827">[ thread ]</a>
+              <a href="subject.html#4827">[ subject ]</a>
+              <a href="author.html#4827">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

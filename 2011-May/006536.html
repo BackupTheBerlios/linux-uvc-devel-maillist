@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] adding max ISO packet size and high bandwidth support
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20adding%20max%20ISO%20packet%20size%20and%20high%20bandwidth%0A%20support&In-Reply-To=%3C4DDEF492.2050406%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006535.html">
+   <LINK REL="Next"  HREF="006537.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] adding max ISO packet size and high bandwidth support</H1>
+    <B>Andrew Leech</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20adding%20max%20ISO%20packet%20size%20and%20high%20bandwidth%0A%20support&In-Reply-To=%3C4DDEF492.2050406%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] adding max ISO packet size and high bandwidth support">coronasensei at gmail.com
+       </A><BR>
+    <I>Fri May 27 02:47:14 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006535.html">[Linux-uvc-devel] adding max ISO packet size and high bandwidth	support
+</A></li>
+        <LI>Next message: <A HREF="006537.html">[Linux-uvc-devel] adding max ISO packet size and high bandwidth	support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6536">[ date ]</a>
+              <a href="thread.html#6536">[ thread ]</a>
+              <a href="subject.html#6536">[ subject ]</a>
+              <a href="author.html#6536">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 26/05/2011 6:11 PM, Chandrashekhar Lavania wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> I am using linux kernel 2.6.34. I needed to capture VGA frames in YUV 
+</I>&gt;<i> format with my Logitech E3500 camera. When I try to do that then I get 
+</I>&gt;<i> the following error::
+</I>&gt;<i>
+</I>&gt;<i> uvcvideo: Failed to submit URB 0 (-90).
+</I>&gt;<i> VIDIOC_STREAMON: Message too long
+</I>&gt;<i>
+</I>&gt;<i> This is apparently because the musb does not support high bandwith 
+</I>&gt;<i> transfer.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Hence I was trying to reduce the max packet size for ISO transfer. Any 
+</I>&gt;<i> idea how this can be done.
+</I>&gt;<i>
+</I>&gt;<i> I tried to limit the wMaxPacketSize in the uvc_parse_control of 
+</I>&gt;<i> uvc_deriver.c file, but it did not work.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+The host does not have any control over packet size with uvc, this is 
+decided entirely by the device, this is why gadget has these settings, 
+gadget is a device driver, not a host driver.
+
+The only control a host can have is it can request/limit total 
+bandwidth, but this is only if the device is set up to allow this, for 
+example some devices will have different bandwidth configurations that 
+it can switch between if the host gives a bandwidth limit.
+For YUV (uncompressed) however the bandwidth is tied directly to the 
+frame size &amp; rate, so there's no way to change bandwidth without 
+compromising on frame rate or size, and again these can only be set to 
+settings that the camera explicitly supports. Even then, for each 
+setting, the packet size is still up to the camera, there's a good 
+chance at lower bandwidths it'll still send the same size packets, just 
+doing it less often.
+
+What hardware are you using for the host? I would look at why it's not 
+supporting the high bandwidth transfer?
+
+Andrew
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006535.html">[Linux-uvc-devel] adding max ISO packet size and high bandwidth	support
+</A></li>
+	<LI>Next message: <A HREF="006537.html">[Linux-uvc-devel] adding max ISO packet size and high bandwidth	support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6536">[ date ]</a>
+              <a href="thread.html#6536">[ thread ]</a>
+              <a href="subject.html#6536">[ subject ]</a>
+              <a href="author.html#6536">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

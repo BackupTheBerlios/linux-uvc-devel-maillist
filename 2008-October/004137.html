@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] webcams on LTSP thin clients
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20webcams%20on%20LTSP%20thin%20clients&In-Reply-To=%3C200810171539.21068.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004126.html">
+   <LINK REL="Next"  HREF="004138.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] webcams on LTSP thin clients</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20webcams%20on%20LTSP%20thin%20clients&In-Reply-To=%3C200810171539.21068.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] webcams on LTSP thin clients">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Fri Oct 17 15:39:20 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004126.html">[Linux-uvc-devel] webcams on LTSP thin clients
+</A></li>
+        <LI>Next message: <A HREF="004138.html">[Linux-uvc-devel] webcams on LTSP thin clients
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4137">[ date ]</a>
+              <a href="thread.html#4137">[ thread ]</a>
+              <a href="subject.html#4137">[ subject ]</a>
+              <a href="author.html#4137">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Rob,
+
+On Wednesday 15 October 2008, Rob Owens wrote:
+&gt;<i> Laurent Pinchart wrote:
+</I>&gt;<i> &gt; Hi Rob,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Wednesday 15 October 2008, Rob Owens wrote:
+</I>&gt;<i> &gt;&gt; Has anybody gotten a webcam to work on an LTSP-powered thin client?  I
+</I>&gt;<i> &gt;&gt; asked on the LTSP list but apparently nobody there has done it before.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Could you describe the problem with more details ? A quick summary of the
+</I>&gt;<i> &gt; hardware/software setup would probably be interesting too.
+</I>&gt;<i>
+</I>&gt;<i> LTSP is Linux Terminal Server Project.  Basically it allows you to run
+</I>&gt;<i> low-power, diskless workstations (also called thin clients) completely
+</I>&gt;<i> over the network.  The thin clients retrieve a basic operating system
+</I>&gt;<i> from the LTSP server, then establish a remote session (graphical or
+</I>&gt;<i> otherwise) to the LTSP server or to any other server you specify.
+</I>&gt;<i>
+</I>&gt;<i> The key here is that there is no embedded operating system on these thin
+</I>&gt;<i> clients.  They use PXE or Etherboot to get their operating system from
+</I>&gt;<i> the LTSP server.
+</I>&gt;<i>
+</I>&gt;<i> The thin clients run a local X server (downloaded from the LTSP server),
+</I>&gt;<i> and then all applications run on the LTSP server.  A 200 MHz thin client
+</I>&gt;<i> with 64 MB of RAM is capable of running modern software very quickly.
+</I>&gt;<i> Well, really it's only displaying the software -- it's actually running
+</I>&gt;<i> on the server.
+</I>&gt;<i>
+</I>&gt;<i> Anyway, this causes some complications when plugging local devices into
+</I>&gt;<i> the thin client, because the server needs access to these devices.
+</I>&gt;<i> Local usb storage works.  Local sound works.  But I haven't come across
+</I>&gt;<i> anyone using local webcams.  When I tried it, it didn't work, but I
+</I>&gt;<i> didn't try for very long.  I have to borrow the webcam to do my testing,
+</I>&gt;<i> and I have limited time to do my testing.
+</I>
+Do you know how local USB storage is handled ? Obviously, as the USB storage 
+device is plugged into the thin client, the thin client operating system 
+(both kernel space and userspace) must support the device and 
+somehow &quot;export&quot; it through the network.
+
+I see two ways this can work for USB storage devices. Either the thin client 
+acts as a USB-Ethernet bridge (USB/IP), with the server handling the actual 
+USB mass storage protocol, or the thin client mounts the device locally and 
+exports it through the network (NFS, CIFS, ...).
+
+In the first case the same system might be used for webcams, although the 
+latency and bandwidth requirements are quite different.
+
+&gt;<i> So the problem can be attacked in a few ways.  All of these depend on
+</I>&gt;<i> getting the proper modules to load when the camera device is plugged in,
+</I>&gt;<i> which I think I can handle.
+</I>&gt;<i>
+</I>&gt;<i> 1) Run the video application (luvcview, for instance) locally on the
+</I>&gt;<i> thin client.  LTSP calls this &quot;local applications&quot; and I'd consult the
+</I>&gt;<i> LTSP list for instructions on doing that.
+</I>
+That's probably the easiest path for you, although it might be a bit heavy on 
+the thin client resources.
+
+&gt;<i> 2) Run the video application on the server (the normal way LTSP works),
+</I>&gt;<i> but convince the video application to access a video device over the
+</I>&gt;<i> network.
+</I>
+You will need a server process on the thin client to forward the video stream 
+to the server-side application, which will then re-forward them to the thin 
+client's display. The CPU and memory constraints incurred by the Linux UVC 
+driver would still have to be handled by the thin client as in option 1, but 
+you will save the application's memory and CPU footprint. In case of simple 
+applications such as luvcview I think this will actually be slower than 
+option 1.
+
+&gt;<i> 3) Have LTSP treat the local webcam the same way a local USB drive or a
+</I>&gt;<i> local sound card is treated.  Unfortunately I don't know the specifics
+</I>&gt;<i> of that, so I was hoping to hear from somebody &quot;sure I've done that
+</I>&gt;<i> before, it's easy!&quot;
+</I>
+Can you ssh into the LTSP box ? If so you can easily check if USB mass storage 
+devices are locally mounted or exported through the network using USB/IP.
+
+&gt;<i> Thanks for any advice you guys might have.
+</I>&gt;<i>
+</I>&gt;<i> By the way, I'm trying to use the ProScope HR camera at the 9 thin
+</I>&gt;<i> clients that are installed in my company's machine shop.  The cameras
+</I>&gt;<i> are to be used for inspection of some very small parts.  This camera
+</I>&gt;<i> does work on Linux using the uvc driver.
+</I>
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004126.html">[Linux-uvc-devel] webcams on LTSP thin clients
+</A></li>
+	<LI>Next message: <A HREF="004138.html">[Linux-uvc-devel] webcams on LTSP thin clients
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4137">[ date ]</a>
+              <a href="thread.html#4137">[ thread ]</a>
+              <a href="subject.html#4137">[ subject ]</a>
+              <a href="author.html#4137">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

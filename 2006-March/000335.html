@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Fusion Resolution
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Fusion%20Resolution&In-Reply-To=%3C20060301164335.GI2938%40sd291.sivit.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000337.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Fusion Resolution</H1>
+    <B>Luc Saillard</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Fusion%20Resolution&In-Reply-To=%3C20060301164335.GI2938%40sd291.sivit.org%3E"
+       TITLE="[Linux-uvc-devel] Fusion Resolution">luc at saillard.org
+       </A><BR>
+    <I>Wed Mar  1 17:43:35 CET 2006</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000337.html">[Linux-uvc-devel] Support for Interface Association Descriptors
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#335">[ date ]</a>
+              <a href="thread.html#335">[ thread ]</a>
+              <a href="subject.html#335">[ subject ]</a>
+              <a href="author.html#335">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> Maybe try this one, I have set in luvcview to resize the gui part . In 
+</I>&gt;<i> luvcview i only resize the xaxis as y is a constant, this one may resize the 
+</I>&gt;<i> two axis.
+</I>
+Thanks for the tip, i've used your method, but didn't give good result when
+converting YUYV to YUV420P with resize in one pass. So i keep the idea to
+keep the last known good value, but discarding it sometimes. I'll add this
+algorithm in ekiga to convert palete (firewire UYVY and YUYV) without using a
+temp buffer.
+I've test this algo with a 1280x960 image to 320x240, 512x384, 640x480, 960x720.
+
+#define FIX_FLOAT       12
+
+    unsigned int dx = (in-&gt;width&lt;&lt;FIX_FLOAT)/out-&gt;width;
+    unsigned int dy = (in-&gt;height&lt;&lt;FIX_FLOAT)/out-&gt;height;
+    unsigned int fy, fx;
+
+    for (fy=0, h=0; h&lt;out-&gt;height; h+=2, fy+=dy*2)
+      {
+        /* Copy the first line with U&amp;V */
+        unsigned int yy = fy&gt;&gt;FIX_FLOAT;
+        unsigned int yy2 = (fy+dy)&gt;&gt;FIX_FLOAT;
+        const unsigned char *line1, *line2;
+        unsigned char lastU, lastV;
+
+        line1 = in-&gt;data[0] + (yy*2*in-&gt;width);
+        line2 = in-&gt;data[0] + (yy2*2*in-&gt;width);
+        lastU = line1[1];
+        lastV = line1[3];
+        for (fx=0, x=0; x&lt;out-&gt;width; x+=2, fx+=dx*2)
+         {
+              unsigned int xx = (fx&gt;&gt;FIX_FLOAT)*2;
+              *y++ = line1[xx];
+              if ( (xx&amp;2) == 0)
+               {
+                 *u++ = lastU = (line1[xx+1] + line2[xx+1])/2;
+                 *v++ = lastV = (line1[xx+3] + line2[xx+3])/2;
+               }
+              else
+               {
+                 *u++ = lastU;
+                 *v++ = lastV = (line1[xx+1] + line2[xx+1])/2;
+               }
+              xx = ((fx+dx)&gt;&gt;FIX_FLOAT)*2;
+              *y++ = line1[xx];
+              if ( (xx&amp;2) == 0)
+                 lastU = (line1[xx+1] + line2[xx+1])/2;
+              else
+                 lastV = (line1[xx+1] + line2[xx+1])/2;
+         }
+        /* Copy the second line without U&amp;V */
+        for (fx=0, x=0; x&lt;out-&gt;width; x++, fx+=dx)
+         {
+           unsigned int xx = (fx&gt;&gt;FIX_FLOAT)*2;
+           *y++ = line2[xx];
+         }
+      }
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000337.html">[Linux-uvc-devel] Support for Interface Association Descriptors
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#335">[ date ]</a>
+              <a href="thread.html#335">[ thread ]</a>
+              <a href="subject.html#335">[ subject ]</a>
+              <a href="author.html#335">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

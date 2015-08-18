@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] error proofing mjpeg stream
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20error%20proofing%20mjpeg%20stream&In-Reply-To=%3C4E4E0F81.7040902%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006810.html">
+   <LINK REL="Next"  HREF="006815.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] error proofing mjpeg stream</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20error%20proofing%20mjpeg%20stream&In-Reply-To=%3C4E4E0F81.7040902%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] error proofing mjpeg stream">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Fri Aug 19 09:23:45 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006810.html">[Linux-uvc-devel] Exposure setting problems with Creative Live! Cam Socialize HDfrom Sabrina
+</A></li>
+        <LI>Next message: <A HREF="006815.html">[Linux-uvc-devel] error proofing mjpeg stream
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6812">[ date ]</a>
+              <a href="thread.html#6812">[ thread ]</a>
+              <a href="subject.html#6812">[ subject ]</a>
+              <a href="author.html#6812">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I continued to work on you usb dump for jpeg stream, here are some examples:
+
+This is first frame:
+0c8d41c4ce01e010ca042f04ffd8ff SOI
+0c8d41c4ce015ca3ca042f04975271
+
+This is end of first frame, start of second, and first issue.
+0c8d41c4ce017b42ee044e046a1950
+0c8c0f5fee041a67ee044e0496a246 FID togled, new uvc time, but actual EOI
+is here.
+0c8e0f5fee041a67ee044e04        actual EOF
+0c8c0f5fee04961ef0045004ffd8ff SOI
+for now this will be corrupt.
+
+Second frame, every thing is fine.
+0c8c0f5fee04315014056f04c74b75 EOI
+0c8e0f5fee04d07414057004
+0c8d1f801405ea5016057104ffd8ff SOI
+
+frame 3.; FID is togled, no EOF, no EOI...
+last part of this packet is corrupt, frame 2. is corrupt.
+0c8d1f80140509f039059004666e79
+0c8c34a13a05a05e3c059204ffd8ff SOI
+It will be ipossible to fix, EOF probably lost, but FID is correct.
+
+frame 3 is ok, start of frame 4.
+0c8c34a13a053d906005b20497335d EOI
+0c8e34a13a05dcb46005b204 EOF
+0c8d7a576205556c6205b404ffd8ff SOI
+
+frame 4 is ok
+0c8d7a57620592c28605d3040c8f4a EOI
+0c8e4fe3860531e78605d404 EOF
+0c8c4fe38605aa9e8805d504ffd8ff SOI
+
+no end of frame 4, FID togled and frame 5 started.
+0c8c4fe38605c93dac05f4042515c4
+0c8d5f04ad0501d1ae05f604ffd8ff SOI
+may be some parts was not included in dump, or 4 is really corrupt.
+Can't do any thing here, except only to check for EOI and SOI
+
+Every thing is ok, here.
+0c8d5f04ad059c02d3051605bd8d13 EOI
+0c8f5f04ad059c02d3051605
+0c8c6f25d305b6ded4051805ffd8ff SOI
+
+OK:
+0c8c6f25d305f034f9053705dcf952 EOI
+0c8e6f25d305f034f9053705 EOF
+0c8d2967fa050b11fb053905ffd8ff SOI
+
+Not ok
+0c8d2967fa054a421e065805e0ee50 no EOI, no EOF
+0c8c94671f06c01e21065a05ffd8ff SOI and FID
+
+Again, Fid is toggled too early.
+0c8d9f884506b2826b069b051b3bb9
+0c8cafa96b0651a76b069b05adcde2 EOI and FID
+0c8eafa96b0651a76b069b05 EOF
+0c8cafa96b06aacc6d069d05ffd8ff SOI
+
+In this case will happen fallowing scenario,
+1. frame 9f884506 will have corrupted end. (like you describe)
+2. will be created new buffer, but this will contain only end of prev
+frame. this will be stoped by EOF, but since FID == last_fid, then we
+will get out of sync error and this buffer will be probably lost as well.
+
+Let us concentrate on errors we can handle,
+1. we can sort of reconstruct fragmented frames. But I do not really
+like my previous patch, enay way let us keep it for now.
+2. we can ignore FID,EOF,last_fid=fid problem by setting it to -1,
+but this may brake other brocken cams. should think about this. or
+collect more usb dumps.
+3. We should defenetly check if new buffer with MJPEG stream, start with
+jpeg header. I think this is important.
+
+jpeg header is defined by uvc specification, it is always on same place.
+Buffer is defenetly corrupt if there is no jpeg header [SOI] on start.
+If ther is no EOI, we can still reconstruct part of image.
+
+On 19.08.2011 06:52, Carl Michal wrote:
+&gt;<i> Hi Alexey,
+</I>&gt;<i> 
+</I>&gt;<i> ok, if I take your patch, and add to it a check for frame length when
+</I>&gt;<i> when the frame is terminated with FID (patch below), then YUV appears to
+</I>&gt;<i> function well.  I haven't looked at the patch closely enough to see if
+</I>&gt;<i> it handles the case where a packet is split into 3 instead of just two.
+</I>&gt;<i> Those are quite infrequent - so it is possible that none occurred in my
+</I>&gt;<i> testing of your patch.
+</I>&gt;<i> 
+</I>&gt;<i> MJPG still has a couple of problems.  There are some mildly corrupt
+</I>&gt;<i> frames (just the bottom ~3% of the image) - I believe that's still from
+</I>&gt;<i> frames where FID comes a packet or two early.
+</I>&gt;<i> 
+</I>&gt;<i> Also, there is still a problem with empty buffer's returned: either
+</I>&gt;<i> guvcview or luvcview spits out:
+</I>&gt;<i> Ignoring empty buffer ...
+</I>&gt;<i> 
+</I>&gt;<i> about 1 time /second.  After four of those luvcview quits.
+</I>&gt;<i> 
+</I>&gt;<i> One last thing - there is minor typo in your patch leght should be length
+</I>&gt;<i> 
+</I>&gt;<i> Carl
+</I>&gt;<i> 
+</I>&gt;<i> Add frame length check to uncompressed frames terminated with FID:
+</I>&gt;<i> 
+</I>&gt;<i> --- uvc_video.c~    2011-08-18 21:35:53.664881826 -0700
+</I>&gt;<i> +++ uvc_video.c    2011-08-18 21:41:51.712872852 -0700
+</I>&gt;<i> @@ -627,10 +627,15 @@
+</I>&gt;<i>              do {
+</I>&gt;<i>                  ret = uvc_video_decode_start(stream, buf, mem,
+</I>&gt;<i>                      urb-&gt;iso_frame_desc[i].actual_length);
+</I>&gt;<i> -                if (ret == -EAGAIN)
+</I>&gt;<i> -                    buf =
+</I>&gt;<i> -                      uvc_queue_next_buffer(&amp;stream-&gt;queue,
+</I>&gt;<i> -                                buf);
+</I>&gt;<i> +                if (ret == -EAGAIN){
+</I>&gt;<i> +                if (buf-&gt;buf.length != buf-&gt;buf.bytesused &amp;&amp;
+</I>&gt;<i> +                  !(stream-&gt;cur_format-&gt;flags &amp;
+</I>&gt;<i> +                      UVC_FMT_FLAG_COMPRESSED))
+</I>&gt;<i> +                    buf-&gt;error = 1;
+</I>&gt;<i> +
+</I>&gt;<i> +                buf = uvc_queue_next_buffer(&amp;stream-&gt;queue,
+</I>&gt;<i> +                            buf);
+</I>&gt;<i> +            }
+</I>&gt;<i>              } while (ret == -EAGAIN);
+</I>&gt;<i> 
+</I>&gt;<i>              if (ret &lt; 0)
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006810.html">[Linux-uvc-devel] Exposure setting problems with Creative Live! Cam Socialize HDfrom Sabrina
+</A></li>
+	<LI>Next message: <A HREF="006815.html">[Linux-uvc-devel] error proofing mjpeg stream
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6812">[ date ]</a>
+              <a href="thread.html#6812">[ thread ]</a>
+              <a href="subject.html#6812">[ subject ]</a>
+              <a href="author.html#6812">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

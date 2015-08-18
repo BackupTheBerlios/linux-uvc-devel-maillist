@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] The source clock
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20The%20source%20clock&In-Reply-To=%3C53617.85841.qm%40web60522.mail.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001480.html">
+   <LINK REL="Next"  HREF="001485.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] The source clock</H1>
+    <B>Paul Jurczak</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20The%20source%20clock&In-Reply-To=%3C53617.85841.qm%40web60522.mail.yahoo.com%3E"
+       TITLE="[Linux-uvc-devel] The source clock">pauljurczak at yahoo.com
+       </A><BR>
+    <I>Thu Mar  8 00:11:04 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001480.html">[Linux-uvc-devel] UVC Non-module patch
+</A></li>
+        <LI>Next message: <A HREF="001485.html">[Linux-uvc-devel] i386 luvcview/ekiga with amd64 kernel?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1484">[ date ]</a>
+              <a href="thread.html#1484">[ thread ]</a>
+              <a href="subject.html#1484">[ subject ]</a>
+              <a href="author.html#1484">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+&gt;<i> The SCR value increases with each incoming isochronous packet, so it's not 
+</I>&gt;<i> constant across a video frame.
+</I>
+You are right, but this is the only field having device SOF counter value. It is needed to establish correspondence between device internal clock (STC) and device SOF counter. It is not needed every video frame, in fact, single value should be sufficient assuming we know details about STC and SOF counter period/overflow/reload. Value of PTS is probably not a good alternative for synchronizing two devices, because it would be really surprising to see their internal clocks synchronized. All above concerns only experimental driver, it doesn't have to be a part of final driver.
+
+I went through section 5.12 twice and I don't see anything helpful there, in fact it is discouraging. UVC stipulates that compliant devices use Isochronous Asynchronous mode, which means that device internal clock (STC) is free running and doesn't synchronize with USB bus. It is perfectly reasonable, since most users don't care about camera pixel clock being synchronized with USB clock. They care about frame rate being stable and possibly synchronized with audio. It seems that what I described in previous paragraph is the only way to synchronize the device and USB clocks.
+
+Cheers,
+Paul
+
+
+
+
+ 
+____________________________________________________________________________________
+TV dinner still cooling? 
+Check out &quot;Tonight's Picks&quot; on Yahoo! TV.
+<A HREF="http://tv.yahoo.com/">http://tv.yahoo.com/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001480.html">[Linux-uvc-devel] UVC Non-module patch
+</A></li>
+	<LI>Next message: <A HREF="001485.html">[Linux-uvc-devel] i386 luvcview/ekiga with amd64 kernel?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1484">[ date ]</a>
+              <a href="thread.html#1484">[ thread ]</a>
+              <a href="subject.html#1484">[ subject ]</a>
+              <a href="author.html#1484">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

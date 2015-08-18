@@ -1,0 +1,251 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Quickcam Fusion with debian not working...
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quickcam%20Fusion%20with%20debian%20not%20working...&In-Reply-To=%3C44CA7B3C.3090101%40datkan.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000660.html">
+   <LINK REL="Next"  HREF="000646.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Quickcam Fusion with debian not working...</H1>
+    <B>Marcel van Beurden</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quickcam%20Fusion%20with%20debian%20not%20working...&In-Reply-To=%3C44CA7B3C.3090101%40datkan.net%3E"
+       TITLE="[Linux-uvc-devel] Quickcam Fusion with debian not working...">marcel at datkan.net
+       </A><BR>
+    <I>Fri Jul 28 23:01:48 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000660.html">[Linux-uvc-devel] Quickcam Fusion with debian not working...
+</A></li>
+        <LI>Next message: <A HREF="000646.html">[Linux-uvc-devel] Quickcam Fusion with debian not working...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#661">[ date ]</a>
+              <a href="thread.html#661">[ thread ]</a>
+              <a href="subject.html#661">[ subject ]</a>
+              <a href="author.html#661">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+Martin Rubli wrote:
+&gt;&gt;<i> Am I missing something here?
+</I>&gt;<i> 
+</I>&gt;<i> I've never seen similar errors on my systems when using luvcview. This 
+</I>&gt;<i> one doesn't even look like a uvcvideo or V4L2 problem on the input side 
+</I>&gt;<i> but it looks like SDL is having problems initializing the output window.
+</I>&gt;<i> 
+</I>&gt;<i> That still wouldn't explain the failure with headless programs, though.
+</I>
+To be clear, X windows is installed, but not configured or being used. 
+This is a server running in a corner. All I do is console based stuff 
+through a ssh shell.
+
+&gt;<i> So can you execute
+</I>&gt;<i>   echo 64 &gt; /sys/module/uvcvideo/parameters/trace
+</I>&gt;<i> to increase uvcvideo's debug output level and post the syslog output you 
+</I>&gt;<i> get after plugging in your camera and trying to run the capture programs?
+</I>
+One more time I tried plugging in the cam, running luvcview, uvccapture 
+and fswebcam. Here are the results...
+
+Plugging in cam:
+
+usb 1-1: new full speed USB device using uhci_hcd and address 23
+usb 1-1: configuration #1 chosen from 1 choice
+uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:08c1)
+23:3:1: cannot set freq 0 to ep 0x86
+23:3:2: cannot set freq 0 to ep 0x86
+23:3:3: cannot set freq 16000 to ep 0x86
+
+I think this one happened while unplugging the cam:
+
+uvcvideo: Non-zero status (-84) in status completion handler.
+
+When running luvcview I don't get any messages with dmesg. Just this 
+luvcview output:
+
+# ./luvcview
+uvcview verion 0.1.6
+
+        ---------------------- DirectFB v0.9.24 ---------------------
+              (c) 2000-2002  convergence integrated media GmbH
+              (c) 2002-2004  convergence GmbH
+         -----------------------------------------------------------
+
+(*) DirectFB/Core: Single Application Core. (2006-06-14 07:02)
+(*) Direct/Memcpy: Using MMXEXT optimized memcpy()
+(!) Direct/Util: opening '/dev/fb0' and '/dev/fb/0' failed
+     --&gt; No such file or directory
+(!) DirectFB/FBDev: Error opening framebuffer device!
+(!) DirectFB/FBDev: Use 'fbdev' option or set FRAMEBUFFER environment 
+variable.
+(!) DirectFB/Core: Could not initialize 'system' core!
+     --&gt; Initialization error!
+Couldn't initialize SDL: DirectFBCreate: Initialization error!
+
+Not sure what the purpose of SDL and DirectFB is. I would guess the 
+linux-uvc is enough to get a picture from the cam. If not, what does 
+this driver depend on exactly. I might not have installed everything, or 
+using the wrong versions of that.
+
+When I run uvccapture I get this from dmesg:
+
+v4l2 ioctl VIDIOC_QUERYCAP, dir=r- (0x80685600)
+v4l2 ioctl VIDIOC_S_FMT, dir=rw (0xc0cc5605)
+v4l2 ioctl VIDIOC_REQBUFS, dir=rw (0xc0145608)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+v4l2 ioctl VIDIOC_STREAMON, dir=-w (0x40045612)
+v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0445611)
+
+(then it hangs)
+
+When I run fswebcam it shows me:
+
+--- Opening /dev/video0...
+Trying source module v4l2...
+/dev/video0 opened.
+No input was specified, using the first.
+Adjusting resolution from 384x288 to 352x288.
+--- Capturing frame...
+Timed out waiting for frame!
+No frames captured.
+
+dmesg gives me:
+
+v4l2 ioctl VIDIOC_QUERYCAP, dir=r- (0x80685600)
+v4l2 ioctl VIDIOC_ENUMINPUT, dir=rw (0xc04c561a)
+v4l2 ioctl VIDIOC_S_INPUT, dir=rw (0xc0045627)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw (0xc0445624)
+v4l2 ioctl VIDIOC_ENUM_FMT, dir=rw (0xc0405602)
+v4l2 ioctl VIDIOC_ENUM_FMT, dir=rw (0xc0405602)
+v4l2 ioctl VIDIOC_TRY_FMT, dir=rw (0xc0cc5640)
+v4l2 ioctl VIDIOC_TRY_FMT, dir=rw (0xc0cc5640)
+v4l2 ioctl VIDIOC_S_FMT, dir=rw (0xc0cc5605)
+v4l2 ioctl VIDIOC_G_JPEGCOMP, dir=r- (0x808c563d)
+uvcvideo: Unknown ioctl 0x808c563d
+v4l2 ioctl VIDIOC_S_JPEGCOMP, dir=-w (0x408c563e)
+uvcvideo: Unknown ioctl 0x408c563e
+v4l2 ioctl VIDIOC_REQBUFS, dir=rw (0xc0145608)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_STREAMON, dir=-w (0x40045612)
+
+Regards,
+Marcel
+
+P.S. I will go on a holiday tomorrow and will basically be offline for a 
+week (unless there are internet cafes at the bottom of the Red Sea).
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000660.html">[Linux-uvc-devel] Quickcam Fusion with debian not working...
+</A></li>
+	<LI>Next message: <A HREF="000646.html">[Linux-uvc-devel] Quickcam Fusion with debian not working...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#661">[ date ]</a>
+              <a href="thread.html#661">[ thread ]</a>
+              <a href="subject.html#661">[ subject ]</a>
+              <a href="author.html#661">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

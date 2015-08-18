@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Unable%20to%20set%20auto%20exposure%20and%20white%20balance%0A%09with%20svn%20revision%20193&In-Reply-To=%3C20080321013755.GB5031%40bluemoon%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003258.html">
+   <LINK REL="Next"  HREF="003257.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193</H1>
+    <B>Armin Berres</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Unable%20to%20set%20auto%20exposure%20and%20white%20balance%0A%09with%20svn%20revision%20193&In-Reply-To=%3C20080321013755.GB5031%40bluemoon%3E"
+       TITLE="[Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193">trigger at space-based.de
+       </A><BR>
+    <I>Fri Mar 21 02:37:55 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003258.html">[Linux-uvc-devel] Pro9000 video and audio working!
+</A></li>
+        <LI>Next message: <A HREF="003257.html">[Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3251">[ date ]</a>
+              <a href="thread.html#3251">[ thread ]</a>
+              <a href="subject.html#3251">[ subject ]</a>
+              <a href="author.html#3251">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi!
+
+I just updated the uvc driver to the latest version available in Debian
+(r193) in the hope to be able to set the red and blue component of the
+white balance when using a Philips SPC1300NC.
+After noticing that the private controls are gone and updating some
+keys everything but one thing works again: I can't set the auto exposure
+any more. When I query V4L2_CID_EXPOSURE_AUTO it is set to 3.
+V4L2_EXPOSURE_AUTO and V4L2_EXPOSURE_MANUAL at the same time?
+Setting it to V4L2_EXPOSURE_AUTO or V4L2_EXPOSURE_MANUAL doesn't work, I
+just get the error code 5, Input/output error. When loadng the uvc module
+with 'trace=0x004' I find the following in the syslog:
+|<i> uvcvideo: Failed to query (1) UVC control 2 (unit 1) : -32 (exp. 1).
+</I>|<i> uvcvideo: usb_control_msg was delayed
+</I>The svn revision 120 worked just fine.
+
+Now my other problem: When reading r187 I hoped to be able to manually
+set the white balance, but it doesn't seem to be possible.
+Setting V4L2_CID_AUTO_WHITE_BALANCE to 0 doesn't seem to have an effect.
+The control seems to be neither V4L2_CTRL_TYPE_BOOLEAN nor
+V4L2_CTRL_TYPE_INTEGER, so what else it is?
+When trying to get V4L2_CID_RED_BALANCE or V4L2_CID_BLUE_BALANCE I get
+the error code 22, Invalid argument. In the syslog I find
+|<i> uvcvideo: Control 0x0098090e not found.
+</I>|<i> uvcvideo: Control 0x0098090f not found.
+</I>Is this expected to work, or can't this work? It is quite important for
+me, to get the manual white balance running.
+
+Any help is welcome :)
+
+Greetings,
+Armin
+
+PS: Maybe these lines from the syslog are helpful:
+uvcvideo: Adding mapping Brightness to control 00000000-0000-0000-0000-000000000101/2.
+uvcvideo: Adding mapping Contrast to control 00000000-0000-0000-0000-000000000101/3.
+uvcvideo: Adding mapping Hue to control 00000000-0000-0000-0000-000000000101/6.
+uvcvideo: Adding mapping Saturation to control 00000000-0000-0000-0000-000000000101/7.
+uvcvideo: Adding mapping Sharpness to control 00000000-0000-0000-0000-000000000101/8.
+uvcvideo: Adding mapping Gamma to control 00000000-0000-0000-0000-000000000101/9.
+uvcvideo: Adding mapping Backlight Compensation to control 00000000-0000-0000-0000-000000000101/1.
+uvcvideo: Adding mapping Gain to control 00000000-0000-0000-0000-000000000101/4.
+uvcvideo: Adding mapping Power Line Frequency to control 00000000-0000-0000-0000-000000000101/5.
+uvcvideo: Adding mapping Hue, Auto to control 00000000-0000-0000-0000-000000000101/16.
+uvcvideo: Adding mapping Exposure, Auto to control 00000000-0000-0000-0000-000000000001/2.
+uvcvideo: Adding mapping Exposure, Auto Priority to control 00000000-0000-0000-0000-000000000001/3.
+uvcvideo: Adding mapping Exposure (Absolute) to control 00000000-0000-0000-0000-000000000001/4.
+uvcvideo: Adding mapping White Balance Temperature, Auto to control 00000000-0000-0000-0000-000000000101/11.
+uvcvideo: Adding mapping White Balance Temperature to control 00000000-0000-0000-0000-000000000101/10.
+uvcvideo: Adding mapping White Balance Blue Component to control 00000000-0000-0000-0000-000000000101/12.
+uvcvideo: Adding mapping White Balance Red Component to control 00000000-0000-0000-0000-000000000101/12.
+uvcvideo: Adding mapping Focus (absolute) to control 00000000-0000-0000-0000-000000000001/6.
+uvcvideo: Adding mapping Focus, Auto to control 00000000-0000-0000-0000-000000000001/8.
+uvcvideo: Found UVC 1.00 device Philips SPC 1300NC Webcam (0471:0331)
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003258.html">[Linux-uvc-devel] Pro9000 video and audio working!
+</A></li>
+	<LI>Next message: <A HREF="003257.html">[Linux-uvc-devel] Unable to set auto exposure and white balance	with svn revision 193
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3251">[ date ]</a>
+              <a href="thread.html#3251">[ thread ]</a>
+              <a href="subject.html#3251">[ subject ]</a>
+              <a href="author.html#3251">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20suyin%20crystal%20eye%20webcam%20064e%3Aa103%20not%20working&In-Reply-To=%3Cebff8ece0906091012k31ed91d0xd239da4d6fe3bf4d%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004872.html">
+   <LINK REL="Next"  HREF="004870.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working</H1>
+    <B>bruce m beach</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20suyin%20crystal%20eye%20webcam%20064e%3Aa103%20not%20working&In-Reply-To=%3Cebff8ece0906091012k31ed91d0xd239da4d6fe3bf4d%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working">brucembeach at gmail.com
+       </A><BR>
+    <I>Tue Jun  9 19:12:28 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004872.html">[Linux-uvc-devel] No working microphone with usb webcam,	possible solution
+</A></li>
+        <LI>Next message: <A HREF="004870.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4868">[ date ]</a>
+              <a href="thread.html#4868">[ thread ]</a>
+              <a href="subject.html#4868">[ subject ]</a>
+              <a href="author.html#4868">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello Laurent
+
+&gt;<i> &gt; Just to give you an update on something that I realized:
+</I>&gt;<i> &gt; &gt; What bothers me in the trace is
+</I>&gt;<i> &gt; &gt;
+</I>
+[snip] (and saved to a file called payload_header_info)
+
+...
+
+[unsnip]
+
+&gt;<i> If the camera doesn't set the EOF bit and doesn't toggle the FID bit
+</I>&gt;<i> there's very little I can do. Without any frame boundary information
+</I>&gt;<i> the driver can't synchronize itself to the video stream. I'm really
+</I>&gt;<i> puzzled by how this camera can work at all. Your last e-mail showed
+</I>&gt;<i> that it toggled the FID bit once from 0 to 1 and left it at 1 forever
+</I>&gt;<i> after. Is my understanding correct ?
+</I>
+100% correct. But don't despair of the republic just yet. Right now
+the best you can do is just give me your insights and suggestions. I'm
+going to continue working on this thing. I currently believe that it
+is a UVC-compliant device (complete with working FID and EOF bits) but
+that it is not being set up correctly and is streaming in a mode that
+is for diagnostics or some undocumented mode. I spent a couple of days
+documenting the lsusb listing and everything points to it being
+UVC-compliant. Now what I would really like to know is if I'm right
+about the following:
+
+  If there is a stream of mjpeg payloads coming in, whether or not
+we can sync them, we still should be able to detect things like
+
+            M_SOF0, M_SOI, M_EOI ...
+
+in the stream, yet  when I scan the packets I get messages like
+
+                lapsystemx kernel: uvcvideo: doing scan
+                lapsystemx last message repeated 4360 times
+
+&quot;scan&quot; just searches any packet greater than the header size
+(typically 12) and if it finds 0xff it prints out the preceding
+and following byte. (in case there is some endianess lurking about)
+I can't believe that 4360 payloads come in whithout any jpeg
+information at all. If this is the case what are these packets?
+Are there other quick tests that I could try in case the device
+is saying that it is putting out mjpeg packets but is really putting
+out another format? The other thing I am wondering is what is the
+format of the *.raw files that luvcview creates. Are they more or
+less jpeg files (assuming this particular case of a webcam doing
+mjepg streaming ) If I toggle the video-&gt;last_fid every time a packet
+comes in it gives me a convenient way of sending this data to
+user-land and luvcview then can write the *.raw files which I can
+the examine so currently information on these files is helpful.
+
+Regards Bruce
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004872.html">[Linux-uvc-devel] No working microphone with usb webcam,	possible solution
+</A></li>
+	<LI>Next message: <A HREF="004870.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4868">[ date ]</a>
+              <a href="thread.html#4868">[ thread ]</a>
+              <a href="subject.html#4868">[ subject ]</a>
+              <a href="author.html#4868">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo and mercurial v4l-dvb conflicts..
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20and%20mercurial%20v4l-dvb%20conflicts..&In-Reply-To=%3C1203625496.22454.11.camel%40tux%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003089.html">
+   <LINK REL="Next"  HREF="003091.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo and mercurial v4l-dvb conflicts..</H1>
+    <B>Filippo Argiolas</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20and%20mercurial%20v4l-dvb%20conflicts..&In-Reply-To=%3C1203625496.22454.11.camel%40tux%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo and mercurial v4l-dvb conflicts..">filippo.argiolas at gmail.com
+       </A><BR>
+    <I>Thu Feb 21 21:24:56 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003089.html">[Linux-uvc-devel] uvcvideo and mercurial v4l-dvb conflicts..
+</A></li>
+        <LI>Next message: <A HREF="003091.html">[Linux-uvc-devel] uvcvideo and mercurial v4l-dvb conflicts..
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3090">[ date ]</a>
+              <a href="thread.html#3090">[ thread ]</a>
+              <a href="subject.html#3090">[ subject ]</a>
+              <a href="author.html#3090">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Il giorno gio, 21/02/2008 alle 12.03 -0800, Brandon Philips ha scritto:
+&gt;<i> What are those errors?
+</I>
+Ok here's a summary of the errors I get with different situations:
+
+1. uvcvideo bundled with ubuntu gutsy (kernel 2.6.22-14-generic) after
+the v4l-dvb mercurial installation, dmesg output:
+
+[26144.476000] uvcvideo: disagrees about version of symbol video_devdata
+[26144.476000] uvcvideo: Unknown symbol video_devdata
+[26144.476000] uvcvideo: disagrees about version of symbol
+video_unregister_device
+[26144.476000] uvcvideo: Unknown symbol video_unregister_device
+[26144.476000] uvcvideo: disagrees about version of symbol
+video_device_alloc
+[26144.476000] uvcvideo: Unknown symbol video_device_alloc
+[26144.476000] uvcvideo: disagrees about version of symbol
+video_register_device
+[26144.476000] uvcvideo: Unknown symbol video_register_device
+[26144.476000] uvcvideo: disagrees about version of symbol
+video_device_release
+[26144.476000] uvcvideo: Unknown symbol video_device_release
+
+
+2. After running make kernel-links from the v4l-dvb tree (it updates
+symlinks in /lib/modules/`uname -r`/build to point to the v4l-dvb source
+tree), I get these compile errors with linux-uvc:
+
+In file included from /home/pippo/linux-uvc/uvcvideo.h:8,
+                 from /home/pippo/linux-uvc/uvc_driver.c:45:
+/home/pippo/linux-uvc/uvc_compat.h:147:1: warning:
+&quot;V4L2_CTRL_CLASS_CAMERA&quot; redefined
+In file included from include/linux/videodev.h:16,
+                 from /home/pippo/linux-uvc/uvc_driver.c:36:
+include/linux/videodev2.h:798:1: warning: this is the location of the
+previous definition
+In file included from /home/pippo/linux-uvc/uvcvideo.h:8,
+                 from /home/pippo/linux-uvc/uvc_driver.c:45:
+/home/pippo/linux-uvc/uvc_compat.h:150: error: nested redefinition of
+&#8216;enum v4l2_power_line_frequency&#8217;
+/home/pippo/linux-uvc/uvc_compat.h:150: error: redeclaration of &#8216;enum
+v4l2_power_line_frequency&#8217;
+/home/pippo/linux-uvc/uvc_compat.h:151: error: redeclaration of
+enumerator &#8216;V4L2_CID_POWER_LINE_FREQUENCY_DISABLED&#8217;
+include/linux/videodev2.h:874: error: previous definition of
+&#8216;V4L2_CID_POWER_LINE_FREQUENCY_DISABLED&#8217; was here
+/home/pippo/linux-uvc/uvc_compat.h:152: error: redeclaration of
+enumerator &#8216;V4L2_CID_POWER_LINE_FREQUENCY_50HZ&#8217;
+include/linux/videodev2.h:875: error: previous definition of
+&#8216;V4L2_CID_POWER_LINE_FREQUENCY_50HZ&#8217; was here
+/home/pippo/linux-uvc/uvc_compat.h:153: error: redeclaration of
+enumerator &#8216;V4L2_CID_POWER_LINE_FREQUENCY_60HZ&#8217;
+include/linux/videodev2.h:876: error: previous definition of
+&#8216;V4L2_CID_POWER_LINE_FREQUENCY_60HZ&#8217; was here
+/home/pippo/linux-uvc/uvc_compat.h:165: error: nested redefinition of
+&#8216;enum v4l2_exposure_auto_type&#8217;
+/home/pippo/linux-uvc/uvc_compat.h:165: error: redeclaration of &#8216;enum
+v4l2_exposure_auto_type&#8217;
+/home/pippo/linux-uvc/uvc_compat.h:166: error: redeclaration of
+enumerator &#8216;V4L2_EXPOSURE_MANUAL&#8217;
+include/linux/videodev2.h:1077: error: previous definition of
+&#8216;V4L2_EXPOSURE_MANUAL&#8217; was here
+/home/pippo/linux-uvc/uvc_compat.h:167: error: redeclaration of
+enumerator &#8216;V4L2_EXPOSURE_AUTO&#8217;
+include/linux/videodev2.h:1076: error: previous definition of
+&#8216;V4L2_EXPOSURE_AUTO&#8217; was here
+/home/pippo/linux-uvc/uvc_compat.h:168: error: redeclaration of
+enumerator &#8216;V4L2_EXPOSURE_SHUTTER_PRIORITY&#8217;
+include/linux/videodev2.h:1078: error: previous definition of
+&#8216;V4L2_EXPOSURE_SHUTTER_PRIORITY&#8217; was here
+/home/pippo/linux-uvc/uvc_compat.h:170: error: redeclaration of
+enumerator &#8216;V4L2_EXPOSURE_APERTURE_PRIORITY&#8217;
+include/linux/videodev2.h:1080: error: previous definition of
+&#8216;V4L2_EXPOSURE_APERTURE_PRIORITY&#8217; was here
+make[2]: *** [/home/pippo/linux-uvc/uvc_driver.o] Error 1
+make[1]: *** [_module_/home/pippo/linux-uvc] Error 2
+make: *** [uvcvideo] Error 2
+
+Hope this helps someway.
+Thanks,
+
+Filippo
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003089.html">[Linux-uvc-devel] uvcvideo and mercurial v4l-dvb conflicts..
+</A></li>
+	<LI>Next message: <A HREF="003091.html">[Linux-uvc-devel] uvcvideo and mercurial v4l-dvb conflicts..
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3090">[ date ]</a>
+              <a href="thread.html#3090">[ thread ]</a>
+              <a href="subject.html#3090">[ subject ]</a>
+              <a href="author.html#3090">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] lsusb.c: Fix video class output and	input headers
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20lsusb.c%3A%20Fix%20video%20class%20output%20and%0A%09input%20headers&In-Reply-To=%3C200708292309.54249.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002066.html">
+   <LINK REL="Next"  HREF="002068.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] lsusb.c: Fix video class output and	input headers</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20lsusb.c%3A%20Fix%20video%20class%20output%20and%0A%09input%20headers&In-Reply-To=%3C200708292309.54249.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] lsusb.c: Fix video class output and	input headers">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Aug 29 23:09:54 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002066.html">[Linux-uvc-devel] [PATCH] lsusb.c: Fix video class output and input	headers
+</A></li>
+        <LI>Next message: <A HREF="002068.html">[Linux-uvc-devel] uvcvideo and v4l2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2072">[ date ]</a>
+              <a href="thread.html#2072">[ thread ]</a>
+              <a href="subject.html#2072">[ subject ]</a>
+              <a href="author.html#2072">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Tuesday 28 August 2007, Brandon Philips wrote:
+&gt;<i> Fix the offsets in the printf for the video class output and input
+</I>&gt;<i> headers.  Tested with UVC device 046d:08cb by Logitech, Inc.
+</I>&gt;<i>
+</I>&gt;<i> Copied from USB_Video_Class_1.1.pdf Table 3.9.2.1 for reference:
+</I>&gt;<i>
+</I>&gt;<i> Offset	Field			Size	Value
+</I>&gt;<i> 0	bLength			1	Number
+</I>&gt;<i> 1	bDescriptorType		1	Constant
+</I>&gt;<i> 2	bDescriptorSubtype	1	Constant
+</I>&gt;<i> 3	bNumFormats		1	Number
+</I>&gt;<i> 4	wTotalLength		2	Number
+</I>&gt;<i> 6	bEndpointAddress	1	Endpoint
+</I>&gt;<i> 7	bmInfo			1	Bitmap
+</I>&gt;<i> 8	bTerminalLink		1	Constant
+</I>&gt;<i> 9	bStillCaptureMethod	1	Number
+</I>&gt;<i> 10	bTriggerSupport		1	Number
+</I>&gt;<i> 11	bTriggerUsage		1	Number
+</I>&gt;<i> 12	bControlSize		1	Number
+</I>&gt;<i>
+</I>&gt;<i> Output from instrumented uvcvideo.ko:
+</I>&gt;<i>
+</I>&gt;<i>         bNumFormats                        3
+</I>&gt;<i>         wTotalLength                      742
+</I>&gt;<i>         bEndPointAddress                  129
+</I>&gt;<i>         bmInfo                              0
+</I>&gt;<i>         bTerminalLink                       5
+</I>&gt;<i>         bStillCaptureMethod                 2
+</I>&gt;<i>         bTriggerSupport                     1
+</I>&gt;<i>         bTriggerUsage                       0
+</I>&gt;<i>         bControlSize                        1
+</I>&gt;<i>
+</I>&gt;<i> Output from corrected lsusb:
+</I>&gt;<i>
+</I>&gt;<i>         bNumFormats                        3
+</I>&gt;<i>         wTotalLength                      742
+</I>&gt;<i>         bEndPointAddress                  129
+</I>&gt;<i>         bmInfo                              0
+</I>&gt;<i>         bTerminalLink                       5
+</I>&gt;<i>         bStillCaptureMethod                 2
+</I>&gt;<i>         bTriggerSupport                     1
+</I>&gt;<i>         bTriggerUsage                       0
+</I>&gt;<i>         bControlSize                        1
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Signed-off-by: Brandon Philips &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bphilips at suse.de</A>&gt;
+</I>
+Acked-by: Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt;
+
+&gt;<i>
+</I>&gt;<i> ---
+</I>&gt;<i>  lsusb.c |    8 ++++----
+</I>&gt;<i>  1 file changed, 4 insertions(+), 4 deletions(-)
+</I>&gt;<i>
+</I>&gt;<i> Index: usbutils-0.72/lsusb.c
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- usbutils-0.72.orig/lsusb.c
+</I>&gt;<i> +++ usbutils-0.72/lsusb.c
+</I>&gt;<i> @@ -1497,7 +1497,7 @@ static void dump_videostreaming_interfac
+</I>&gt;<i>  		n = buf[12];
+</I>&gt;<i>  		if (buf[0] &lt; 13+p*n)
+</I>&gt;<i>  			printf(&quot;      Warning: Descriptor too short\n&quot;);
+</I>&gt;<i> -		printf(&quot;        bNumFormarts                    %5u\n&quot;
+</I>&gt;<i> +		printf(&quot;        bNumFormats                    %5u\n&quot;
+</I>&gt;<i>  		       &quot;        wTotalLength                    %5u\n&quot;
+</I>&gt;<i>  		       &quot;        bEndPointAddress                %5u\n&quot;
+</I>&gt;<i>  		       &quot;        bmInfo                          %5u\n&quot;
+</I>&gt;<i> @@ -1506,8 +1506,8 @@ static void dump_videostreaming_interfac
+</I>&gt;<i>  		       &quot;        bTriggerSupport                 %5u\n&quot;
+</I>&gt;<i>  		       &quot;        bTriggerUsage                   %5u\n&quot;
+</I>&gt;<i>  		       &quot;        bControlSize                    %5u\n&quot;,
+</I>&gt;<i> -		       p, buf[5] | (buf[6] &lt;&lt; 8), buf[7], buf[8], buf[9],
+</I>&gt;<i> -		       buf[10], buf[11], buf[12], n);
+</I>&gt;<i> +		       p, buf[4] | (buf[5] &lt;&lt; 8), buf[6], buf[7], buf[8],
+</I>&gt;<i> +		       buf[9], buf[10], buf[11], n);
+</I>&gt;<i>  		for(i = 0; i &lt; p; i++)
+</I>&gt;<i>  			printf(&quot;        bmaControls(%2u)                 %5u\n&quot;, i,
+</I>&gt;<i> buf[13+p*n]); dump_junk(buf, &quot;        &quot;, 13+p*n);
+</I>&gt;<i> @@ -1524,7 +1524,7 @@ static void dump_videostreaming_interfac
+</I>&gt;<i>  		       &quot;        bEndpointAddress            %5u\n&quot;
+</I>&gt;<i>  		       &quot;        bTerminalLink               %5u\n&quot;
+</I>&gt;<i>  		       &quot;        bControlSize                %5u\n&quot;,
+</I>&gt;<i> -		       p, buf[4] | (buf[5] &lt;&lt; 8), buf[6], buf[8], n);
+</I>&gt;<i> +		       p, buf[4] | (buf[5] &lt;&lt; 8), buf[6], buf[7], n);
+</I>&gt;<i>  		for(i = 0; i &lt; p; i++)
+</I>&gt;<i>  			printf(&quot;        bmaControls(%2u)             %5u\n&quot;, i, buf[9+p*n]);
+</I>&gt;<i>  		dump_junk(buf, &quot;        &quot;, 9+p*n);
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002066.html">[Linux-uvc-devel] [PATCH] lsusb.c: Fix video class output and input	headers
+</A></li>
+	<LI>Next message: <A HREF="002068.html">[Linux-uvc-devel] uvcvideo and v4l2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2072">[ date ]</a>
+              <a href="thread.html#2072">[ thread ]</a>
+              <a href="subject.html#2072">[ subject ]</a>
+              <a href="author.html#2072">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

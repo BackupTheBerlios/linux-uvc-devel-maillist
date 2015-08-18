@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Pan and Tilt controls
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Pan%20and%20Tilt%20controls&In-Reply-To=%3C78877a450902081620i38b6e235hc8447a5c426a6e9e%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004586.html">
+   <LINK REL="Next"  HREF="004565.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Pan and Tilt controls</H1>
+    <B>Gilles GIGAN</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Pan%20and%20Tilt%20controls&In-Reply-To=%3C78877a450902081620i38b6e235hc8447a5c426a6e9e%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Pan and Tilt controls">gilles.gigan at gmail.com
+       </A><BR>
+    <I>Mon Feb  9 01:20:15 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004586.html">[Linux-uvc-devel] Pan and Tilt controls
+</A></li>
+        <LI>Next message: <A HREF="004565.html">[Linux-uvc-devel] Pan and Tilt controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4537">[ date ]</a>
+              <a href="thread.html#4537">[ thread ]</a>
+              <a href="subject.html#4537">[ subject ]</a>
+              <a href="author.html#4537">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Paulo,
+I had a look at guvcview. I think it s a great app, full of features beyond
+a simple frame view/capturing. Great work.
+I am trying to write an application that properly displays V4L controls from
+any driver, and I have tested with pwc and uvcvideo so far. Digging into
+guvcview's source code confirmed what the point I made in my previous post:
+img_controls.c, which draws controls on the screen, is full of if..else if
+statements which do a lot more than just checking the control type. There
+are also some hardcoded menu values for the raw pixel order. This is
+precisely what I think should be done differently:
+In my opinion, when enumerating V4L controls, user applications should NOT
+have to check what a control DOES, ie trying to make sense of either the
+v4l2_queryctrl.name or v4l2_queryctrl.id field (which is what guvcview
+does), in order to draw this control on the screen. Doing this ties your
+application to a specific driver/implementation/version/... and will require
+more coding when any of these changes. An application should only have to
+check what TYPE the control is (v4l2_queryctrl.type field, and possibly
+enumerate over the different menu values if it is a menu), to decide how to
+best draw it in a GUI. The driver shoud be responsible for filling in the
+struct v4l2_queryctrl correctly with meaningful &amp; sensible values, and
+provide a menu for controls that require one. Let me know if my
+understanding is flawed somewhere in here.
+
+The V4L2 spec lists the Pan Reset and Tilt Reset as Booleans, which is
+already a bit better than Integer (what uvcvideo does so far), although I
+stick to my comment in my previous post: I really think these should be
+reported as Buttons for the obvious reason that resetting the pan or tilt is
+a one-shot action, not a continuous one which holds a value over time (this
+fits the definition of V4L2_CTRLTYPE_BUTTON in the specs). Using a button
+type makes it clear that trying to get its value is pointless, and it also
+makes sense when drawing this control on a GUI. I will bring this up on the
+V4L mailing list but I thought I d throw this one here first and see what
+people think.
+The V4L2 spec says the step value &quot;gives the smallest change of an integer
+control actually affecting hardware&quot;. Calling ioctl(VIDIOC_G_CTRL) on the
+Pan or Tilt Relative control with a value of 1, as per reported step value,
+does not do anything. Both guvcview and luvcview get around that by defining
+a macro set to 64. Do applications really have to guess/do that, or can the
+driver simply report 64 as a step value ?
+The Pan/Tilt Reset control is a bit of a tricky one, because it is  a
+collection of buttons (Pan reset, Tilt reset or both). Since we already have
+dedicated controls for both Pan Reset and Tilt Reset, is it a good idea
+change this one to &quot;Pan &amp; Tilt Reset&quot; only, so it can be presented as a
+button ? If not, can this control have a menu explaining the different
+acceptable values ?
+
+Cheers,
+Gilles
+
+On Sun, Feb 8, 2009 at 11:28 PM, Paulo Assis &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">pj.assis at gmail.com</A>&gt; wrote:
+
+&gt;<i> Gilles,
+</I>&gt;<i> Please have a look at guvcview code: <A HREF="http://guvcview.berlios.de">http://guvcview.berlios.de</A>
+</I>&gt;<i> There is an implementation in a GTK GUI of these controls.
+</I>&gt;<i>
+</I>&gt;<i> Best regards
+</I>&gt;<i> Paulo
+</I>&gt;<i>
+</I>&gt;<i> 2009/2/8 Gilles GIGAN &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">gilles.gigan at gmail.com</A>&gt;:
+</I>&gt;<i> &gt; Hi,
+</I>&gt;<i> &gt; I have checked out the latest v4l code from the mercurial repository on
+</I>&gt;<i> &gt; linuxtv.org, and successfully compiled and loaded the uvcvideo module,
+</I>&gt;<i> which
+</I>&gt;<i> &gt; I tested with a logitech quickcam sphere af (046d:0994). I have comments
+</I>&gt;<i> and
+</I>&gt;<i> &gt; questions regarding the V4L2 controls to pilot the pan and tilt motors:
+</I>&gt;<i> &gt; After mapping the dynamic controls (with uvcdynctrl), the following
+</I>&gt;<i> controls
+</I>&gt;<i> &gt; become available:
+</I>&gt;<i> &gt; - Pan Reset: min: 0, max: 1, step: 1, type: integer
+</I>&gt;<i> &gt; - Tilt Reset: min 0, max: 1, step: 0, type: integer (note the step value
+</I>&gt;<i> of
+</I>&gt;<i> &gt; 0 which should really be 1 here)
+</I>&gt;<i> &gt; - Pan (Relative): min: 4480, max: 4480, step: 1, type: integer
+</I>&gt;<i> &gt; - Tilt (Relative): min: 1920, max: 1920, step: 1, type: integer
+</I>&gt;<i> &gt; - Pan/tilt Reset: min: 0, max: 3, step: 1, type: integer
+</I>&gt;<i> &gt; Creating a user interface based on these controls is quite hard because
+</I>&gt;<i> of
+</I>&gt;<i> &gt; their types and step values:
+</I>&gt;<i> &gt; Trying to set a value of 0 on any of the Reset controls fails, even
+</I>&gt;<i> though 0
+</I>&gt;<i> &gt; is reported as an acceptable value.
+</I>&gt;<i> &gt; Setting a value of 1 on either Pan (Relative) or Tilt (Relative) succeeds
+</I>&gt;<i> &gt; but results in no movement.
+</I>&gt;<i> &gt; Keeping the GUI up-to-date is not possible because calling
+</I>&gt;<i> &gt; ioctl(VIDIOC_G_CTRL) on any of these controls fails (which makes sense
+</I>&gt;<i> when
+</I>&gt;<i> &gt; you know what the controls are). But from a programming point of view, if
+</I>&gt;<i> &gt; you try to create an interface that will work with any controls, the way
+</I>&gt;<i> &gt; these are reported (integers) makes it almost impossible to keep track
+</I>&gt;<i> of.
+</I>&gt;<i> &gt; I have a couple of suggestions to improve this, and would appreciate
+</I>&gt;<i> &gt; comments on them:
+</I>&gt;<i> &gt; - Reporting the Pan/Tilt Reset control as a menu and Pan Reset and Tilt
+</I>&gt;<i> &gt; Reset as buttons instead of integers, will solve the previously mentioned
+</I>&gt;<i> &gt; issues.
+</I>&gt;<i> &gt; - Change the Pan (Relative) and Tilt (relative) step value to one that
+</I>&gt;<i> &gt; actually results in a slight movement of the camera.
+</I>&gt;<i> &gt; Is there a way to make these changes when mapping the controls, or do
+</I>&gt;<i> they
+</I>&gt;<i> &gt; have to be coded in the driver itself ?
+</I>&gt;<i> &gt; Thanks
+</I>&gt;<i> &gt; Gilles
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; Linux-uvc-devel mailing list
+</I>&gt;<i> &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090209/2df6b902/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090209/2df6b902/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004586.html">[Linux-uvc-devel] Pan and Tilt controls
+</A></li>
+	<LI>Next message: <A HREF="004565.html">[Linux-uvc-devel] Pan and Tilt controls
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4537">[ date ]</a>
+              <a href="thread.html#4537">[ thread ]</a>
+              <a href="subject.html#4537">[ subject ]</a>
+              <a href="author.html#4537">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

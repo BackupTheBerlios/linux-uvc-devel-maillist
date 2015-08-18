@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech C910 -- trying to run more than one.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20C910%20--%20trying%20to%20run%20more%20than%20one.&In-Reply-To=%3C4DE84DD3.7080804%40gladstonefamily.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006648.html">
+   <LINK REL="Next"  HREF="006563.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech C910 -- trying to run more than one.</H1>
+    <B>Philip Gladstone</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20C910%20--%20trying%20to%20run%20more%20than%20one.&In-Reply-To=%3C4DE84DD3.7080804%40gladstonefamily.net%3E"
+       TITLE="[Linux-uvc-devel] Logitech C910 -- trying to run more than one.">philip at gladstonefamily.net
+       </A><BR>
+    <I>Fri Jun  3 04:58:27 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006648.html">[Linux-uvc-devel] VAIO Webcam - 04f2:b26d Chicony Electronics	Co.
+</A></li>
+        <LI>Next message: <A HREF="006563.html">[Linux-uvc-devel] Logitech C910 -- trying to run more than one.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6547">[ date ]</a>
+              <a href="thread.html#6547">[ thread ]</a>
+              <a href="subject.html#6547">[ subject ]</a>
+              <a href="author.html#6547">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Sorry for the long delay in responding. I will try these changes.
+
+However, the scoop on the other various patches is as follows:
+
+in 2592x1944 mode, at 10fps, 4bpp for mjpg, the fix_jpeg_bandwidth makes 
+things worse with 3476 B/frame rather than the device specified 3060 
+B/frame.
+
+At 2592x1944 mode at 5fps, 2bpp for mjpg, the fix_jpeg_bandwidth ends up 
+at 1024 B/frame, which allows me to run the three cameras that I want.
+
+At 2592x1944 mode at 5fps, 4bpp for mjpg, the fix_jpeg_bandwidth ends up 
+at 1984 B/frame, which allows me to run two cameras, but not the third.
+
+However, these numbers are funny. The frame size for 2592x1944x4bpp is 
+2.5 Megabytes or 20 Mbits. At 5fps, this is 100 Mbits/sec. There should 
+be ample bandwidth to support three of these streams.
+
+To be honest, I don't understand the units of the B/frame. Can someone 
+explain it to me?
+
+Philip
+
+
+
+
+On 07-Mar-11 5:53 AM, Alexey Fisher wrote:
+&gt;<i> Hi Philip,
+</I>&gt;<i>
+</I>&gt;<i> i probably will not solve your problem but i wont to take a look on it.
+</I>&gt;<i> Can you please apply attached debug patch and send me the log.
+</I>&gt;<i> this patch was made on top of fd2b6dd22743f7c96f7c6e97d49ff5f4b422e741
+</I>&gt;<i>
+</I>&gt;<i> Make sure you have CONFIG_DYNAMIC_DEBUG=y enabled. To start dynamic
+</I>&gt;<i> debug you need do as root:
+</I>&gt;<i>
+</I>&gt;<i> echo &quot;module uvcvideo +p&quot;&gt;  /sys/kernel/debug/dynamic_debug/control
+</I>&gt;<i> echo &quot;func uvc_video_decode_end -p&quot;
+</I>&gt;&gt;<i> /sys/kernel/debug/dynamic_debug/control
+</I>&gt;<i> echo &quot;func uvc_video_decode_start -p&quot;
+</I>&gt;&gt;<i> /sys/kernel/debug/dynamic_debug/control
+</I>&gt;<i> echo &quot;func uvc_video_decode_data -p&quot;
+</I>&gt;&gt;<i> /sys/kernel/debug/dynamic_debug/control
+</I>&gt;<i> echo &quot;func uvc_video_decode_isoc -p&quot;
+</I>&gt;&gt;<i> /sys/kernel/debug/dynamic_debug/control
+</I>&gt;<i> echo &quot;func uvc_video_complete -p&quot;
+</I>&gt;&gt;<i> /sys/kernel/debug/dynamic_debug/control
+</I>&gt;<i> echo &quot;func uvc_v4l2_do_ioctl -p&quot;
+</I>&gt;&gt;<i> /sys/kernel/debug/dynamic_debug/control
+</I>&gt;<i> and start video with this, it will make onl&#246;y one shot:
+</I>&gt;<i> gst-launch-0.10 -v v4l2src num-buffers=1 ! jpegdec ! ffmpegcolorspace !
+</I>&gt;<i> autovideosink
+</I>&gt;<i>
+</I>&gt;<i> Am Sonntag, den 06.03.2011, 17:30 -0500 schrieb Philip Gladstone:
+</I>&gt;&gt;<i> It turned out that my kernel had an old uvcvideo module which didn't
+</I>&gt;&gt;<i> have the right debug log messages, and so I'm in the process of
+</I>&gt;&gt;<i> upgrading to a current kernel version. So far, I've managed to render my
+</I>&gt;&gt;<i> machine unbootable [it is a little embedded linux box].
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Philip
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> On 3/6/2011 6:14 AM, Laurent Pinchart wrote:
+</I>&gt;&gt;&gt;<i> Hi Philip,
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> On Sunday 20 February 2011 21:57:24 Philip Gladstone wrote:
+</I>&gt;&gt;&gt;&gt;<i> I attached two C910s to a small linux box, and ran into the 'Failed to
+</I>&gt;&gt;&gt;&gt;<i> submit URB' problem.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> When I look at the descriptors for this camera, I think I understand the
+</I>&gt;&gt;&gt;&gt;<i> problem. I'm capturing at 5 Mpixels and I'm trying two cameras.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>          VideoStreaming Interface Descriptor:
+</I>&gt;&gt;&gt;&gt;<i>            bLength                            38
+</I>&gt;&gt;&gt;&gt;<i>            bDescriptorType                    36
+</I>&gt;&gt;&gt;&gt;<i>            bDescriptorSubtype                  7 (FRAME_MJPEG)
+</I>&gt;&gt;&gt;&gt;<i>            bFrameIndex                        28
+</I>&gt;&gt;&gt;&gt;<i>            bmCapabilities                   0x01
+</I>&gt;&gt;&gt;&gt;<i>              Still image supported
+</I>&gt;&gt;&gt;&gt;<i>            wWidth                           2592
+</I>&gt;&gt;&gt;&gt;<i>            wHeight                          1944
+</I>&gt;&gt;&gt;&gt;<i>            dwMinBitRate                403107840
+</I>&gt;&gt;&gt;&gt;<i>            dwMaxBitRate                806215680
+</I>&gt;&gt;&gt;&gt;<i>            dwMaxVideoFrameBufferSize    10077696
+</I>&gt;&gt;&gt;&gt;<i>            dwDefaultFrameInterval        1000000
+</I>&gt;&gt;&gt;&gt;<i>            bFrameIntervalType                  3
+</I>&gt;&gt;&gt;&gt;<i>            dwFrameInterval( 0)           1000000
+</I>&gt;&gt;&gt;&gt;<i>            dwFrameInterval( 1)           1333333
+</I>&gt;&gt;&gt;&gt;<i>            dwFrameInterval( 2)           2000000
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> The video frame size is set to 10Mb. This is surprisingly large as
+</I>&gt;&gt;&gt;&gt;<i> actual frames captured with MJPEG on this camera are typically 500kb or
+</I>&gt;&gt;&gt;&gt;<i> less. When I checked the descriptor for the uncompressed version of the
+</I>&gt;&gt;&gt;&gt;<i> same frame, it came back with the same value of dwMaxVideoFrameBufferSize
+</I>&gt;&gt;&gt;&gt;<i> (effectively 16 bits per pixel). The values for min/max bit rate are
+</I>&gt;&gt;&gt;&gt;<i> (correctly) calculated from the frame intervals and the buffer size.
+</I>&gt;&gt;&gt;<i> The uvcvideo driver doesn't use the dwMaxVideoFrameBufferSize field to compute
+</I>&gt;&gt;&gt;<i> the required bandwidth but queries the device at runtime instead.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> You can enable the UVC_TRACE_VIDEO trace flag to get the driver to print the
+</I>&gt;&gt;&gt;<i> bandwidth requested by the device to the kernel log.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> Typical JPEG compression gets down to 1 bit per pixel, and 2 bits is
+</I>&gt;&gt;&gt;&gt;<i> very unusual.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> What I want to know is what the impact would be of defining a new QUIRK
+</I>&gt;&gt;&gt;&gt;<i> that overrode the frame buffer size for compressed frames and calculated
+</I>&gt;&gt;&gt;&gt;<i> them at (say) 2 bits per pixel?
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> Do other webcams get this right?
+</I>&gt;&gt;&gt;<i> You would be surprised by how many webcams get things wrong.
+</I>&gt;&gt;&gt;<i>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006648.html">[Linux-uvc-devel] VAIO Webcam - 04f2:b26d Chicony Electronics	Co.
+</A></li>
+	<LI>Next message: <A HREF="006563.html">[Linux-uvc-devel] Logitech C910 -- trying to run more than one.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6547">[ date ]</a>
+              <a href="thread.html#6547">[ thread ]</a>
+              <a href="subject.html#6547">[ subject ]</a>
+              <a href="author.html#6547">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

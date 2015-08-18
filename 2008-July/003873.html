@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] syntek 174f:8a12 unsupported?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20syntek%20174f%3A8a12%20unsupported%3F&In-Reply-To=%3C4880F3F2.70300%40martufone.info%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003869.html">
+   <LINK REL="Next"  HREF="003874.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] syntek 174f:8a12 unsupported?</H1>
+    <B>martuf1</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20syntek%20174f%3A8a12%20unsupported%3F&In-Reply-To=%3C4880F3F2.70300%40martufone.info%3E"
+       TITLE="[Linux-uvc-devel] syntek 174f:8a12 unsupported?">tempo at martufone.info
+       </A><BR>
+    <I>Fri Jul 18 21:50:10 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003869.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+        <LI>Next message: <A HREF="003874.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3873">[ date ]</a>
+              <a href="thread.html#3873">[ thread ]</a>
+              <a href="subject.html#3873">[ subject ]</a>
+              <a href="author.html#3873">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Laurent Pinchart wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> On Thursday 17 July 2008, martuf1 wrote:
+</I>&gt;<i>   
+</I>&gt;&gt;<i> Hi,
+</I>&gt;&gt;<i> my notebook has a Syntek camera (174f:8a12),
+</I>&gt;&gt;<i> lsusb says it's an UVC Camera
+</I>&gt;&gt;<i>    iProduct                3 USB2.0 UVC PC Camera
+</I>&gt;&gt;<i> (please see attached file for the complete output of the command)
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> It doesn't work; dmesg says:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> [ 8524.914397] uvcvideo: Found UVC 1.00 device USB2.0 UVC PC Camera
+</I>&gt;&gt;<i> (174f:8a12)
+</I>&gt;&gt;<i> [ 8524.936046] uvcvideo: Failed to query (135) UVC control 1 (unit 0) :
+</I>&gt;&gt;<i> -32 (exp. 26).
+</I>&gt;&gt;<i> [ 8525.170271] usbcore: registered new interface driver uvcvideo
+</I>&gt;&gt;<i> [ 8525.170278] USB Video Class driver (SVN r231)
+</I>&gt;&gt;<i> [ 8525.696738] uvcvideo: Failed to query (129) UVC control 1 (unit 0) :
+</I>&gt;&gt;<i> -110 (exp. 26).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Any idea, help, etc is welcome
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> Could you please apply the following patch and try again ? Make sure you 
+</I>&gt;<i> report all kernel log messages printed by the uvcvideo driver.
+</I>&gt;<i>
+</I>&gt;<i> -----------------------------------------------------------------------------
+</I>&gt;<i> Index: uvc_video.c
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvc_video.c	(revision 230)
+</I>&gt;<i> +++ uvc_video.c	(working copy)
+</I>&gt;<i> @@ -899,8 +899,7 @@
+</I>&gt;<i>  	/* Some webcams don't suport GET_DEF request on the probe control. We
+</I>&gt;<i>  	 * fall back to GET_CUR if GET_DEF fails.
+</I>&gt;<i>  	 */
+</I>&gt;<i> -	if ((ret = uvc_get_video_ctrl(video, probe, 1, GET_DEF)) &lt; 0 &amp;&amp;
+</I>&gt;<i> -	    (ret = uvc_get_video_ctrl(video, probe, 1, GET_CUR)) &lt; 0)
+</I>&gt;<i> +	if ((ret = uvc_get_video_ctrl(video, probe, 1, GET_CUR)))
+</I>&gt;<i>  		return ret;
+</I>&gt;<i>  
+</I>&gt;<i>  	/* Check if the default format descriptor exists. Use the first
+</I>&gt;<i> -----------------------------------------------------------------------------
+</I>&gt;<i>
+</I>&gt;<i> Best regards,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>Hi Laurent,
+here is the output of the patched driver:
+
+$&gt;  dmesg
+[ 7264.493153] Linux video capture interface: v2.00
+[ 7264.498565] uvcvideo: Found UVC 1.00 device USB2.0 UVC PC Camera 
+(174f:8a12)
+[ 7264.750891] usbcore: registered new interface driver uvcvideo
+[ 7264.750901] USB Video Class driver (SVN r231)
+[ 7265.281478] uvcvideo: Failed to query (129) UVC control 1 (unit 0) : 
+-110 (exp. 26).
+$&gt; ls /dev/video0
+/dev/video0
+
+After removing the module and modprobing again the output is:
+$&gt; dmesg
+[ 7519.034499] uvcvideo: Found UVC 1.00 device USB2.0 UVC PC Camera 
+(174f:8a12)
+[ 7519.289704] usbcore: registered new interface driver uvcvideo
+[ 7519.289712] USB Video Class driver (SVN r231)
+$&gt; ls /dev/video0
+/dev/video0
+
+But in both cases, with skype and amsn the cam isn't working
+(should I use other program to test it?)
+
+Thank you, cheers
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003869.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+	<LI>Next message: <A HREF="003874.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3873">[ date ]</a>
+              <a href="thread.html#3873">[ thread ]</a>
+              <a href="subject.html#3873">[ subject ]</a>
+              <a href="author.html#3873">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

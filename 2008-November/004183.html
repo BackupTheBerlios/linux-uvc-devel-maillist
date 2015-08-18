@@ -1,0 +1,213 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] Video/UVC: Fix unaligned exceptions	in uvc video driver.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Video/UVC%3A%20Fix%20unaligned%20exceptions%0A%09in%20uvc%20video%20driver.&In-Reply-To=%3C200811091355.05074.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004215.html">
+   <LINK REL="Next"  HREF="004188.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] Video/UVC: Fix unaligned exceptions	in uvc video driver.</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Video/UVC%3A%20Fix%20unaligned%20exceptions%0A%09in%20uvc%20video%20driver.&In-Reply-To=%3C200811091355.05074.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] Video/UVC: Fix unaligned exceptions	in uvc video driver.">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sun Nov  9 13:55:04 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004215.html">[Linux-uvc-devel] Issue with recent uvcvideo
+</A></li>
+        <LI>Next message: <A HREF="004188.html">[Linux-uvc-devel] [PATCH] Video/UVC: Port mainlined uvc video	driver to NOMMU
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4183">[ date ]</a>
+              <a href="thread.html#4183">[ thread ]</a>
+              <a href="subject.html#4183">[ subject ]</a>
+              <a href="author.html#4183">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Bryan, Michael,
+
+Thanks for the patch.
+
+On Thursday 06 November 2008, Bryan Wu wrote:
+&gt;<i> From: Michael Hennerich &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">michael.hennerich at analog.com</A>&gt;
+</I>&gt;<i>
+</I>&gt;<i> buffer can be odd aligned on some NOMMU machine such as Blackfin
+</I>
+The comment is a bit misleading. Buffers can be odd-aligned independently off 
+the machine type. The issue comes from machines that can't access unaligned 
+memory. Something like &quot;Fix access to unaligned memory&quot; would be better.
+
+&gt;<i> Signed-off-by: Michael Hennerich &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">michael.hennerich at analog.com</A>&gt;
+</I>&gt;<i> Signed-off-by: Bryan Wu &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">cooloney at kernel.org</A>&gt;
+</I>&gt;<i> ---
+</I>&gt;<i>  drivers/media/video/uvc/uvc_driver.c |   37
+</I>&gt;<i> +++++++++++++++++---------------- 1 files changed, 19 insertions(+), 18
+</I>&gt;<i> deletions(-)
+</I>&gt;<i>
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> b/drivers/media/video/uvc/uvc_driver.c index d7ad060..9b4f469 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> @@ -31,6 +31,7 @@
+</I>&gt;<i>  #include &lt;linux/videodev2.h&gt;
+</I>&gt;<i>  #include &lt;linux/vmalloc.h&gt;
+</I>&gt;<i>  #include &lt;linux/wait.h&gt;
+</I>&gt;<i> +#include &lt;asm/unaligned.h&gt;
+</I>&gt;<i>  #include &lt;asm/atomic.h&gt;
+</I>&gt;<i>
+</I>&gt;<i>  #include &lt;media/v4l2-common.h&gt;
+</I>&gt;<i> @@ -432,20 +433,20 @@ static int uvc_parse_format(struct uvc_device *dev,
+</I>&gt;<i>
+</I>&gt;<i>  		frame-&gt;bFrameIndex = buffer[3];
+</I>&gt;<i>  		frame-&gt;bmCapabilities = buffer[4];
+</I>&gt;<i> -		frame-&gt;wWidth = le16_to_cpup((__le16 *)&amp;buffer[5]);
+</I>&gt;<i> -		frame-&gt;wHeight = le16_to_cpup((__le16 *)&amp;buffer[7]);
+</I>&gt;<i> -		frame-&gt;dwMinBitRate = le32_to_cpup((__le32 *)&amp;buffer[9]);
+</I>&gt;<i> -		frame-&gt;dwMaxBitRate = le32_to_cpup((__le32 *)&amp;buffer[13]);
+</I>&gt;<i> +		frame-&gt;wWidth = le16_to_cpu(get_unaligned((__le16 *) &amp;buffer[5]));
+</I>
+What about using get_unaligned_le16 and get_unaligned_le32 directly ? Lines 
+would be shorter and could be kept behind the 80 columns limit more easily.
+
+Tell me if you want to resubmit or if I should make the modification myself 
+(including the patch description).
+
+&gt;<i> +		frame-&gt;wHeight = le16_to_cpu(get_unaligned((__le16 *) &amp;buffer[7]));
+</I>&gt;<i> +		frame-&gt;dwMinBitRate = le32_to_cpu(get_unaligned((__le32 *) &amp;buffer[9]));
+</I>&gt;<i> +		frame-&gt;dwMaxBitRate = le32_to_cpu(get_unaligned((__le32 *)
+</I>&gt;<i> &amp;buffer[13])); if (ftype != VS_FRAME_FRAME_BASED) {
+</I>&gt;<i>  			frame-&gt;dwMaxVideoFrameBufferSize =
+</I>&gt;<i> -				le32_to_cpup((__le32 *)&amp;buffer[17]);
+</I>&gt;<i> +				le32_to_cpu(get_unaligned((__le32 *) &amp;buffer[17]));
+</I>&gt;<i>  			frame-&gt;dwDefaultFrameInterval =
+</I>&gt;<i> -				le32_to_cpup((__le32 *)&amp;buffer[21]);
+</I>&gt;<i> +				le32_to_cpu(get_unaligned((__le32 *) &amp;buffer[21]));
+</I>&gt;<i>  			frame-&gt;bFrameIntervalType = buffer[25];
+</I>&gt;<i>  		} else {
+</I>&gt;<i>  			frame-&gt;dwMaxVideoFrameBufferSize = 0;
+</I>&gt;<i>  			frame-&gt;dwDefaultFrameInterval =
+</I>&gt;<i> -				le32_to_cpup((__le32 *)&amp;buffer[17]);
+</I>&gt;<i> +				le32_to_cpu(get_unaligned((__le32 *) &amp;buffer[17]));
+</I>&gt;<i>  			frame-&gt;bFrameIntervalType = buffer[21];
+</I>&gt;<i>  		}
+</I>&gt;<i>  		frame-&gt;dwFrameInterval = *intervals;
+</I>&gt;<i> @@ -468,7 +469,7 @@ static int uvc_parse_format(struct uvc_device *dev,
+</I>&gt;<i>  		 * some other divisions by zero which could happen.
+</I>&gt;<i>  		 */
+</I>&gt;<i>  		for (i = 0; i &lt; n; ++i) {
+</I>&gt;<i> -			interval = le32_to_cpup((__le32 *)&amp;buffer[26+4*i]);
+</I>&gt;<i> +			interval = le32_to_cpu(get_unaligned((__le32 *) &amp;buffer[26+4*i]));
+</I>&gt;<i>  			*(*intervals)++ = interval ? interval : 1;
+</I>&gt;<i>  		}
+</I>&gt;<i>
+</I>&gt;<i> @@ -814,7 +815,7 @@ static int uvc_parse_vendor_control(struct uvc_device
+</I>&gt;<i> *dev, memcpy(unit-&gt;extension.guidExtensionCode, &amp;buffer[4], 16);
+</I>&gt;<i>  		unit-&gt;extension.bNumControls = buffer[20];
+</I>&gt;<i>  		unit-&gt;extension.bNrInPins =
+</I>&gt;<i> -			le16_to_cpup((__le16 *)&amp;buffer[21]);
+</I>&gt;<i> +			le16_to_cpu(get_unaligned((__le16 *) &amp;buffer[21]));
+</I>&gt;<i>  		unit-&gt;extension.baSourceID = (__u8 *)unit + sizeof *unit;
+</I>&gt;<i>  		memcpy(unit-&gt;extension.baSourceID, &amp;buffer[22], p);
+</I>&gt;<i>  		unit-&gt;extension.bControlSize = buffer[22+p];
+</I>&gt;<i> @@ -858,8 +859,8 @@ static int uvc_parse_standard_control(struct uvc_device
+</I>&gt;<i> *dev, return -EINVAL;
+</I>&gt;<i>  		}
+</I>&gt;<i>
+</I>&gt;<i> -		dev-&gt;uvc_version = le16_to_cpup((__le16 *)&amp;buffer[3]);
+</I>&gt;<i> -		dev-&gt;clock_frequency = le32_to_cpup((__le32 *)&amp;buffer[7]);
+</I>&gt;<i> +		dev-&gt;uvc_version = le16_to_cpu(get_unaligned((__le16 *) &amp;buffer[3]));
+</I>&gt;<i> +		dev-&gt;clock_frequency = le32_to_cpu(get_unaligned((__le32 *)
+</I>&gt;<i> &amp;buffer[7]));
+</I>&gt;<i>
+</I>&gt;<i>  		/* Parse all USB Video Streaming interfaces. */
+</I>&gt;<i>  		for (i = 0; i &lt; n; ++i) {
+</I>&gt;<i> @@ -886,7 +887,7 @@ static int uvc_parse_standard_control(struct uvc_device
+</I>&gt;<i> *dev, /* Make sure the terminal type MSB is not null, otherwise it
+</I>&gt;<i>  		 * could be confused with a unit.
+</I>&gt;<i>  		 */
+</I>&gt;<i> -		type = le16_to_cpup((__le16 *)&amp;buffer[4]);
+</I>&gt;<i> +		type = le16_to_cpu(get_unaligned((__le16 *) &amp;buffer[4]));
+</I>&gt;<i>  		if ((type &amp; 0xff00) == 0) {
+</I>&gt;<i>  			uvc_trace(UVC_TRACE_DESCR, &quot;device %d videocontrol &quot;
+</I>&gt;<i>  				&quot;interface %d INPUT_TERMINAL %d has invalid &quot;
+</I>&gt;<i> @@ -928,11 +929,11 @@ static int uvc_parse_standard_control(struct
+</I>&gt;<i> uvc_device *dev, term-&gt;camera.bControlSize = n;
+</I>&gt;<i>  			term-&gt;camera.bmControls = (__u8 *)term + sizeof *term;
+</I>&gt;<i>  			term-&gt;camera.wObjectiveFocalLengthMin =
+</I>&gt;<i> -				le16_to_cpup((__le16 *)&amp;buffer[8]);
+</I>&gt;<i> +				le16_to_cpu(get_unaligned((__le16 *) &amp;buffer[8]));
+</I>&gt;<i>  			term-&gt;camera.wObjectiveFocalLengthMax =
+</I>&gt;<i> -				le16_to_cpup((__le16 *)&amp;buffer[10]);
+</I>&gt;<i> +				le16_to_cpu(get_unaligned((__le16 *) &amp;buffer[10]));
+</I>&gt;<i>  			term-&gt;camera.wOcularFocalLength =
+</I>&gt;<i> -				le16_to_cpup((__le16 *)&amp;buffer[12]);
+</I>&gt;<i> +				le16_to_cpu(get_unaligned((__le16 *) &amp;buffer[12]));
+</I>&gt;<i>  			memcpy(term-&gt;camera.bmControls, &amp;buffer[15], n);
+</I>&gt;<i>  		} else if (UVC_ENTITY_TYPE(term) == ITT_MEDIA_TRANSPORT_INPUT) {
+</I>&gt;<i>  			term-&gt;media.bControlSize = n;
+</I>&gt;<i> @@ -968,7 +969,7 @@ static int uvc_parse_standard_control(struct uvc_device
+</I>&gt;<i> *dev, /* Make sure the terminal type MSB is not null, otherwise it
+</I>&gt;<i>  		 * could be confused with a unit.
+</I>&gt;<i>  		 */
+</I>&gt;<i> -		type = le16_to_cpup((__le16 *)&amp;buffer[4]);
+</I>&gt;<i> +		type = le16_to_cpu(get_unaligned((__le16 *) &amp;buffer[4]));
+</I>&gt;<i>  		if ((type &amp; 0xff00) == 0) {
+</I>&gt;<i>  			uvc_trace(UVC_TRACE_DESCR, &quot;device %d videocontrol &quot;
+</I>&gt;<i>  				&quot;interface %d OUTPUT_TERMINAL %d has invalid &quot;
+</I>&gt;<i> @@ -1042,7 +1043,7 @@ static int uvc_parse_standard_control(struct
+</I>&gt;<i> uvc_device *dev, unit-&gt;type = buffer[2];
+</I>&gt;<i>  		unit-&gt;processing.bSourceID = buffer[4];
+</I>&gt;<i>  		unit-&gt;processing.wMaxMultiplier =
+</I>&gt;<i> -			le16_to_cpup((__le16 *)&amp;buffer[5]);
+</I>&gt;<i> +			le16_to_cpu(get_unaligned((__le16 *) &amp;buffer[5]));
+</I>&gt;<i>  		unit-&gt;processing.bControlSize = buffer[7];
+</I>&gt;<i>  		unit-&gt;processing.bmControls = (__u8 *)unit + sizeof *unit;
+</I>&gt;<i>  		memcpy(unit-&gt;processing.bmControls, &amp;buffer[8], n);
+</I>&gt;<i> @@ -1078,7 +1079,7 @@ static int uvc_parse_standard_control(struct
+</I>&gt;<i> uvc_device *dev, memcpy(unit-&gt;extension.guidExtensionCode, &amp;buffer[4], 16);
+</I>&gt;<i>  		unit-&gt;extension.bNumControls = buffer[20];
+</I>&gt;<i>  		unit-&gt;extension.bNrInPins =
+</I>&gt;<i> -			le16_to_cpup((__le16 *)&amp;buffer[21]);
+</I>&gt;<i> +			le16_to_cpu(get_unaligned((__le16 *) &amp;buffer[21]));
+</I>&gt;<i>  		unit-&gt;extension.baSourceID = (__u8 *)unit + sizeof *unit;
+</I>&gt;<i>  		memcpy(unit-&gt;extension.baSourceID, &amp;buffer[22], p);
+</I>&gt;<i>  		unit-&gt;extension.bControlSize = buffer[22+p];
+</I>
+Cheers,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004215.html">[Linux-uvc-devel] Issue with recent uvcvideo
+</A></li>
+	<LI>Next message: <A HREF="004188.html">[Linux-uvc-devel] [PATCH] Video/UVC: Port mainlined uvc video	driver to NOMMU
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4183">[ date ]</a>
+              <a href="thread.html#4183">[ thread ]</a>
+              <a href="subject.html#4183">[ subject ]</a>
+              <a href="author.html#4183">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

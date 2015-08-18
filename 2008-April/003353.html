@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] // Quickcam Pro 9000 and uvcdynctrl woes //
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20//%20Quickcam%20Pro%209000%20and%20uvcdynctrl%20woes%20//&In-Reply-To=%3C200804132317.48618.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003363.html">
+   <LINK REL="Next"  HREF="003376.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] // Quickcam Pro 9000 and uvcdynctrl woes //</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20//%20Quickcam%20Pro%209000%20and%20uvcdynctrl%20woes%20//&In-Reply-To=%3C200804132317.48618.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] // Quickcam Pro 9000 and uvcdynctrl woes //">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sun Apr 13 23:17:48 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003363.html">[Linux-uvc-devel] // Quickcam Pro 9000 and uvcdynctrl woes //
+</A></li>
+        <LI>Next message: <A HREF="003376.html">[Linux-uvc-devel] // Quickcam Pro 9000 and uvcdynctrl woes //
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3353">[ date ]</a>
+              <a href="thread.html#3353">[ thread ]</a>
+              <a href="subject.html#3353">[ subject ]</a>
+              <a href="author.html#3353">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Julian,
+
+On Saturday 12 April 2008, Julian Oliver wrote:
+&gt;<i> hi,
+</I>&gt;<i>
+</I>&gt;<i> i have a Quickcam Pro 9000 and will be using it in an electronic art
+</I>&gt;<i> exhibition in the computer vision component. while the driver
+</I>&gt;<i> performance under is certainly great - even at 960x720 - i've had little
+</I>&gt;<i> luck using uvcdynctrl-0.2 (latest svn). i would like to use it so that i
+</I>&gt;<i> can turn off autoexposure when the gallery assistants reboot the machine
+</I>&gt;<i> as luvcview is not an option for them. no module params seem to be
+</I>&gt;<i> exposed either, at least from modinfo's perspective.
+</I>&gt;<i>
+</I>&gt;<i> this is the output i'm getting:
+</I>&gt;<i>
+</I>&gt;<i>     $ uvcdynctrl -l
+</I>&gt;<i>     [libwebcam] Unknown V4L2 control ID encountered: 10094849
+</I>&gt;<i>     [libwebcam] Unknown V4L2 control ID encountered: 10094850
+</I>&gt;<i>     [libwebcam] Unknown V4L2 control ID encountered: 10094851
+</I>&gt;<i>     Listing available devices:  video0   UVC Camera (046d:0990)
+</I>&gt;<i>
+</I>&gt;<i> while i can set some controls using uvcdynctrl, like Sharpness, i cannot
+</I>&gt;<i> get or set others (like 'Exposure, Auto'):
+</I>&gt;<i>
+</I>&gt;<i>     $ uvcdynctrl-0.2 -v --get=&quot;Exposure, Auto&quot;
+</I>&gt;<i>     [libwebcam] Unknown V4L2 control ID encountered: 10094849
+</I>&gt;<i>     [libwebcam] Unknown V4L2 control ID encountered: 10094850
+</I>&gt;<i>     [libwebcam] Unknown V4L2 control ID encountered: 10094851
+</I>&gt;<i>     ERROR: Unknown control specified.
+</I>&gt;<i>
+</I>&gt;<i> despite this control appearing in --clist output.
+</I>&gt;<i>
+</I>&gt;<i> any tips here? something i'm missing?
+</I>&gt;<i>
+</I>&gt;<i> i'm building against:
+</I>&gt;<i>
+</I>&gt;<i>     2.6.24-1-686
+</I>
+This is a known problem:
+
+&quot;Important note: libwebcam 0.1.1 is not fully compatible with revisions of the 
+UVC driver later than 178. Until libwebcam 0.1.2 is available, users are 
+advised to use uvcvideo r178.&quot;
+
+(<A HREF="http://www.quickcamteam.net/software/libwebcam/">http://www.quickcamteam.net/software/libwebcam/</A>)
+
+Control IDs have recently changed in the driver to match new controls 
+introduced in the V4L2 API. Now that the UVC standard controls are part of 
+the official V4L2 API, they shouldn't change anymore.
+
+As a quick &amp; dirty workaround, try to recompile libwebcam (0.1.1) with 
+uvcvideo.h and uvc_compat.h from the driver sources. You will run into 
+compilation issues in libwebcam.c. Commenting the 2 faulty lines should work 
+around the problem.
+
+For uvcdynctrl and libwebcam issues, you might get more help in the 
+quickcamteam.net forums.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003363.html">[Linux-uvc-devel] // Quickcam Pro 9000 and uvcdynctrl woes //
+</A></li>
+	<LI>Next message: <A HREF="003376.html">[Linux-uvc-devel] // Quickcam Pro 9000 and uvcdynctrl woes //
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3353">[ date ]</a>
+              <a href="thread.html#3353">[ thread ]</a>
+              <a href="subject.html#3353">[ subject ]</a>
+              <a href="author.html#3353">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Motorola ROKR E6 'webcam' and resolution	issues
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Motorola%20ROKR%20E6%20%27webcam%27%20and%20resolution%0A%09issues&In-Reply-To=%3C201002182251.10671.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005541.html">
+   <LINK REL="Next"  HREF="005561.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Motorola ROKR E6 'webcam' and resolution	issues</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Motorola%20ROKR%20E6%20%27webcam%27%20and%20resolution%0A%09issues&In-Reply-To=%3C201002182251.10671.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Motorola ROKR E6 'webcam' and resolution	issues">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu Feb 18 22:51:06 CET 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005541.html">[Linux-uvc-devel] Motorola ROKR E6 'webcam' and resolution issues
+</A></li>
+        <LI>Next message: <A HREF="005561.html">[Linux-uvc-devel] Motorola ROKR E6 'webcam' and resolution	issues
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5548">[ date ]</a>
+              <a href="thread.html#5548">[ thread ]</a>
+              <a href="subject.html#5548">[ subject ]</a>
+              <a href="author.html#5548">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Micha&#322;,
+
+On Monday 15 February 2010 18:50:10 Micha&#322; G&#243;rny wrote:
+&gt;<i> Hello,
+</I>&gt;<i> 
+</I>&gt;<i> I am using an Motorola ROKR E6 cell phone as a webcam and although it is
+</I>&gt;<i> listed on 'Supported devices' list as working, I am unable to get it fully
+</I>&gt;<i> working.
+</I>
+Sorry for that. The report I got 2 years and a half ago was thus inaccurate, 
+the reporter had probably tested 640x480 only (or your device is broken and 
+his wasn't :-)).
+
+&gt;<i> The driver reports five different modes (resolutions) for the device,
+</I>&gt;<i> which are (output of guvcview):
+</I>&gt;<i> 
+</I>&gt;<i> { pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+</I>&gt;<i> { discrete: width = 352, height = 288 }
+</I>&gt;<i> 	Time interval between frame: 1/20,
+</I>&gt;<i> { discrete: width = 176, height = 144 }
+</I>&gt;<i> 	Time interval between frame: 1/20,
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i> 	Time interval between frame: 1/15,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i> 	Time interval between frame: 1/20,
+</I>&gt;<i> { discrete: width = 160, height = 120 }
+</I>&gt;<i> 	Time interval between frame: 1/20,
+</I>&gt;<i> 
+</I>&gt;<i> But in fact only 640x480 works correctly. 320x240 shows only quarter of
+</I>&gt;<i> the image which three other quarters lightly overlaying on it, and 160x120
+</I>&gt;<i> works on similar manner. The 352x288 and 176x144 modes show only junk.
+</I>&gt;<i> This makes the webcam unusable for applications such as Skype which
+</I>&gt;<i> request one of the smaller modes.
+</I>
+Ouch.
+
+&gt;<i> I was able to workaround the issue through hardcoding the 640x480 mode in
+</I>&gt;<i> the driver (applications used software scaling then) but that's only an
+</I>&gt;<i> ugly workaround. I would appreciate if you could give me further tips on
+</I>&gt;<i> diagnosing the issue or simply implement a quirk allowing to drop unusable
+</I>&gt;<i> video modes (or even leave only the one with largest resolution).
+</I>
+Would you be able to test the device in Windows ? If it works there we could 
+try to capture USB traffic to find out how the Windows driver initializes it.
+
+I've seen similar problems with Ricoh webcams. It was caused by the uvcvideo 
+driver selecting an alternate setting with a too high bandwidth (which is 
+allowed, but not very optimum). Your device has a single alternate setting for 
+the streaming interface, so it doesn't seem to be the same issue.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005541.html">[Linux-uvc-devel] Motorola ROKR E6 'webcam' and resolution issues
+</A></li>
+	<LI>Next message: <A HREF="005561.html">[Linux-uvc-devel] Motorola ROKR E6 'webcam' and resolution	issues
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5548">[ date ]</a>
+              <a href="thread.html#5548">[ thread ]</a>
+              <a href="subject.html#5548">[ subject ]</a>
+              <a href="author.html#5548">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

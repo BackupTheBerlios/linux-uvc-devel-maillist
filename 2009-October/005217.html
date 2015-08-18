@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] Re: uvcvideo: Finally fix Logitech	Quickcam for Notebooks Pro
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Re%3A%20uvcvideo%3A%20Finally%20fix%20Logitech%0A%09Quickcam%20for%20Notebooks%20Pro&In-Reply-To=%3C200910120001.56790.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005209.html">
+   <LINK REL="Next"  HREF="005202.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] Re: uvcvideo: Finally fix Logitech	Quickcam for Notebooks Pro</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Re%3A%20uvcvideo%3A%20Finally%20fix%20Logitech%0A%09Quickcam%20for%20Notebooks%20Pro&In-Reply-To=%3C200910120001.56790.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] Re: uvcvideo: Finally fix Logitech	Quickcam for Notebooks Pro">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Mon Oct 12 00:01:56 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005209.html">[Linux-uvc-devel] [PATCH] Re: uvcvideo: Finally fix Logitech	Quickcam for Notebooks Pro
+</A></li>
+        <LI>Next message: <A HREF="005202.html">[Linux-uvc-devel] Reflecta RubyScan (ID 115b:3100 Salix Technology	Co., Ltd.)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5217">[ date ]</a>
+              <a href="thread.html#5217">[ thread ]</a>
+              <a href="subject.html#5217">[ subject ]</a>
+              <a href="author.html#5217">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Ondrej,
+
+On Friday 09 October 2009 08:32:06 Ondrej Zary wrote:
+&gt;<i> On Friday 09 October 2009, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; Hi Ondrej,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Wednesday 07 October 2009 14:59:40 Ondrej Zary wrote:
+</I>&gt;<i> &gt; &gt; On Tuesday 06 October 2009, Ondrej Zary wrote:
+</I>&gt;<i> &gt; &gt; &gt; Hello,
+</I>&gt;<i> &gt; &gt; &gt; I have a Logitech Quickcam for Notebooks Pro camera (046d:08c3) which
+</I>&gt;<i> &gt; &gt; &gt; just does not work even with kernel 2.6.31 and has never worked well
+</I>&gt;<i> &gt; &gt; &gt; before.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; On <A HREF="http://linux-uvc.berlios.de/,">http://linux-uvc.berlios.de/,</A> there are two problems listed. I
+</I>&gt;<i> &gt; &gt; &gt; want to really fix these two problems so the camera will just work
+</I>&gt;<i> &gt; &gt; &gt; after plugging in (and not disconnect). I started with problem no. 2
+</I>&gt;<i> &gt; &gt; &gt; as this causes the camera not to work at all when plugged in:
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; usb 5-2.4: new high speed USB device using ehci_hcd and address 7
+</I>&gt;<i> &gt; &gt; &gt; usb 5-2.4: configuration #1 chosen from 1 choice
+</I>&gt;<i> &gt; &gt; &gt; uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:08c3)
+</I>&gt;<i> &gt; &gt; &gt; uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling
+</I>&gt;<i> &gt; &gt; &gt; workaround.
+</I>&gt;<i> &gt; &gt; &gt; uvcvideo: Failed to query (129) UVC probe control : -110 (exp. 26).
+</I>&gt;<i> &gt; &gt; &gt; uvcvideo: Failed to initialize the device (-5).
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; When I do &quot;modprobe snd_usb_audio&quot;, then &quot;rmmod snd_usb_audio&quot; and
+</I>&gt;<i> &gt; &gt; &gt; finally &quot;modprobe uvcvideo&quot;, it works. So it looks like snd_usb_audio
+</I>&gt;<i> &gt; &gt; &gt; does some initialization that allows uvcvideo to work. It didn't work
+</I>&gt;<i> &gt; &gt; &gt; at all I didn't have snd_usb_audio module compiled.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; What was the change that supposedly broke this in 2.6.22?
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I discovered that it's not related to usb audio at all. Doing &quot;rmmod
+</I>&gt;<i> &gt; &gt;  uvcvideo&quot; and &quot;modprobe uvcvideo&quot; repeatedly succeeded after a couple
+</I>&gt;<i> &gt; &gt; of tries. Increasing UVC_CTRL_STREAMING_TIMEOUT to 3000 helped (2000
+</I>&gt;<i> &gt; &gt; was not enough).
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Increase UVC_CTRL_STREAMING_TIMEOUT to fix initialization of
+</I>&gt;<i> &gt; &gt; Logitech Quickcam for Notebooks Pro.
+</I>&gt;<i> &gt; &gt; This fixes following error messages:
+</I>&gt;<i> &gt; &gt; uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling
+</I>&gt;<i> &gt; &gt;  workaround. uvcvideo: Failed to query (129) UVC probe control : -110
+</I>&gt;<i> &gt; &gt; (exp. 26). uvcvideo: Failed to initialize the device (-5).
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Signed-off-by: Ondrej Zary &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux at rainbow-software.org</A>&gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; --- linux-2.6.31-orig/drivers/media/video/uvc/uvcvideo.h	2009-09-10
+</I>&gt;<i> &gt; &gt;  00:13:59.000000000 +0200 +++
+</I>&gt;<i> &gt; &gt;  linux-2.6.31/drivers/media/video/uvc/uvcvideo.h	2009-10-07
+</I>&gt;<i> &gt; &gt;  13:47:27.000000000 +0200 @@ -304,7 +304,7 @@
+</I>&gt;<i> &gt; &gt;  #define UVC_MAX_STATUS_SIZE	16
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;  #define UVC_CTRL_CONTROL_TIMEOUT	300
+</I>&gt;<i> &gt; &gt; -#define UVC_CTRL_STREAMING_TIMEOUT	1000
+</I>&gt;<i> &gt; &gt; +#define UVC_CTRL_STREAMING_TIMEOUT	3000
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;  /* Devices quirks */
+</I>&gt;<i> &gt; &gt;  #define UVC_QUIRK_STATUS_INTERVAL	0x00000001
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thanks for the patch. I wonder if it will help other Logitech users.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; The UVC specification unfortunately doesn't give a time boundary for
+</I>&gt;<i> &gt; answering streaming requests, so that's up to the developers. I'm pretty
+</I>&gt;<i> &gt; sure we will find at least one webcam model that will require 3001ms at
+</I>&gt;<i> &gt; some point :-)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I was thinking about adding a module parameter to set the streaming
+</I>&gt;<i> &gt; control timeout. I'm not sure what the default value should be though.
+</I>&gt;<i> &gt; What's your opinion on this ? If we decide to increase the default value,
+</I>&gt;<i> &gt; where should we stop ?
+</I>&gt;<i> 
+</I>&gt;<i> I really don't know. Maybe only the first request is slow as the hardware
+</I>&gt;<i> needs some time to initialize?
+</I>
+That's my guess as well.
+
+&gt;<i> If someone knows what value is used by Windows or Mac OS X, that's probably
+</I>&gt;<i> the &quot;right&quot; choice as most devices are tested with them.
+</I>
+I've committed a patch that turns the timeout value into a module parameter 
+and asked Mauro to pull from my repository. The default timeout value has been 
+increased to 3000ms.
+
+It seems the value used by the Windows driver is 5000ms. I have no information 
+about what's done on Mac OS X. If it works with 3000ms lets keep it that way. 
+I wouldn't be surprised if the 5000ms was some kind of rounded-up guessed 
+value anyway :-)
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005209.html">[Linux-uvc-devel] [PATCH] Re: uvcvideo: Finally fix Logitech	Quickcam for Notebooks Pro
+</A></li>
+	<LI>Next message: <A HREF="005202.html">[Linux-uvc-devel] Reflecta RubyScan (ID 115b:3100 Salix Technology	Co., Ltd.)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5217">[ date ]</a>
+              <a href="thread.html#5217">[ thread ]</a>
+              <a href="subject.html#5217">[ subject ]</a>
+              <a href="author.html#5217">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,2325 @@
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.0.1331734983.5154.linux-uvc-devel@lists.berlios.de>
+
+have to use v4l2. However, the motion source does not have v4l2 support by 
+default and that's why you have to patch it. I was getting these errors until 
+I applied the motion-v42L-svn.diff patch to motion itself. After applying the 
+patch the startup messages look like this:
+
+[1] Thread started
+[0] motion-httpd/3.2.6 running, accepting connections
+[0] motion-httpd: waiting for data on port TCP 8080
+Opening /dev/video1 as a V4L2 device...length: 1179648 offset: 0
+Buffer mapped at address 0xb6674000.
+length: 1179648 offset: 1179648
+Buffer mapped at address 0xb6554000.
+length: 1179648 offset: 2359296
+Buffer mapped at address 0xb6434000.
+length: 1179648 offset: 3538944
+Buffer mapped at address 0xb6314000.
+v4l2_init: allocating framebuffer of size: 1179648
+V4L2 init successful, returning 0xb61f3008
+v4l2_video_enable: beginning...
+v4l2_video_enable: succesful
+[1] Started stream webcam server in port 8081
+
+
+On Saturday 08 April 2006 17:39, Brian J. Murrell wrote:
+> On Sat, 2006-04-08 at 11:05 -0700, Arek Jankowski wrote:
+> > Hi All,
+> >
+> > Just wanted to report a success using the driver and
+> > Logitech QuickCam Orbit MP with Motion, a software
+> > motion detector.
+> >
+> > I used uvcvideo svn rev 26 with the following patches:
+>
+> Hrm.  I applied those.  I still get:
+>
+> $ motion
+> [0] Processing thread 0 - config file /etc/motion.conf
+> [0] Thread is from /etc/motion.conf
+> [1] Thread started
+> [0] motion-httpd/3.2.4 running, accepting connections
+> [0] motion-httpd: waiting for data on port TCP 8080
+> [1] ioctl(VIDIOCGMBUF) - Error device does not support memory map
+> [1] V4L capturing using read is deprecated!
+> [1] Motion only supports mmap.
+> [1] Capture error calling vid_start
+> [1] Thread finishing...
+>
+> with my QC 5000.
+>
+> b.
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.1.1331734984.5154.linux-uvc-devel@lists.berlios.de>
+
+documentation allows, and that includes the Bayer raw RGB mode.
+
+> In the end, it may not save bandwidth however because the Quickcam Pro
+> 5000 seems to always allocate more isochronous bandwidth than it
+> really needs.  I suppose this is an attempt to reduce per-frame
+> latency.
+
+Linux enforces bandwidth allocation only optionally, and even when it
+does, bulk and interrupt transfers will fill all unused bandwidth even
+if it was pre-allocated.
+
+-- 
+Vojtech Pavlik
+Director SuSE Labs
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.2.1331734989.5154.linux-uvc-devel@lists.berlios.de>
+
+>Please be so kind as to point me in the right direction=2E<br>
+<br>
+Warmest regards<br>
+Graeme
+
+
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.3.1331734990.5154.linux-uvc-devel@lists.berlios.de>
+
+run-time, isn't it? I mean, I can tell the camera to stop doing
+auto-adjustments (gain, shutter, whatever) anytime. Can this be achieved?
+
+Thanks!
+
+------=_Part_26674_22215273.1168276683562
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi Martin Rubli and others!<br><br>First, let me thank you for the work done so far in the driver!<br><br>The thing is that I am trying to disable the camera auto gain.<br>I have read some previous threads that treated this same topic, but haven&#39;t succeeded so far. I applied the patch that Martin Rubli made available. I then compliled and installed. Later, I compiled the &quot;
+bayer.c&quot; file.<br><br>I am using a Logitech Ultra Vision camera and opencv and works pretty ok, but when I run the bayer program I get:<br><br>sudo ./bayer /dev/video0 0<br>Device /dev/video0 opened: USB Video Class device.
+<br>Enabling color pipeline ...<br>ERROR: Unable to set device control: -1<br><br>From what I understand, the idea is to change the camera behaviour in run-time, isn&#39;t it? I mean, I can tell the camera to stop doing auto-adjustments (gain, shutter, whatever) anytime. Can this be achieved?
+<br><br>Thanks!<br><br><br><br>
+
+------=_Part_26674_22215273.1168276683562--
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.4.1331734990.5154.linux-uvc-devel@lists.berlios.de>
+
+started to be accepted by major projects 4-5 years after introduction
+into the kernel. Even with me pushing the projects.
+
+> > Of course, some bridges (or standards) supply the video data in a stupid
+> > format with headers, which need to be removed to concatenate the
+> > individual chunks into a continuous picture. Then, most likely,
+> > zero-copy is not possible.
+> 
+> Exactly. One more reason why you can't map the ISOC transfer buffers
+> directly is that ISOC transfers does not garantuee a fixed number of
+> video bytes per frame.
+
+I don't think that'd be a problem per se, we could still make the USB
+subsystem to put all the frame data into a virtually contiguous buffer,
+regardles of how long the individual transfers are.
+
+Bulk doesn't guarantee the length of the individual transfers either.
+
+> > But those that deliver the whole frame in a Bulk transfer without
+> > any interfering headers, it's trivially possible to avoid the copy.
+> > (Yes, I've done that. I needed it to be able to reach 60fps with a
+> > ovfx2/ov7620 camera. Not using V4L2 yet, though.)
+> 
+> Not all the USB controllers support bulk transfers. It's a second
+> choice, when possible, and, globally speaking, they are usually slower
+> than the ISOC transfers.
+
+Bulk has less overhead. Thus, if implemented well, it's faster. Isoc has
+guaranteed throughput, and as such is a better match for streaming video
+and audio.
+
+-- 
+Vojtech Pavlik
+Director SuSE Labs
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.5.1331734994.5154.linux-uvc-devel@lists.berlios.de>
+
+svn co svn://svn.berlios.de/linux-uvc/linux-uvc/trunk
+
+and in the Makefile:
+
+INSTALL_MOD_DIR := usb/media (Wrong path!!!!!)
+INSTALL_MOD_DIR := kernel/ubuntu/media/usbvideo (Right :-)
+
+make
+sudo make install
+
+Strange, please do
+
+sudo rmmod uvcvideo
+sudo dmesg -c
+sudo modprobe uvcvideo trace=0xffff
+
+dmesg
+
+Regards
+Tom
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.6.1331734998.5154.linux-uvc-devel@lists.berlios.de>
+
+single camera at a time or against all three at once. As far as I can =
+tell, it also makes no difference whatsoever if I connect one or all =
+cameras through a hub or directly to my computer. I have mostly been =
+using the apparently default size of... I think it is 320x240, so the =
+resolution is only moderate.
+=20
+( - by the way - I am performing these experiments upon a very new and =
+up-to-dage Fedora 7 installation; 2.6.21-1.3228.fc7 -)
+=20
+Can you explain the messages output from luvcview, please?
+=20
+Regards
+Morten Sabroe Mortensen
+=20
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.7.1331735000.5154.linux-uvc-devel@lists.berlios.de>
+
+sudo apt-get install svn
+svn checkout svn://svn.berlios.de/linux-uvc/linux-uvc/trunk
+cd .../trunk
+
+You'll need to modify the make file. Look for the line=20
+INSTALL_MOD_DIR :=3D usb/media=20
+
+Change it to
+INSTALL_MOD_DIR :=3D kernel/ubuntu/media/usbvideo
+
+Then back in the command line:
+
+make
+sudo make install
+
+Reboot your machine, and you'll have installed the latest UVC driver.
+
+Hopefully that helps,
+
+Nathanael
+
+-----Original Message-----
+From: linux-uvc-devel-bounces at lists.berlios.de
+[mailto:linux-uvc-devel-bounces at lists.berlios.de] On Behalf Of
+ernih at gmx.de
+Sent: Sunday, September 09, 2007 8:52 AM
+To: linux-uvc-devel at lists.berlios.de
+Subject: [Linux-uvc-devel] uvc or svn?
+
+hi someone sad i have to do this:
+
+http://openfacts.berlios.de/index-en.phtml?title=3DLinux+UVC
+
+for using my webcam. is it right?
+
+erhan
+
+On Thursday 05 July 2007 21:21:53 you wrote:
+> Hi,
+>
+> On Monday 02 July 2007, ernih at gmx.de wrote:
+> > hi i need drivers for:
+> >
+> > 5986:0100 linux" and "0x45:6270 linux
+>
+> For the 5986:0100, please try the latest release from SVN and report
+any
+> issue you run into.
+>
+> For the 0x45:6270, I assume you mean 0c45:6270. That device is not UVC
+> compliant, and will never be supported by the Linux UVC driver. You
+should
+> check the spca5xx driver, or the newer related gspca driver.
+>
+> > when will it be finished?
+>
+> As a side note, asking for other people to work for you without saying
+> please is considered as quite crude, to say the least.
+>
+> Best regards,
+>
+> Laurent Pinchart
+
+hi i would like to do this, but i am a newbee. i use kubuntu since 10
+weeks. i=20
+do not know what i have to do.
+
+can somebody help me in this case?
+
+best regards
+erhan from germany
+_______________________________________________
+Linux-uvc-devel mailing list
+Linux-uvc-devel at lists.berlios.de
+https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.8.1331735001.5154.linux-uvc-devel@lists.berlios.de>
+
+6.06 LTS", it appears that the first thing to do is to compile the
+modules:
+
+    # make
+
+    # make install
+
+-----------------------------------
+
+Second, the module uvcvideo.ko is to be removed from /lib/modules/ ,
+so that the module is not loaded automatically.  (This may be a
+problem with Debian, because /lib/modules/ has several subdirectories,
+and the structure of /lib/modules/ is not immediately apparent to me.)
+
+-----------------------------------
+
+Third, /etc/modprobe.conf.local is to be edited to add the line:
+
+    install uvcvideo /sbin/modprobe snd_usb_audio; 
+    /sbin/modprobe --ignore-install uvcvideo
+
+However, I find in Debian no file /etc/modprobe.conf.local .
+
+-----------------------------------
+
+Fourth, the commands:
+
+    # modprobe -r uvcvideo
+
+    # modprobe -r snd_usb_audio
+
+are to be used after unplugging the camera, in the event that the
+camera needs to be restarted.
+
+-----------------------------------
+
+Adding to my confusion is the instruction given in the file
+/usr/src/modules/linux-uvc/debian/README.Debian , which states that
+the module-assistant tool should be used to install linux-uvc, using
+the commands:
+
+    # module-assistant prepare
+
+    # module-assistant auto-install linux-uvc
+
+-----------------------------------
+
+Would someone on the list who is knowledgeable concerning Debian
+kindly help me sort out this matter?
+
+RLH
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.9.1331735003.5154.linux-uvc-devel@lists.berlios.de>
+
+way.
+
+However, look at what happened with OSS: There were a handful of different 
+"sound daemons", and program authors had to re-implement their sound 
+support for all of them, which caused them additional work. :-/
+
+The _v4l2 kernel developers_ would also have to supply the userspace side 
+of the API to avoid this kind of fragmentation. A small "libv4l2" with a 
+simple filtering/plugin mechanism would be enough...
+
+Cheers,
+
+  Richard
+
+-- 
+  __   _
+  |_) /|  Richard Atterer     |  GnuPG key: 888354F7
+  | \/?|  http://atterer.net  |  08A9 7B7D 3D13 3EF2 3D25  D157 79E6 F6DC 8883 54F7
+  ? '` ?
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.10.1331735016.5154.linux-uvc-devel@lists.berlios.de>
+
+currently listed on your devices list, but, using the Gentoo/Portage
+linux-uvc-0.1.0_pre173 package, this Camera works perfectly (luvcview +
+skype)
+
+Below is an ungodly amount of information from lsusb. Let me know if
+there's anything else I can do to be of assistance.
+
+- Neph
+
+Bus 002 Device 008: ID 046d:09a1 Logitech, Inc.
+Device Descriptor:
+ bLength                18
+ bDescriptorType         1
+ bcdUSB               2.00
+ bDeviceClass          239 Miscellaneous Device
+ bDeviceSubClass         2 ?
+ bDeviceProtocol         1 Interface Association
+ bMaxPacketSize0        64
+ idVendor           0x046d Logitech, Inc.
+ idProduct          0x09a1
+ bcdDevice            0.08
+ iManufacturer           0
+ iProduct                0
+ iSerial                 2 9F3DC011
+ bNumConfigurations      1
+ Configuration Descriptor:
+  bLength                 9
+  bDescriptorType         2
+  wTotalLength         1301
+  bNumInterfaces          4
+  bConfigurationValue     1
+  iConfiguration          0
+  bmAttributes         0x80
+    (Bus Powered)
+  MaxPower              500mA
+  Interface Association:
+    bLength                 8
+    bDescriptorType        11
+    bFirstInterface         0
+    bInterfaceCount         2
+    bFunctionClass         14 Video
+    bFunctionSubClass       3 Video Interface Collection
+    bFunctionProtocol       0
+    iFunction               0
+  Interface Descriptor:
+    bLength                 9
+    bDescriptorType         4
+    bInterfaceNumber        0
+    bAlternateSetting       0
+    bNumEndpoints           1
+    bInterfaceClass        14 Video
+    bInterfaceSubClass      1 Video Control
+    bInterfaceProtocol      0
+    iInterface              0
+    VideoControl Interface Descriptor:
+      bLength                13
+      bDescriptorType        36
+      bDescriptorSubtype      1 (HEADER)
+      bcdUVC               1.00
+      wTotalLength          133
+      dwClockFrequency       48.000000MHz
+      bInCollection           1
+      baInterfaceNr( 0)       1
+    VideoControl Interface Descriptor:
+      bLength                18
+      bDescriptorType        36
+      bDescriptorSubtype      2 (INPUT_TERMINAL)
+      bTerminalID             1
+      wTerminalType      0x0201 Camera Sensor
+      bAssocTerminal          0
+      iTerminal               0
+      wObjectiveFocalLengthMin      0
+      wObjectiveFocalLengthMax      0
+      wOcularFocalLength            0
+      bControlSize                  3
+      bmControls           0x0004000e
+        Auto-Exposure Mode
+        Auto-Exposure Priority
+        Exposure Time (Absolute)
+        Privacy
+    VideoControl Interface Descriptor:
+      bLength                11
+      bDescriptorType        36
+      bDescriptorSubtype      5 (PROCESSING_UNIT)
+    Warning: Descriptor too short
+      bUnitID                 2
+      bSourceID               1
+      wMaxMultiplier      16384
+      bControlSize            2
+      bmControls     0x0000175b
+        Brightness
+        Contrast
+        Saturation
+        Sharpness
+        White Balance Temperature
+        Backlight Compensation
+        Gain
+        Power Line Frequency
+        White Balance Temperature, Auto
+      iProcessing             0
+      bmVideoStandards     0x1b
+        None
+        NTSC - 525/60
+        SECAM - 625/50
+        NTSC - 625/50
+    VideoControl Interface Descriptor:
+      bLength                27
+      bDescriptorType        36
+      bDescriptorSubtype      6 (EXTENSION_UNIT)
+      bUnitID                 4
+      guidExtensionCode         {82066163-7050-ab49-b8cc-b3855e8d221e}
+      bNumControl            10
+      bNrPins                 1
+      baSourceID( 0)          2
+      bControlSize            2
+      bmControls( 0)       0xff
+      bmControls( 1)       0x03
+      iExtension              0
+    VideoControl Interface Descriptor:
+      bLength                27
+      bDescriptorType        36
+      bDescriptorSubtype      6 (EXTENSION_UNIT)
+      bUnitID                13
+      guidExtensionCode         {82066163-7050-ab49-b8cc-b3855e8d221f}
+      bNumControl             8
+      bNrPins                 1
+      baSourceID( 0)          2
+      bControlSize            2
+      bmControls( 0)       0x7f
+      bmControls( 1)       0x01
+      iExtension              0
+    VideoControl Interface Descriptor:
+      bLength                28
+      bDescriptorType        36
+      bDescriptorSubtype      6 (EXTENSION_UNIT)
+      bUnitID                10
+      guidExtensionCode         {82066163-7050-ab49-b8cc-b3855e8d2252}
+      bNumControl            24
+      bNrPins                 1
+      baSourceID( 0)          4
+      bControlSize            3
+      bmControls( 0)       0xff
+      bmControls( 1)       0xff
+      bmControls( 2)       0xff
+      iExtension              0
+    VideoControl Interface Descriptor:
+      bLength                 9
+      bDescriptorType        36
+      bDescriptorSubtype      3 (OUTPUT_TERMINAL)
+      bTerminalID             5
+      wTerminalType      0x0101 USB Streaming
+      bAssocTerminal          0
+      bSourceID               4
+      iTerminal               0
+    ** UNRECOGNIZED:  20 41 01 0c 82 06 61 63 70 50 ab 49 b8 cc b3
+85 5e 8d 22 50 14 01 04 03 ff ff 0f 00 00 00 00 00
+    ** UNRECOGNIZED:  20 41 01 08 82 06 61 63 70 50 ab 49 b8 cc b3
+85 5e 8d 22 51 03 01 04 03 19 00 00 00 00 00 01 00
+    ** UNRECOGNIZED:  20 41 01 0b 82 06 61 63 70 50 ab 49 b8 cc b3
+85 5e 8d 22 55 01 01 04 03 01 00 00 00 00 00 00 00
+    Endpoint Descriptor:
+      bLength                 7
+      bDescriptorType         5
+      bEndpointAddress     0x87  EP 7 IN
+      bmAttributes            3
+        Transfer Type            Interrupt
+        Synch Type               None
+        Usage Type               Data
+      wMaxPacketSize     0x0010  1x 16 bytes
+      bInterval               8
+  Interface Descriptor:
+    bLength                 9
+    bDescriptorType         4
+    bInterfaceNumber        1
+    bAlternateSetting       0
+    bNumEndpoints           0
+    bInterfaceClass        14 Video
+    bInterfaceSubClass      2 Video Streaming
+    bInterfaceProtocol      0
+    iInterface              0
+    VideoStreaming Interface Descriptor:
+      bLength                            16
+      bDescriptorType                    36
+      bDescriptorSubtype                  1 (INPUT_HEADER)
+      bNumFormats                        3
+      wTotalLength                      742
+      bEndPointAddress                  129
+      bmInfo                              0
+      bTerminalLink                       5
+      bStillCaptureMethod                 2
+      bTriggerSupport                     1
+      bTriggerUsage                       0
+      bControlSize                        1
+      bmaControls( 0)                    11
+      bmaControls( 1)                    11
+      bmaControls( 2)                    11
+    VideoStreaming Interface Descriptor:
+      bLength                            11
+      bDescriptorType                    36
+      bDescriptorSubtype                  6 (FORMAT_MJPEG)
+      bFormatIndex                        1
+      bNumFrameDescriptors                6
+      bFlags                              1
+        Fixed-size samples: Yes
+      bDefaultFrameIndex                  3
+      bAspectRatioX                       0
+      bAspectRatioY                       0
+      bmInterlaceFlags                 0x00
+        Interlaced stream or variable: No
+        Fields per frame: 1 fields
+        Field 1 first: No
+        Field pattern: Field 1 only
+        bCopyProtect                      0
+    VideoStreaming Interface Descriptor:
+      bLength                            50
+      bDescriptorType                    36
+      bDescriptorSubtype                  7 (FRAME_MJPEG)
+      bFrameIndex                         1
+      bmCapabilities                   0x00
+        Still image unsupported
+      wWidth                            160
+      wHeight                           120
+      dwMinBitRate                  1536000
+      dwMaxBitRate                  9216000
+      dwMaxVideoFrameBufferSize       38400
+      dwDefaultFrameInterval         333333
+      bFrameIntervalType                  6
+      dwFrameInterval( 0)            333333
+      dwFrameInterval( 1)            400000
+      dwFrameInterval( 2)            500000
+      dwFrameInterval( 3)            666666
+      dwFrameInterval( 4)           1000000
+      dwFrameInterval( 5)           2000000
+    VideoStreaming Interface Descriptor:
+      bLength                            50
+      bDescriptorType                    36
+      bDescriptorSubtype                  7 (FRAME_MJPEG)
+      bFrameIndex                         2
+      bmCapabilities                   0x00
+        Still image unsupported
+      wWidth                            176
+      wHeight                           144
+      dwMinBitRate                  2027520
+      dwMaxBitRate                 12165120
+      dwMaxVideoFrameBufferSize       50688
+      dwDefaultFrameInterval         333333
+      bFrameIntervalType                  6
+      dwFrameInterval( 0)            333333
+      dwFrameInterval( 1)            400000
+      dwFrameInterval( 2)            500000
+      dwFrameInterval( 3)            666666
+      dwFrameInterval( 4)           1000000
+      dwFrameInterval( 5)           2000000
+    VideoStreaming Interface Descriptor:
+      bLength                            50
+      bDescriptorType                    36
+      bDescriptorSubtype                  7 (FRAME_MJPEG)
+      bFrameIndex                         3
+      bmCapabilities                   0x00
+        Still image unsupported
+      wWidth                            320
+      wHeight                           240
+      dwMinBitRate                  6144000
+      dwMaxBitRate                 36864000
+      dwMaxVideoFrameBufferSize      153600
+      dwDefaultFrameInterval         666666
+      bFrameIntervalType                  6
+      dwFrameInterval( 0)            333333
+      dwFrameInterval( 1)            400000
+      dwFrameInterval( 2)            500000
+      dwFrameInterval( 3)            666666
+      dwFrameInterval( 4)           1000000
+      dwFrameInterval( 5)           2000000
+    VideoStreaming Interface Descriptor:
+      bLength                            50
+      bDescriptorType                    36
+      bDescriptorSubtype                  7 (FRAME_MJPEG)
+      bFrameIndex                         4
+      bmCapabilities                   0x00
+        Still image unsupported
+      wWidth                            352
+      wHeight                           288
+      dwMinBitRate                  8110080
+      dwMaxBitRate                 48660480
+      dwMaxVideoFrameBufferSize      202752
+      dwDefaultFrameInterval         666666
+      bFrameIntervalType                  6
+      dwFrameInterval( 0)            333333
+      dwFrameInterval( 1)            400000
+      dwFrameInterval( 2)            500000
+      dwFrameInterval( 3)            666666
+      dwFrameInterval( 4)           1000000
+      dwFrameInterval( 5)           2000000
+    VideoStreaming Interface Descriptor:
+      bLength                            50
+      bDescriptorType                    36
+      bDescriptorSubtype                  7 (FRAME_MJPEG)
+      bFrameIndex                         5
+      bmCapabilities                   0x00
+        Still image unsupported
+      wWidth                            640
+      wHeight                           480
+      dwMinBitRate                 24576000
+      dwMaxBitRate                147456000
+      dwMaxVideoFrameBufferSize      614400
+      dwDefaultFrameInterval         666666
+      bFrameIntervalType                  6
+      dwFrameInterval( 0)            333333
+      dwFrameInterval( 1)            400000
+      dwFrameInterval( 2)            500000
+      dwFrameInterval( 3)            666666
+      dwFrameInterval( 4)           1000000
+      dwFrameInterval( 5)           2000000
+    VideoStreaming Interface Descriptor:
+      bLength                            38
+      bDescriptorType                    36
+      bDescriptorSubtype                  7 (FRAME_MJPEG)
+      bFrameIndex                         6
+      bmCapabilities                   0x00
+        Still image unsupported
+      wWidth                            960
+      wHeight                           720
+      dwMinBitRate                 55296000
+      dwMaxBitRate                165888000
+      dwMaxVideoFrameBufferSize     1382400
+      dwDefaultFrameInterval         666666
+      bFrameIntervalType                  3
+      dwFrameInterval( 0)            666666
+      dwFrameInterval( 1)           1000000
+      dwFrameInterval( 2)           2000000
+    VideoStreaming Interface Descriptor:
+      bLength                            35
+      bDescriptorType                    36
+      bDescriptorSubtype                  3 (STILL_IMAGE_FRAME)
+      bEndpointAddress                    0
+      bNumImageSizePatterns               6
+      wWidth( 0)                        160
+      wHeight( 0)                       120
+      wWidth( 1)                        176
+      wHeight( 1)                       144
+      wWidth( 2)                        320
+      wHeight( 2)                       240
+      wWidth( 3)                        352
+      wHeight( 3)                       288
+      wWidth( 4)                        640
+      wHeight( 4)                       480
+      wWidth( 5)                        960
+      wHeight( 5)                       720
+      bNumCompressionPatterns             6
+      bCompression( 0)                    5
+      bCompression( 1)                   10
+      bCompression( 2)                   15
+      bCompression( 3)                   20
+      bCompression( 4)                   25
+    VideoStreaming Interface Descriptor:
+      bLength                             6
+      bDescriptorType                    36
+      bDescriptorSubtype                 13 (COLORFORMAT)
+      bColorPrimaries                     1 (BT.709,sRGB)
+      bTransferCharacteristics            1 (BT.709)
+      bMatrixCoefficients                 4 (SMPTE 170M (BT.601))
+    VideoStreaming Interface Descriptor:
+      bLength                            27
+      bDescriptorType                    36
+      bDescriptorSubtype                  4 (FORMAT_UNCOMPRESSED)
+      bFormatIndex                        2
+      bNumFrameDescriptors                7
+      guidFormat
+{59555932-0000-1000-8000-00aa00389b71}
+      bBitsPerPixel                      16
+      bDefaultFrameIndex                  3
+      bAspectRatioX                       0
+      bAspectRatioY                       0
+      bmInterlaceFlags                 0x00
+        Interlaced stream or variable: No
+        Fields per frame: 1 fields
+        Field 1 first: No
+        Field pattern: Field 1 only
+        bCopyProtect                      0
+    VideoStreaming Interface Descriptor:
+      bLength                            50
+      bDescriptorType                    36
+      bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+      bFrameIndex                         1
+      bmCapabilities                   0x00
+        Still image unsupported
+      wWidth                            160
+      wHeight                           120
+      dwMinBitRate                  1536000
+      dwMaxBitRate                  9216000
+      dwMaxVideoFrameBufferSize       38400
+      dwDefaultFrameInterval         333333
+      bFrameIntervalType                  6
+      dwFrameInterval( 0)            333333
+      dwFrameInterval( 1)            400000
+      dwFrameInterval( 2)            500000
+      dwFrameInterval( 3)            666666
+      dwFrameInterval( 4)           1000000
+      dwFrameInterval( 5)           2000000
+    VideoStreaming Interface Descriptor:
+      bLength                            50
+      bDescriptorType                    36
+      bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+      bFrameIndex                         2
+      bmCapabilities                   0x00
+        Still image unsupported
+      wWidth                            176
+      wHeight                           144
+      dwMinBitRate                  2027520
+      dwMaxBitRate                 12165120
+      dwMaxVideoFrameBufferSize       50688
+      dwDefaultFrameInterval         333333
+      bFrameIntervalType                  6
+      dwFrameInterval( 0)            333333
+      dwFrameInterval( 1)            400000
+      dwFrameInterval( 2)            500000
+      dwFrameInterval( 3)            666666
+      dwFrameInterval( 4)           1000000
+      dwFrameInterval( 5)           2000000
+    VideoStreaming Interface Descriptor:
+      bLength                            50
+      bDescriptorType                    36
+      bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+      bFrameIndex                         3
+      bmCapabilities                   0x00
+        Still image unsupported
+      wWidth                            320
+      wHeight                           240
+      dwMinBitRate                  6144000
+      dwMaxBitRate                 36864000
+      dwMaxVideoFrameBufferSize      153600
+      dwDefaultFrameInterval         666666
+      bFrameIntervalType                  6
+      dwFrameInterval( 0)            333333
+      dwFrameInterval( 1)            400000
+      dwFrameInterval( 2)            500000
+      dwFrameInterval( 3)            666666
+      dwFrameInterval( 4)           1000000
+      dwFrameInterval( 5)           2000000
+    VideoStreaming Interface Descriptor:
+      bLength                            50
+      bDescriptorType                    36
+      bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+      bFrameIndex                         4
+      bmCapabilities                   0x00
+        Still image unsupported
+      wWidth                            352
+      wHeight                           288
+      dwMinBitRate                  8110080
+      dwMaxBitRate                 48660480
+      dwMaxVideoFrameBufferSize      202752
+      dwDefaultFrameInterval         666666
+      bFrameIntervalType                  6
+      dwFrameInterval( 0)            333333
+      dwFrameInterval( 1)            400000
+      dwFrameInterval( 2)            500000
+      dwFrameInterval( 3)            666666
+      dwFrameInterval( 4)           1000000
+      dwFrameInterval( 5)           2000000
+    VideoStreaming Interface Descriptor:
+      bLength                            50
+      bDescriptorType                    36
+      bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+      bFrameIndex                         5
+      bmCapabilities                   0x00
+        Still image unsupported
+      wWidth                            640
+      wHeight                           480
+      dwMinBitRate                 24576000
+      dwMaxBitRate                147456000
+      dwMaxVideoFrameBufferSize      614400
+      dwDefaultFrameInterval         666666
+      bFrameIntervalType                  6
+      dwFrameInterval( 0)            333333
+      dwFrameInterval( 1)            400000
+      dwFrameInterval( 2)            500000
+      dwFrameInterval( 3)            666666
+      dwFrameInterval( 4)           1000000
+      dwFrameInterval( 5)           2000000
+    VideoStreaming Interface Descriptor:
+      bLength                            34
+      bDescriptorType                    36
+      bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+      bFrameIndex                         6
+      bmCapabilities                   0x00
+        Still image unsupported
+      wWidth                            960
+      wHeight                           720
+      dwMinBitRate                 55296000
+      dwMaxBitRate                110592000
+      dwMaxVideoFrameBufferSize     1382400
+      dwDefaultFrameInterval        1000000
+      bFrameIntervalType                  2
+      dwFrameInterval( 0)           1000000
+      dwFrameInterval( 1)           2000000
+    VideoStreaming Interface Descriptor:
+      bLength                            34
+      bDescriptorType                    36
+      bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+      bFrameIndex                         7
+      bmCapabilities                   0x00
+        Still image unsupported
+      wWidth                           1280
+      wHeight                           960
+      dwMinBitRate                 98304000
+      dwMaxBitRate                196608000
+      dwMaxVideoFrameBufferSize     2457600
+      dwDefaultFrameInterval        1333333
+      bFrameIntervalType                  2
+      dwFrameInterval( 0)           1333333
+      dwFrameInterval( 1)           2000000
+    VideoStreaming Interface Descriptor:
+      bLength                            35
+      bDescriptorType                    36
+      bDescriptorSubtype                  3 (STILL_IMAGE_FRAME)
+      bEndpointAddress                    0
+      bNumImageSizePatterns               7
+      wWidth( 0)                        160
+      wHeight( 0)                       120
+      wWidth( 1)                        176
+      wHeight( 1)                       144
+      wWidth( 2)                        320
+      wHeight( 2)                       240
+      wWidth( 3)                        352
+      wHeight( 3)                       288
+      wWidth( 4)                        640
+      wHeight( 4)                       480
+      wWidth( 5)                        960
+      wHeight( 5)                       720
+      wWidth( 6)                       1280
+      wHeight( 6)                       960
+      bNumCompressionPatterns             7
+      bCompression( 0)                    5
+    VideoStreaming Interface Descriptor:
+      bLength                             6
+      bDescriptorType                    36
+      bDescriptorSubtype                 13 (COLORFORMAT)
+      bColorPrimaries                     1 (BT.709,sRGB)
+      bTransferCharacteristics            1 (BT.709)
+      bMatrixCoefficients                 4 (SMPTE 170M (BT.601))
+  Interface Descriptor:
+    bLength                 9
+    bDescriptorType         4
+    bInterfaceNumber        1
+    bAlternateSetting       1
+    bNumEndpoints           1
+    bInterfaceClass        14 Video
+    bInterfaceSubClass      2 Video Streaming
+    bInterfaceProtocol      0
+    iInterface              0
+    Endpoint Descriptor:
+      bLength                 7
+      bDescriptorType         5
+      bEndpointAddress     0x81  EP 1 IN
+      bmAttributes            5
+        Transfer Type            Isochronous
+        Synch Type               Asynchronous
+        Usage Type               Data
+      wMaxPacketSize     0x00c0  1x 192 bytes
+      bInterval               1
+  Interface Descriptor:
+    bLength                 9
+    bDescriptorType         4
+    bInterfaceNumber        1
+    bAlternateSetting       2
+    bNumEndpoints           1
+    bInterfaceClass        14 Video
+    bInterfaceSubClass      2 Video Streaming
+    bInterfaceProtocol      0
+    iInterface              0
+    Endpoint Descriptor:
+      bLength                 7
+      bDescriptorType         5
+      bEndpointAddress     0x81  EP 1 IN
+      bmAttributes            5
+        Transfer Type            Isochronous
+        Synch Type               Asynchronous
+        Usage Type               Data
+      wMaxPacketSize     0x0180  1x 384 bytes
+      bInterval               1
+  Interface Descriptor:
+    bLength                 9
+    bDescriptorType         4
+    bInterfaceNumber        1
+    bAlternateSetting       3
+    bNumEndpoints           1
+    bInterfaceClass        14 Video
+    bInterfaceSubClass      2 Video Streaming
+    bInterfaceProtocol      0
+    iInterface              0
+    Endpoint Descriptor:
+      bLength                 7
+      bDescriptorType         5
+      bEndpointAddress     0x81  EP 1 IN
+      bmAttributes            5
+        Transfer Type            Isochronous
+        Synch Type               Asynchronous
+        Usage Type               Data
+      wMaxPacketSize     0x0200  1x 512 bytes
+      bInterval               1
+  Interface Descriptor:
+    bLength                 9
+    bDescriptorType         4
+    bInterfaceNumber        1
+    bAlternateSetting       4
+    bNumEndpoints           1
+    bInterfaceClass        14 Video
+    bInterfaceSubClass      2 Video Streaming
+    bInterfaceProtocol      0
+    iInterface              0
+    Endpoint Descriptor:
+      bLength                 7
+      bDescriptorType         5
+      bEndpointAddress     0x81  EP 1 IN
+      bmAttributes            5
+        Transfer Type            Isochronous
+        Synch Type               Asynchronous
+        Usage Type               Data
+      wMaxPacketSize     0x0280  1x 640 bytes
+      bInterval               1
+  Interface Descriptor:
+    bLength                 9
+    bDescriptorType         4
+    bInterfaceNumber        1
+    bAlternateSetting       5
+    bNumEndpoints           1
+    bInterfaceClass        14 Video
+    bInterfaceSubClass      2 Video Streaming
+    bInterfaceProtocol      0
+    iInterface              0
+    Endpoint Descriptor:
+      bLength                 7
+      bDescriptorType         5
+      bEndpointAddress     0x81  EP 1 IN
+      bmAttributes            5
+        Transfer Type            Isochronous
+        Synch Type               Asynchronous
+        Usage Type               Data
+      wMaxPacketSize     0x0320  1x 800 bytes
+      bInterval               1
+  Interface Descriptor:
+    bLength                 9
+    bDescriptorType         4
+    bInterfaceNumber        1
+    bAlternateSetting       6
+    bNumEndpoints           1
+    bInterfaceClass        14 Video
+    bInterfaceSubClass      2 Video Streaming
+    bInterfaceProtocol      0
+    iInterface              0
+    Endpoint Descriptor:
+      bLength                 7
+      bDescriptorType         5
+      bEndpointAddress     0x81  EP 1 IN
+      bmAttributes            5
+        Transfer Type            Isochronous
+        Synch Type               Asynchronous
+        Usage Type               Data
+      wMaxPacketSize     0x03b0  1x 944 bytes
+      bInterval               1
+  Interface Descriptor:
+    bLength                 9
+    bDescriptorType         4
+    bInterfaceNumber        1
+    bAlternateSetting       7
+    bNumEndpoints           1
+    bInterfaceClass        14 Video
+    bInterfaceSubClass      2 Video Streaming
+    bInterfaceProtocol      0
+    iInterface              0
+    Endpoint Descriptor:
+      bLength                 7
+      bDescriptorType         5
+      bEndpointAddress     0x81  EP 1 IN
+      bmAttributes            5
+        Transfer Type            Isochronous
+        Synch Type               Asynchronous
+        Usage Type               Data
+      wMaxPacketSize     0x0a80  2x 640 bytes
+      bInterval               1
+  Interface Descriptor:
+    bLength                 9
+    bDescriptorType         4
+    bInterfaceNumber        1
+    bAlternateSetting       8
+    bNumEndpoints           1
+    bInterfaceClass        14 Video
+    bInterfaceSubClass      2 Video Streaming
+    bInterfaceProtocol      0
+    iInterface              0
+    Endpoint Descriptor:
+      bLength                 7
+      bDescriptorType         5
+      bEndpointAddress     0x81  EP 1 IN
+      bmAttributes            5
+        Transfer Type            Isochronous
+        Synch Type               Asynchronous
+        Usage Type               Data
+      wMaxPacketSize     0x0b20  2x 800 bytes
+      bInterval               1
+  Interface Descriptor:
+    bLength                 9
+    bDescriptorType         4
+    bInterfaceNumber        1
+    bAlternateSetting       9
+    bNumEndpoints           1
+    bInterfaceClass        14 Video
+    bInterfaceSubClass      2 Video Streaming
+    bInterfaceProtocol      0
+    iInterface              0
+    Endpoint Descriptor:
+      bLength                 7
+      bDescriptorType         5
+      bEndpointAddress     0x81  EP 1 IN
+      bmAttributes            5
+        Transfer Type            Isochronous
+        Synch Type               Asynchronous
+        Usage Type               Data
+      wMaxPacketSize     0x0be0  2x 992 bytes
+      bInterval               1
+  Interface Descriptor:
+    bLength                 9
+    bDescriptorType         4
+    bInterfaceNumber        1
+    bAlternateSetting      10
+    bNumEndpoints           1
+    bInterfaceClass        14 Video
+    bInterfaceSubClass      2 Video Streaming
+    bInterfaceProtocol      0
+    iInterface              0
+    Endpoint Descriptor:
+      bLength                 7
+      bDescriptorType         5
+      bEndpointAddress     0x81  EP 1 IN
+      bmAttributes            5
+        Transfer Type            Isochronous
+        Synch Type               Asynchronous
+        Usage Type               Data
+      wMaxPacketSize     0x1380  3x 896 bytes
+      bInterval               1
+  Interface Descriptor:
+    bLength                 9
+    bDescriptorType         4
+    bInterfaceNumber        1
+    bAlternateSetting      11
+    bNumEndpoints           1
+    bInterfaceClass        14 Video
+    bInterfaceSubClass      2 Video Streaming
+    bInterfaceProtocol      0
+    iInterface              0
+    Endpoint Descriptor:
+      bLength                 7
+      bDescriptorType         5
+      bEndpointAddress     0x81  EP 1 IN
+      bmAttributes            5
+        Transfer Type            Isochronous
+        Synch Type               Asynchronous
+        Usage Type               Data
+      wMaxPacketSize     0x13fc  3x 1020 bytes
+      bInterval               1
+  Interface Association:
+    bLength                 8
+    bDescriptorType        11
+    bFirstInterface         2
+    bInterfaceCount         2
+    bFunctionClass          1 Audio
+    bFunctionSubClass       2 Streaming
+    bFunctionProtocol       0
+    iFunction               0
+  Interface Descriptor:
+    bLength                 9
+    bDescriptorType         4
+    bInterfaceNumber        2
+    bAlternateSetting       0
+    bNumEndpoints           0
+    bInterfaceClass         1 Audio
+    bInterfaceSubClass      1 Control Device
+    bInterfaceProtocol      0
+    iInterface              0
+    AudioControl Interface Descriptor:
+      bLength                 9
+      bDescriptorType        36
+      bDescriptorSubtype      1 (HEADER)
+      bcdADC               1.00
+      wTotalLength           38
+      bInCollection           1
+      baInterfaceNr( 0)       3
+    AudioControl Interface Descriptor:
+      bLength                12
+      bDescriptorType        36
+      bDescriptorSubtype      2 (INPUT_TERMINAL)
+      bTerminalID             1
+      wTerminalType      0x0201 Microphone
+      bAssocTerminal          0
+      bNrChannels             1
+      wChannelConfig     0x0000
+      iChannelNames           0
+      iTerminal               0
+    AudioControl Interface Descriptor:
+      bLength                 9
+      bDescriptorType        36
+      bDescriptorSubtype      3 (OUTPUT_TERMINAL)
+      bTerminalID             3
+      wTerminalType      0x0101 USB Streaming
+      bAssocTerminal          1
+      bSourceID               5
+      iTerminal               0
+    AudioControl Interface Descriptor:
+      bLength                 8
+      bDescriptorType        36
+      bDescriptorSubtype      6 (FEATURE_UNIT)
+      bUnitID                 5
+      bSourceID               1
+      bControlSize            1
+      bmaControls( 0)      0x03
+        Mute
+        Volume
+      iFeature                0
+  Interface Descriptor:
+    bLength                 9
+    bDescriptorType         4
+    bInterfaceNumber        3
+    bAlternateSetting       0
+    bNumEndpoints           0
+    bInterfaceClass         1 Audio
+    bInterfaceSubClass      2 Streaming
+    bInterfaceProtocol      0
+    iInterface              0
+  Interface Descriptor:
+    bLength                 9
+    bDescriptorType         4
+    bInterfaceNumber        3
+    bAlternateSetting       1
+    bNumEndpoints           1
+    bInterfaceClass         1 Audio
+    bInterfaceSubClass      2 Streaming
+    bInterfaceProtocol      0
+    iInterface              0
+    AudioStreaming Interface Descriptor:
+      bLength                 7
+      bDescriptorType        36
+      bDescriptorSubtype      1 (AS_GENERAL)
+      bTerminalLink           3
+      bDelay                  1 frames
+      wFormatTag              1 PCM
+    AudioStreaming Interface Descriptor:
+      bLength                11
+      bDescriptorType        36
+      bDescriptorSubtype      2 (FORMAT_TYPE)
+      bFormatType             1 (FORMAT_TYPE_I)
+      bNrChannels             1
+      bSubframeSize           2
+      bBitResolution         16
+      bSamFreqType            1 Discrete
+      tSamFreq[ 0]        16000
+    Endpoint Descriptor:
+      bLength                 9
+      bDescriptorType         5
+      bEndpointAddress     0x86  EP 6 IN
+      bmAttributes            5
+        Transfer Type            Isochronous
+        Synch Type               Asynchronous
+        Usage Type               Data
+      wMaxPacketSize     0x0044  1x 68 bytes
+      bInterval               4
+      bRefresh                0
+      bSynchAddress           0
+      AudioControl Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType        37
+        bDescriptorSubtype      1 (EP_GENERAL)
+        bmAttributes         0x01
+          Sampling Frequency
+        bLockDelayUnits         0 Undefined
+        wLockDelay              0 Undefined
+Device Qualifier (for other device speed):
+ bLength                10
+ bDescriptorType         6
+ bcdUSB               2.00
+ bDeviceClass          239 Miscellaneous Device
+ bDeviceSubClass         2 ?
+ bDeviceProtocol         1 Interface Association
+ bMaxPacketSize0        64
+ bNumConfigurations      1
+Device Status:     0x0000
+ (Bus Powered)
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.11.1331735021.5154.linux-uvc-devel@lists.berlios.de>
+
+Bus 002 Device 002: ID 064e:a110 Suyin Corp.
+
+from here http://linux-uvc.berlios.de/ searching by device id gives
+the following line:
+064e:a110  HP Webcam (HP TX2000 notebooks)  SuYin (supported)
+
+I'm using driver compiled from svn
+
+I wanted to write that it does not work here for me - luvcview shows
+blue screen, but
+just started it again and found interesting thing - it shows blue
+screen only when the
+webcam window is located on the left half of the monitor - when I move
+it to the right
+half the picture appears! Fullscreen works ok.
+
+KdeTV has exactly the same behavior - blue screen to the left, picture
+on the right.
+
+Kopete only shows green screen, thought it locks the /dev/video0
+device and shows hp webcam
+in the available device list.
+
+Ekiga just shows error message and even does not lock the device.
+
+I don't care about ekiga, but having some advice on how to make kopete
+work with it would be nice.
+
+Just in case, here is the luvcview output:
+> luvcview
+luvcview 0.2.4
+
+SDL information:
+ Video driver: x11
+ A window manager is available
+Device information:
+ Device path:  /dev/video0
+Stream settings:
+ Frame format: YUYV (MJPG is not supported by device)
+ Frame size:   640x480
+ Frame rate:   30 fps
+
+thank's
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.12.1331735029.5154.linux-uvc-devel@lists.berlios.de>
+
+YUYV (4:2:2) frame, it looks like it's actually streaming on some other
+format.
+
+744x480 is only available for still images, on video streaming it
+reports 372x480, since your picture seems to be half the real width, and
+the colors are incorrect I would say it's some sort of weird yuv frame,
+that needs to be converted to YUYV on the application side (in windows
+the conversion maybe done by the driver).
+
+Best regards,
+Paulo
+
+Sebastian Scherer escreveu:
+> Hi,
+> After looking a little more carefully it might be that the resolution
+> problem is related to de-bayering.
+> I uploaded a sample image captured from the video:
+> http://www.frc.ri.cmu.edu/~basti/01-20090306125232-17.jpg
+>
+> Does anybody have any insight what the problem could be?
+>
+> I downloaded the latest drivers and used them on Ubuntu 8.10 but the
+> problem persists.
+> Thank you
+>
+> Sebastian
+>
+>   
+>> Hi,
+>> I have a problem with this camera.
+>> http://www.theimagingsource.com/en_US/products/oem-cameras/usb-cmos-color/dfm21auc03ml/
+>> It shows a picture but I cannot set the frame size and resolution of
+>> the camera. The camera supports
+>> 60 frames per second and a resolution of 744x480 YUV2. However I
+>> always get 372x480 and the colors are wrong.
+>>
+>> This is what dmesg reports:
+>>     
+>
+>   
+>> [179400.340015] usb 6-1: new high speed USB device using ehci_hcd and address 3
+>> [179400.777492] usb 6-1: configuration #1 chosen from 1 choice
+>> [179400.777790] uvcvideo: Found UVC 1.00 device DFx 21AUC03 (199e:8202)
+>> [179401.306390] input: DFx 21AUC03 as
+>> /devices/pci0000:00/0000:00:1a.7/usb6/6-1/6-1:1.0/input/input7
+>>
+>> This is whalt lsusb reports:
+>> Bus 006 Device 003: ID 199e:8202 The Imaging Source Europe GmbH
+>> Device Descriptor:
+>>  bLength                18
+>>  bDescriptorType         1
+>>  bcdUSB               2.00
+>>  bDeviceClass          239 Miscellaneous Device
+>>  bDeviceSubClass         2 ?
+>>  bDeviceProtocol         1 Interface Association
+>>  bMaxPacketSize0        64
+>>  idVendor           0x199e The Imaging Source Europe GmbH
+>>  idProduct          0x8202
+>>  bcdDevice            8.13
+>>  iManufacturer           2 The Imaging Source Europe GmbH
+>>  iProduct                1 DFx 21AUC03
+>>  iSerial                 3 38800104
+>>  bNumConfigurations      1
+>>  Configuration Descriptor:
+>>    bLength                 9
+>>    bDescriptorType         2
+>>    wTotalLength          349
+>>    bNumInterfaces          2
+>>    bConfigurationValue     1
+>>    iConfiguration          0
+>>    bmAttributes         0x80
+>>      (Bus Powered)
+>>    MaxPower              500mA
+>>    Interface Association:
+>>      bLength                 8
+>>      bDescriptorType        11
+>>     
+>      bFirstInterface         0
+>      bInterfaceCount         2
+>      bFunctionClass         14 Video
+>      bFunctionSubClass       3 Video Interface Collection
+>      bFunctionProtocol       0
+>      iFunction               0
+>    Interface Descriptor:
+>      bLength                 9
+>      bDescriptorType         4
+>      bInterfaceNumber        0
+>      bAlternateSetting       0
+>      bNumEndpoints           1
+>      bInterfaceClass        14 Video
+>      bInterfaceSubClass      1 Video Control
+>      bInterfaceProtocol      0
+>      iInterface              0
+>      VideoControl Interface Descriptor:
+>        bLength                13
+>        bDescriptorType        36
+>        bDescriptorSubtype      1 (HEADER)
+>        bcdUVC               1.00
+>        wTotalLength           78
+>        dwClockFrequency        6.000000MHz
+>        bInCollection           1
+>        baInterfaceNr( 0)       1
+>      VideoControl Interface Descriptor:
+>        bLength                18
+>        bDescriptorType        36
+>        bDescriptorSubtype      2 (INPUT_TERMINAL)
+>        bTerminalID             1
+>        wTerminalType      0x0201 Camera Sensor
+>        bAssocTerminal          0
+>        iTerminal               0
+>        wObjectiveFocalLengthMin      0
+>        wObjectiveFocalLengthMax      0
+>        wOcularFocalLength            0
+>        bControlSize                  3
+>        bmControls           0x0000001a
+>          Auto-Exposure Mode
+>          Exposure Time (Absolute)
+>          Exposure Time (Relative)
+>      VideoControl Interface Descriptor:
+>        bLength                12
+>        bDescriptorType        36
+>        bDescriptorSubtype      5 (PROCESSING_UNIT)
+>      Warning: Descriptor too short
+>        bUnitID                 3
+>        bSourceID               1
+>        wMaxMultiplier          0
+>        bControlSize            3
+>        bmControls     0x00000200
+>          Gain
+>        iProcessing             0
+>        bmVideoStandards     0x1a
+>          NTSC - 525/60
+>          SECAM - 625/50
+>          NTSC - 625/50
+>      VideoControl Interface Descriptor:
+>        bLength                26
+>        bDescriptorType        36
+>        bDescriptorSubtype      6 (EXTENSION_UNIT)
+>        bUnitID                 4
+>        guidExtensionCode         {2652215a-8932-5641-894a-5c557cdf9664}
+>        bNumControl             4
+>        bNrPins                 1
+>        baSourceID( 0)          3
+>        bControlSize            1
+>        bmControls( 0)       0x1f
+>        iExtension              0
+>      VideoControl Interface Descriptor:
+>        bLength                 9
+>        bDescriptorType        36
+>        bDescriptorSubtype      3 (OUTPUT_TERMINAL)
+>        bTerminalID             2
+>        wTerminalType      0x0101 USB Streaming
+>        bAssocTerminal          0
+>        bSourceID               4
+>        iTerminal               0
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x81  EP 1 IN
+>        bmAttributes            3
+>          Transfer Type            Interrupt
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0008  1x 8 bytes
+>        bInterval               9
+>    Interface Descriptor:
+>      bLength                 9
+>      bDescriptorType         4
+>      bInterfaceNumber        1
+>      bAlternateSetting       0
+>      bNumEndpoints           1
+>      bInterfaceClass        14 Video
+>      bInterfaceSubClass      2 Video Streaming
+>      bInterfaceProtocol      0
+>      iInterface              0
+>      VideoStreaming Interface Descriptor:
+>        bLength                            15
+>        bDescriptorType                    36
+>        bDescriptorSubtype                  1 (INPUT_HEADER)
+>        bNumFormats                        2
+>        wTotalLength                      217
+>        bEndPointAddress                  130
+>        bmInfo                              0
+>        bTerminalLink                       2
+>        bStillCaptureMethod                 2
+>        bTriggerSupport                     1
+>        bTriggerUsage                       0
+>        bControlSize                        1
+>        bmaControls( 0)                    27
+>        bmaControls( 1)                    27
+>      VideoStreaming Interface Descriptor:
+>        bLength                            27
+>        bDescriptorType                    36
+>        bDescriptorSubtype                  4 (FORMAT_UNCOMPRESSED)
+>        bFormatIndex                        1
+>        bNumFrameDescriptors                2
+>        guidFormat
+> {59555932-0000-1000-8000-00aa00389b71}
+>        bBitsPerPixel                      16
+>        bDefaultFrameIndex                  1
+>        bAspectRatioX                       0
+>        bAspectRatioY                       0
+>        bmInterlaceFlags                 0x00
+>          Interlaced stream or variable: No
+>          Fields per frame: 1 fields
+>          Field 1 first: No
+>          Field pattern: Field 1 only
+>          bCopyProtect                      0
+>      VideoStreaming Interface Descriptor:
+>        bLength                            30
+>        bDescriptorType                    36
+>        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+>        bFrameIndex                         1
+>        bmCapabilities                   0x00
+>          Still image unsupported
+>        wWidth                            372
+>        wHeight                           480
+>        dwMinBitRate                838992000
+>        dwMaxBitRate                838992000
+>        dwMaxVideoFrameBufferSize      786432
+>        dwDefaultFrameInterval         333333
+>        bFrameIntervalType                  1
+>        dwFrameInterval( 0)            333333
+>      VideoStreaming Interface Descriptor:
+>        bLength                            30
+>        bDescriptorType                    36
+>        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+>        bFrameIndex                         2
+>        bmCapabilities                   0x00
+>          Still image unsupported
+>        wWidth                            320
+>        wHeight                           480
+>        dwMinBitRate                838992000
+>        dwMaxBitRate                838992000
+>        dwMaxVideoFrameBufferSize      786432
+>        dwDefaultFrameInterval         333333
+>        bFrameIntervalType                  1
+>        dwFrameInterval( 0)            333333
+>      VideoStreaming Interface Descriptor:
+>        bLength                            11
+>        bDescriptorType                    36
+>        bDescriptorSubtype                  3 (STILL_IMAGE_FRAME)
+>        bEndpointAddress                    0
+>        bNumImageSizePatterns               1
+>        wWidth( 0)                        744
+>        wHeight( 0)                       480
+>        bNumCompressionPatterns             1
+>        bCompression( 0)                    0
+>      VideoStreaming Interface Descriptor:
+>        bLength                            27
+>        bDescriptorType                    36
+>        bDescriptorSubtype                  4 (FORMAT_UNCOMPRESSED)
+>        bFormatIndex                        2
+>        bNumFrameDescriptors                2
+>        guidFormat
+> {55595659-0000-1000-8000-00aa00389b71}
+>        bBitsPerPixel                      16
+>        bDefaultFrameIndex                  1
+>        bAspectRatioX                       0
+>        bAspectRatioY                       0
+>        bmInterlaceFlags                 0x00
+>          Interlaced stream or variable: No
+>          Fields per frame: 1 fields
+>          Field 1 first: No
+>          Field pattern: Field 1 only
+>          bCopyProtect                      0
+>      VideoStreaming Interface Descriptor:
+>        bLength                            30
+>        bDescriptorType                    36
+>        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+>        bFrameIndex                         1
+>        bmCapabilities                   0x00
+>          Still image unsupported
+>        wWidth                            372
+>        wHeight                           480
+>        dwMinBitRate                838992000
+>        dwMaxBitRate                838992000
+>        dwMaxVideoFrameBufferSize      786432
+>        dwDefaultFrameInterval         333333
+>        bFrameIntervalType                  1
+>        dwFrameInterval( 0)            333333
+>      VideoStreaming Interface Descriptor:
+>        bLength                            30
+>        bDescriptorType                    36
+>        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+>        bFrameIndex                         2
+>        bmCapabilities                   0x00
+>          Still image unsupported
+>        wWidth                            320
+>        wHeight                           480
+>        dwMinBitRate                838992000
+>        dwMaxBitRate                838992000
+>        dwMaxVideoFrameBufferSize      786432
+>        dwDefaultFrameInterval         333333
+>        bFrameIntervalType                  1
+>        dwFrameInterval( 0)            333333
+>      VideoStreaming Interface Descriptor:
+>        bLength                            11
+>        bDescriptorType                    36
+>        bDescriptorSubtype                  3 (STILL_IMAGE_FRAME)
+>        bEndpointAddress                    0
+>        bNumImageSizePatterns               1
+>        wWidth( 0)                        744
+>        wHeight( 0)                       480
+>        bNumCompressionPatterns             1
+>        bCompression( 0)                    0
+>      VideoStreaming Interface Descriptor:
+>        bLength                             6
+>        bDescriptorType                    36
+>        bDescriptorSubtype                 13 (COLORFORMAT)
+>        bColorPrimaries                     0 (Unspecified)
+>        bTransferCharacteristics            0 (Unspecified)
+>        bMatrixCoefficients                 0 (Unspecified)
+>      Endpoint Descriptor:
+>        bLength                 7
+>        bDescriptorType         5
+>        bEndpointAddress     0x82  EP 2 IN
+>        bmAttributes            2
+>          Transfer Type            Bulk
+>          Synch Type               None
+>          Usage Type               Data
+>        wMaxPacketSize     0x0200  1x 512 bytes
+>        bInterval               1
+> Device Qualifier (for other device speed):
+>  bLength                10
+>  bDescriptorType         6
+>  bcdUSB               2.00
+>  bDeviceClass          239 Miscellaneous Device
+>  bDeviceSubClass         2 ?
+>  bDeviceProtocol         1 Interface Association
+>  bMaxPacketSize0        64
+>  bNumConfigurations      1
+> Device Status:     0x0000
+>  (Bus Powered)
+>
+> This is what I get with lucview:
+>
+> luvcview 0.2.4
+>
+> SDL information:
+>  Video driver: x11
+>  A window manager is available
+> Device information:
+>  Device path:  /dev/video0
+> Stream settings:
+>  Frame format: UYVY
+>  Frame size:   372x480 (requested size 744x480 is not supported by device)
+>  Frame rate:   30/1 fps (requested frame rate 60 fps is not supported by device)
+>
+>
+>
+> Thank you!
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+>
+>   
+
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.13.1331735031.5154.linux-uvc-devel@lists.berlios.de>
+
+so I dont'understand why my application should'n work with the same
+camera on a different architecture. Another application (uvcstreamer)
+that grabs frames in MJPEG format just works fine on FoxBoard...
+
+Why should I disable the V4L support from my kernel? I did so, and
+compiled everything again, but now I actually get the error msg when
+launching VIDIOC_REQBUFS the ioctl. Again, same code and same camera
+work fine on Ubuntu with kernel 2.6.24, while on my FoxBoard I have
+the 2.6.25.
+
+Many thanks to anyone who will help me with this.
+
+Enrico
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.14.1331735031.5154.linux-uvc-devel@lists.berlios.de>
+
+so I dont&#39;understand why my application should&#39;n work with the same=
+<br>
+camera on a different architecture. Another application (uvcstreamer)<br>
+that grabs frames in MJPEG format just works fine on FoxBoard...<br>
+<br>
+Why should I disable the V4L support from my kernel? I did so, and<br>
+compiled everything again, but now I actually get the error msg when<br>
+launching VIDIOC_REQBUFS the ioctl. Again, same code and same camera<br>
+work fine on Ubuntu with kernel 2.6.24, while on my FoxBoard I have<br>
+the 2.6.25.<br>
+<br>
+Many thanks to anyone who will help me with this.<br>
+<br>
+Enrico<br>
+_______________________________________________<br>
+Linux-uvc-devel mailing list<br>
+<a href=3D"mailto:Linux-uvc-devel at lists.berlios.de">Linux-uvc-devel at lists.b=
+erlios.de</a><br>
+<a href=3D"https://lists.berlios.de/mailman/listinfo/linux-uvc-devel" targe=
+t=3D"_blank">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</a><=
+br>
+</blockquote></div><br>
+
+--0015174c17b4a5c7190469f67e33--
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.15.1331735036.5154.linux-uvc-devel@lists.berlios.de>
+
+available in yuv format, this means that usb is also a limiting factor
+and in most cases you also have audio alongside the video stream.
+I guess hardware high resolution MJPEG compression is just a bit
+expensive for consumer grade cameras were price is a very important
+factor. This is probably the same reason why you can't find MPEG4
+webcams.
+HD is mostly used for still image captures were fps is not very important.
+In any case even with a camera that supports HD compression you would
+need a very fast sensor/VPU in order to get that kind of frame rates
+but this would just make the camera price uncompetitive.
+
+Best regards,
+Paulo
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.16.1331735041.5154.linux-uvc-devel@lists.berlios.de>
+
+Jan 12 17:52:00 localhost kernel: [12312.163037] usb 1-3: new high speed USB device using ehci_hcd and address 6
+Jan 12 17:52:00 localhost kernel: [12312.287782] uvcvideo: Found UVC 1.00 device USB2.0 Camera (1e4e:0100)
+Jan 12 17:52:00 localhost kernel: [12312.292382] uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling workaround.
+Jan 12 17:52:00 localhost kernel: [12312.293512] input: USB2.0 Camera as /devices/pci0000:00/0000:00:1d.7/usb1/1-3/1-3:1.0/input/input14
+
+Note that the camera doesn't seem to work when plugged into my (cheap)
+USB hub - both mplayer and xawtv complain of "select timeout".
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.17.1331735041.5154.linux-uvc-devel@lists.berlios.de>
+
+Jan 12 17:49:00 localhost kernel: [12132.686602] usb 3-1.1: new full speed USB device using uhci_hcd and address 4
+Jan 12 17:49:00 localhost kernel: [12132.793599] usb 3-1.1: not running at top speed; connect to a high speed hub
+Jan 12 17:49:00 localhost kernel: [12132.837654] uvcvideo: Found UVC 1.00 device USB2.0 Camera (1e4e:0100)
+Jan 12 17:49:00 localhost kernel: [12132.843584] uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling workaround.
+Jan 12 17:49:00 localhost kernel: [12132.844729] input: USB2.0 Camera as /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1.1/3-1.1:1.0/input/input13
+
+# lsusb -vd 1e4e:0100
+
+Bus 001 Device 006: ID 1e4e:0100  
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               2.00
+  bDeviceClass          239 Miscellaneous Device
+  bDeviceSubClass         2 ?
+  bDeviceProtocol         1 Interface Association
+  bMaxPacketSize0        64
+  idVendor           0x1e4e 
+  idProduct          0x0100 
+  bcdDevice            0.02
+  iManufacturer           1 Etron Technologies
+  iProduct                2 USB2.0 Camera
+  iSerial                 0 
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength          539
+    bNumInterfaces          2
+    bConfigurationValue     1
+    iConfiguration          0 
+    bmAttributes         0x80
+      (Bus Powered)
+    MaxPower              100mA
+    Interface Association:
+      bLength                 8
+      bDescriptorType        11
+      bFirstInterface         0
+      bInterfaceCount         2
+      bFunctionClass         14 Video
+      bFunctionSubClass       3 Video Interface Collection
+      bFunctionProtocol       0 
+      iFunction               2 USB2.0 Camera
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      1 Video Control
+      bInterfaceProtocol      0 
+      iInterface              2 USB2.0 Camera
+      VideoControl Interface Descriptor:
+        bLength                13
+        bDescriptorType        36
+        bDescriptorSubtype      1 (HEADER)
+        bcdUVC               1.00
+        wTotalLength           77
+        dwClockFrequency       30.000000MHz
+        bInCollection           1
+        baInterfaceNr( 0)       1
+      VideoControl Interface Descriptor:
+        bLength                18
+        bDescriptorType        36
+        bDescriptorSubtype      2 (INPUT_TERMINAL)
+        bTerminalID             1
+        wTerminalType      0x0201 Camera Sensor
+        bAssocTerminal          0
+        iTerminal               0 
+        wObjectiveFocalLengthMin      0
+        wObjectiveFocalLengthMax      0
+        wOcularFocalLength            0
+        bControlSize                  3
+        bmControls           0x00000000
+      VideoControl Interface Descriptor:
+        bLength                 9
+        bDescriptorType        36
+        bDescriptorSubtype      3 (OUTPUT_TERMINAL)
+        bTerminalID             2
+        wTerminalType      0x0101 USB Streaming
+        bAssocTerminal          0
+        bSourceID               4
+        iTerminal               0 
+      VideoControl Interface Descriptor:
+        bLength                11
+        bDescriptorType        36
+        bDescriptorSubtype      5 (PROCESSING_UNIT)
+      Warning: Descriptor too short
+        bUnitID                 3
+        bSourceID               1
+        wMaxMultiplier          0
+        bControlSize            2
+        bmControls     0x0000003f
+          Brightness
+          Contrast
+          Hue
+          Saturation
+          Sharpness
+          Gamma
+        iProcessing             0 
+        bmVideoStandards     0x1a
+          NTSC - 525/60
+          SECAM - 625/50
+          NTSC - 625/50
+      VideoControl Interface Descriptor:
+        bLength                26
+        bDescriptorType        36
+        bDescriptorSubtype      6 (EXTENSION_UNIT)
+        bUnitID                 4
+        guidExtensionCode         {adccb1c2-f6ab-b848-8e37-32d4f3a3feec}
+        bNumControl             8
+        bNrPins                 1
+        baSourceID( 0)          3
+        bControlSize            1
+        bmControls( 0)       0x3f
+        iExtension              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x83  EP 3 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               4
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       0
+      bNumEndpoints           0
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      VideoStreaming Interface Descriptor:
+        bLength                            14
+        bDescriptorType                    36
+        bDescriptorSubtype                  1 (INPUT_HEADER)
+        bNumFormats                         1
+        wTotalLength                      223
+        bEndPointAddress                  129
+        bmInfo                              0
+        bTerminalLink                       2
+        bStillCaptureMethod                 2
+        bTriggerSupport                     1
+        bTriggerUsage                       1
+        bControlSize                        1
+        bmaControls( 0)                    27
+      VideoStreaming Interface Descriptor:
+        bLength                            27
+        bDescriptorType                    36
+        bDescriptorSubtype                  4 (FORMAT_UNCOMPRESSED)
+        bFormatIndex                        1
+        bNumFrameDescriptors                5
+        guidFormat                            {59555932-0000-1000-8000-00aa00389b71}
+        bBitsPerPixel                      16
+        bDefaultFrameIndex                  1
+        bAspectRatioX                       0
+        bAspectRatioY                       0
+        bmInterlaceFlags                 0x00
+          Interlaced stream or variable: No
+          Fields per frame: 1 fields
+          Field 1 first: No
+          Field pattern: Field 1 only
+          bCopyProtect                      0
+      VideoStreaming Interface Descriptor:
+        bLength                            30
+        bDescriptorType                    36
+        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+        bFrameIndex                         1
+        bmCapabilities                   0x00
+          Still image unsupported
+        wWidth                            640
+        wHeight                           480
+        dwMinBitRate                147456000
+        dwMaxBitRate                147456000
+        dwMaxVideoFrameBufferSize      614400
+        dwDefaultFrameInterval         333333
+        bFrameIntervalType                  1
+        dwFrameInterval( 0)            333333
+      VideoStreaming Interface Descriptor:
+        bLength                            30
+        bDescriptorType                    36
+        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+        bFrameIndex                         2
+        bmCapabilities                   0x00
+          Still image unsupported
+        wWidth                            352
+        wHeight                           288
+        dwMinBitRate                 48660480
+        dwMaxBitRate                 48660480
+        dwMaxVideoFrameBufferSize      202752
+        dwDefaultFrameInterval         333333
+        bFrameIntervalType                  1
+        dwFrameInterval( 0)            333333
+      VideoStreaming Interface Descriptor:
+        bLength                            30
+        bDescriptorType                    36
+        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+        bFrameIndex                         3
+        bmCapabilities                   0x00
+          Still image unsupported
+        wWidth                            320
+        wHeight                           240
+        dwMinBitRate                 36864000
+        dwMaxBitRate                 36864000
+        dwMaxVideoFrameBufferSize      153600
+        dwDefaultFrameInterval         333333
+        bFrameIntervalType                  1
+        dwFrameInterval( 0)            333333
+      VideoStreaming Interface Descriptor:
+        bLength                            30
+        bDescriptorType                    36
+        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+        bFrameIndex                         4
+        bmCapabilities                   0x00
+          Still image unsupported
+        wWidth                            176
+        wHeight                           144
+        dwMinBitRate                 12165120
+        dwMaxBitRate                 12165120
+        dwMaxVideoFrameBufferSize       50688
+        dwDefaultFrameInterval         333333
+        bFrameIntervalType                  1
+        dwFrameInterval( 0)            333333
+      VideoStreaming Interface Descriptor:
+        bLength                            30
+        bDescriptorType                    36
+        bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+        bFrameIndex                         5
+        bmCapabilities                   0x00
+          Still image unsupported
+        wWidth                            160
+        wHeight                           120
+        dwMinBitRate                  9216000
+        dwMaxBitRate                  9216000
+        dwMaxVideoFrameBufferSize       38400
+        dwDefaultFrameInterval         333333
+        bFrameIntervalType                  1
+        dwFrameInterval( 0)            333333
+      VideoStreaming Interface Descriptor:
+        bLength                            26
+        bDescriptorType                    36
+        bDescriptorSubtype                  3 (STILL_IMAGE_FRAME)
+        bEndpointAddress                    0
+        bNumImageSizePatterns               5
+        wWidth( 0)                        640
+        wHeight( 0)                       480
+        wWidth( 1)                        352
+        wHeight( 1)                       288
+        wWidth( 2)                        320
+        wHeight( 2)                       240
+        wWidth( 3)                        176
+        wHeight( 3)                       144
+        wWidth( 4)                        160
+        wHeight( 4)                       120
+        bNumCompressionPatterns             5
+      VideoStreaming Interface Descriptor:
+        bLength                             6
+        bDescriptorType                    36
+        bDescriptorSubtype                 13 (COLORFORMAT)
+        bColorPrimaries                     1 (BT.709,sRGB)
+        bTransferCharacteristics            1 (BT.709)
+        bMatrixCoefficients                 4 (SMPTE 170M (BT.601))
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       1
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x00a0  1x 160 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       2
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x00d0  1x 208 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       3
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0300  1x 768 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       4
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x030c  1x 780 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       5
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x032c  1x 812 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       6
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x03d0  1x 976 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       7
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x03fc  1x 1020 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       8
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0400  1x 1024 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       9
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0a58  2x 600 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting      10
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x0b00  2x 768 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting      11
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x1334  3x 820 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting      12
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x13fc  3x 1020 bytes
+        bInterval               1
+Device Qualifier (for other device speed):
+  bLength                10
+  bDescriptorType         6
+  bcdUSB               2.00
+  bDeviceClass          239 Miscellaneous Device
+  bDeviceSubClass         2 ?
+  bDeviceProtocol         1 Interface Association
+  bMaxPacketSize0        64
+  bNumConfigurations      1
+Device Status:     0x0000
+  (Bus Powered)
+
+Celejar
+-- 
+foffl.sourceforge.net - Feeds OFFLine, an offline RSS/Atom aggregator
+mailmin.sourceforge.net - remote access via secure (OpenPGP) email
+ssuds.sourceforge.net - A Simple Sudoku Solver and Generator
+
+
+
+From bogus@does.not.exist.com  Wed Mar 14 15:22:58 2012
+From: bogus@does.not.exist.com ()
+Date: Wed, 14 Mar 2012 14:22:58 -0000
+Subject: No subject
+Message-ID: <mailman.18.1331735042.5154.linux-uvc-devel@lists.berlios.de>
+
+If lsusb can't do it, we need to have it fixed to do that.
+
+---
+~Randy
+
+

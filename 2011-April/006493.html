@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] Add support for Creative VF0700 Live!	Cam Chat HD.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Add%20support%20for%20Creative%20VF0700%20Live%21%0A%09Cam%20Chat%20HD.&In-Reply-To=%3C1303465879.4552.6.camel%40zwerg%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006490.html">
+   <LINK REL="Next"  HREF="006498.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] Add support for Creative VF0700 Live!	Cam Chat HD.</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Add%20support%20for%20Creative%20VF0700%20Live%21%0A%09Cam%20Chat%20HD.&In-Reply-To=%3C1303465879.4552.6.camel%40zwerg%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] Add support for Creative VF0700 Live!	Cam Chat HD.">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Fri Apr 22 11:51:19 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006490.html">[Linux-uvc-devel] [PATCH] Add support for Creative VF0700 Live!	Cam Chat HD.
+</A></li>
+        <LI>Next message: <A HREF="006498.html">[Linux-uvc-devel] Input/Output error setting V4L2_CID_EXPOSURE_AUTO	values
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6493">[ date ]</a>
+              <a href="thread.html#6493">[ thread ]</a>
+              <a href="subject.html#6493">[ subject ]</a>
+              <a href="author.html#6493">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Fr, 2011-04-22 at 11:46 +0200, Laurent Pinchart wrote:
+&gt;<i> Hi Alexey,
+</I>&gt;<i> 
+</I>&gt;<i> On Tuesday 29 March 2011 13:48:02 Alexey Fisher wrote:
+</I>&gt;<i> &gt; The camera requires the UVC_QUIRK_RESTRICT_FRAME_RATE quirk.
+</I>&gt;<i> 
+</I>&gt;<i> According to Benson, the camera seems to work at 30, 25 and 20 fps (I'm 
+</I>&gt;<i> waiting for confirmation on that). Isn't it a bit restrictive to disable all 
+</I>&gt;<i> frame rates except 30fps ? Allowing specific frame rates would be more complex 
+</I>&gt;<i> though, I suppose we can live with 30fps only.
+</I>
+I assume this cam is in aperture priority mode and send frames according
+the light. So if we will trigger this bug, he need to try 20-30 fps with
+max light. Say with flashlight pointing to the cam.
+
+&gt;<i> &gt; Reported-by: Benson Bear &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">benson.bear at gmail.com</A>&gt;
+</I>&gt;<i> &gt; Signed-off-by: Alexey Fisher &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt;
+</I>&gt;<i> &gt; ---
+</I>&gt;<i> &gt;  drivers/media/video/uvc/uvc_driver.c |   11 +++++++++++
+</I>&gt;<i> &gt;  1 files changed, 11 insertions(+), 0 deletions(-)
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; diff --git a/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> &gt; b/drivers/media/video/uvc/uvc_driver.c index 0baa464..f8a1579 100644
+</I>&gt;<i> &gt; --- a/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> &gt; +++ b/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> &gt; @@ -1970,6 +1970,17 @@ MODULE_PARM_DESC(timeout, &quot;Streaming control
+</I>&gt;<i> &gt; requests timeout&quot;); * though they are compliant.
+</I>&gt;<i> &gt;   */
+</I>&gt;<i> &gt;  static struct usb_device_id uvc_ids[] = {
+</I>&gt;<i> &gt; +	/* Creative VF0700 Live! Cam Chat HD.
+</I>&gt;<i> &gt; +	 * Produce more frames als commited,
+</I>&gt;<i> &gt; +	 * so it partially overwrite buffer with new frame */
+</I>&gt;<i> &gt; +	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE
+</I>&gt;<i> &gt; +				| USB_DEVICE_ID_MATCH_INT_INFO,
+</I>&gt;<i> &gt; +	  .idVendor		= 0x041e,
+</I>&gt;<i> &gt; +	  .idProduct		= 0x4088,
+</I>&gt;<i> &gt; +	  .bInterfaceClass	= USB_CLASS_VIDEO,
+</I>&gt;<i> &gt; +	  .bInterfaceSubClass	= 1,
+</I>&gt;<i> &gt; +	  .bInterfaceProtocol	= 0,
+</I>&gt;<i> &gt; +	  .driver_info		= UVC_QUIRK_RESTRICT_FRAME_RATE },
+</I>&gt;<i> &gt;  	/* Genius eFace 2025 */
+</I>&gt;<i> &gt;  	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;  				| USB_DEVICE_ID_MATCH_INT_INFO,
+</I>&gt;<i> 
+</I>
+-- 
+Regards,
+        Alexey
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006490.html">[Linux-uvc-devel] [PATCH] Add support for Creative VF0700 Live!	Cam Chat HD.
+</A></li>
+	<LI>Next message: <A HREF="006498.html">[Linux-uvc-devel] Input/Output error setting V4L2_CID_EXPOSURE_AUTO	values
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6493">[ date ]</a>
+              <a href="thread.html#6493">[ thread ]</a>
+              <a href="subject.html#6493">[ subject ]</a>
+              <a href="author.html#6493">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

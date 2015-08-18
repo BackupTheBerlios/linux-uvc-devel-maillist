@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Quanta integrated webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quanta%20integrated%20webcam&In-Reply-To=%3C201106242027.31390.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006630.html">
+   <LINK REL="Next"  HREF="006678.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Quanta integrated webcam</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quanta%20integrated%20webcam&In-Reply-To=%3C201106242027.31390.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Quanta integrated webcam">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Fri Jun 24 20:27:31 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006630.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+        <LI>Next message: <A HREF="006678.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6680">[ date ]</a>
+              <a href="thread.html#6680">[ thread ]</a>
+              <a href="subject.html#6680">[ subject ]</a>
+              <a href="author.html#6680">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Carl,
+
+On Friday 17 June 2011 23:33:25 Carl Michal wrote:
+
+[snip]
+
+&gt;<i> I've been looking at lengths of packets and headers in packets where these
+</I>&gt;<i> unexpected STI, RES, EOH and ERROR bits are set.
+</I>&gt;<i> 
+</I>&gt;<i> There are many things that seem inconsistent, but there are some patterns
+</I>&gt;<i> that come up repeatedly.  For example getting a packet with an ERROR bit
+</I>&gt;<i> set that has a length of 2048 and a header length (from data[0]) of 127 or
+</I>&gt;<i> 125 or 110 or some other big number. That packet gets discarded because of
+</I>&gt;<i> the error bit, but then when the frame ends, it is 2048 bytes shorter than
+</I>&gt;<i> it should be.  I've also seen that with a packet length of 1024 and the
+</I>&gt;<i> frame ending 1024 bytes short.
+</I>&gt;<i> 
+</I>&gt;<i> It looks like the header has somehow disappeared and the image data is
+</I>&gt;<i> being interpreted as header.
+</I>
+Good catch.
+
+&gt;<i> To test this, I put in checks in uvc_video_decode_isoc for any EOH, STI, RES
+</I>&gt;<i> or ERROR - if any are set (or unset for EOH) then to return a header length
+</I>&gt;<i> of 0, so that the entire packet gets used as image data.
+</I>&gt;<i> 
+</I>&gt;<i> This by no means solves all my problems, but with that - I do find at least
+</I>&gt;<i> some frames assembled this way are complete and uncorrupted.
+</I>&gt;<i> 
+</I>&gt;<i> So somehow some headers are disappearing?
+</I>
+That's totally against the UVC specs. We could work around it in the driver if 
+there was a reliable way to detect that a frame doesn't start with a header, 
+but that's not possible. I would consider the camera as completely broken.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006630.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+	<LI>Next message: <A HREF="006678.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6680">[ date ]</a>
+              <a href="thread.html#6680">[ thread ]</a>
+              <a href="subject.html#6680">[ subject ]</a>
+              <a href="author.html#6680">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

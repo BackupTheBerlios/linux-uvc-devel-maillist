@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech Quickcam Notebook Pro for Business
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20Quickcam%20Notebook%20Pro%20for%20Business&In-Reply-To=%3C34834.194.3.40.246.1237451227.squirrel%40mail2.esiee.fr%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004662.html">
+   <LINK REL="Next"  HREF="004667.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech Quickcam Notebook Pro for Business</H1>
+    <B>lescopc at esiee.fr</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20Quickcam%20Notebook%20Pro%20for%20Business&In-Reply-To=%3C34834.194.3.40.246.1237451227.squirrel%40mail2.esiee.fr%3E"
+       TITLE="[Linux-uvc-devel] Logitech Quickcam Notebook Pro for Business">lescopc at esiee.fr
+       </A><BR>
+    <I>Thu Mar 19 09:27:07 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004662.html">[Linux-uvc-devel] Logitech Quickcam Notebook Pro for Business
+</A></li>
+        <LI>Next message: <A HREF="004667.html">[Linux-uvc-devel] Logitech Quickcam Notebook Pro for Business
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4666">[ date ]</a>
+              <a href="thread.html#4666">[ thread ]</a>
+              <a href="subject.html#4666">[ subject ]</a>
+              <a href="author.html#4666">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+This is my problem, I don't have any errors. V4L2 API says that when you
+ask for a Width and Heigth, the driver will give you the max ones below
+the values you asked for. Meaning if you ask for 817x616, it will set
+800x600 without returning any errors.
+
+
+My DMESG (no pb, I have got my &quot;/dev/video0&quot;):
+
+usb 1-2: new full speed USB device using ohci_hcd and address 3
+usb 1-2: configuration #1 chosen from 1 choice
+uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:0991)
+input: UVC Camera (046d:0991) as
+/devices/pci0000:00/0000:00:02.2/usb1/1-2/1-2:1.0/input/input9
+
+
+An extract of my code, taken from the web (Capture.c):
+
+CLEAR (fmt);
+
+fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+if (-1 == xioctl (fd, VIDIOC_G_FMT, &amp;fmt))
+        errno_exit (&quot;VIDIOC_G_FMT&quot;);
+
+fmt.fmt.pix.width       = WB_FRAME_WIDTH;   // 800
+fmt.fmt.pix.height      = WB_FRAME_HEIGHT;  // 600
+fmt.fmt.pix.pixelformat = WB_COLOR_FORMAT;  // YUYV which is perfect for me
+fmt.fmt.pix.field       = V4L2_FIELD_INTERLACED;
+
+// Note VIDIOC_S_FMT may change width and height
+// So I check the *new* values
+
+fprintf (stderr,
+        &quot;width: %d\n&quot;
+        &quot;height: %d\n&quot;,
+        fmt.fmt.pix.width,
+        fmt.fmt.pix.height);
+
+
+It prints 176 by 144! What am I doing wrong?
+(later, I check the buffer size allocated via MMAP: 50688 =&gt; 176 x 144 x 2)
+
+Any ideas? Where could be the problem?
+
+Regards,
+
+
+C&#233;dric Lescop
+
+
+
+On Wed, March 18, 2009 13:52, Laurent Pinchart wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> On Monday 16 March 2009 14:43:35 <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">lescopc at esiee.fr</A> wrote:
+</I>&gt;<i>
+</I>&gt;&gt;<i> Hello everyone,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I'm using this webcam to do some streaming and image analysis.
+</I>&gt;&gt;<i> When using Logitech's driver under MS Window, it works fine. I've access
+</I>&gt;&gt;<i>  to all resolutions with the RGB24 format.
+</I>&gt;<i>
+</I>&gt;<i> The camera doesn't support the RGB24 format natively. Transcoding has to
+</I>&gt;<i> be done in software. libv4l2 can help you there.
+</I>&gt;<i>
+</I>&gt;&gt;<i> The problem is when running under Linux. I'm using uvcvideo driver via
+</I>&gt;&gt;<i> V4L2 but I can't make it work properly.
+</I>&gt;&gt;<i> The resolution gets stuck to 176x144
+</I>&gt;&gt;<i> and the format is YUYV.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Normally, the webcam is supposed to support a 1600x1200 resolution, how
+</I>&gt;&gt;<i>  can I set it up correctly?
+</I>&gt;<i>
+</I>&gt;<i> You should be able to use higher resolutions. Can you describe your
+</I>&gt;<i> problem in details, including the steps performed and the error messages
+</I>&gt;<i> being printed ?
+</I>&gt;<i>
+</I>&gt;&gt;<i> Thank you in advance,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> xioctl (fd, VIDIOC_ENUM_FMT, &amp;fdq)
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> returns me 2 formats only: MJPEG and YUYV. YUYV is fine for me but I
+</I>&gt;&gt;<i> can't reach 1600x1200, or 800x600 or even not 320x240!!!!
+</I>&gt;<i>
+</I>&gt;<i> Best regards,
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004662.html">[Linux-uvc-devel] Logitech Quickcam Notebook Pro for Business
+</A></li>
+	<LI>Next message: <A HREF="004667.html">[Linux-uvc-devel] Logitech Quickcam Notebook Pro for Business
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4666">[ date ]</a>
+              <a href="thread.html#4666">[ thread ]</a>
+              <a href="subject.html#4666">[ subject ]</a>
+              <a href="author.html#4666">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

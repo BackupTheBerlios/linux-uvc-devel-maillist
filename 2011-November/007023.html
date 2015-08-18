@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [RFC PATCH]  uvc debugfs interface,	initial patch
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%20PATCH%5D%20%20uvc%20debugfs%20interface%2C%0A%09initial%20patch&In-Reply-To=%3C1320337641-27084-1-git-send-email-laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007022.html">
+   <LINK REL="Next"  HREF="007024.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [RFC PATCH]  uvc debugfs interface,	initial patch</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%20PATCH%5D%20%20uvc%20debugfs%20interface%2C%0A%09initial%20patch&In-Reply-To=%3C1320337641-27084-1-git-send-email-laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] [RFC PATCH]  uvc debugfs interface,	initial patch">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu Nov  3 17:27:19 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007022.html">[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+</A></li>
+        <LI>Next message: <A HREF="007024.html">[Linux-uvc-devel] [PATCH 1/2] uvcvideo: Add debugfs support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7023">[ date ]</a>
+              <a href="thread.html#7023">[ thread ]</a>
+              <a href="subject.html#7023">[ subject ]</a>
+              <a href="author.html#7023">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Alexey,
+
+On Wednesday 21 September 2011 08:27:06 Alexey Fisher wrote:
+&gt;<i> 
+</I>&gt;<i> this is initial patch for debugfs interface. I didn't implemented all
+</I>&gt;<i> requests, i think the size of this patch is any way too big now.
+</I>
+I've finally found time to go through your patch :-) I'm sorry for the way too
+long delay.
+
+&gt;<i> Here is how it's working. After driver is loaded it create
+</I>&gt;<i> debugfs/usb/uvcvideo directory. If some device is attached it create
+</I>&gt;<i> device dir like this: 001.007_046d.0991 (first part is usb bus, second
+</I>&gt;<i> is usb id). In this directory it create file called stats. Here is the
+</I>&gt;<i> content of this file:
+</I>&gt;<i> 
+</I>&gt;<i> usb id: 046d:0991, usb bus: 001:007
+</I>&gt;<i> packet size: 944(6)
+</I>&gt;<i> state: idle  &lt;-- show the state of device. capture or idle
+</I>&gt;<i> start time: 1316585466 &lt;- unix epoch time in seconds.
+</I>&gt;<i> capture time: 106   &lt;- capture time in seconds.
+</I>&gt;<i> format: YUV 4:2:2 (YUYV)
+</I>&gt;<i> resolution: 320x240 @ 30
+</I>&gt;<i> decode_start: 846880  &lt;- this show how many payloads we started to
+</I>&gt;<i> decoding. bad_header: 0 &lt;-- haw many payloads was dropped, because of bad
+</I>&gt;<i> header uvc_empty: 604160  &lt;-- correct uvc payloads without video data
+</I>&gt;<i> uvc_stream_err: 0  &lt;-- count of payloads with err bit set
+</I>&gt;<i> sequence: 955  &lt;-- count of fid switches
+</I>&gt;<i> out_of_sync: 0  &lt;-- out of sync calls
+</I>
+I like the patch but have lots of small comments. Instead of playing ping-pong
+with you to get everything fixed, I've reworked your patch. The result can be
+found as replies to this e-mail.
+
+First of all I've split the patch in two. The first patch adds debugfs support
+to the driver, and the second patch exports video stream statistics. This makes
+review easier.
+
+Then, I've modified statistics gathering to store per-stream stats instead of
+per-device as a UVC device can expose several streams.
+
+Finally I've removed the state information from the statistics, as they're not
+really statistics. It should be easi to add them back in a &quot;state&quot; or &quot;info&quot;
+debugfs file once we agree on these patches.
+
+Both patches are currently authored by me. I'll will use your name and e-mail
+address if you send me your SoB line.
+
+Laurent Pinchart (2):
+  uvcvideo: Add debugfs support
+  uvcvideo: Extract video stream statistics
+
+ drivers/media/video/uvc/Makefile      |    2 +-
+ drivers/media/video/uvc/uvc_debugfs.c |  136 +++++++++++++++++++++++++++++++++
+ drivers/media/video/uvc/uvc_driver.c  |   21 ++++-
+ drivers/media/video/uvc/uvc_video.c   |  111 ++++++++++++++++++++++++++-
+ drivers/media/video/uvc/uvcvideo.h    |   39 ++++++++++
+ 5 files changed, 302 insertions(+), 7 deletions(-)
+ create mode 100644 drivers/media/video/uvc/uvc_debugfs.c
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007022.html">[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+</A></li>
+	<LI>Next message: <A HREF="007024.html">[Linux-uvc-devel] [PATCH 1/2] uvcvideo: Add debugfs support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7023">[ date ]</a>
+              <a href="thread.html#7023">[ thread ]</a>
+              <a href="subject.html#7023">[ subject ]</a>
+              <a href="author.html#7023">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Multiple camera framerate.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multiple%20camera%20framerate.&In-Reply-To=%3C201005071707.40233.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005732.html">
+   <LINK REL="Next"  HREF="005729.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Multiple camera framerate.</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multiple%20camera%20framerate.&In-Reply-To=%3C201005071707.40233.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Multiple camera framerate.">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Fri May  7 17:07:39 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005732.html">[Linux-uvc-devel] Philips SPC530NC (0471:2034) fails
+</A></li>
+        <LI>Next message: <A HREF="005729.html">[Linux-uvc-devel] Quickcam Pro 9000 LED control
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5727">[ date ]</a>
+              <a href="thread.html#5727">[ thread ]</a>
+              <a href="subject.html#5727">[ subject ]</a>
+              <a href="author.html#5727">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Dennis,
+
+On Tuesday 27 April 2010 18:19:01 Dennis Muhlestein wrote:
+&gt;<i> On 04/27/2010 05:48 AM, Paulo Assis wrote:
+</I>&gt;<i> &gt; 2010/4/27 Ian Latter&lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">ian.latter at midnightcode.org</A>&gt;:
+</I>&gt;<i> &gt;&gt;&gt; You can grab frames at whatever speed you want, but it's the camera
+</I>&gt;<i> &gt;&gt;&gt; framerate that will make a difference in the usb bandwidth and not the
+</I>&gt;<i> &gt;&gt;&gt; amount of frames you get with your application.
+</I>&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt;&gt; So, if you don't take a frame from the UVC driver, it will simply
+</I>&gt;<i> &gt;&gt; continue to refresh an internal buffer with new frames from the camera
+</I>&gt;<i> &gt;&gt; device?
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Think of it like this, the necessary bandwidth is requested by the device
+</I>&gt;<i> &gt; and it will depend on the compression, resolution and framerate, in fact I
+</I>&gt;<i> &gt; think some (&quot;buggy&quot;) devices will always request the maximum bandwidth
+</I>&gt;<i> &gt; causing problems on initialization, for these devices I think uvcvideo
+</I>&gt;<i> &gt; uses it's own algorithm to calc the necessary bandwidth.
+</I>
+That's right. The uvcvideo driver tries to compute an estimate of the required 
+bandwidth. That only works for uncompressed formats.
+
+&gt;<i> Do the number of URBs have any effect at all?  I made an initial attempt
+</I>&gt;<i> to check this a while back by recompiling the driver with UVC_URBS as 1
+</I>&gt;<i> or 2 instead of 5.
+</I>
+Not on the bandwidth, no. The number of URBs will influence the memory used by 
+the driver, and the real-time requirements. The less URBs, the fastest the 
+driver needs to process the complete URBs and resubmit them to avoid running 
+out of them.
+
+&gt;<i> Changed the MAX_ISO_PACKETS a lot smaller too.
+</I>
+The number of packets influences the URB size for isochronous transfers. URBs 
+complete when the maximum of packets have been transmitted. The larger the 
+number, the less frequent the driver gets interrupted to process URBs (but it 
+will also have to process more packets in one go, making the processing a bit 
+longer).
+
+&gt;<i> I wanted to see if perhaps submitting less URBs would somehow lessen the
+</I>&gt;<i> bandwidth requirements.  It didn't fix the problem though.
+</I>
+The driver explicitly selects the bandwidth by switching to an alternate 
+setting. The USB core allocates the bandwidth when the URB are submitted, so 
+the alternate setting selection call might succeed and the URB submission fail 
+later. Please note that, with USB 3.0, the xHCI driver will perform the 
+allocation when selecting the alternate setting.
+
+The driver choose the alternate setting with the lowest bandwidth compatible 
+with the bandwidth requirements reported by the camera. The number of URBs or 
+packets will have no influence there.
+
+&gt;<i> I suspect that somewhere in an underlying layer, whether kernel or physical,
+</I>&gt;<i> something is checking that bandwidth requirement for the configured
+</I>&gt;<i> endpoints and then denying new URBs being submitted.  I'm not opposed to
+</I>&gt;<i> modifying something at a lower level but I haven't found the spot at this
+</I>&gt;<i> point. I guess if the error comes from the physical hub there isn't much to
+</I>&gt;<i> be done then.
+</I>
+The USB core checks the bandwidth. There's an allocation process defined by 
+the USB standard, and there's pretty much no way around that. You could modify 
+the EHCI host controller driver to allow more than 80% of the total bandwidth 
+to be allocated to periodic transfers. Another solution, as you pointed out 
+below, is not to submit the URBs. That's very similar to performing the 
+STREAMON/QBUF/DQBUF/STREAMOFF sequences in userspace on all devices one after 
+the other, except that you might be able to get slightly better performances 
+by avoiding context switches.
+
+&gt;<i> &gt; Also the device will always try to dispatch frames at the requested
+</I>&gt;<i> &gt; framerate, if you don't grab them they will simply be dropped by the
+</I>&gt;<i> &gt; driver.
+</I>&gt;<i> 
+</I>&gt;<i> I wonder if there is some way to restrict URB submitting to around 10
+</I>&gt;<i> fps? Perhaps a semaphore on the number of cameras that can be submitting
+</I>&gt;<i> URBs at all.  If I go ahead and configure all the cameras to run at 15 fps
+</I>&gt;<i> but only submit URBs for say 3 of the cameras at a time it seems it would
+</I>&gt;<i> work. I'm not worried about dropping 1/3 of the frames.
+</I>
+That might work, but it would be quite hackish. You wouldn't be able to 
+synchronize to the frame start, so you will loose half a frame on average 
+every time you &quot;start&quot; a camera.
+
+You would basically need to keep a list of cameras and handle them in a round-
+robin way. When one of the cameras completes a frame, you will have to stop 
+submitting URBs for it, wait until all URBs have completed, and submit the 
+URBs for the next camera in the list.
+
+&gt;<i> I don't think I can write them all out to storage fast enough anyway.
+</I>&gt;<i> (I can come close to keeping up with 10 fps on 8 cameras though.)
+</I>
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005732.html">[Linux-uvc-devel] Philips SPC530NC (0471:2034) fails
+</A></li>
+	<LI>Next message: <A HREF="005729.html">[Linux-uvc-devel] Quickcam Pro 9000 LED control
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5727">[ date ]</a>
+              <a href="thread.html#5727">[ thread ]</a>
+              <a href="subject.html#5727">[ subject ]</a>
+              <a href="author.html#5727">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

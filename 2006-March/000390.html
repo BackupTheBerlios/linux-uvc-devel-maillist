@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] QC 5K owners: how to fix alsa for the mic?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20QC%205K%20owners%3A%20how%20to%20fix%20alsa%20for%20the%20mic%3F&In-Reply-To=%3C442AB4DB.8050303%40cs.bgu.ac.il%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000389.html">
+   <LINK REL="Next"  HREF="000391.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] QC 5K owners: how to fix alsa for the mic?</H1>
+    <B>Niv</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20QC%205K%20owners%3A%20how%20to%20fix%20alsa%20for%20the%20mic%3F&In-Reply-To=%3C442AB4DB.8050303%40cs.bgu.ac.il%3E"
+       TITLE="[Linux-uvc-devel] QC 5K owners: how to fix alsa for the mic?">nivv at cs.bgu.ac.il
+       </A><BR>
+    <I>Wed Mar 29 18:24:59 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000389.html">[Linux-uvc-devel] &#22899;&#12398;&#23376;&#12364;&#20316;&#12387;&#12383;&#12507;&#12540;&#12512;&#12506;&#12540;&#12472;
+</A></li>
+        <LI>Next message: <A HREF="000391.html">[Linux-uvc-devel] QC 5K owners: how to fix alsa for the mic?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#390">[ date ]</a>
+              <a href="thread.html#390">[ thread ]</a>
+              <a href="subject.html#390">[ subject ]</a>
+              <a href="author.html#390">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Hello all,
+I am aware that this is a uvc ML, but I dont know the alsa ML and got
+good advice here in the past.
+I also have trouble finding keywords to google for this problem.
+here goes:
+
+I have several sound devices that change.
+* a usb sound card with output only
+* a usb webcam with a microphone
+* a bluetooth adapter that provides a sound device with my BT headset
+
+my problem is that if I boot with the webcam disconnected like this:
+$ cat /proc/asound/cards
+0 [V8237          ]: VIA8237 - VIA 8237
+                     VIA 8237 with CMI9761 at 0xe800, irq 11
+1 [Bt878          ]: Bt87x - Brooktree Bt878
+                     Brooktree Bt878 at 0xe8101000, irq 11
+2 [Audio          ]: USB-Audio - USB Audio
+                     C-Media INC. USB Audio at usb-0000:00:10.3-2, full
+speed
+3 [Headset        ]: Bluetooth SCO - BT Headset
+                     BT Headset 1
+
+then after plugging the webcam:
+
+# cat /proc/asound/cards
+0 [V8237          ]: VIA8237 - VIA 8237
+                     VIA 8237 with CMI9761 at 0xe800, irq 11
+1 [Bt878          ]: Bt87x - Brooktree Bt878
+                     Brooktree Bt878 at 0xe8101000, irq 11
+2 [Audio          ]: USB-Audio - USB Audio
+                     C-Media INC. USB Audio at usb-0000:00:10.3-2, full
+speed
+3 [Headset        ]: Bluetooth SCO - BT Headset
+                     BT Headset 1
+4 [U0x46d0x8c5    ]: USB-Audio - USB Device 0x46d:0x8c5
+                     USB Device 0x46d:0x8c5 at usb-0000:00:10.4-1, high
+speed
+
+but if I reboot the headset takes device 4 and the webcam device 3.
+
+I tried mending /etc/modules.d/alsa:
+
+alias snd-card-0 snd-via82xx
+options snd-via82xx index=0
+alias snd-card-1 snd-bt87x
+alias snd-card-2 snd-bt-sco
+alias snd-card-3 snd-usb-audio
+alias snd-card-4 snd-usb-audio
+options snd cards_limit=5
+
+but it doesnt help
+I did manage to fix the oss using udev rules.
+
+how can I fix it?
+
+Niv
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - <A HREF="http://enigmail.mozdev.org">http://enigmail.mozdev.org</A>
+
+iD8DBQFEKrTbkwazfG0MmCYRAtk/AJ4wmoQKBGDBcxzlmv8kUCFVU7plnACgs9Fs
+UVae3HpJR4SuYhcT/KpCYBU=
+=mnT1
+-----END PGP SIGNATURE-----
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000389.html">[Linux-uvc-devel] &#22899;&#12398;&#23376;&#12364;&#20316;&#12387;&#12383;&#12507;&#12540;&#12512;&#12506;&#12540;&#12472;
+</A></li>
+	<LI>Next message: <A HREF="000391.html">[Linux-uvc-devel] QC 5K owners: how to fix alsa for the mic?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#390">[ date ]</a>
+              <a href="thread.html#390">[ thread ]</a>
+              <a href="subject.html#390">[ subject ]</a>
+              <a href="author.html#390">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

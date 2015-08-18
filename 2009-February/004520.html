@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Minoru stereo webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Minoru%20stereo%20webcam&In-Reply-To=%3C49878ADC.7080901%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004519.html">
+   <LINK REL="Next"  HREF="004521.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Minoru stereo webcam</H1>
+    <B>Simone Freddio</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Minoru%20stereo%20webcam&In-Reply-To=%3C49878ADC.7080901%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Minoru stereo webcam">sioux1977 at gmail.com
+       </A><BR>
+    <I>Tue Feb  3 01:07:56 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004519.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+        <LI>Next message: <A HREF="004521.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4520">[ date ]</a>
+              <a href="thread.html#4520">[ thread ]</a>
+              <a href="subject.html#4520">[ subject ]</a>
+              <a href="author.html#4520">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Jan, hi Laurent...
+
+    i have the same problem with different webcam... i think to have 
+found the problem, Laurent tell me if i am wrong, i'll go to explain:
+
+    The problem is in the bandwidth, the uvcdriver ALWAYS ask to usb 
+layer a dw_MaxPayloadTransferSize that is fetched only when the device 
+is opening;
+
+    In my case is always set to 3072 (3x1024). I have tried changing 
+uvc_video.c in a very dirty manner (excuse me Laurent) in this way:
+
+    In function 'uvc_set_video_ctrl' where there is:
+     put_unaligned_le32(ctrl-&gt;dwMaxVideoFrameSize, &amp;data[18]);
+     put_unaligned_le32(ctrl-&gt;dwMaxPayloadTransferSize, &amp;data[22]);
+    
+    i have commented out the second line and changed it in:
+    put_unaligned_le32(1024, &amp;data[22]);
+
+    In this way i have always force uvc driver to ask for a payload size 
+of 1024.
+
+    After recompiling, reinstalling, unload e load the module, i can get 
+two webcam working fine and simultaneously.
+
+    Now i didn't have a big experience and i can't change source myself 
+in the right way... but i think that my observation can be usefull.
+
+    I think that the best way to re-negotiate the bandwidth is to set 
+video streaming parameters (framesize and frameinterval) and after ask 
+the device wich bandwidth it requests.
+    In a short way, at the end of uvc_set_video_ctrl function a call to 
+uvc_get_video_ctrl will solve the problem... what do you think Laurent?)
+
+BR Simone
+
+P.S.: Excuse me for my english....
+
+Jan Ciger wrote:
+&gt;<i> -----BEGIN PGP SIGNED MESSAGE-----
+</I>&gt;<i> Hash: SHA1
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart wrote:
+</I>&gt;<i>   
+</I>&gt;&gt;<i> That's bad. The USB EHCI driver will reject 2x 3072 bytes per microframe as 
+</I>&gt;&gt;<i> exceeding the available bandwidth.
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> Yep, I suspected something like that ...
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>&gt;&gt;<i> I suppose you'll object that the cameras work on Windows, so I'll try to 
+</I>&gt;&gt;<i> address that :-)
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> Thank you :)
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>&gt;&gt;<i> I see three possible reasons why Windows would stream video from both cameras 
+</I>&gt;&gt;<i> at the same time.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> - The Windows UVC driver might query the cameras slightly differently and 
+</I>&gt;&gt;<i> receive a different bandwidth. A USB sniffer would help confirm or infirm 
+</I>&gt;&gt;<i> this explanation.
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> I can check this if I manage to get a sniffer to work. I will report
+</I>&gt;<i> back once that far.
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>&gt;&gt;<i> - The Windows UVC driver might ignore the requested bandwidth and compute a 
+</I>&gt;&gt;<i> value itself.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> - Windows might accept 2x 3072 bytes per microframe. I seem to remember this 
+</I>&gt;&gt;<i> might be the case, and that that behaviour is buggy according to the USB 2.0 
+</I>&gt;&gt;<i> spec. You would have to contact the linux-usb mailing list for more 
+</I>&gt;&gt;<i> information on that.
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> Hard to say which one is correct. It could be even both - Windows
+</I>&gt;<i> accepts the value (doesn't report error) and the driver does some kind
+</I>&gt;<i> of black magic afterwards to get things actually working.
+</I>&gt;<i>
+</I>&gt;<i> I am getting different resolutions offered on Windows than on Linux and
+</I>&gt;<i> also the camera seems to run at a lower framerate if both cameras are
+</I>&gt;<i> streaming. I didn't try to measure it, but the stereo output looks like
+</I>&gt;<i> ~10fps or so. It could be a software issue as well, though.
+</I>&gt;<i>
+</I>&gt;<i> The documentation is also cautioning to plug the device ideally to a
+</I>&gt;<i> separate host and not to use the USB connectors on the front panel -
+</I>&gt;<i> they assume that those are not full-featured. So it could be indeed a
+</I>&gt;<i> marginal design.
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>&gt;&gt;<i> It would be helpful if you could capture all USB control traffic from device 
+</I>&gt;&gt;<i> enumeration to video streaming using a USB analyser (a software one will do). 
+</I>&gt;&gt;<i> It would show what bandwidth the device requests, and what bandwidth the 
+</I>&gt;&gt;<i> Windows UVC driver selects.
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> As I said above, I will try to get a sniffer working and will report
+</I>&gt;<i> back once that far.
+</I>&gt;<i>
+</I>&gt;<i> Regards (and thanks),
+</I>&gt;<i>
+</I>&gt;<i> Jan
+</I>&gt;<i>
+</I>&gt;<i> -----BEGIN PGP SIGNATURE-----
+</I>&gt;<i> Version: GnuPG v1.4.9 (GNU/Linux)
+</I>&gt;<i> Comment: Using GnuPG with Mandriva - <A HREF="http://enigmail.mozdev.org">http://enigmail.mozdev.org</A>
+</I>&gt;<i>
+</I>&gt;<i> iD8DBQFJhz2+n11XseNj94gRAlm+AKDOTMtUwPvAFW4sqLmLc+DhGzcXvgCeIuJP
+</I>&gt;<i> /Pq16p2jarKlLMQdVtCJmbI=
+</I>&gt;<i> =NsvL
+</I>&gt;<i> -----END PGP SIGNATURE-----
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004519.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+	<LI>Next message: <A HREF="004521.html">[Linux-uvc-devel] Minoru stereo webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4520">[ date ]</a>
+              <a href="thread.html#4520">[ thread ]</a>
+              <a href="subject.html#4520">[ subject ]</a>
+              <a href="author.html#4520">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

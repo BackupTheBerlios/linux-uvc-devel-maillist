@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] syntek 174f:8a12 unsupported?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20syntek%20174f%3A8a12%20unsupported%3F&In-Reply-To=%3C200807210004.42291.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003880.html">
+   <LINK REL="Next"  HREF="003906.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] syntek 174f:8a12 unsupported?</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20syntek%20174f%3A8a12%20unsupported%3F&In-Reply-To=%3C200807210004.42291.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] syntek 174f:8a12 unsupported?">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Jul 21 00:04:42 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003880.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+        <LI>Next message: <A HREF="003906.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3886">[ date ]</a>
+              <a href="thread.html#3886">[ thread ]</a>
+              <a href="subject.html#3886">[ subject ]</a>
+              <a href="author.html#3886">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Saturday 19 July 2008, martuf1 wrote:
+&gt;<i> &gt; Yes, please use luvcview and run it with
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; luvcview -f yuv
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Don't forget to report luvcview error messages as well as driver messages
+</I>&gt;<i> &gt; printed to the kernel log.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Best regards,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Laurent Pinchart
+</I>&gt;<i>
+</I>&gt;<i> Hi Laurent,
+</I>&gt;<i> I will write what I did:
+</I>&gt;<i>
+</I>&gt;<i> $&gt; svn checkout <A HREF="svn://svn.berlios.de/linux-uvc/linux-uvc/trunk">svn://svn.berlios.de/linux-uvc/linux-uvc/trunk</A>
+</I>&gt;<i> $&gt; cd trunk
+</I>&gt;<i> $&gt; patch -p0 &lt; a.diff    (your patch)
+</I>&gt;<i> $&gt; make
+</I>&gt;<i> $&gt; sudo make install
+</I>&gt;<i> $&gt; sudo depmod -a
+</I>&gt;<i> $&gt; sudo modprobe uvcvideo
+</I>&gt;<i> $&gt; dmesg
+</I>&gt;<i> [  680.144146] Linux video capture interface: v2.00
+</I>&gt;<i> [  680.150335] uvcvideo: Found UVC 1.00 device USB2.0 UVC PC Camera
+</I>&gt;<i> (174f:8a12)
+</I>&gt;<i> [  680.685512] uvcvideo: Failed to query (1) UVC control 2 (unit 0) :
+</I>&gt;<i> -110 (exp. 26).
+</I>&gt;<i> [  680.685521] uvcvideo: Failed to initialize the device (-5).
+</I>&gt;<i> [  680.686972] usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> [  680.687252] USB Video Class driver (SVN r232)
+</I>&gt;<i>
+</I>&gt;<i> nb: no /dev/video0 device created
+</I>&gt;<i>
+</I>&gt;<i> $&gt; sudo rmmod uvcvideo
+</I>&gt;<i> $&gt; sudo modprobe uvcvideo
+</I>&gt;<i> $&gt; dmesg
+</I>&gt;<i> [  694.869837] usbcore: deregistering interface driver uvcvideo
+</I>&gt;<i> [  697.376885] uvcvideo: Found UVC 1.00 device USB2.0 UVC PC Camera
+</I>&gt;<i> (174f:8a12)
+</I>&gt;<i> [  697.637572] usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> [  697.637581] USB Video Class driver (SVN r232)
+</I>&gt;<i>
+</I>&gt;<i> nb: ok /dev/video0 device created
+</I>&gt;<i>
+</I>&gt;<i> $&gt; luvcview -f yuv
+</I>&gt;<i> luvcview version 0.2.1
+</I>&gt;<i> Video driver: x11
+</I>&gt;<i> A window manager is available
+</I>&gt;<i> video /dev/video0
+</I>&gt;<i> ^C
+</I>&gt;<i> Stop asked
+</I>&gt;<i> ^Z
+</I>&gt;<i> [1]+  Stopped                 luvcview -f yuv
+</I>&gt;<i>
+</I>&gt;<i> $&gt; kill -9 %1
+</I>&gt;<i> $&gt; dmesg
+</I>&gt;<i> [  717.306510] uvcvideo: Failed to query (130) UVC control 1 (unit 0) :
+</I>&gt;<i> -110 (exp. 26).
+</I>&gt;<i>
+</I>&gt;<i> nb: Appear a black windows and as you can see I had to kill-9 the process
+</I>&gt;<i> to exit.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> $&gt; sudo luvcview -f yuv
+</I>&gt;<i> luvcview version 0.2.1
+</I>&gt;<i> Video driver: x11
+</I>&gt;<i> A window manager is available
+</I>&gt;<i> video /dev/video0
+</I>&gt;<i> Unable to set format: 5.
+</I>&gt;<i>  Init v4L2 failed !! exit fatal
+</I>&gt;<i>
+</I>&gt;<i> $&gt; dmesg
+</I>&gt;<i> [  726.914113] uvcvideo: Failed to query (129) UVC control 1 (unit 0) :
+</I>&gt;<i> -110 (exp. 26).
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> What can I use to sniff usb traffic in windows vista?... There the cam
+</I>&gt;<i> is working...
+</I>&gt;<i> May that help you?
+</I>
+From your report I would guess your problems are caused by timing issues. 
+Could you try to repeat the same operations with kernel 2.6.26 ?
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003880.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+	<LI>Next message: <A HREF="003906.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3886">[ date ]</a>
+              <a href="thread.html#3886">[ thread ]</a>
+              <a href="subject.html#3886">[ subject ]</a>
+              <a href="author.html#3886">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

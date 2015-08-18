@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Slow framerate ...
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Slow%20framerate%20...&In-Reply-To=%3Ca81f87bb0801251045n5b9a1803qc532a365ddde0ca9%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002836.html">
+   <LINK REL="Next"  HREF="002833.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Slow framerate ...</H1>
+    <B>Brian Pin</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Slow%20framerate%20...&In-Reply-To=%3Ca81f87bb0801251045n5b9a1803qc532a365ddde0ca9%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Slow framerate ...">shaohuang at gmail.com
+       </A><BR>
+    <I>Fri Jan 25 19:45:28 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002836.html">[Linux-uvc-devel] Slow framerate ...
+</A></li>
+        <LI>Next message: <A HREF="002833.html">[Linux-uvc-devel] Unsupported webcam | Creative Live! Cam Notebook
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2846">[ date ]</a>
+              <a href="thread.html#2846">[ thread ]</a>
+              <a href="subject.html#2846">[ subject ]</a>
+              <a href="author.html#2846">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent:
+This OS is quite simple and made by my colleague, it is running on
+ARM926ejs, I adopted the driver from our USB IP vendor, and developing USB
+layer from USBD, roothub to UVC driver. And I did not using the same user
+space app on my FPGA platform. On PC, I am using windows application, on
+FPGA, I am using my own simulated test thread to do streaming.( Because I
+don't have V4L2 and I dont have app to test UVC device yet)
+Here is the simulation thread:
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+ fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
+ fmt.fmt.pix.width = 160;
+ fmt.fmt.pix.height = 120;
+ ret = uvc_v4l2_set_format(&amp;dev-&gt;video, &amp;fmt);
+ if(ret){
+  dev_err(&quot;uvc set format failed %d\n&quot;,ret);
+ }
+ bufsize = dev-&gt;video.streaming-&gt;ctrl.dwMaxVideoFrameSize;
+ n = uvc_alloc_buffers(&amp;dev-&gt;video.queue, V4L2_BUFFERS/*5*/, bufsize);
+ for ( i = 0 ; i &lt; n ; ++i ) {
+  v4l2_buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  v4l2_buf.memory = V4L2_MEMORY_MMAP;
+  v4l2_buf.index = i;
+  uvc_queue_buffer(&amp;dev-&gt;video.queue, &amp;v4l2_buf);
+ }
+ ret = uvc_video_enable(&amp;dev-&gt;video,1);
+ if(ret) {
+  dev_err(&quot;video stream enable failed %d\n&quot;, ret);
+  goto done;
+ }
+ i = 0;
+ while(1) {
+  v4l2_buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  v4l2_buf.memory = V4L2_MEMORY_MMAP;
+  v4l2_buf.index = i % n;
+  uvc_dequeue_buffer(&amp;dev-&gt;video.queue, &amp;v4l2_buf, 0);
+  uvc_queue_buffer(&amp;dev-&gt;video.queue, &amp;v4l2_buf);
+  i++;
+  if( i &gt; 60 ) {
+   uvc_video_enable(&amp;dev-&gt;video,0);
+   break;
+  }
+ }
+done:
+ uvc_free_buffers(&amp;dev-&gt;video.queue);
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Our USB is 2.0 version and my cam compression format is MJPEG..
+Thank you for your suggestion Laurent
+Brian
+
+
+-- 
+Best Regards
+Brian
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080125/9ec303bc/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080125/9ec303bc/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002836.html">[Linux-uvc-devel] Slow framerate ...
+</A></li>
+	<LI>Next message: <A HREF="002833.html">[Linux-uvc-devel] Unsupported webcam | Creative Live! Cam Notebook
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2846">[ date ]</a>
+              <a href="thread.html#2846">[ thread ]</a>
+              <a href="subject.html#2846">[ subject ]</a>
+              <a href="author.html#2846">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

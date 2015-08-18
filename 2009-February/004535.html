@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Problems cross compiling uvc
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problems%20cross%20compiling%20uvc&In-Reply-To=%3C200902081337.13036.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004531.html">
+   <LINK REL="Next"  HREF="004532.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Problems cross compiling uvc</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problems%20cross%20compiling%20uvc&In-Reply-To=%3C200902081337.13036.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Problems cross compiling uvc">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sun Feb  8 13:37:12 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004531.html">[Linux-uvc-devel] Problems cross compiling uvc
+</A></li>
+        <LI>Next message: <A HREF="004532.html">[Linux-uvc-devel] How to tell the difference of single/multiple	bulk transfer?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4535">[ date ]</a>
+              <a href="thread.html#4535">[ thread ]</a>
+              <a href="subject.html#4535">[ subject ]</a>
+              <a href="author.html#4535">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Jonathan,
+
+On Friday 06 February 2009 17:56:23 Jonathan Roberts wrote:
+&gt;<i> Hi all,
+</I>&gt;<i>
+</I>&gt;<i> I am having a few problems with both a Quickcam Pro 9000 and a Creative
+</I>&gt;<i> Live Optia AF camera on an embedded platform. Before I start digging
+</I>&gt;<i> into the cause of the problems I thought I have better move to the
+</I>&gt;<i> latest version of the UVC driver.
+</I>&gt;<i>
+</I>&gt;<i> The version of the driver that I have working was the last revision in
+</I>&gt;<i> the old SVN repository. With this version I simply modified the makefile
+</I>&gt;<i> to point to my Kernel directory and specified my tool chain on the
+</I>&gt;<i> command line with a CROSS_COMPILE=.... parameter.
+</I>&gt;<i>
+</I>&gt;<i> With the latest version of UVC that I checked out of mercurial today,
+</I>&gt;<i> the build process has become much more involved the build environment
+</I>&gt;<i> does not seem to have any built in support for cross compilers unless I
+</I>&gt;<i> am missing something.
+</I>&gt;<i>
+</I>&gt;<i> In order to cross compile the UVC module I modified the root makefile to
+</I>&gt;<i> add a definition of CROSS_COMPILE and then changed the targets to:
+</I>&gt;<i>
+</I>&gt;<i> install:
+</I>&gt;<i>         $(MAKE) -C $(BUILD_DIR) CROSS_COMPILE=$(CROSS_COMPILE) install
+</I>&gt;<i> %::
+</I>&gt;<i>         $(MAKE) -C $(BUILD_DIR) CROSS_COMPILE=$(CROSS_COMPILE)
+</I>&gt;<i> $(MAKECMDGOALS)
+</I>&gt;<i>
+</I>&gt;<i> In the v4l/Makefile I changed the SRCDIR and the OUTDIR to point to my
+</I>&gt;<i> kernel source tree.
+</I>
+You're right, the current linuxtv.org build system doesn't support cross 
+compilation out of the box. As this isn't uvcvideo specific, could you report 
+the problem to the linux-media mailing list ? I'm sure they will welcome a 
+fix.
+
+&gt;<i> Everything seems to build ok, but when I try and insert the module on my
+</I>&gt;<i> target I get an error from insmod:
+</I>&gt;<i>
+</I>&gt;<i> 	insmod: cannot insert './uvcvideo.ko': unknown symbol in module
+</I>&gt;<i>
+</I>&gt;<i> dmesg shows the following:
+</I>&gt;<i>
+</I>&gt;<i> uvcvideo: disagrees about version of symbol video_devdata
+</I>&gt;<i> uvcvideo: Unknown symbol video_devdata
+</I>&gt;<i> uvcvideo: disagrees about version of symbol video_unregister_device
+</I>&gt;<i> uvcvideo: Unknown symbol video_unregister_device
+</I>&gt;<i> uvcvideo: disagrees about version of symbol video_device_alloc
+</I>&gt;<i> uvcvideo: Unknown symbol video_device_alloc
+</I>&gt;<i> uvcvideo: disagrees about version of symbol video_register_device
+</I>&gt;<i> uvcvideo: Unknown symbol video_register_device
+</I>&gt;<i> uvcvideo: disagrees about version of symbol video_usercopy
+</I>&gt;<i> uvcvideo: Unknown symbol video_usercopy
+</I>&gt;<i> uvcvideo: disagrees about version of symbol video_device_release
+</I>&gt;<i> uvcvideo: Unknown symbol video_device_release
+</I>&gt;<i>
+</I>&gt;<i> I gather that this shows some sort of missmatch between the environment
+</I>&gt;<i> that the module was built for and the environment on the target board.
+</I>&gt;<i> Is that correct? Are these issues related to these messages that I get
+</I>&gt;<i> when the modules are built?:
+</I>&gt;<i>
+</I>&gt;<i> WARNING: /uvcvideo/v4l/v4l2-common: 'v4l2_chip_ident_i2c_client'
+</I>&gt;<i> exported twice. Previous export was in drivers/built-in.ko
+</I>
+[snip]
+
+&gt;<i> Building the old code against the same kernel results in a module that
+</I>&gt;<i> installs correctly, so I guess I have misconfigured something, but I am
+</I>&gt;<i> not sure what! Any suggestions would be greatfully received.
+</I>
+
+linuxtv.org Mercurial trees come with their own version of the video4linux 
+subsystem. You will need to disable v4l in your kernel and use the modules 
+provided by the uvcvideo tree.
+
+Best regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004531.html">[Linux-uvc-devel] Problems cross compiling uvc
+</A></li>
+	<LI>Next message: <A HREF="004532.html">[Linux-uvc-devel] How to tell the difference of single/multiple	bulk transfer?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4535">[ date ]</a>
+              <a href="thread.html#4535">[ thread ]</a>
+              <a href="subject.html#4535">[ subject ]</a>
+              <a href="author.html#4535">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,248 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Discard%20overrun%20%28corrupted%29%20RX%20images&In-Reply-To=%3C201006171207.08894.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005781.html">
+   <LINK REL="Next"  HREF="005778.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Discard%20overrun%20%28corrupted%29%20RX%20images&In-Reply-To=%3C201006171207.08894.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu Jun 17 12:07:06 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005781.html">[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+</A></li>
+        <LI>Next message: <A HREF="005778.html">[Linux-uvc-devel] XVideo support?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5795">[ date ]</a>
+              <a href="thread.html#5795">[ thread ]</a>
+              <a href="subject.html#5795">[ subject ]</a>
+              <a href="author.html#5795">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Wednesday 09 June 2010 02:59:30 P F wrote:
+&gt;<i> 
+</I>&gt;<i> First of all, thank you for providing such great Linux support for webcams.
+</I>
+You're welcome.
+
+&gt;<i> I have encountered an issue in this area that I hope you experts can help
+</I>&gt;<i> with.
+</I>&gt;<i> 
+</I>&gt;<i> I am using UVC/V4L on an embedded system, and I am experiencing a problem
+</I>&gt;<i> with corrupted camera images.  The system consists of a custom ASIC with
+</I>&gt;<i> an ARM926EJ-S and OHCI USB host controller connected to a UVC camera which
+</I>&gt;<i> supports only MJPEG.
+</I>&gt;<i> 
+</I>&gt;<i> The problem I have is that buffers dequeued in user space occasionally
+</I>&gt;<i> contain corrupted JPEGs.  This corruption ranges from slight, with a row
+</I>&gt;<i> of macroblocks shifted, to severe, with the JPEG being totally
+</I>&gt;<i> undecompressible.
+</I>&gt;<i> 
+</I>&gt;<i> If I enable UVC_TRACE_FRAME, I see several instances of:
+</I>&gt;<i> &quot;uvcvideo: USB isochronous frame lost (-70).&quot;
+</I>&gt;<i> in dmesg.  I have noticed a correlation between the presence of this
+</I>&gt;<i> message and visual corruption in captured JPEGs.
+</I>&gt;<i>
+</I>&gt;<i> I see that this error code corresponds to -ECOMM, which in turn corresponds
+</I>&gt;<i> to TD_BUFFEROVERRUN in the isochronous packet status.  I assume that this
+</I>&gt;<i> is caused by CPU starvation, which should just manifest as dropped frames.
+</I>
+That's correct. One or more packets will then be missing from the frame,
+resulting in a corrupt image.
+
+&gt;<i> However, I think these overrun frames are not being dropped, and instead
+</I>&gt;<i> are being passed to user space in an indeterminate state, leading to the
+</I>&gt;<i> visual corruption that I've witnessed.
+</I>
+Right. The UVC driver drops frames that are missing data due to a packet
+loss for uncompressed formats only, based on the frame size (although this
+behaviour is overrideable by a module parameter for users interested in
+getting bad frames).
+
+The driver should also drop corrupted corrupt frames if a packet loss has been detected.
+
+&gt;<i> The attached patch (against 2.6.31) is my na&#239;ve attempt at fixing the
+</I>&gt;<i> problem.  It does appear to resolve the corruption, but I am not entirely
+</I>&gt;<i> sure it's the correct thing to do.  Does it look reasonable?  I would
+</I>&gt;<i> appreciate any feedback.
+</I>
+Could you please try the following patch ?
+
+diff --git a/drivers/media/video/uvc/uvc_queue.c b/drivers/media/video/uvc/uvc_queue.c
+index 133c78d..580b76e 100644
+--- a/drivers/media/video/uvc/uvc_queue.c
++++ b/drivers/media/video/uvc/uvc_queue.c
+@@ -78,12 +78,14 @@
+  *
+  */
+ 
+-void uvc_queue_init(struct uvc_video_queue *queue, enum v4l2_buf_type type)
++void uvc_queue_init(struct uvc_video_queue *queue, enum v4l2_buf_type type,
++		    int drop_corrupted)
+ {
+ 	mutex_init(&amp;queue-&gt;mutex);
+ 	spin_lock_init(&amp;queue-&gt;irqlock);
+ 	INIT_LIST_HEAD(&amp;queue-&gt;mainqueue);
+ 	INIT_LIST_HEAD(&amp;queue-&gt;irqqueue);
++	queue-&gt;flags = drop_corrupted ? UVC_QUEUE_DROP_CORRUPTED : 0;
+ 	queue-&gt;type = type;
+ }
+ 
+@@ -435,8 +437,10 @@ int uvc_queue_enable(struct uvc_video_queue *queue, int enable)
+ 		uvc_queue_cancel(queue, 0);
+ 		INIT_LIST_HEAD(&amp;queue-&gt;mainqueue);
+ 
+-		for (i = 0; i &lt; queue-&gt;count; ++i)
++		for (i = 0; i &lt; queue-&gt;count; ++i) {
++			queue-&gt;buffer[i].error = 0;
+ 			queue-&gt;buffer[i].state = UVC_BUF_STATE_IDLE;
++		}
+ 
+ 		queue-&gt;flags &amp;= ~UVC_QUEUE_STREAMING;
+ 	}
+@@ -488,8 +492,7 @@ struct uvc_buffer *uvc_queue_next_buffer(struct uvc_video_queue *queue,
+ 	struct uvc_buffer *nextbuf;
+ 	unsigned long flags;
+ 
+-	if ((queue-&gt;flags &amp; UVC_QUEUE_DROP_INCOMPLETE) &amp;&amp;
+-	    buf-&gt;buf.length != buf-&gt;buf.bytesused) {
++	if ((queue-&gt;flags &amp; UVC_QUEUE_DROP_CORRUPTED) &amp;&amp; buf-&gt;error) {
+ 		buf-&gt;state = UVC_BUF_STATE_QUEUED;
+ 		buf-&gt;buf.bytesused = 0;
+ 		return buf;
+@@ -497,6 +500,7 @@ struct uvc_buffer *uvc_queue_next_buffer(struct uvc_video_queue *queue,
+ 
+ 	spin_lock_irqsave(&amp;queue-&gt;irqlock, flags);
+ 	list_del(&amp;buf-&gt;queue);
++	buf-&gt;error = 0;
+ 	buf-&gt;state = UVC_BUF_STATE_DONE;
+ 	if (!list_empty(&amp;queue-&gt;irqqueue))
+ 		nextbuf = list_first_entry(&amp;queue-&gt;irqqueue, struct uvc_buffer,
+diff --git a/drivers/media/video/uvc/uvc_video.c b/drivers/media/video/uvc/uvc_video.c
+index 53f3ef4..e27cf0d 100644
+--- a/drivers/media/video/uvc/uvc_video.c
++++ b/drivers/media/video/uvc/uvc_video.c
+@@ -555,6 +555,9 @@ static void uvc_video_decode_isoc(struct urb *urb, struct uvc_streaming *stream,
+ 		if (urb-&gt;iso_frame_desc[i].status &lt; 0) {
+ 			uvc_trace(UVC_TRACE_FRAME, &quot;USB isochronous frame &quot;
+ 				&quot;lost (%d).\n&quot;, urb-&gt;iso_frame_desc[i].status);
++			/* Mark the buffer as faulty. */
++			if (buf != NULL)
++				buf-&gt;error = 1;
+ 			continue;
+ 		}
+ 
+@@ -579,8 +582,14 @@ static void uvc_video_decode_isoc(struct urb *urb, struct uvc_streaming *stream,
+ 		uvc_video_decode_end(stream, buf, mem,
+ 			urb-&gt;iso_frame_desc[i].actual_length);
+ 
+-		if (buf-&gt;state == UVC_BUF_STATE_READY)
++		if (buf-&gt;state == UVC_BUF_STATE_READY) {
++			if (buf-&gt;buf.length != buf-&gt;buf.bytesused &amp;&amp;
++			    !(stream-&gt;cur_format-&gt;flags &amp;
++			      UVC_FMT_FLAG_COMPRESSED))
++				buf-&gt;error = 1;
++
+ 			buf = uvc_queue_next_buffer(&amp;stream-&gt;queue, buf);
++		}
+ 	}
+ }
+ 
+@@ -1104,7 +1113,7 @@ int uvc_video_init(struct uvc_streaming *stream)
+ 	atomic_set(&amp;stream-&gt;active, 0);
+ 
+ 	/* Initialize the video buffers queue. */
+-	uvc_queue_init(&amp;stream-&gt;queue, stream-&gt;type);
++	uvc_queue_init(&amp;stream-&gt;queue, stream-&gt;type, !uvc_no_drop_param);
+ 
+ 	/* Alternate setting 0 should be the default, yet the XBox Live Vision
+ 	 * Cam (and possibly other devices) crash or otherwise misbehave if
+@@ -1197,12 +1206,6 @@ int uvc_video_enable(struct uvc_streaming *stream, int enable)
+ 		return 0;
+ 	}
+ 
+-	if ((stream-&gt;cur_format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) ||
+-	    uvc_no_drop_param)
+-		stream-&gt;queue.flags &amp;= ~UVC_QUEUE_DROP_INCOMPLETE;
+-	else
+-		stream-&gt;queue.flags |= UVC_QUEUE_DROP_INCOMPLETE;
+-
+ 	ret = uvc_queue_enable(&amp;stream-&gt;queue, 1);
+ 	if (ret &lt; 0)
+ 		return ret;
+diff --git a/drivers/media/video/uvc/uvcvideo.h b/drivers/media/video/uvc/uvcvideo.h
+index d1f8840..398e65a 100644
+--- a/drivers/media/video/uvc/uvcvideo.h
++++ b/drivers/media/video/uvc/uvcvideo.h
+@@ -385,11 +385,12 @@ struct uvc_buffer {
+ 	struct list_head queue;
+ 	wait_queue_head_t wait;
+ 	enum uvc_buffer_state state;
++	unsigned int error;
+ };
+ 
+ #define UVC_QUEUE_STREAMING		(1 &lt;&lt; 0)
+ #define UVC_QUEUE_DISCONNECTED		(1 &lt;&lt; 1)
+-#define UVC_QUEUE_DROP_INCOMPLETE	(1 &lt;&lt; 2)
++#define UVC_QUEUE_DROP_CORRUPTED	(1 &lt;&lt; 2)
+ 
+ struct uvc_video_queue {
+ 	enum v4l2_buf_type type;
+@@ -568,7 +569,7 @@ extern struct uvc_driver uvc_driver;
+ 
+ /* Video buffers queue management. */
+ extern void uvc_queue_init(struct uvc_video_queue *queue,
+-		enum v4l2_buf_type type);
++		enum v4l2_buf_type type, int drop_corrupted);
+ extern int uvc_alloc_buffers(struct uvc_video_queue *queue,
+ 		unsigned int nbuffers, unsigned int buflength);
+ extern int uvc_free_buffers(struct uvc_video_queue *queue);
+-- 
+1.6.4.4
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005781.html">[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+</A></li>
+	<LI>Next message: <A HREF="005778.html">[Linux-uvc-devel] XVideo support?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5795">[ date ]</a>
+              <a href="thread.html#5795">[ thread ]</a>
+              <a href="subject.html#5795">[ subject ]</a>
+              <a href="author.html#5795">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

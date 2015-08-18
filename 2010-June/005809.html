@@ -1,0 +1,397 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] webcam MANTA MM353 Plako on chip ARK3188
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20webcam%20MANTA%20MM353%20Plako%20on%20chip%20ARK3188&In-Reply-To=%3CAANLkTim2rl3mg_s99_hZcEoZDgiYSzQ1SMBT6j-Vqein%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005808.html">
+   <LINK REL="Next"  HREF="005815.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] webcam MANTA MM353 Plako on chip ARK3188</H1>
+    <B>Paulo Assis</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20webcam%20MANTA%20MM353%20Plako%20on%20chip%20ARK3188&In-Reply-To=%3CAANLkTim2rl3mg_s99_hZcEoZDgiYSzQ1SMBT6j-Vqein%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] webcam MANTA MM353 Plako on chip ARK3188">pj.assis at gmail.com
+       </A><BR>
+    <I>Thu Jun 24 11:31:57 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005808.html">[Linux-uvc-devel] webcam MANTA MM353 Plako on chip ARK3188
+</A></li>
+        <LI>Next message: <A HREF="005815.html">[Linux-uvc-devel] webcam MANTA MM353 Plako on chip ARK3188
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5809">[ date ]</a>
+              <a href="thread.html#5809">[ thread ]</a>
+              <a href="subject.html#5809">[ subject ]</a>
+              <a href="author.html#5809">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Andrew Hi,
+you can increase the driver verbosity by setting the trace parameter:
+rmmod uvcvideo
+modprobe uvcvideo trace=65535
+
+trace level is given by grouping several flags so you can set it to
+something like 0xffffff and get a huge amount of information on the
+logs (just don't forget to reset it after you finish debugging)
+
+after this dmesg should be a lot more verbose.
+
+Some cameras require a quirks value to function properly, but you
+really need to check what's going on first.
+
+Best regards,
+Paulo
+
+2010/6/24 Andrew V Kuzmin &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">freegate at mail.ru</A>&gt;:
+&gt;<i> Hi, I did not fully inderstand how to seperverbose driver logs,
+</I>&gt;<i> the key in guvcview -v only, not like -vvv in vlc.
+</I>&gt;<i> DMESG once again
+</I>&gt;<i>
+</I>&gt;<i> when camera plugged in
+</I>&gt;<i>
+</I>&gt;<i> 46064.024031] usb 1-1: new high speed USB device using ehci_hcd and
+</I>&gt;<i> address 7
+</I>&gt;<i> [46064.158039] usb 1-1: configuration #1 chosen from 1 choice
+</I>&gt;<i> [46064.158652] uvcvideo: Found UVC 1.00 device USB2.0 PC CAMERA
+</I>&gt;<i> (18ec:3188)
+</I>&gt;<i> [46064.158900] uvcvideo: UVC non compliance - GET_DEF(PROBE) not
+</I>&gt;<i> supported. Enabling workaround.
+</I>&gt;<i> [46064.159391] input: USB2.0 PC CAMERA
+</I>&gt;<i> as /devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/input/input10
+</I>&gt;<i>
+</I>&gt;<i> then when guvcview called
+</I>&gt;<i>
+</I>&gt;<i> [46206.284313] uvcvideo: Failed to query (130) UVC probe control : 0
+</I>&gt;<i> (exp. 26).
+</I>&gt;<i> [46206.287686] uvcvideo: Failed to query (130) UVC probe control : 0
+</I>&gt;<i> (exp. 26).
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">kuzmin at kuzmin-desktop</A>:~$ guvcview -v
+</I>&gt;<i> guvcview 1.4.1
+</I>&gt;<i>
+</I>&gt;<i> (process:13812): Gtk-WARNING **: Locale not supported by C library.
+</I>&gt;<i> &#160; &#160; &#160; &#160;Using the fallback 'C' locale.
+</I>&gt;<i> unexpected integer value (0) for vid_mux
+</I>&gt;<i> Strings must be quoted
+</I>&gt;<i> unexpected integer value (1) for snd_numsec
+</I>&gt;<i> Strings must be quoted
+</I>&gt;<i> unexpected integer value (160) for snd_bitrate
+</I>&gt;<i> Strings must be quoted
+</I>&gt;<i> unexpected integer value (2) for Pan_Step
+</I>&gt;<i> Strings must be quoted
+</I>&gt;<i> unexpected integer value (2) for Tilt_Step
+</I>&gt;<i> Strings must be quoted
+</I>&gt;<i> video_device: /dev/video0
+</I>&gt;<i> vid_sleep: 0
+</I>&gt;<i> cap_meth: 1
+</I>&gt;<i> resolution: 640 x 480
+</I>&gt;<i> windowsize: 480 x 700
+</I>&gt;<i> vert pane: 0
+</I>&gt;<i> spin behavior: 0
+</I>&gt;<i> mode: mjpg
+</I>&gt;<i> fps: 1/25
+</I>&gt;<i> Display Fps: 0
+</I>&gt;<i> bpp: 0
+</I>&gt;<i> hwaccel: 1
+</I>&gt;<i> avi_format: 0
+</I>&gt;<i> sound: 1
+</I>&gt;<i> sound Device: 0
+</I>&gt;<i> sound samp rate: 0
+</I>&gt;<i> sound Channels: 0
+</I>&gt;<i> Sound delay: 0 nanosec
+</I>&gt;<i> Sound Format: 80
+</I>&gt;<i> Pan Step: 2 degrees
+</I>&gt;<i> Tilt Step: 2 degrees
+</I>&gt;<i> Video Filter Flags: 0
+</I>&gt;<i> image inc: 0
+</I>&gt;<i> profile(default):/home/kuzmin/default.gpfl
+</I>&gt;<i> starting portaudio...
+</I>&gt;<i> bt_audio_service_open: connect() failed: Connection refused (111)
+</I>&gt;<i> bt_audio_service_open: connect() failed: Connection refused (111)
+</I>&gt;<i> bt_audio_service_open: connect() failed: Connection refused (111)
+</I>&gt;<i> bt_audio_service_open: connect() failed: Connection refused (111)
+</I>&gt;<i> language catalog=&gt; dir:/usr/share/locale type:(null) lang:en_EN
+</I>&gt;<i> cat:guvcview.mo
+</I>&gt;<i> mjpg: setting format to 1196444237
+</I>&gt;<i> capture method = 1
+</I>&gt;<i> video device: /dev/video0
+</I>&gt;<i> /dev/video0 - device 1
+</I>&gt;<i> Init. USB2.0 PC CAMERA (location: usb-0000:00:1d.7-1)
+</I>&gt;<i> { pixelformat = 'MJPG', description = 'MJPEG' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { pixelformat = 'RGB3', description = 'RGB3' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { pixelformat = 'BGR3', description = 'BGR3' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { pixelformat = 'YU12', description = 'YU12' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { pixelformat = 'YV12', description = 'YV12' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> vid:18ec
+</I>&gt;<i> pid:3188
+</I>&gt;<i> driver:uvcvideo
+</I>&gt;<i> checking format: 1196444237
+</I>&gt;<i> VIDIOC_S_FORMAT - Unable to set format: Input/output error
+</I>&gt;<i> Init v4L2 failed !!
+</I>&gt;<i> Init video returned -2
+</I>&gt;<i> trying minimum setup ...
+</I>&gt;<i> capture method = 1
+</I>&gt;<i> video device: /dev/video0
+</I>&gt;<i> /dev/video0 - device 1
+</I>&gt;<i> Init. USB2.0 PC CAMERA (location: usb-0000:00:1d.7-1)
+</I>&gt;<i> { pixelformat = 'MJPG', description = 'MJPEG' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { pixelformat = 'RGB3', description = 'RGB3' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { pixelformat = 'BGR3', description = 'BGR3' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { pixelformat = 'YU12', description = 'YU12' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { pixelformat = 'YV12', description = 'YV12' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i> &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;<i> vid:18ec
+</I>&gt;<i> pid:3188
+</I>&gt;<i> driver:uvcvideo
+</I>&gt;<i> checking format: 1196444237
+</I>&gt;<i> VIDIOC_S_FORMAT - Unable to set format: Input/output error
+</I>&gt;<i> Init v4L2 failed !!
+</I>&gt;<i> ERROR: Minimum Setup Failed.
+</I>&gt;<i> &#160;Exiting...
+</I>&gt;<i> free audio mutex
+</I>&gt;<i> VIDIOC_REQBUFS - Failed to delete buffers: Invalid argument (errno 22)
+</I>&gt;<i> closed v4l2 strutures
+</I>&gt;<i> free controls - vidState
+</I>&gt;<i> cleaned allocations - 100%
+</I>&gt;<i> Closing portaudio ...OK
+</I>&gt;<i> Terminated.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> &#1042; &#1057;&#1088;&#1076;, 23/06/2010 &#1074; 23:52 +0100, Paulo Assis &#1087;&#1080;&#1096;&#1077;&#1090;:
+</I>&gt;&gt;<i> Andrew Hi,
+</I>&gt;&gt;<i> By default vlc uses libv4l, just like most other software, when this
+</I>&gt;&gt;<i> fails it reverts to direct v4l2 access, (you probably should also
+</I>&gt;&gt;<i> check your libv4l version and update it if needed)
+</I>&gt;&gt;<i> vlc seems to be able to open a MJPG stream after a few failed
+</I>&gt;&gt;<i> attempts, I can't really understand why it fails with the other
+</I>&gt;&gt;<i> software (it returns a I/O error when trying to set the stream
+</I>&gt;&gt;<i> format).
+</I>&gt;&gt;<i> Can you increase the driver verbosity and check for error messages with dmesg ?
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Regards,
+</I>&gt;&gt;<i> Paulo
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> 2010/6/23 Andrew V Kuzmin &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">freegate at mail.ru</A>&gt;:
+</I>&gt;&gt;<i> &gt; Got the latest version, but error still happened (logs below)
+</I>&gt;&gt;<i> &gt; Have you seen the vlc logs?
+</I>&gt;&gt;<i> &gt; It seems that cam not supported by &#1075;&#1084;&#1089; drivers - direct kernel v4l2 &#160;-
+</I>&gt;&gt;<i> &gt; what does it means?
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt; [0x8e24368] v4l2 demux debug: will try to find optimal width and height.
+</I>&gt;&gt;<i> &gt; libv4l2: error setting pixformat: Input/output error
+</I>&gt;&gt;<i> &gt; libv4l2: error setting pixformat: Input/output error
+</I>&gt;&gt;<i> &gt; libv4l2: error setting pixformat: Input/output error
+</I>&gt;&gt;<i> &gt; [0x8e24368] v4l2 demux warning: Could not select any of the default
+</I>&gt;&gt;<i> &gt; chromas; attempting to open as MPEG encoder card (access)
+</I>&gt;&gt;<i> &gt; [0x8e24368] main demux warning: no access_demux module matching &quot;v4l2&quot;
+</I>&gt;&gt;<i> &gt; could be loaded
+</I>&gt;&gt;<i> &gt; [0x8e24368] main demux debug: TIMER module_need() : 55.611 ms - Total
+</I>&gt;&gt;<i> &gt; 55.611 ms / 1 intvls (Avg 55.611 ms)
+</I>&gt;&gt;<i> &gt; [0x8bdfa98] main input debug: creating access 'v4l2' path=''
+</I>&gt;&gt;<i> &gt; [0x8e28398] main access debug: looking for access module: 1 candidate
+</I>&gt;&gt;<i> &gt; [0x8e28398] v4l2 access debug: Trying direct kernel v4l2
+</I>&gt;&gt;<i> &gt; [0x8e28398] v4l2 access debug: opening device '/dev/video0'
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">kuzmin at kuzmin-desktop</A>:~$ guvcview --format yuyv
+</I>&gt;&gt;<i> &gt; guvcview 1.4.1
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt; (process:4154): Gtk-WARNING **: Locale not supported by C library.
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Using the fallback 'C' locale.
+</I>&gt;&gt;<i> &gt; unexpected integer value (0) for vid_mux
+</I>&gt;&gt;<i> &gt; Strings must be quoted
+</I>&gt;&gt;<i> &gt; unexpected integer value (1) for snd_numsec
+</I>&gt;&gt;<i> &gt; Strings must be quoted
+</I>&gt;&gt;<i> &gt; unexpected integer value (160) for snd_bitrate
+</I>&gt;&gt;<i> &gt; Strings must be quoted
+</I>&gt;&gt;<i> &gt; unexpected integer value (2) for Pan_Step
+</I>&gt;&gt;<i> &gt; Strings must be quoted
+</I>&gt;&gt;<i> &gt; unexpected integer value (2) for Tilt_Step
+</I>&gt;&gt;<i> &gt; Strings must be quoted
+</I>&gt;&gt;<i> &gt; bt_audio_service_open: connect() failed: Connection refused (111)
+</I>&gt;&gt;<i> &gt; bt_audio_service_open: connect() failed: Connection refused (111)
+</I>&gt;&gt;<i> &gt; bt_audio_service_open: connect() failed: Connection refused (111)
+</I>&gt;&gt;<i> &gt; bt_audio_service_open: connect() failed: Connection refused (111)
+</I>&gt;&gt;<i> &gt; video device: /dev/video0
+</I>&gt;&gt;<i> &gt; /dev/video0 - device 1
+</I>&gt;&gt;<i> &gt; Init. USB2.0 PC CAMERA (location: usb-0000:00:1d.7-1)
+</I>&gt;&gt;<i> &gt; { pixelformat = 'MJPG', description = 'MJPEG' }
+</I>&gt;&gt;<i> &gt; { discrete: width = 640, height = 480 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { discrete: width = 640, height = 480 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { discrete: width = 320, height = 240 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+</I>&gt;&gt;<i> &gt; { discrete: width = 320, height = 240 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { pixelformat = 'RGB3', description = 'RGB3' }
+</I>&gt;&gt;<i> &gt; { discrete: width = 640, height = 480 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { discrete: width = 320, height = 240 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { pixelformat = 'BGR3', description = 'BGR3' }
+</I>&gt;&gt;<i> &gt; { discrete: width = 640, height = 480 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { discrete: width = 320, height = 240 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { pixelformat = 'YU12', description = 'YU12' }
+</I>&gt;&gt;<i> &gt; { discrete: width = 640, height = 480 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { discrete: width = 320, height = 240 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { pixelformat = 'YV12', description = 'YV12' }
+</I>&gt;&gt;<i> &gt; { discrete: width = 640, height = 480 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { discrete: width = 320, height = 240 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; vid:18ec
+</I>&gt;&gt;<i> &gt; pid:3188
+</I>&gt;&gt;<i> &gt; driver:uvcvideo
+</I>&gt;&gt;<i> &gt; checking format: 1448695129
+</I>&gt;&gt;<i> &gt; VIDIOC_S_FORMAT - Unable to set format: Input/output error
+</I>&gt;&gt;<i> &gt; Init v4L2 failed !!
+</I>&gt;&gt;<i> &gt; Init video returned -2
+</I>&gt;&gt;<i> &gt; trying minimum setup ...
+</I>&gt;&gt;<i> &gt; video device: /dev/video0
+</I>&gt;&gt;<i> &gt; /dev/video0 - device 1
+</I>&gt;&gt;<i> &gt; Init. USB2.0 PC CAMERA (location: usb-0000:00:1d.7-1)
+</I>&gt;&gt;<i> &gt; { pixelformat = 'MJPG', description = 'MJPEG' }
+</I>&gt;&gt;<i> &gt; { discrete: width = 640, height = 480 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { discrete: width = 640, height = 480 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { discrete: width = 320, height = 240 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+</I>&gt;&gt;<i> &gt; { discrete: width = 320, height = 240 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { pixelformat = 'RGB3', description = 'RGB3' }
+</I>&gt;&gt;<i> &gt; { discrete: width = 640, height = 480 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { discrete: width = 320, height = 240 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { pixelformat = 'BGR3', description = 'BGR3' }
+</I>&gt;&gt;<i> &gt; { discrete: width = 640, height = 480 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { discrete: width = 320, height = 240 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { pixelformat = 'YU12', description = 'YU12' }
+</I>&gt;&gt;<i> &gt; { discrete: width = 640, height = 480 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { discrete: width = 320, height = 240 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { pixelformat = 'YV12', description = 'YV12' }
+</I>&gt;&gt;<i> &gt; { discrete: width = 640, height = 480 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; { discrete: width = 320, height = 240 }
+</I>&gt;&gt;<i> &gt; &#160; &#160; &#160; &#160;Time interval between frame: 1/25, 1/20, 1/15, 1/10,
+</I>&gt;&gt;<i> &gt; vid:18ec
+</I>&gt;&gt;<i> &gt; pid:3188
+</I>&gt;&gt;<i> &gt; driver:uvcvideo
+</I>&gt;&gt;<i> &gt; checking format: 1196444237
+</I>&gt;&gt;<i> &gt; VIDIOC_S_FORMAT - Unable to set format: Input/output error
+</I>&gt;&gt;<i> &gt; Init v4L2 failed !!
+</I>&gt;&gt;<i> &gt; ERROR: Minimum Setup Failed.
+</I>&gt;&gt;<i> &gt; &#160;Exiting...
+</I>&gt;&gt;<i> &gt; VIDIOC_REQBUFS - Failed to delete buffers: Invalid argument (errno 22)
+</I>&gt;&gt;<i> &gt; cleaned allocations - 100%
+</I>&gt;&gt;<i> &gt; Closing portaudio ...O
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt; &#1042; &#1057;&#1088;&#1076;, 23/06/2010 &#1074; 17:05 +0100, Paulo Assis &#1087;&#1080;&#1096;&#1077;&#1090;:
+</I>&gt;&gt;<i> &gt;&gt; guvcview --format yuyv
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005808.html">[Linux-uvc-devel] webcam MANTA MM353 Plako on chip ARK3188
+</A></li>
+	<LI>Next message: <A HREF="005815.html">[Linux-uvc-devel] webcam MANTA MM353 Plako on chip ARK3188
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5809">[ date ]</a>
+              <a href="thread.html#5809">[ thread ]</a>
+              <a href="subject.html#5809">[ subject ]</a>
+              <a href="author.html#5809">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

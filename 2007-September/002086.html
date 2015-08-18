@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20Xbox%20Live%20Vision%20Cam%20%28045e%3A0294%29&In-Reply-To=%3C46E593A3.8070007%40elitedvb.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002096.html">
+   <LINK REL="Next"  HREF="002095.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)</H1>
+    <B>Felix Domke</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20Xbox%20Live%20Vision%20Cam%20%28045e%3A0294%29&In-Reply-To=%3C46E593A3.8070007%40elitedvb.net%3E"
+       TITLE="[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)">tmbinc at elitedvb.net
+       </A><BR>
+    <I>Mon Sep 10 20:57:39 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002096.html">[Linux-uvc-devel] ELECOM UCAM-DLM130H working  report
+</A></li>
+        <LI>Next message: <A HREF="002095.html">[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2086">[ date ]</a>
+              <a href="thread.html#2086">[ thread ]</a>
+              <a href="subject.html#2086">[ subject ]</a>
+              <a href="author.html#2086">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+i've spent some time on the Microsoft Xbox Live Vision cam (it's pretty
+cheap, USB 2.0, nearly uvc 1.0 compliant, has a pretty good image
+quality, manual focus, allegedly a 1280x960 sensor (i haven't checked,
+it might just upscale, but i don't think so), and supports MJPG and YUYV).
+
+Out of the box, the cam didn't work with linux-uvc - the cam crashed
+after the initial SET_CUR on the VideoStreaming ctrl, and didn't
+responded to any USB control packets anymore (not even a simple,
+non-video related GET_DESCRIPTOR etc.).
+
+I've compared what the UVC driver did (not much, as the cam crashed
+really early) with what the Xbox 360 did (using a USB sniffer), and
+found out the following two things:
+
+a.) you need to SET_INTERFACE before doing any SET_CUR, or the cam will
+crash. (I don't know the USB specs good enough, but I think the cam is
+correct here - the cam offers multiple interfaces, because it supports
+some &quot;Authentication Mechanism&quot;, so you need to select the video part
+first. Of course the cam should not crash, rather STALL or whatever.)
+
+b.) The cam requires about ~3sec time after the initial SET_INTERFACE.
+
+
+I've added the two hacks (not meant for inclusion, just to describe the
+problem):
+
+Index: uvc_driver.c
+===================================================================
+--- uvc_driver.c        (revision 125)
++++ uvc_driver.c        (working copy)
+@@ -1530,6 +1530,8 @@
+        dev-&gt;intf = usb_get_intf(intf);
+        dev-&gt;intfnum = intf-&gt;cur_altsetting-&gt;desc.bInterfaceNumber;
+        dev-&gt;quirks = id-&gt;driver_info;
++
++       usb_set_interface(udev, 1, 0);
+
+        /* Parse the Video Class control descriptor */
+        if (uvc_parse_control(dev) &lt; 0) {
+
+Index: uvcvideo.h
+===================================================================
+--- uvcvideo.h  (revision 125)
++++ uvcvideo.h  (working copy)
+@@ -241,8 +241,8 @@
+ /* Maximum number of video buffers. */
+ #define UVC_MAX_VIDEO_BUFFERS  32
+
+-#define UVC_CTRL_CONTROL_TIMEOUT       300
+-#define UVC_CTRL_STREAMING_TIMEOUT     1000
++#define UVC_CTRL_CONTROL_TIMEOUT       5000
++#define UVC_CTRL_STREAMING_TIMEOUT     5000
+
+ /* Devices quirks */
+ #define UVC_QUIRK_STATUS_INTERVAL      0x00000001
+
+
+With those two changes, the cam works really nice with luvcview.
+uvccapture made some trouble, but that might be caused by something else.
+
+Maybe someone a little more intimate could see if this can be added in a
+ nice way. But I think increasing the timeouts shouldn't hurt (you could
+still add a dummy GET_CUR after the set_interface with an increased
+timeout, if you don't want to change the timeout globally), and i
+believe the set_interface should be done in any way.
+
+regards,
+Felix
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002096.html">[Linux-uvc-devel] ELECOM UCAM-DLM130H working  report
+</A></li>
+	<LI>Next message: <A HREF="002095.html">[Linux-uvc-devel] Microsoft Xbox Live Vision Cam (045e:0294)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2086">[ date ]</a>
+              <a href="thread.html#2086">[ thread ]</a>
+              <a href="subject.html#2086">[ subject ]</a>
+              <a href="author.html#2086">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

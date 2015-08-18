@@ -1,0 +1,477 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Q: v4l2-Apps? etc.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Q%3A%20v4l2-Apps%3F%20etc.&In-Reply-To=%3C200607040158.00544.ralph%40mueller-welt.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000566.html">
+   <LINK REL="Next"  HREF="000568.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Q: v4l2-Apps? etc.</H1>
+    <B>Ralph M&#252;ller-Welt</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Q%3A%20v4l2-Apps%3F%20etc.&In-Reply-To=%3C200607040158.00544.ralph%40mueller-welt.net%3E"
+       TITLE="[Linux-uvc-devel] Q: v4l2-Apps? etc.">ralph at mueller-welt.net
+       </A><BR>
+    <I>Tue Jul  4 01:58:00 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000566.html">[Linux-uvc-devel]  &#20889;&#12513;&#12391; 
+</A></li>
+        <LI>Next message: <A HREF="000568.html">[Linux-uvc-devel] Q: v4l2-Apps? etc.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#567">[ date ]</a>
+              <a href="thread.html#567">[ thread ]</a>
+              <a href="subject.html#567">[ subject ]</a>
+              <a href="author.html#567">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent, Hi All,
+
+first, thanks for the uvcvideo i got my new Logitech QuickCam Sphere to work 
+with luvcview.
+
+Now, the Progs i really wanna use with the cam are camsource, motion and 
+kopete. But i have problems with them.
+
+But lets start at the begining.
+Some infos:
+:<i>~&gt; lsusb | grep Logitech
+</I>Bus 005 Device 002: ID 046d:08c2 Logitech, Inc.
+
+:<i>~&gt; lsmod | grep uvcvideo
+</I>uvcvideo               48260  0
+v4l2_common            26112  4 uvcvideo,tuner,saa7134,compat_ioctl32
+v4l1_compat            28036  2 uvcvideo,saa7134
+videodev               28160  3 uvcvideo,saa7134
+usbcore               150312  6 
+snd_usb_audio,snd_usb_lib,uvcvideo,ehci_hcd,uhci_hcd
+I want this to be /dev/video1 so my /etc/modprobe.conf.local has
+alias /dev/video1 uvcvideo
+
+:<i>~&gt; cat /sys/module/uvcvideo/parameters/trace
+</I>64
+
+# lspci | grep SAA7134
+00:0d.0 Multimedia controller: Philips Semiconductors SAA7134 Video Broadcast 
+Decoder (rev 01)
+I want this to be /dev/video0 and /dev/vbi0 so my options 
+in /etc/modprobe.d/tv are options saa7134 vbi_nr=0 video_nr=0
+
+But the video0, video1 addressing seems not to work. Its still random 
+addressing at boot time.
+
+now some logging:
+:<i>~&gt; luvcview -d /dev/video1 -w
+</I>uvcview verion 0.1.4
+Video driver: x11
+A window manager is available
+video /dev/video1
+ioctl querycontrol error 22
+reset Hue error
+ioctl querycontrol error 5
+reset Gain error
+
+Stop asked
+ Clean Up done Quit
+These errors occured while pressing &quot;Reset all to Default&quot;.
+
+# tail -f /var/log/messages
+Jul  4 01:06:36 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCAP, dir=r- 
+(0x80685600)
+Jul  4 01:06:36 RalphiX kernel: v4l2 ioctl VIDIOC_S_FMT, dir=rw (0xc0d05605)
+Jul  4 01:06:36 RalphiX kernel: v4l2 ioctl VIDIOC_REQBUFS, dir=rw (0xc0145608)
+Jul  4 01:06:36 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYBUF, dir=rw 
+(0xc0585609)
+Jul  4 01:06:36 RalphiX kernel: v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc058560f)
+Jul  4 01:06:37 RalphiX kernel: v4l2 ioctl VIDIOC_STREAMON, dir=-w 
+(0x40045612)
+Jul  4 01:06:37 RalphiX kernel: v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0585611)
+Jul  4 01:06:37 RalphiX kernel: v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc058560f)
+[...]
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0585611)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc058560f)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0585611)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc058560f)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0585611)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc058560f)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0585611)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc058560f)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0585611)
+[...]
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc058560f)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0585611)
+[...]
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc058560f)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0585611)
+Jul  4 01:06:39 RalphiX kernel: uvcvideo: Failed to query (135) UVC control 4 
+(unit 2) : -110.
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc058560f)
+Jul  4 01:06:39 RalphiX kernel: v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0585611)
+Jul  4 01:06:40 RalphiX kernel: v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc058560f)
+Jul  4 01:06:40 RalphiX kernel: v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0585611)
+Jul  4 01:06:40 RalphiX kernel: v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc058560f)
+Jul  4 01:06:40 RalphiX kernel: uvcvideo: Failed to query (130) UVC control 4 
+(unit 2) : -75.
+Jul  4 01:06:40 RalphiX kernel: uvcvideo: Failed to query (131) UVC control 4 
+(unit 2) : -32.
+Jul  4 01:06:40 RalphiX kernel: v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0585611)
+Jul  4 01:06:40 RalphiX kernel: v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc058560f)
+Jul  4 01:06:40 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:06:40 RalphiX kernel: v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0585611)
+Jul  4 01:06:40 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:06:40 RalphiX kernel: v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc058560f)
+Jul  4 01:06:40 RalphiX kernel: v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0585611)
+[...]
+Jul  4 01:06:42 RalphiX kernel: v4l2 ioctl VIDIOC_STREAMOFF, dir=-w 
+(0x40045613)
+
+Now to camsource (<A HREF="http://camsource.sourceforge.net/">http://camsource.sourceforge.net/</A>)
+As they say under requirements that v4l2 devices are supported, i didnt expect 
+problems. But i cant get it to work.
+Camsource config
+&lt;camdev name=&quot;default&quot; active=&quot;yes&quot;&gt;
+  &lt;plugin&gt;input_v4l&lt;/plugin&gt; &lt;!-- No input_v4l2 available!?! --&gt;
+  &lt;path&gt;/dev/video1&lt;/path&gt;
+&lt;/camdev&gt;
+Tested with the filewrite module.
+
+:<i>~&gt; camsource
+</I>Camsource 0.7.0 starting up...
+Loading modules:
+  input_v4l (alias input_v4l) version 0.7.0 OK
+  jpeg_comp (alias jpeg_comp) version 0.7.0 OK
+  filewrite (alias filewrite) version 0.7.0 OK
+Main init done and logfile opened.
+Closing stdout and going into background...
+:<i>~&gt; camsource -k
+</I>1 matching process(es)/thread(s) killed
+and .camsource.log contained only
+Camsource 0.7.0 ready to grab images for device 'default'...
+Not using mmap interface, falling back to read() (/dev/video1)
+Error while reading from device '/dev/video1': No such device
+Device 'default' returned no image
+[...]
+
+And in /var/log/messages
+Jul  4 01:44:22 RalphiX kernel: v4l1 ioctl VIDIOCGCAP, dir=r- (0x803c7601)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCAP, dir=r- 
+(0x80685600)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_ENUMINPUT, dir=rw 
+(0xc050561a)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_ENUMINPUT, dir=rw 
+(0xc050561a)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_ENUM_FMT, dir=rw 
+(0xc0405602)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_TRY_FMT, dir=rw (0xc0d05640)
+Jul  4 01:44:22 RalphiX kernel: v4l1 ioctl VIDIOCSWIN, dir=-w (0x4028760a)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_STREAMOFF, dir=-w 
+(0x40045613)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_G_FMT, dir=rw (0xc0d05604)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_S_FMT, dir=rw (0xc0d05605)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_S_FMT, dir=rw (0xc0d05605)
+Jul  4 01:44:22 RalphiX kernel: v4l1 ioctl VIDIOCGWIN, dir=r- (0x80287609)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_G_FMT, dir=rw (0xc0d05604)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_G_FMT, dir=rw (0xc0d05604)
+Jul  4 01:44:22 RalphiX kernel: v4l1 ioctl VIDIOCSWIN, dir=-w (0x4028760a)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_STREAMOFF, dir=-w 
+(0x40045613)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_G_FMT, dir=rw (0xc0d05604)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_S_FMT, dir=rw (0xc0d05605)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_S_FMT, dir=rw (0xc0d05605)
+Jul  4 01:44:22 RalphiX kernel: v4l1 ioctl VIDIOCGPICT, dir=r- (0x800e7606)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_G_FMT, dir=rw (0xc0d05604)
+Jul  4 01:44:22 RalphiX kernel: v4l1 ioctl VIDIOCSPICT, dir=-w (0x400e7607)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:22 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_G_FMT, dir=rw (0xc0d05604)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_S_FMT, dir=rw (0xc0d05605)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_G_FBUF, dir=r- (0x8030560a)
+Jul  4 01:44:23 RalphiX kernel: uvcvideo: Unknown ioctl 0x8030560a
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_S_FBUF, dir=-w (0x4030560b)
+Jul  4 01:44:23 RalphiX kernel: uvcvideo: Unknown ioctl 0x4030560b
+Jul  4 01:44:23 RalphiX kernel: v4l1 ioctl VIDIOCGPICT, dir=r- (0x800e7606)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:23 RalphiX kernel: uvcvideo: Failed to query (135) UVC control 2 
+(unit 2) : -110.
+Jul  4 01:44:23 RalphiX kernel: uvcvideo: Failed to query (130) UVC control 2 
+(unit 2) : -75.
+Jul  4 01:44:23 RalphiX kernel: uvcvideo: Failed to query (131) UVC control 2 
+(unit 2) : -32.
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:23 RalphiX kernel: uvcvideo: Failed to query (130) UVC control 9 
+(unit 2) : -32.
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_G_FMT, dir=rw (0xc0d05604)
+Jul  4 01:44:23 RalphiX kernel: v4l1 ioctl VIDIOCSPICT, dir=-w (0x400e7607)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:23 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_G_FMT, dir=rw (0xc0d05604)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_S_FMT, dir=rw (0xc0d05605)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_G_FBUF, dir=r- (0x8030560a)
+Jul  4 01:44:24 RalphiX kernel: uvcvideo: Unknown ioctl 0x8030560a
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_S_FBUF, dir=-w (0x4030560b)
+Jul  4 01:44:24 RalphiX kernel: uvcvideo: Unknown ioctl 0x4030560b
+Jul  4 01:44:24 RalphiX kernel: v4l1 ioctl VIDIOCGPICT, dir=r- (0x800e7606)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:24 RalphiX kernel: uvcvideo: Failed to query (135) UVC control 2 
+(unit 2) : -110.
+Jul  4 01:44:24 RalphiX kernel: uvcvideo: Failed to query (130) UVC control 2 
+(unit 2) : -75.
+Jul  4 01:44:24 RalphiX kernel: uvcvideo: Failed to query (131) UVC control 2 
+(unit 2) : -32.
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_G_FMT, dir=rw (0xc0d05604)
+Jul  4 01:44:24 RalphiX kernel: v4l1 ioctl VIDIOCSPICT, dir=-w (0x400e7607)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:24 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_G_FMT, dir=rw (0xc0d05604)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_S_FMT, dir=rw (0xc0d05605)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_G_FBUF, dir=r- (0x8030560a)
+Jul  4 01:44:25 RalphiX kernel: uvcvideo: Unknown ioctl 0x8030560a
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_S_FBUF, dir=-w (0x4030560b)
+Jul  4 01:44:25 RalphiX kernel: uvcvideo: Unknown ioctl 0x4030560b
+Jul  4 01:44:25 RalphiX kernel: v4l1 ioctl VIDIOCGPICT, dir=r- (0x800e7606)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:25 RalphiX kernel: uvcvideo: Failed to query (135) UVC control 2 
+(unit 2) : -110.
+Jul  4 01:44:25 RalphiX kernel: uvcvideo: Failed to query (130) UVC control 2 
+(unit 2) : -75.
+Jul  4 01:44:25 RalphiX kernel: uvcvideo: Failed to query (131) UVC control 2 
+(unit 2) : -32.
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_G_FMT, dir=rw (0xc0d05604)
+Jul  4 01:44:25 RalphiX kernel: v4l1 ioctl VIDIOCSPICT, dir=-w (0x400e7607)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:25 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_G_FMT, dir=rw (0xc0d05604)
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_S_FMT, dir=rw (0xc0d05605)
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_G_FBUF, dir=r- (0x8030560a)
+Jul  4 01:44:26 RalphiX kernel: uvcvideo: Unknown ioctl 0x8030560a
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_S_FBUF, dir=-w (0x4030560b)
+Jul  4 01:44:26 RalphiX kernel: uvcvideo: Unknown ioctl 0x4030560b
+Jul  4 01:44:26 RalphiX kernel: v4l1 ioctl VIDIOCGPICT, dir=r- (0x800e7606)
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:26 RalphiX kernel: uvcvideo: Failed to query (135) UVC control 2 
+(unit 2) : -110.
+Jul  4 01:44:26 RalphiX kernel: uvcvideo: Failed to query (130) UVC control 2 
+(unit 2) : -75.
+Jul  4 01:44:26 RalphiX kernel: uvcvideo: Failed to query (131) UVC control 2 
+(unit 2) : -32.
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:26 RalphiX kernel: uvcvideo: Failed to query (130) UVC control 3 
+(unit 2) : -32.
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_G_FMT, dir=rw (0xc0d05604)
+Jul  4 01:44:26 RalphiX kernel: v4l1 ioctl VIDIOCSPICT, dir=-w (0x400e7607)
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_S_CTRL, dir=rw (0xc008561c)
+Jul  4 01:44:26 RalphiX kernel: uvcvideo: Failed to query (1) UVC control 7 
+(unit 2) : -32.
+Jul  4 01:44:26 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:26 RalphiX kernel: uvcvideo: Failed to query (135) UVC control 9 
+(unit 2) : -32.
+Jul  4 01:44:27 RalphiX kernel: uvcvideo: Failed to query (130) UVC control 9 
+(unit 2) : -110.
+Jul  4 01:44:27 RalphiX kernel: v4l2 ioctl VIDIOC_G_FMT, dir=rw (0xc0d05604)
+Jul  4 01:44:27 RalphiX kernel: v4l2 ioctl VIDIOC_S_FMT, dir=rw (0xc0d05605)
+Jul  4 01:44:27 RalphiX kernel: v4l2 ioctl VIDIOC_G_FBUF, dir=r- (0x8030560a)
+Jul  4 01:44:27 RalphiX kernel: uvcvideo: Unknown ioctl 0x8030560a
+Jul  4 01:44:27 RalphiX kernel: v4l2 ioctl VIDIOC_S_FBUF, dir=-w (0x4030560b)
+Jul  4 01:44:27 RalphiX kernel: uvcvideo: Unknown ioctl 0x4030560b
+Jul  4 01:44:27 RalphiX kernel: v4l1 ioctl VIDIOCGPICT, dir=r- (0x800e7606)
+Jul  4 01:44:27 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:27 RalphiX kernel: v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+Jul  4 01:44:27 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:27 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:27 RalphiX kernel: v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+Jul  4 01:44:27 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:27 RalphiX kernel: uvcvideo: Failed to query (131) UVC control 7 
+(unit 2) : -32.
+Jul  4 01:44:27 RalphiX kernel: v4l2 ioctl VIDIOC_QUERYCTRL, dir=rw 
+(0xc0445624)
+Jul  4 01:44:27 RalphiX kernel: v4l2 ioctl VIDIOC_G_CTRL, dir=rw (0xc008561b)
+Jul  4 01:44:27 RalphiX kernel: v4l2 ioctl VIDIOC_G_FMT, dir=rw (0xc0d05604)
+Jul  4 01:44:27 RalphiX kernel: v4l1 ioctl VIDIOCGMBUF, dir=r- (0x80887614)
+Jul  4 01:44:27 RalphiX kernel: uvcvideo: Unknown ioctl 0x80887614
+
+And before i forgett the uname
+Linux 2.6.16.13-4-smp #1 SMP Wed May 3 04:53:23 UTC 2006 x86_64 x86_64 x86_64 
+GNU/Linux
+A SuSE Linux 10.1 box.
+
+Hope thats not too much but enough. :-)
+Why is video0, video1 mixed random on each start?
+And how can camsource work with the cam?
+
+Best regard and a big thank you for the driver,
+Ralph.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000566.html">[Linux-uvc-devel]  &#20889;&#12513;&#12391; 
+</A></li>
+	<LI>Next message: <A HREF="000568.html">[Linux-uvc-devel] Q: v4l2-Apps? etc.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#567">[ date ]</a>
+              <a href="thread.html#567">[ thread ]</a>
+              <a href="subject.html#567">[ subject ]</a>
+              <a href="author.html#567">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

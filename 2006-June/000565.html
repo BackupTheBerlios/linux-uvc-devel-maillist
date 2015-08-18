@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Capture from UVC with MPlayer
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Capture%20from%20UVC%20with%20MPlayer&In-Reply-To=%3C20060629175500.78533.qmail%40web84109.mail.dcn.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000564.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Capture from UVC with MPlayer</H1>
+    <B>Arek Jankowski</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Capture%20from%20UVC%20with%20MPlayer&In-Reply-To=%3C20060629175500.78533.qmail%40web84109.mail.dcn.yahoo.com%3E"
+       TITLE="[Linux-uvc-devel] Capture from UVC with MPlayer">arekjan at yahoo.com
+       </A><BR>
+    <I>Thu Jun 29 19:55:00 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000564.html">[Linux-uvc-devel] Capture from UVC with MPlayer
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#565">[ date ]</a>
+              <a href="thread.html#565">[ thread ]</a>
+              <a href="subject.html#565">[ subject ]</a>
+              <a href="author.html#565">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hej Maciej, I was able to run mplayer using one of the older driver versions but I had to patch the driver using the &quot;tuner.patch&quot; and &quot;noformatcheck.patch&quot; patches found elsewhere on the list. Not sure if this is still the case with the newest driver.
+Arek
+
+
+----- Original Message ----
+From: Maciej Blizi&#324;ski &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">m.blizinski at wit.edu.pl</A>&gt;
+To: Martin Rubli &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">martin_rubli at logitech.com</A>&gt;
+Cc: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel at lists.berlios.de</A>
+Sent: Thursday, June 29, 2006 1:23:31 PM
+Subject: Re: [Linux-uvc-devel] Capture from UVC with MPlayer
+
+Martin,
+
+Thanks for answering.
+
+On Thu, 2006-06-29 at 09:22 -0700, Martin Rubli wrote:
+&gt;<i> Can you try to set the 'trace' parameter to a higher value (i.e. by  
+</I>&gt;<i> setting /sys/module/uvcvideo/parameters/trace to 64; see the source for  
+</I>&gt;<i> how the bitmask works) and see if any messages about unsupported ioctls  
+</I>&gt;<i> turn up?
+</I>
+I've set the trace parameter:
+# echo 64 &gt; /sys/module/uvcvideo/parameters/trace
+
+Then I ran MPlayer and checked dmesg, which was only two repeating
+lines:
+
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0445611)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0445611)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0445611)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+
+I compared it with Ekiga. After running Ekiga, dmesg showed:
+
+v4l2 ioctl VIDIOC_STREAMOFF, dir=-w (0x40045613)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+
+...and after luvcview by Michael Xhaard:
+
+v4l2 ioctl VIDIOC_S_FMT, dir=rw (0xc0cc5605)
+v4l2 ioctl VIDIOC_REQBUFS, dir=rw (0xc0145608)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_STREAMON, dir=-w (0x40045612)
+v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0445611)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+
+I'm also attaching output from MPlayer, maybe it'll contain something
+useful.
+
+Regards,
+Maciej
+
+-- 
+Maciej Blizi&#324;ski &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">m.blizinski at wit.edu.pl</A>&gt;
+<A HREF="http://automatthias.wordpress.com">http://automatthias.wordpress.com</A>
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000564.html">[Linux-uvc-devel] Capture from UVC with MPlayer
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#565">[ date ]</a>
+              <a href="thread.html#565">[ thread ]</a>
+              <a href="subject.html#565">[ subject ]</a>
+              <a href="author.html#565">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

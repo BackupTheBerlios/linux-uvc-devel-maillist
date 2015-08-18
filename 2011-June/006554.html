@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] test results and a patch for timestamps in UVC
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20test%20results%20and%20a%20patch%20for%20timestamps%20in%20UVC&In-Reply-To=%3C4DED452C.10502%40minet.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006553.html">
+   <LINK REL="Next"  HREF="006565.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] test results and a patch for timestamps in UVC</H1>
+    <B>Yann Sionneau</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20test%20results%20and%20a%20patch%20for%20timestamps%20in%20UVC&In-Reply-To=%3C4DED452C.10502%40minet.net%3E"
+       TITLE="[Linux-uvc-devel] test results and a patch for timestamps in UVC">yann at minet.net
+       </A><BR>
+    <I>Mon Jun  6 23:22:52 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006553.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+        <LI>Next message: <A HREF="006565.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6554">[ date ]</a>
+              <a href="thread.html#6554">[ thread ]</a>
+              <a href="subject.html#6554">[ subject ]</a>
+              <a href="author.html#6554">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Le 06/06/11 19:42, Laurent Pinchart a &#233;crit :
+&gt;<i> Hi Yann,
+</I>&gt;<i> 
+</I>&gt;<i> Thanks for the patch.
+</I>&gt;<i> 
+</I>&gt;<i> On Friday 03 June 2011 15:48:59 Yann Sionneau wrote:
+</I>&gt;&gt;<i> Hi Laurent and the UVC list,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Here is a patch (that applies against the linux-2.6.39 vanilla tree)
+</I>&gt;&gt;<i> that shows the number of frames whose header (the one described at
+</I>&gt;&gt;<i> section 2.4.3.3 of the document &quot;USB Device Class Definition for Video
+</I>&gt;&gt;<i> Devices&quot;) contains the SCR, PTS and ERR bits.
+</I>&gt;&gt;<i> The patch is attached in the e-mail.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> The patch works as follow :
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> (*) Apply the patch
+</I>&gt;&gt;<i> (*) Compile the patched UVC module
+</I>&gt;&gt;<i> (*) Unload the previous module and load the new one
+</I>&gt;&gt;<i> (*) Start a video capture
+</I>&gt;&gt;<i> (*) Upon &quot;stop&quot; of the video capture (ioctl STREAMOFF) it will print
+</I>&gt;&gt;<i> statistics about the stream in the dmesg (/var/log/syslog)
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> It will show the number of frames whose header contains the bits SCR,
+</I>&gt;&gt;<i> PTS and ERR. It will show the total number of frames of the stream as
+</I>&gt;&gt;<i> well (the stream-&gt;sequence).
+</I>&gt;<i> 
+</I>&gt;<i> You should take all UVC packets into account, not just the first one for each 
+</I>&gt;<i> frame. 
+</I>
+Yes I don't know why in my head I thought only the first uvc packet
+would have a header for the frame with timestamps and such, but it makes
+no sense, each packet has its own header and the start of frame is just
+signaled by the toggling of the FID :)
+
+&gt;<i> the important information are
+</I>&gt;<i> 
+</I>&gt;<i> - do all frames have a PTS timestamp in their first packet ?
+</I>
+It seems so yes, at least on the two webcams I tried with the patch.
+
+&gt;<i> - do all non-empty packets for a frame have a PTS timestamp, and is it 
+</I>&gt;<i> constant through the whole frame as it should be ?
+</I>
+Let's modify the patch to count the PTS and SCR of all packets instead
+of only one per frame in order to sort this out !
+
+&gt;<i> - how many SCR timestamps do we have per frame ? are they constant through the 
+</I>&gt;<i> whole frame or do they vary as they should ?
+</I>&gt;<i> 
+</I>
+Same here !
+
+&gt;&gt;<i> I have tested this patch with 2 webcams so far, one is the Logitech HD
+</I>&gt;&gt;<i> Pro C910, the other is the Freetalk &quot;skype&quot; webcam made by Tatung, model
+</I>&gt;&gt;<i> &quot;Talk 7190&quot;, board &quot;R00C&quot;, firmware &quot;SDK8RC26&quot;.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> The second one is featuring a MG3500 chip from Maxim IC, it does
+</I>&gt;&gt;<i> hardware encoding to stream H.264 codec inside a MPEG-2 TS container.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> During my test I used it without any hardware encoding, it was doing
+</I>&gt;&gt;<i> normal raw YUV 4:2:2 streaming.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I noticed both webcams are putting PTS and SCR bits on all (or all but
+</I>&gt;&gt;<i> one, not sure) frames.
+</I>&gt;&gt;<i> Moreover no frame got the ERR bit on (good :)).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Here are two examples of what the patch should output :
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Jun  3 11:58:43 obiwan kernel: [180779.218667] [uvcvideo] stats about
+</I>&gt;&gt;<i> previous stream :
+</I>&gt;&gt;<i> Jun  3 11:58:43 obiwan kernel: [180779.218672] nb_pts = 140 ; nb_scr =
+</I>&gt;&gt;<i> 140 ; nb_err = 0 over 139 frames
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> and
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Jun  3 11:46:33 obiwan kernel: [180050.637465] [uvcvideo] stats about
+</I>&gt;&gt;<i> previous stream :
+</I>&gt;&gt;<i> Jun  3 11:46:33 obiwan kernel: [180050.637471] nb_pts = 258 ; nb_scr =
+</I>&gt;&gt;<i> 258 ; nb_err = 0 over 257 frames
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I don't know why I have one extra frame in my pts, scr and err counters
+</I>&gt;&gt;<i> than in the stream-&gt;sequence.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I used &quot;guvcview -d /dev/video0&quot; to start the stream, and closed the GTK
+</I>&gt;&gt;<i> window to stop the stream.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Feel free to test this patch with your webcams are report back your
+</I>&gt;&gt;<i> dmesg output (with framerate and the duration of the test please).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> This test is the first step of a bigger goal : implementing a correct
+</I>&gt;&gt;<i> timestamp support.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Regards,
+</I>&gt;<i> 
+</I>
+Thanks for your review and comments, will submit a new patch ASAP !
+
+Regards,
+
+-- 
+Yann Sionneau
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006553.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+	<LI>Next message: <A HREF="006565.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6554">[ date ]</a>
+              <a href="thread.html#6554">[ thread ]</a>
+              <a href="subject.html#6554">[ subject ]</a>
+              <a href="author.html#6554">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

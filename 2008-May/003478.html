@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Syntek UvcVideo
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Syntek%20UvcVideo&In-Reply-To=%3C200805021552.59029.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003473.html">
+   <LINK REL="Next"  HREF="003479.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Syntek UvcVideo</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Syntek%20UvcVideo&In-Reply-To=%3C200805021552.59029.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Syntek UvcVideo">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Fri May  2 15:52:58 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003473.html">[Linux-uvc-devel] Logitech QuickCam Go not listed
+</A></li>
+        <LI>Next message: <A HREF="003479.html">[Linux-uvc-devel] Logitech Quickcame deluxe for notebooks	(046d:09c1) UNSTABLE error -84
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3478">[ date ]</a>
+              <a href="thread.html#3478">[ thread ]</a>
+              <a href="subject.html#3478">[ subject ]</a>
+              <a href="author.html#3478">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Adrian,
+
+please keep the list CC'ed.
+
+On Friday 25 April 2008, Adrian Sergiu Darabant wrote:
+&gt;<i> &gt; Bus 005 Device 009: ID 174f:8a51
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Iguess it is made by syntek ?!?! but not covered by their drivers ? Itis
+</I>&gt;<i> &gt; a 2 MP camera. It works perfectly with Windows XP without driversbut not
+</I>&gt;<i> &gt; in Linux. Are there any hopes to make it work ? No device is created as
+</I>&gt;<i> &gt; it is not recognized correctly
+</I>&gt;<i> &gt; usb 5-5: USB disconnect, address 9
+</I>&gt;<i> &gt; usb 5-5: new high speed USB device using ehci_hcd and address 10
+</I>&gt;<i> &gt; usb 5-5: new device found, idVendor=174f, idProduct=8a51
+</I>&gt;<i> &gt; usb 5-5: new device strings: Mfr=2, Product=3, SerialNumber=4
+</I>&gt;<i> &gt; usb 5-5: Product: USB2.0 UVC PC Camera Apr 23 01:24:35 core2
+</I>&gt;<i> &gt; usb 5-5: Manufacturer: Syntek
+</I>&gt;<i> &gt; usb 5-5: SerialNumber: 0001
+</I>&gt;<i> &gt; usb 5-5: configuration #1 chosen from 1
+</I>&gt;<i> &gt; uvcvideo: Found UVC 1.00 device USB2.0 UVC PC Camera (174f:8a51)
+</I>&gt;<i> &gt; uvcvideo: Failed to query (135) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>&gt;<i>
+</I>&gt;<i> This error is not fatal and can probably be ignored.
+</I>&gt;<i>
+</I>&gt;<i> &gt; uvcvideo: Failed to query (1) UVC control 2 (unit 0) : -110 (exp. 26).
+</I>&gt;<i>
+</I>&gt;<i> For some reason the device didn't answer a request and the driver timed
+</I>&gt;<i> out. Either the device got confused or crashed from a previous request, or
+</I>&gt;<i> the request comes too fast after the previous one.
+</I>&gt;<i>
+</I>&gt;<i> &gt; uvcvideo: Failed to initialize the device (-5).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; can't get device qualifier: Connection timed out
+</I>&gt;<i> &gt; can't get debug descriptor: Connection timed out
+</I>&gt;<i> &gt; cannot read device status, Connection timed out (110)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;This is quite interesting as well. Even standard requests to read the
+</I>&gt;<i> &gt;descriptors time out.
+</I>&gt;<i>
+</I>&gt;<i> Your camera seems really buggy. It might be possible to work around the
+</I>&gt;<i> problem by adding delays. Could you please add a msleep(1000) at the end of
+</I>&gt;<i> __uvc_query_ctrl in uvc_ctrl.c and see if it helps (you will have to
+</I>&gt;<i> include linux/delay.h) ? If it doesn't try to increase the sleep time up to
+</I>&gt;<i> 5000 by 1000 steps.
+</I>&gt;<i>
+</I>&gt;<i> Ok so here is what I've done :
+</I>&gt;<i>
+</I>&gt;<i> static int __uvc_query_ctrl(struct uvc_device *dev, __u8 query, __u8 unit,
+</I>&gt;<i>             __u8 intfnum, __u8 cs, void *data, __u16 size,
+</I>&gt;<i>             int timeout)
+</I>&gt;<i> {
+</I>&gt;<i>     __u8 type = USB_TYPE_CLASS | USB_RECIP_INTERFACE;
+</I>&gt;<i>     unsigned int pipe;
+</I>&gt;<i>     int ret;
+</I>&gt;<i>
+</I>&gt;<i>     pipe = (query &amp; 0x80) ? usb_rcvctrlpipe(dev-&gt;udev, 0)
+</I>&gt;<i>
+</I>&gt;<i>                   : usb_sndctrlpipe(dev-&gt;udev, 0);
+</I>&gt;<i>
+</I>&gt;<i>     type |= (query &amp; 0x80) ? USB_DIR_IN : USB_DIR_OUT;
+</I>&gt;<i>
+</I>&gt;<i>     ret = usb_control_msg(dev-&gt;udev, pipe, query, type, cs &lt;&lt; 8,
+</I>&gt;<i>             unit &lt;&lt; 8 | intfnum, data, size, timeout);
+</I>&gt;<i>     msleep(1000); /* trough 5000 tested */
+</I>&gt;<i>     if (ret != size) {
+</I>&gt;<i>         uvc_printk(KERN_ERR, &quot;Failed to query (%u) UVC control %u &quot;
+</I>&gt;<i>             &quot;(unit %u) : %d (exp. %u).\n&quot;, query, cs, unit, ret,
+</I>&gt;<i>             size);
+</I>&gt;<i>         return -EIO;
+</I>&gt;<i>     }
+</I>&gt;<i>     return 0;
+</I>&gt;<i> }
+</I>&gt;<i>
+</I>&gt;<i> The problem is that I get in the logs the same messages - of course with
+</I>&gt;<i> the added pauses in between. Methodology:
+</I>&gt;<i> 1) compiled  SVN r205
+</I>&gt;<i> 2) rmmod uvcvideo
+</I>&gt;<i> 3) insmod uvcvideo.ko
+</I>&gt;<i> 4) plug in camera
+</I>&gt;<i> ...modifiefied code + repeat steps 1)-4)
+</I>&gt;<i>
+</I>&gt;<i> Any other suggestions ?
+</I>&gt;<i> I am ready to send somebody that could help me one camera for testing as I
+</I>&gt;<i> have 9 pieces left (I broke one) :) I have only the electronic and the
+</I>&gt;<i> cable (it has no enclosure)
+</I>
+Just a wild guess: maybe the first failing request that I described as non 
+fatal confuses the camera. Could you please try the attached patch ?
+
+Best regards,
+
+Laurent Pinchart
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: syntek.patch
+Type: text/x-diff
+Size: 568 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080502/fa160c9a/attachment.patch">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080502/fa160c9a/attachment.patch</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003473.html">[Linux-uvc-devel] Logitech QuickCam Go not listed
+</A></li>
+	<LI>Next message: <A HREF="003479.html">[Linux-uvc-devel] Logitech Quickcame deluxe for notebooks	(046d:09c1) UNSTABLE error -84
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3478">[ date ]</a>
+              <a href="thread.html#3478">[ thread ]</a>
+              <a href="subject.html#3478">[ subject ]</a>
+              <a href="author.html#3478">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

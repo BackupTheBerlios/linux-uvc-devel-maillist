@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Syntek UvcVideo
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Syntek%20UvcVideo&In-Reply-To=%3C200804250012.41534.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003412.html">
+   <LINK REL="Next"  HREF="003419.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Syntek UvcVideo</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Syntek%20UvcVideo&In-Reply-To=%3C200804250012.41534.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Syntek UvcVideo">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Fri Apr 25 00:12:41 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003412.html">[Linux-uvc-devel] Syntek UvcVideo
+</A></li>
+        <LI>Next message: <A HREF="003419.html">[Linux-uvc-devel] kernel Ooops after replugging (NULL pointer	dereference)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3433">[ date ]</a>
+              <a href="thread.html#3433">[ thread ]</a>
+              <a href="subject.html#3433">[ subject ]</a>
+              <a href="author.html#3433">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Adrian,
+
+On Wednesday 23 April 2008, Adrian Sergiu Darabant wrote:
+&gt;<i> Sorry for multiple postings ...
+</I>&gt;<i>
+</I>&gt;<i> &lt;!-- DIV {margin:0px;}--&gt;Hi
+</I>&gt;<i>   I've got this uvcvideo camera that does not work.
+</I>&gt;<i> Bus 005 Device 009: ID 174f:8a51
+</I>&gt;<i>
+</I>&gt;<i> Iguess it is made by syntek ?!?! but not covered by their drivers ? Itis a
+</I>&gt;<i> 2 MP camera. It works perfectly with Windows XP without driversbut not in
+</I>&gt;<i> Linux. Are there any hopes to make it work ? No device is created as it is
+</I>&gt;<i> not recognized correctly
+</I>&gt;<i> usb 5-5: USB disconnect, address 9
+</I>&gt;<i> usb 5-5: new high speed USB device using ehci_hcd and address 10
+</I>&gt;<i> usb 5-5: new device found, idVendor=174f, idProduct=8a51
+</I>&gt;<i> usb 5-5: new device strings: Mfr=2, Product=3, SerialNumber=4
+</I>&gt;<i> usb 5-5: Product: USB2.0 UVC PC Camera Apr 23 01:24:35 core2
+</I>&gt;<i> usb 5-5: Manufacturer: Syntek
+</I>&gt;<i> usb 5-5: SerialNumber: 0001
+</I>&gt;<i> usb 5-5: configuration #1 chosen from 1
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device USB2.0 UVC PC Camera (174f:8a51)
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>
+This error is not fatal and can probably be ignored.
+
+&gt;<i> uvcvideo: Failed to query (1) UVC control 2 (unit 0) : -110 (exp. 26).
+</I>
+For some reason the device didn't answer a request and the driver timed out. 
+Either the device got confused or crashed from a previous request, or the 
+request comes too fast after the previous one.
+
+&gt;<i> uvcvideo: Failed to initialize the device (-5).
+</I>&gt;<i>
+</I>&gt;<i> Sincerely
+</I>&gt;<i> Adrian Darabant
+</I>&gt;<i>
+</I>&gt;<i> lsusb -v -s 5:9 yields:
+</I>&gt;<i> Bus 005 Device 009: ID 174f:8a51
+</I>&gt;<i> Device Descriptor:
+</I>&gt;<i>   bLength                18
+</I>&gt;<i>   bDescriptorType         1
+</I>&gt;<i>   bcdUSB               2.00
+</I>&gt;<i>   bDeviceClass          239 Miscellaneous Device
+</I>&gt;<i>   bDeviceSubClass         2 Common Class
+</I>&gt;<i>   bDeviceProtocol         1 Interface Association
+</I>&gt;<i>   bMaxPacketSize0        64
+</I>&gt;<i>   idVendor           0x174f
+</I>&gt;<i>   idProduct          0x8a51
+</I>&gt;<i>   bcdDevice            7.13
+</I>&gt;<i>   iManufacturer           2
+</I>&gt;<i>   iProduct                3
+</I>&gt;<i>   iSerial                 4
+</I>&gt;<i>   bNumConfigurations      1
+</I>[snip]
+&gt;<i> can't get device qualifier: Connection timed out
+</I>&gt;<i> can't get debug descriptor: Connection timed out
+</I>&gt;<i> cannot read device status, Connection timed out (110)
+</I>
+This is quite interesting as well. Even standard requests to read the 
+descriptors time out.
+
+Your camera seems really buggy. It might be possible to work around the 
+problem by adding delays. Could you please add a msleep(1000) at the end of 
+__uvc_query_ctrl in uvc_ctrl.c and see if it helps (you will have to include 
+linux/delay.h) ? If it doesn't try to increase the sleep time up to 5000 by 
+1000 steps.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003412.html">[Linux-uvc-devel] Syntek UvcVideo
+</A></li>
+	<LI>Next message: <A HREF="003419.html">[Linux-uvc-devel] kernel Ooops after replugging (NULL pointer	dereference)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3433">[ date ]</a>
+              <a href="thread.html#3433">[ thread ]</a>
+              <a href="subject.html#3433">[ subject ]</a>
+              <a href="author.html#3433">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

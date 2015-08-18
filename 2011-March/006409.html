@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Creative%20VF0700%20Live%21%20Cam%20Chat%20HD%20works%0A%20everywhere%2C%20except%20highly%20distorted%20video%20in%20Skype&In-Reply-To=%3CAANLkTimJWh6jV95t5-s0gq9JJtHAmPQywMBbbj7TcpkU%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006406.html">
+   <LINK REL="Next"  HREF="006404.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype</H1>
+    <B>Benson Bear</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Creative%20VF0700%20Live%21%20Cam%20Chat%20HD%20works%0A%20everywhere%2C%20except%20highly%20distorted%20video%20in%20Skype&In-Reply-To=%3CAANLkTimJWh6jV95t5-s0gq9JJtHAmPQywMBbbj7TcpkU%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype">benson.bear at gmail.com
+       </A><BR>
+    <I>Tue Mar 29 06:59:38 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006406.html">[Linux-uvc-devel] Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype
+</A></li>
+        <LI>Next message: <A HREF="006404.html">[Linux-uvc-devel] Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6409">[ date ]</a>
+              <a href="thread.html#6409">[ thread ]</a>
+              <a href="subject.html#6409">[ subject ]</a>
+              <a href="author.html#6409">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Mon, Mar 28, 2011 at 5:36 AM, Alexey Fisher
+&lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bug-track at fisher-privat.net</A>&gt; wrote:
+
+&gt;<i> The reason can be... lost packets by usb controller... or may be camera
+</I>&gt;<i> send only this parts... or hmm...
+</I>
+You seem to be suggesting some hardware problem or a defect
+with the camera?  This seems very unlikely to me: recall the
+camera seems to works &quot;out of the box&quot; with cheese, camorama,
+xawtv, camstream, guvcview.   Only with skype and in some cases
+with luvcview do I get this distorted pattern, which is the same sort
+of pattern subjectively that I get when I run the gstreamer pipeline
+without the conversion element in it.
+
+I also have now tested in in Windows 7 and it seems to work
+fine there &quot;out of the box&quot; as well.
+
+&gt;<i> Can you please attach dmesg with trace, to enable trace you need:
+</I>&gt;<i> sudo rmmod uvcvideo &amp;&amp; sudo modprobe uvcvideo trace=0xffff
+</I>
+Don't know quite what you mean?  dmesg output during
+what?   I attached the dmesg output when the camera is
+plugged in, followed by two runs of luvcview (the
+first two command lines below). I
+
+Except I edited out huge amounts of these lines
+throughout (which are very suggestive of a format
+mismatch as well):
+
+&quot;uvcvideo: Dropping payload (out of sync).&quot;
+
+&gt;<i> Can you please also try different frame rates with yuv.
+</I>
+Yes, before, per instruction, I used the default.   But I now
+find that lucview gives nice looking results for any frame rate
+above 17.
+
+In other words,
+
+ luvcview  -f yuv  -s 320x240  -d /dev/video1 -i 17
+
+does not work, but
+
+ luvcview  -f yuv  -s 320x240  -d /dev/video1 -i 18
+ luvcview  -f yuv  -s 320x240  -d /dev/video1 -i 19
+
+etc all do work.
+
+
+&gt;<i> Your gstreamer workaround probably grubs jpg stream from the cam.
+</I>
+Yes, in more detail I speculate it goes like this:
+
+I have not yet tried to find the basic API for using webcams, but
+I assume the following are true:
+
+1) uvc webcams can produce various streaming output formats
+in addition to different frame rates and frame sizes.
+2) mine can produce at least two, a yuv kind and a jmpg kind
+3) it produces jmpg by default (at least v4l2src puts that out)
+4) all modern programs either set the format and then
+use the correct one, or take the default, detect it, and
+do the right thing
+5) skype and luvciew, two old programs not modified for
+a long time, do not do this successfully in many, or all, cases.
+Skype in particular just takes what it gets and assumes it
+is in yuv format.
+
+(Although the luvcview runs from the dmesg seem to
+find the camera producing yuv format...)
+
+I will fiddle around with this more myself, to see what
+happens in dmesg when skype tries to use the camera
+for example.
+
+&gt;<i> The answer to your previous question: IMHO, if you can return this cam,
+</I>&gt;<i> do it. UVC should just work.
+</I>
+Unfortunately it is difficult to return it, there would
+be a restocking fee, and I am not even confident that
+I would not have similar issues or worse with other
+cameras.  So if I can be assured it is reasonably
+okay to do things this way, I will just do them this way
+for now.
+
+As I understand the concept &quot;UVC should just
+work&quot;, that means that if UVC is implemented
+totally correctly, then a UVC camera should
+&quot;just work&quot;.  But we don't know that UVC is
+implemented perfectly in Linux right now.  Again,
+camera seems to work with almost all programs
+available on Linux, and works in Windows too.
+
+Perhaps the camera is doing something
+wrong, but it seems like it could be a
+simple miscommunication of format
+information easily bypassed with a
+small hack.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: dmesg
+Type: application/octet-stream
+Size: 29304 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110329/07fba9b3/attachment.obj">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110329/07fba9b3/attachment.obj</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006406.html">[Linux-uvc-devel] Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype
+</A></li>
+	<LI>Next message: <A HREF="006404.html">[Linux-uvc-devel] Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6409">[ date ]</a>
+              <a href="thread.html#6409">[ thread ]</a>
+              <a href="subject.html#6409">[ subject ]</a>
+              <a href="author.html#6409">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

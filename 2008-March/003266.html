@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Black image on videoconferencing apps.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Black%20image%20on%20videoconferencing%20apps.&In-Reply-To=%3C200803240104.14866.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003248.html">
+   <LINK REL="Next"  HREF="003295.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Black image on videoconferencing apps.</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Black%20image%20on%20videoconferencing%20apps.&In-Reply-To=%3C200803240104.14866.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Black image on videoconferencing apps.">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Mar 24 01:04:14 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003248.html">[Linux-uvc-devel] Black image on videoconferencing apps.
+</A></li>
+        <LI>Next message: <A HREF="003295.html">[Linux-uvc-devel] Black image on videoconferencing apps.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3266">[ date ]</a>
+              <a href="thread.html#3266">[ thread ]</a>
+              <a href="subject.html#3266">[ subject ]</a>
+              <a href="author.html#3266">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Ra&#250;l,
+
+sorry for the late reply, and thanks for the very detailled description of 
+your problem.
+
+On Wednesday 19 March 2008, Ra&#250;l S&#225;nchez Siles wrote:
+&gt;<i>   Hello:
+</I>&gt;<i>
+</I>&gt;<i>   Basically same story but with some more appreciations.
+</I>&gt;<i>
+</I>&gt;<i> Ra&#250;l S&#225;nchez Siles wrote:
+</I>&gt;<i> &gt;&gt;&gt; Ra&#250;l S&#225;nchez Siles wrote:
+</I>&gt;<i> &gt;&gt;&gt;&gt;   Hello All:
+</I>&gt;<i> &gt;&gt;&gt;&gt;
+</I>&gt;<i> &gt;&gt;&gt;&gt;   On skype I had the same problem and is this: I can start my video
+</I>&gt;<i> &gt;&gt;&gt;&gt; and the
+</I>&gt;<i> &gt;&gt;&gt;&gt; other end will see it, but after a randon time ranging from little
+</I>&gt;<i> &gt;&gt;&gt;&gt; seconds to little minutes, the image I sent (and that I'm able to see)
+</I>&gt;<i> &gt;&gt;&gt;&gt; goes to black unconditionally.
+</I>&gt;<i> &gt;&gt;&gt;&gt;
+</I>&gt;<i> &gt;&gt;&gt;&gt;   After this, same as before the video was working at this point, but
+</I>&gt;<i> &gt;&gt;&gt;&gt;   stops
+</I>&gt;<i> &gt;&gt;&gt;&gt; working after some time. Along the video conference skype seems to try
+</I>&gt;<i> &gt;&gt;&gt;&gt; to reinitialize webcam, it starts working again, but then it goes to
+</I>&gt;<i> &gt;&gt;&gt;&gt; black again.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; [...]
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;   Now I got to reproduce the problem. I think it's related to
+</I>&gt;<i> &gt;   environmental
+</I>&gt;<i> &gt; light somehow. I had some trouble to reproduce problem in the mornings
+</I>&gt;<i> &gt; because I had a lot of natural light, but it was at evening that I was
+</I>&gt;<i> &gt; trying to use the camera. So to test it out I turned on a lighter lamp.
+</I>&gt;<i> &gt; This way it was harder to get the problem, and I only got it when I
+</I>&gt;<i> &gt; covered the camera focus totally, after that, just a black image like the
+</I>&gt;<i> &gt; one I used to see remained there. The only difference was a small whitish
+</I>&gt;<i> &gt; point.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;   After this I think there's some problem in the light/bright regulation
+</I>&gt;<i> &gt; mechanish. I think next step is starting to look at the code and see
+</I>&gt;<i> &gt; where some of this regulation happen, any pointer would be appreciated.
+</I>&gt;<i>
+</I>&gt;<i>   Now I'm more certain that this is a trouble in the light regulation
+</I>&gt;<i> mechanism, but I don't know how to get more information from the driver. I
+</I>&gt;<i> don't know even where the light regulation happens. Is it on driver, on
+</I>&gt;<i> hardware or in the userspace application by chance (doubtfully this last)?
+</I>
+The driver doesn't perform any image processing. What you call light 
+regulation is mostly auto-exposure (and maybe to a lesser extent auto white 
+balance). Your camera doesn't report any exposure-related control in its USB 
+descriptors, so it's not clear if the camera doesn't do any exposure control 
+or if it doesn't allow exposure parameters to be changed. I'd vote for the 
+second option.
+
+Userspace applications can also implement all kind of image enhancement 
+algorithms. That's up to the application, and there's no easy way to know 
+what skype does due to its closed-source nature.
+
+&gt;<i>   My most reliable method to reproduce up to know is being on a very soft
+</I>&gt;<i> light environment, for example: night with a dim indirect light(12W low
+</I>&gt;<i> consumption lamp). In this situation you will see the image, but not very
+</I>&gt;<i> well defined using a regular videoconferencing resolution and frame rate.
+</I>&gt;<i> Now cover the camera focus completely using your hand, the image will
+</I>&gt;<i> become totally black and, if the light is not clear enough it will remain
+</I>&gt;<i> in that state unless you reinitialise the video streaming or use a light
+</I>&gt;<i> enough light so the brightness regulates automatically to a useful value.
+</I>
+That seems to be a bug either in the camera hardware/firmware or in the 
+application. I'd try using the camera with luvcview. If you can reproduce the 
+problem the hardware will be to blame. Otherwise skype will be at fault.
+
+&gt;<i>   Thanks for your patience, and I still appreciate help and/or pointers.
+</I>
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003248.html">[Linux-uvc-devel] Black image on videoconferencing apps.
+</A></li>
+	<LI>Next message: <A HREF="003295.html">[Linux-uvc-devel] Black image on videoconferencing apps.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3266">[ date ]</a>
+              <a href="thread.html#3266">[ thread ]</a>
+              <a href="subject.html#3266">[ subject ]</a>
+              <a href="author.html#3266">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

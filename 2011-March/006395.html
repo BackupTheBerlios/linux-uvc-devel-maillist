@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] a new camera for the list - imagingsource	DFK72BUC02
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20a%20new%20camera%20for%20the%20list%20-%20imagingsource%0A%09DFK72BUC02&In-Reply-To=%3C7C5BADDA-1EAE-41A1-8B3F-77C713DB0A6B%40mpi-cbg.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006392.html">
+   <LINK REL="Next"  HREF="006393.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] a new camera for the list - imagingsource	DFK72BUC02</H1>
+    <B>Daniel James White</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20a%20new%20camera%20for%20the%20list%20-%20imagingsource%0A%09DFK72BUC02&In-Reply-To=%3C7C5BADDA-1EAE-41A1-8B3F-77C713DB0A6B%40mpi-cbg.de%3E"
+       TITLE="[Linux-uvc-devel] a new camera for the list - imagingsource	DFK72BUC02">white at mpi-cbg.de
+       </A><BR>
+    <I>Fri Mar 25 12:39:29 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006392.html">[Linux-uvc-devel] DigiMicro Scale 2.0
+</A></li>
+        <LI>Next message: <A HREF="006393.html">[Linux-uvc-devel] a new camera for the list - imagingsource	DFK72BUC02
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6395">[ date ]</a>
+              <a href="thread.html#6395">[ thread ]</a>
+              <a href="subject.html#6395">[ subject ]</a>
+              <a href="author.html#6395">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Johannes,
+
+On Mar 25, 2011, at 12:16 PM, Johannes Schindelin wrote:
+
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> On Fri, 25 Mar 2011, Daniel James White wrote:
+</I>&gt;<i> 
+</I>&gt;&gt;<i> The higher resolution mode is all black, and the 1024 mode is a magenta 
+</I>&gt;&gt;<i> modern art piece.
+</I>&gt;<i> 
+</I>&gt;<i> Maybe the mode is not detected correctly. Is it possible that a YCbCr 
+</I>&gt;<i> image is mistaken for RGB? IOW do you see sensible shapes, but only the 
+</I>&gt;<i> color is off, or are even pixel locations wrong?
+</I>
+I, indeed do not see sensible shapes, the xy space is scrambled
+as if the frame size is wrong. This seems to be predicted by the text of the doc I linked to in the last email:
+<A HREF="ftp://tis_ftp:Imaging199@ftp.theimagingsource.com/Imaging/728a91/Linux%20and%20TIS%20cameras.pdf">ftp://tis_ftp:Imaging199@ftp.theimagingsource.com/Imaging/728a91/Linux%20and%20TIS%20cameras.pdf</A>
+
+it can do these resolutions (from <A HREF="http://www.theimagingsource.com/en_US/products/cameras/usb-cmos-color/dfk72buc02/">http://www.theimagingsource.com/en_US/products/cameras/usb-cmos-color/dfk72buc02/</A>)
+
+Example Configurations
+Resolution	Format	FPS	Sensitivity
+SET RESOLUTION, FORMAT, FPS AND SENSITIVITY WITH SHIPPED SOFTWARE.
+2592x1944	1/2.5 &quot;	6	1.4 V/lux-sec
+2048x1536	1/3 &quot;	9	1.4 V/lux-sec
+1600x1200	1/4 &quot;	13	1.4 V/lux-sec
+1280x960	1/4.5 &quot;	19	1.4 V/lux-sec
+1280x960	1/2.5 &quot;	15	5.6 V/lux-sec
+1024x768	1/5.5 &quot;	27	1.4 V/lux-sec
+640x480	1/9 &quot;	52	1.4 V/lux-sec
+640x480	1/2.5 &quot;	23	22.4 V/lux-sec
+
+but I'm not sure what UVC supports out of those....
+cheese sees only
+1296x1944 (which must be wrong - should be 2592x1944
+and
+1024 x 768 (which could be correct, but reading out only a small part of the centre of the chip)
+
+AFAIK the different FORMATs mean that smaller or larger areas of the chip area are read out, 
+and the lower resolution of the same Format size mean that there is pixel group binning....
+
+Also, yes, the colours do seem to be in the wrong space. 
+Darkness gives green and light gives magenta. 
+This is also mentioned i think in that doc. 
+
+This is a colour CMOS, so we do expect an RGB image on the screen, not monochrome. 
+
+see attached screenshot
+
+But, good news is that the frame rate is high... maybe 10 fps, and uses only 25% of my CPU power, 
+so on Petes netbook it should not struggle to go fast either. 
+
+cheers
+
+D
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: Screen shot 2011-03-25 at 12.25.40 PM.png
+Type: image/png
+Size: 377726 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110325/a8837f54/attachment.png">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110325/a8837f54/attachment.png</A>&gt;
+-------------- next part --------------
+
+&gt;<i> 
+</I>&gt;<i> Ciao,
+</I>&gt;<i> Dscho
+</I>
+Dr. Daniel James White BSc. (Hons.) PhD
+Senior Microscopist / Image Visualisation, Processing and Analysis
+Light Microscopy and Image Processing Facilities 
+Max Planck Institute of Molecular Cell Biology and Genetics
+Pfotenhauerstrasse 108
+01307 DRESDEN
+Germany
+
++49 (0)15114966933 (German Mobile)
++49 (0)351 210 2627 (Work phone at MPI-CBG)
++49 (0)351 210 1078 (Fax MPI-CBG LMF)
+
+<A HREF="http://www.bioimagexd.net">http://www.bioimagexd.net</A> 	BioImageXD
+<A HREF="http://pacific.mpi-cbg.de">http://pacific.mpi-cbg.de</A>		Fiji -  is just ImageJ (Batteries Included)
+<A HREF="http://www.chalkie.org.uk">http://www.chalkie.org.uk</A>		Dan's Homepages
+<A HREF="https://ifn.mpi-cbg.de">https://ifn.mpi-cbg.de</A> 			Dresden Imaging Facility Network
+dan (at) chalkie.org.uk
+( white (at) mpi-cbg.de )
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006392.html">[Linux-uvc-devel] DigiMicro Scale 2.0
+</A></li>
+	<LI>Next message: <A HREF="006393.html">[Linux-uvc-devel] a new camera for the list - imagingsource	DFK72BUC02
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6395">[ date ]</a>
+              <a href="thread.html#6395">[ thread ]</a>
+              <a href="subject.html#6395">[ subject ]</a>
+              <a href="author.html#6395">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

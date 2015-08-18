@@ -1,0 +1,422 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Ricoh UVC webcams
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Ricoh%20UVC%20webcams&In-Reply-To=%3C200704231328.27478.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001619.html">
+   <LINK REL="Next"  HREF="001620.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Ricoh UVC webcams</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Ricoh%20UVC%20webcams&In-Reply-To=%3C200704231328.27478.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Ricoh UVC webcams">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Apr 23 13:28:26 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001619.html">[Linux-uvc-devel] Ricoh UVC webcams
+</A></li>
+        <LI>Next message: <A HREF="001620.html">[Linux-uvc-devel] Ricoh UVC webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1623">[ date ]</a>
+              <a href="thread.html#1623">[ thread ]</a>
+              <a href="subject.html#1623">[ subject ]</a>
+              <a href="author.html#1623">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Sam,
+
+On Monday 23 April 2007 08:12, Sam Revitch wrote:
+&gt;<i> On 4/18/07, Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+</I>[snip]
+&gt;<i> &gt; uvcvideo already implements full buffer management. The streaming I/O
+</I>&gt;<i> &gt; V4L2 method is fully supported. I might consider using video-buf later,
+</I>&gt;<i> &gt; although there are a few things I don't like in the API (especially the
+</I>&gt;<i> &gt; way video-buf insists on handling streamon/streamoff itself). VIDIOCGMBUF
+</I>&gt;<i> &gt; support isn't planned.
+</I>&gt;<i>
+</I>&gt;<i> The latest SVN version of uvcvideo only appears to implement mmap().
+</I>
+That's right.
+
+&gt;<i> Do you have this on a private branch?  It appears to mention that
+</I>&gt;<i> read() is explicitly unsupported, and the user pointer I/O method
+</I>&gt;<i> appears to be rejected in uvc_queue_buffer().  I won't argue that mmap
+</I>&gt;<i> isn't the most important and that all apps should support mmap, but
+</I>&gt;<i> not supporting read in uvcvideo will leave it incompatible with a few
+</I>&gt;<i> apps.
+</I>
+Agreed. read() will be implemented as soon as I can find some spare time to do 
+so. I went for the streaming I/O method first, as it's (at least in my 
+opinion) the most important one. read() is definitely important as well.
+
+&gt;<i> &gt; usbcam sounds interesting. Porting uvcvideo to usbcam would be lots of
+</I>&gt;<i> &gt; work, and I'm not willing to do that for now. Feel free to give it a go
+</I>&gt;<i> &gt; though :-) Don't forget that the uvcvideo driver is quite complex, and
+</I>&gt;<i> &gt; that it will eventually support video output as well, which falls out of
+</I>&gt;<i> &gt; the scope of usbcam. You might have issues with control handling which is
+</I>&gt;<i> &gt; being rewritten to allow for runtime controls definitions through
+</I>&gt;<i> &gt; specific ioctls. The extended control API will also have to be
+</I>&gt;<i> &gt; implemented by usbcam, and the mini drivers API will have to support
+</I>&gt;<i> &gt; control transactions.
+</I>&gt;<i>
+</I>&gt;<i> I'm definitely pleased you don't pin it in the same category as usbvideo. 
+</I>&gt;<i> :-)
+</I>&gt;<i>
+</I>&gt;<i> The control handling is on the list of things to rework.  ALSA seems
+</I>&gt;<i> to have a reasonable interface with the snd_kcontrol.  It might also
+</I>&gt;<i> be nice if the V4L2 API were expanded to support change notifications
+</I>&gt;<i> like ALSA.
+</I>
+Change notifications are needed for proper UVC support (especially for 
+pan/tilt support). I mentioned the topic on the v4l mailing list, but nobody 
+seemed really interested. Mauro told me the pan/tilt code was in his opinion 
+out of the scope of v4l, and should be handled by a separate device. I of 
+course strongly disagree on that.
+
+&gt;<i> Regarding transactions, what did you have in mind?
+</I>
+UVC devices expose controls that can't easily be mapped to a single V4L 
+control. A good example is pan/tilt support in Logitech webcams. To make 
+diagonal motion possible, pan and tilt are exposed through a single UVC 
+control. The driver exposes two V4L controls, one for pan and one for tilt. 
+Using the legacy control API, it wouldn't be possible to move the camera 
+diagonally.
+
+With the extended control API, control changes can be grouped. Pan and tilt 
+values can be passed to the driver in a single call. The driver walks the 
+controls array, stores control values in private memory, and commit all 
+controls at the end of the array. This requires 'begin' and 'commit' support. 
+Rollback is used to reset the internal control data to sensible values if an 
+error occurs while processing the array. If an error occurs during commit, I 
+decided not to try to rollback controls already committed. This would be 
+quite difficult, if not impossible at all.
+
+&gt;<i> I do like how uvcvideo does this stuff.  It seems a lot like how
+</I>&gt;<i> jbd/reiserfs handle filesystem transactions, although those aren't
+</I>&gt;<i> necessarily the best examples because they don't support undo.  It
+</I>&gt;<i> also seems almost like overkill for uvcvideo, because it doesn't seem
+</I>&gt;<i> to handle the case of a device rejecting a new control value, and
+</I>&gt;<i> would be very hard to do this in a complete fashion anyway because of
+</I>&gt;<i> the asynchronous notification method mandated by the spec.
+</I>
+Exactly. Transaction support is needed to group related controls together, but 
+handling errors from the device would be too difficult. The driver checks 
+control values against boundaries returned by the device, so those errors 
+should be rare.
+
+&gt;<i> Anyway, now it's time to reinvent the wheel yet again.  :-)  how about
+</I>&gt;<i> this sort of interface for usbcam.  We create a new usbcam_txn
+</I>&gt;<i> structure for the transaction handle, which has a list_head and maybe
+</I>&gt;<i> some minidriver-specific state.  The minidriver gets new operations:
+</I>&gt;<i>
+</I>&gt;<i> 	int (*ctrl_txn_start)(struct usbcam_dev *udp, struct usbcam_txn *);
+</I>&gt;<i>
+</I>&gt;<i> 	int (*ctrl_txn_end)(struct usbcam_dev *udp, struct usbcam_txn *);
+</I>&gt;<i>
+</I>&gt;<i> Each control is expected to provide storage for last committed control
+</I>&gt;<i> values as well as current values.  The control structure gets a new
+</I>&gt;<i> list_head, and operations:
+</I>&gt;<i>
+</I>&gt;<i> 	int (*set_fn)(struct usbcam_dev *, const struct usbcam_ctrl *,
+</I>&gt;<i> 		      const struct v4l2_ext_control *, struct usbcam_txn *);
+</I>&gt;<i>
+</I>&gt;<i> 	void (*commit_fn)(struct usbcam_dev *, const struct usbcam_ctrl *,
+</I>&gt;<i> 		      struct usbcam_txn *);
+</I>&gt;<i>
+</I>&gt;<i> 	void (*abort_fn)(struct usbcam_dev *, const struct usbcam_ctrl *,
+</I>&gt;<i> 		      struct usbcam_txn *);
+</I>
+This really sounds way too complex. As only a single transaction can be active 
+at a given time, the set_fn doesn't need the struct usbcam_txn* argument. For 
+the UVC driver, commit_fn and abort_fn operations would be useless, as what 
+must be committed are UVC controls, not V4L controls.
+
+For simple devices with a 1-to-1 mapping between device controls and V4L 
+controls, transaction support is not useful. For more complex devices with a 
+1-to-n mapping between device controls and V4L controls, the driver will 
+store device control values and not V4L control values. This doesn't fit very 
+well with the above API.
+
+&gt;<i> The procedures would be:
+</I>&gt;<i>
+</I>&gt;<i> Set extended controls:
+</I>&gt;<i> - Invoke the minidriver ctrl_txn_start().  If it fails, return the error.
+</I>&gt;<i> - Invoke each control's set_fn().  If successful, add the control to
+</I>&gt;<i> the transaction list.  Otherwise, abort and return the error with the
+</I>&gt;<i> index of the failing control.
+</I>&gt;<i> - Commit the transaction, return success.
+</I>&gt;<i>
+</I>&gt;<i> Commit:
+</I>&gt;<i> - Invoke the commit_fn() of every control in the transaction list.
+</I>&gt;<i> - Invoke the minidriver ctrl_txn_stop().
+</I>&gt;<i>
+</I>&gt;<i> Abort:
+</I>&gt;<i> - Invoke the abort_fn() of every control in the transaction list.
+</I>&gt;<i> - Invoke the minidriver ctrl_txn_stop().
+</I>
+Transaction support is *only* needed to let the driver group several V4L 
+control values and send them to the device in a single operation. What the 
+UVC driver needs is a control set notification (set_fn) to store the control 
+value, a rollback notification to restore *all* modified values and a commit 
+notification to push controls to the device.
+
+Adding a
+
+int (*ctrl_txn_end)(struct usbcam_dev *udp, int commit);
+
+operation would be enough to handle this.
+
+Actually, I even doubt control handling in usbcam should be used by the UVC 
+driver. usbcam frees the driver from having to look up the controls list. As 
+the UVC driver needs to lookup up its internal UVC control list anyway, there 
+isn't much point in delegating controls handling to usbcam at all. Now, if 
+you want to implement native device controls support with V4L controls 
+mapping in usbcam, that's another story :-)
+
+&gt;<i> The only thing I don't like about this interface is that it might make
+</I>&gt;<i> long waiting control requests a little bit more complicated in some
+</I>&gt;<i> models.  For example, there might be some value in having an ioctl to
+</I>&gt;<i> set a pan/tilt control wait until the device has reoriented itself.
+</I>
+Shouldn't that be handled by a notification API ?
+
+&gt;<i> Or, maybe it will simplify them by forcing the correct model the first
+</I>&gt;<i> time.  Hm.
+</I>&gt;<i>
+</I>&gt;<i> With your comment below in perspective, maybe the videodev layer
+</I>&gt;<i> should do this stuff itself instead of usbcam.
+</I>
+That would indeed be better. Lots of code in usbcam is not USB specific.
+
+&gt;<i> &gt; On a side note, you should split usbcam into several files. It will be
+</I>&gt;<i> &gt; easier to read the code.
+</I>&gt;<i>
+</I>&gt;<i> Agreed, done.  It makes for marginally more work to embed usbcam in a
+</I>&gt;<i> 3rd party driver though.
+</I>
+usbcam shouldn't be embedded in a 3rd party driver. It should be a kernel 
+module of its own.
+
+&gt;<i> &gt; Do you plan to submit usbcam to the kernel ? Do you think current USB
+</I>&gt;<i> &gt; drivers could be ported ? One of the main issues is that developers might
+</I>&gt;<i> &gt; not be willing to throw away most of the code they wrote.
+</I>&gt;<i>
+</I>&gt;<i> The plan is actually to submit it, with r5u870, as a set of patches to
+</I>&gt;<i> v4l-dvb in the next 2-3 days.  This isn't a lot of time, but there are
+</I>&gt;<i> other things going on that mandate it.  I'll fix anything else you
+</I>&gt;<i> deem worth fixing in the mean time.
+</I>
+This is too soon in my opinion. The API isn't stable yet. It can be used with 
+the r5u870 driver, but it definitely shouldn't be used by other drivers yet. 
+Otherwise you'll be stuck with API changes that you won't be allowed to make 
+in the future, and it will just turn into a huge mess.
+
+&gt;<i> If a patch is really big, what's the protocol, will they be offended
+</I>&gt;<i> by an attachment?
+</I>
+I have no idea, sorry.
+
+&gt;<i> The latest sources, including a small overhaul of the control API,
+</I>&gt;<i> broken out into smaller files, and including the sq930 driver, are
+</I>&gt;<i> temporarily at:
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="http://lsb.blogdns.net/files/sq930-dev.tgz">http://lsb.blogdns.net/files/sq930-dev.tgz</A>
+</I>&gt;<i>
+</I>&gt;<i> I'll start playing around with a uvcvideo integration next, after we
+</I>&gt;<i> figure out the control interfaces and the format/resolution handlers
+</I>&gt;<i> get cleaned up.
+</I>
+As stated above, I doubt the current control API could be useful at all for 
+the UVC driver.
+
+&gt;<i> &gt; Are you aware that Mauro (the V4L2 maintainer) is trying to move ioctl
+</I>&gt;<i> &gt; handling to the V4L2 layer, which is the first step to a mini driver
+</I>&gt;<i> &gt; approach ? It seems to me that V4L2 is undergoing some major changes, and
+</I>&gt;<i> &gt; I'm not sure to be happy with them. If we indeed decide that some
+</I>&gt;<i> &gt; operations (such as buffer management) should be handled by generic code,
+</I>&gt;<i> &gt; this should be discussed first on the video4linux mailing list.
+</I>&gt;<i>
+</I>&gt;<i> I was hoping that they might spend a little more time refining this
+</I>&gt;<i> stuff before embarking on their current activity of altering existing
+</I>&gt;<i> drivers to use it.  This video_ioctl2() might make it marginally
+</I>&gt;<i> simpler to specify a driver.
+</I>
+It also makes it impossible for drivers to implement private ioctls. For that 
+reason alone, video_ioctl2() is dead on arrival for me.
+
+&gt;<i> It is certainly less pleasant to support this model with usbcam.
+</I>&gt;<i> usbcam has its own slightly more cooked table of callouts with
+</I>&gt;<i> different semantics -- minidrivers want callouts invoked with the
+</I>&gt;<i> device mutex held.  When a callout is added to video_device, it must
+</I>&gt;<i> also be added to the usbcam callouts in order for usbcam minidrivers
+</I>&gt;<i> to be able to use it, and that sounds like a lot of work and room for
+</I>&gt;<i> version skew.
+</I>&gt;<i>
+</I>&gt;<i> It seems cleaner to provide specific callouts only where value is
+</I>&gt;<i> added, and to provide an uncooked ioctl callout for everything else.
+</I>
+Try to convince Mauro. I've been unsuccessful so far.
+
+&gt;<i> I agree with your notion that they should make it a stronger sort of
+</I>&gt;<i> minidriver interface, and have it manage frame buffers and keep track
+</I>&gt;<i> of lists of controls, formats, resolutions, frame intervals, etc. per
+</I>&gt;<i> device.
+</I>
+I'm not even sure to like the callout solution. Helper functions might be 
+easier for driver developers.
+
+After giving it some thoughts, USB webcams can probably be divided in two 
+categories:
+
+- Simple webcams are merely a USB bridge with an I2C interface to the sensor. 
+Those webcams provide a fixed list of formats/resolutions/frame rates (or 
+even a single format/resolution/frame rate) and a simple list of controls. 
+For those webcams, usbcam seems appropriate, and should probably even be 
+enhanced to provide support for sensor abstraction. A webcam driver would 
+thus be made of a bridge driver, a sensor driver and some very limited 
+specific code. usbcam would glue all the pieces together.
+
+- Complex webcams such as UVC devices can be queried at runtime to find out 
+the available formats, resolutions, frame rates and controls. Controls can be 
+device-specific, user-space support is then needed to interface the controls 
+properly. I don't think usbcam, with its mini driver approach, is appropriate 
+here. What would be useful would be to abstract common functions and move 
+them to a USB video layer (whatever it's called). For instance, buffer 
+handling should probably not be done by the driver (I will see if videobuf 
+can be used in uvcvideo, even though I don't really like the current API).
+
+I don't think usbcam currently fulfills the needs of complex webcams.
+
+&gt;<i> &gt; Is it possible to simulate device unplugging/replugging from userspace to
+</I>&gt;<i> &gt; force the USB stack to reenumerate the device ?
+</I>&gt;<i>
+</I>&gt;<i> What, you want me to give away all my secrets?  :-)
+</I>&gt;<i>
+</I>&gt;<i> Here's the snippet.  It is called after the libusb interface is
+</I>&gt;<i> released, after the microcode upload finishes.  I wish there were some
+</I>&gt;<i> way to do this with libusb.
+</I>&gt;<i>
+</I>&gt;<i> void r5u870_bump_kernel(struct usb_device *dev)
+</I>&gt;<i> {
+</I>&gt;<i> 	char filename[PATH_MAX];
+</I>&gt;<i> 	int fh;
+</I>&gt;<i> 	struct usbdevfs_ioctl ic;
+</I>&gt;<i> 	sprintf(filename, &quot;/proc/bus/usb/%s/%s&quot;,
+</I>&gt;<i> 		dev-&gt;bus-&gt;dirname, dev-&gt;filename);
+</I>&gt;<i> 	fh = open(filename, O_RDWR);
+</I>&gt;<i> 	if (fh &gt;= 0) {
+</I>&gt;<i> 		ic.ifno = 0;
+</I>&gt;<i> 		ic.ioctl_code = USBDEVFS_CONNECT;
+</I>&gt;<i> 		ioctl(fh, USBDEVFS_IOCTL, &amp;ic);
+</I>&gt;<i> 		close(fh);
+</I>&gt;<i> 	}
+</I>&gt;<i> }
+</I>&gt;<i>
+</I>&gt;<i> &gt; I assume the firmware loading requests are not compatible with ezusb
+</I>&gt;<i> &gt; chips, so fxload can't do the job. Is that right ?
+</I>&gt;<i>
+</I>&gt;<i> That's right, it's a little bit different.
+</I>&gt;<i>
+</I>&gt;<i> Were you considering trying to convince the fxload folks to integrate
+</I>&gt;<i> the iSight/r5u870 firmware upload functionality?
+</I>
+The iSight uses an EZ-USB chip, so fxload can be used without any change.
+
+&gt;<i> If not, somebody should certainly create a uvcfwload project, or
+</I>&gt;<i> something of the sort.  I'd do this myself but am not competent with
+</I>&gt;<i> the accepted packaging standards for user level stuff.
+</I>
+A ricohfwload would be better :-)
+
+&gt;<i> &gt; It could be included in the kernel instead, but it would then have to be
+</I>&gt;<i> &gt; a generic microcode loader usable by several drivers.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I don't mind adding a few quirks to the uvcvideo driver. Support for
+</I>&gt;<i> &gt; non-UVC controls is a bit more intrusive though.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Other ways to support those hybrid devices would be to add hooks to
+</I>&gt;<i> &gt; uvcvideo or implement a minidriver interface like the one you wrote for
+</I>&gt;<i> &gt; usbcam.
+</I>&gt;<i>
+</I>&gt;<i> I like the last idea.  What sort of interface did you have in mind?
+</I>
+I haven't thought about it yet, sorry.
+
+&gt;<i> It sounds like there are two types of help that devices might need in
+</I>&gt;<i> order to be compatible with uvcvideo:
+</I>&gt;<i>
+</I>&gt;<i> 1. Loading microcode/firmware files
+</I>&gt;<i> 2. Non-standard controls, either UVC-defined private controls or
+</I>&gt;<i> non-UVC controls
+</I>
+UVC-defined private controls are already handled by the UVC driver in the 
+dynctrl branch. Non-UVC controls are another story, and I wish engineers did 
+their job properly.
+
+&gt;<i> For cameras that need #1 and not #2, the user level firmware loader
+</I>&gt;<i> seems to make the most sense.  This also seems like a common type of
+</I>&gt;<i> device, and there will be more of them in the future than just the
+</I>&gt;<i> iSight, and a user-level firmware uploader is probably a good idea.
+</I>
+We will either need to expand fxload to handle other USB microcontrollers, or 
+write a loader for every microcontroller. Expanding fxload might be better, 
+as it already handles hex file parsing.
+
+&gt;<i> For cameras that need #1 and #2, it might make the most sense to have
+</I>&gt;<i> a uvcvideo plugin of some sort that handles the controls as well as
+</I>&gt;<i> loading the firmware.  Separating the firmware loader and the control
+</I>&gt;<i> functions might add confusion, because two separate components may
+</I>&gt;<i> need to be upgraded / installed to support a device, but maybe that's
+</I>&gt;<i> the most straightforward way to do it.
+</I>
+I'm not completely against a kernel space firmware loader, providing it lives 
+in a separate module and can be used by other drivers as well. It doesn't 
+make sense to bundle an EZ-USB firmware loader with the UVC driver.
+
+Speaking of firmwares, does Ricoh allows firmware redistribution ? If so, 
+which license are the firmwares covered by ?
+
+&gt;<i> Thanks Laurent!
+</I>
+You're welcome. Hope you won't find my comments too negative. Otherwise feel 
+free to tell me.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001619.html">[Linux-uvc-devel] Ricoh UVC webcams
+</A></li>
+	<LI>Next message: <A HREF="001620.html">[Linux-uvc-devel] Ricoh UVC webcams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1623">[ date ]</a>
+              <a href="thread.html#1623">[ thread ]</a>
+              <a href="subject.html#1623">[ subject ]</a>
+              <a href="author.html#1623">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

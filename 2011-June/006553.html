@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] test results and a patch for timestamps in UVC
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20test%20results%20and%20a%20patch%20for%20timestamps%20in%20UVC&In-Reply-To=%3C201106061942.20970.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006549.html">
+   <LINK REL="Next"  HREF="006554.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] test results and a patch for timestamps in UVC</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20test%20results%20and%20a%20patch%20for%20timestamps%20in%20UVC&In-Reply-To=%3C201106061942.20970.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] test results and a patch for timestamps in UVC">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Mon Jun  6 19:42:20 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006549.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+        <LI>Next message: <A HREF="006554.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6553">[ date ]</a>
+              <a href="thread.html#6553">[ thread ]</a>
+              <a href="subject.html#6553">[ subject ]</a>
+              <a href="author.html#6553">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Yann,
+
+Thanks for the patch.
+
+On Friday 03 June 2011 15:48:59 Yann Sionneau wrote:
+&gt;<i> Hi Laurent and the UVC list,
+</I>&gt;<i> 
+</I>&gt;<i> Here is a patch (that applies against the linux-2.6.39 vanilla tree)
+</I>&gt;<i> that shows the number of frames whose header (the one described at
+</I>&gt;<i> section 2.4.3.3 of the document &quot;USB Device Class Definition for Video
+</I>&gt;<i> Devices&quot;) contains the SCR, PTS and ERR bits.
+</I>&gt;<i> The patch is attached in the e-mail.
+</I>&gt;<i> 
+</I>&gt;<i> The patch works as follow :
+</I>&gt;<i> 
+</I>&gt;<i> (*) Apply the patch
+</I>&gt;<i> (*) Compile the patched UVC module
+</I>&gt;<i> (*) Unload the previous module and load the new one
+</I>&gt;<i> (*) Start a video capture
+</I>&gt;<i> (*) Upon &quot;stop&quot; of the video capture (ioctl STREAMOFF) it will print
+</I>&gt;<i> statistics about the stream in the dmesg (/var/log/syslog)
+</I>&gt;<i> 
+</I>&gt;<i> It will show the number of frames whose header contains the bits SCR,
+</I>&gt;<i> PTS and ERR. It will show the total number of frames of the stream as
+</I>&gt;<i> well (the stream-&gt;sequence).
+</I>
+You should take all UVC packets into account, not just the first one for each 
+frame. the important information are
+
+- do all frames have a PTS timestamp in their first packet ?
+- do all non-empty packets for a frame have a PTS timestamp, and is it 
+constant through the whole frame as it should be ?
+- how many SCR timestamps do we have per frame ? are they constant through the 
+whole frame or do they vary as they should ?
+
+&gt;<i> I have tested this patch with 2 webcams so far, one is the Logitech HD
+</I>&gt;<i> Pro C910, the other is the Freetalk &quot;skype&quot; webcam made by Tatung, model
+</I>&gt;<i> &quot;Talk 7190&quot;, board &quot;R00C&quot;, firmware &quot;SDK8RC26&quot;.
+</I>&gt;<i> 
+</I>&gt;<i> The second one is featuring a MG3500 chip from Maxim IC, it does
+</I>&gt;<i> hardware encoding to stream H.264 codec inside a MPEG-2 TS container.
+</I>&gt;<i> 
+</I>&gt;<i> During my test I used it without any hardware encoding, it was doing
+</I>&gt;<i> normal raw YUV 4:2:2 streaming.
+</I>&gt;<i> 
+</I>&gt;<i> I noticed both webcams are putting PTS and SCR bits on all (or all but
+</I>&gt;<i> one, not sure) frames.
+</I>&gt;<i> Moreover no frame got the ERR bit on (good :)).
+</I>&gt;<i> 
+</I>&gt;<i> Here are two examples of what the patch should output :
+</I>&gt;<i> 
+</I>&gt;<i> Jun  3 11:58:43 obiwan kernel: [180779.218667] [uvcvideo] stats about
+</I>&gt;<i> previous stream :
+</I>&gt;<i> Jun  3 11:58:43 obiwan kernel: [180779.218672] nb_pts = 140 ; nb_scr =
+</I>&gt;<i> 140 ; nb_err = 0 over 139 frames
+</I>&gt;<i> 
+</I>&gt;<i> and
+</I>&gt;<i> 
+</I>&gt;<i> Jun  3 11:46:33 obiwan kernel: [180050.637465] [uvcvideo] stats about
+</I>&gt;<i> previous stream :
+</I>&gt;<i> Jun  3 11:46:33 obiwan kernel: [180050.637471] nb_pts = 258 ; nb_scr =
+</I>&gt;<i> 258 ; nb_err = 0 over 257 frames
+</I>&gt;<i> 
+</I>&gt;<i> I don't know why I have one extra frame in my pts, scr and err counters
+</I>&gt;<i> than in the stream-&gt;sequence.
+</I>&gt;<i> 
+</I>&gt;<i> I used &quot;guvcview -d /dev/video0&quot; to start the stream, and closed the GTK
+</I>&gt;<i> window to stop the stream.
+</I>&gt;<i> 
+</I>&gt;<i> Feel free to test this patch with your webcams are report back your
+</I>&gt;<i> dmesg output (with framerate and the duration of the test please).
+</I>&gt;<i> 
+</I>&gt;<i> This test is the first step of a bigger goal : implementing a correct
+</I>&gt;<i> timestamp support.
+</I>&gt;<i> 
+</I>&gt;<i> Regards,
+</I>
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006549.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+	<LI>Next message: <A HREF="006554.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6553">[ date ]</a>
+              <a href="thread.html#6553">[ thread ]</a>
+              <a href="subject.html#6553">[ subject ]</a>
+              <a href="author.html#6553">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

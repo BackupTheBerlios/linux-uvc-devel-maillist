@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Quickcam pro 5000 and other uvc	implementation.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quickcam%20pro%205000%20and%20other%20uvc%0A%09implementation.&In-Reply-To=%3C200710140959.25254.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002289.html">
+   <LINK REL="Next"  HREF="002290.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Quickcam pro 5000 and other uvc	implementation.</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quickcam%20pro%205000%20and%20other%20uvc%0A%09implementation.&In-Reply-To=%3C200710140959.25254.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Quickcam pro 5000 and other uvc	implementation.">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sun Oct 14 09:59:25 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002289.html">[Linux-uvc-devel] Quickcam pro 5000 and other uvc implementation.
+</A></li>
+        <LI>Next message: <A HREF="002290.html">[Linux-uvc-devel] Quickcam pro 5000 and other uvc	implementation.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2291">[ date ]</a>
+              <a href="thread.html#2291">[ thread ]</a>
+              <a href="subject.html#2291">[ subject ]</a>
+              <a href="author.html#2291">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+On Saturday 13 October 2007, Laurent Bigonville wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> I've bought a logitech quickcam pro 5000 (model 2006, 046d:08ce) today
+</I>&gt;<i> and experienced some issues. So a question comes to my mind.
+</I>&gt;<i>
+</I>&gt;<i> How this webcam works with other UVC implementation? Both
+</I>&gt;<i> MacOSX and Vista (maybe XP too) have a UVC generic driver that should
+</I>&gt;<i> (according to logitech) works with this webcam.
+</I>
+Logitech developed its own driver for Windows, mostly because the Microsoft 
+one is so buggy it's near to unusable. As far as I know, they have no 
+specific driver for MacOSX.
+
+&gt;<i> Does anyone tested with these other implementations? Does this webcam
+</I>&gt;<i> suffers the same problem that with the linux-uvc driver? If no, should
+</I>&gt;<i> it be possible to guess a fix from what the other drivers do?
+</I>
+The webcam works fine with Windows. I worked with Logitech to locate the 
+differences between the drivers, and we found out the problem wasn't 
+driver-related only. The Linux and Windows USB stacks are quite different, 
+which results in different timings on the USB bus. Linux is faster, and the 
+webcam isn't able to cope.
+
+With this in mind, we tried to add delays in the Linux UVC driver. This didn't 
+work, as the timing issues were not only related to inter-request delays but 
+to intra-request delays as well (USB control requests are made of several 
+packets handled by the USB EHCI controller without any mean for a device 
+driver to influence on packets processing). Fixing the problem would mean 
+reworking to Linux USB stack completely and making it slower. Even if that's 
+something we wanted, it wouldn't be a simple task.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002289.html">[Linux-uvc-devel] Quickcam pro 5000 and other uvc implementation.
+</A></li>
+	<LI>Next message: <A HREF="002290.html">[Linux-uvc-devel] Quickcam pro 5000 and other uvc	implementation.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2291">[ date ]</a>
+              <a href="thread.html#2291">[ thread ]</a>
+              <a href="subject.html#2291">[ subject ]</a>
+              <a href="author.html#2291">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

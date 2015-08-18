@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] IPEVO Point 2 View supported
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20IPEVO%20Point%202%20View%20supported&In-Reply-To=%3C201003180842.01822.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005591.html">
+   <LINK REL="Next"  HREF="005563.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] IPEVO Point 2 View supported</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20IPEVO%20Point%202%20View%20supported&In-Reply-To=%3C201003180842.01822.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] IPEVO Point 2 View supported">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu Mar 18 08:42:01 CET 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005591.html">[Linux-uvc-devel] IPEVO Point 2 View supported
+</A></li>
+        <LI>Next message: <A HREF="005563.html">[Linux-uvc-devel] Vimicro USB Camera (Altair)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5603">[ date ]</a>
+              <a href="thread.html#5603">[ thread ]</a>
+              <a href="subject.html#5603">[ subject ]</a>
+              <a href="author.html#5603">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Thursday 11 March 2010 22:05:30 Per Thomas Jahr wrote:
+&gt;<i> On Tue, 2010-03-09 at 12:51 +0100, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; On Monday 01 March 2010 11:46:06 Per Thomas Jahr wrote:
+</I>&gt;<i> &gt; &gt; I just wanted to report that the IPEVO Point 2 View webcam works fine
+</I>&gt;<i> &gt; &gt; with uvcvideo. I've tested it with various applications (Skype, UCView,
+</I>&gt;<i> &gt; &gt; Flash ...) and found that it works in all except &quot;Cheese Webcam Booth&quot;.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; What happens in Cheese ?
+</I>&gt;<i> 
+</I>&gt;<i> I just see a test picture, but I have a feeling that it is related to
+</I>&gt;<i> another v4l2 device (tv tuner). Cheese seems to be stuck on /dev/video0
+</I>&gt;<i> for some reason. It never switches over to /dev/video1 where the webcam
+</I>&gt;<i> is (even when I change devices in preferences).
+</I>
+So it's not a uvcvideo driver issue, good :-)
+
+&gt;<i> &gt; &gt; This message always shows in dmesg once I start one of the video apps:
+</I>&gt;<i> &gt; &gt; uvcvideo:
+</I>&gt;<i> &gt; &gt; Failed to query (135) UVC control 11 (unit 3) : -32 (exp. 1).
+</I>&gt;<i> &gt; &gt; (but it works ok)
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; That's the &quot;White Balance Temperature, Auto&quot; control. The driver tries to
+</I>&gt;<i> &gt; retrieve its default value. According to the UVC spec, supporting that
+</I>&gt;<i> &gt; request is mandatory on that control, so it's probably a webcam bug. No
+</I>&gt;<i> &gt; big deal though.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; &gt; There are two buttons on the webcam. One of them is to set focus and
+</I>&gt;<i> &gt; &gt; the other is for taking a picture. The one that sets focus works as
+</I>&gt;<i> &gt; &gt; expected, but nothing happens when I press the snapshot button. Should
+</I>&gt;<i> &gt; &gt; it be supported?
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Yes it should. The uvcvideo creates an evdev device when you plug your
+</I>&gt;<i> &gt; camera
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; in:
+</I>&gt;<i> &gt; &gt; input: IPEVO Point 2 View as
+</I>&gt;<i> &gt; &gt; /devices/pci0000:00/0000:00:1d.7/usb2/2-4/2-4.4/2-4.4:1.0/input/input12
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; The device is then used to report the KEY_CAMERA event when the button is
+</I>&gt;<i> &gt; pressed. The event might not be mapped to any action on your system
+</I>&gt;<i> &gt; though.
+</I>&gt;<i> 
+</I>&gt;<i> I'm running Fedora 12. How can I test that the event comes through to
+</I>&gt;<i> evdev? Tried with &quot;xev&quot;, but nothing there.
+</I>
+You need to open the /dev/video0 device for the driver to generate events. The 
+reason for that is to allow the device to be auto-suspended when not in use.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005591.html">[Linux-uvc-devel] IPEVO Point 2 View supported
+</A></li>
+	<LI>Next message: <A HREF="005563.html">[Linux-uvc-devel] Vimicro USB Camera (Altair)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5603">[ date ]</a>
+              <a href="thread.html#5603">[ thread ]</a>
+              <a href="subject.html#5603">[ subject ]</a>
+              <a href="author.html#5603">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [RESOLVED] Re: [RFC] Discard overrun (corrupted)	RX images
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRESOLVED%5D%20Re%3A%20%5BRFC%5D%20Discard%20overrun%20%28corrupted%29%0A%09RX%20images&In-Reply-To=%3C195890.12331.qm%40web120215.mail.ne1.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005854.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [RESOLVED] Re: [RFC] Discard overrun (corrupted)	RX images</H1>
+    <B>P F</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRESOLVED%5D%20Re%3A%20%5BRFC%5D%20Discard%20overrun%20%28corrupted%29%0A%09RX%20images&In-Reply-To=%3C195890.12331.qm%40web120215.mail.ne1.yahoo.com%3E"
+       TITLE="[Linux-uvc-devel] [RESOLVED] Re: [RFC] Discard overrun (corrupted)	RX images">public_filter at yahoo.com
+       </A><BR>
+    <I>Sat Jul 31 01:49:09 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005854.html">[Linux-uvc-devel] Nokia Booklet 3G webcam - Microdia/Sonix	Technology Co., Ltd. 	(0c45:6409)
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5855">[ date ]</a>
+              <a href="thread.html#5855">[ thread ]</a>
+              <a href="subject.html#5855">[ subject ]</a>
+              <a href="author.html#5855">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi again Laurent,
+
+--- On Fri, 7/23/10, P F &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">public_filter at yahoo.com</A>&gt; wrote:
+&gt;<i> 
+</I>&gt;<i> Adding:
+</I>&gt;<i> vma-&gt;vm_page_prot =
+</I>&gt;<i> pgprot_noncached(vma-&gt;vm_page_prot);
+</I>&gt;<i> to uvc_v4l2_mmap.&#160; This resolved the corruption.&#160;
+</I>&gt;<i> gspca_zc3xx has the same
+</I>&gt;<i> issue, and this patch worked there as well.
+</I>&gt;<i> 
+</I>
+I am happy to report that all instances of UVC JPEG corruption on my
+platform have been resolved.  There were actually two sources of
+corruption, and I was encountering both of them.  This may explain why
+debugging was so bewildering.
+
+One form of corruption was due to CPU starvation and not properly handling
+lost isochronous packets.  Your patch here:
+<A HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-July/005824.html">http://lists.berlios.de/pipermail/linux-uvc-devel/2010-July/005824.html</A>
+definitely resolved this for me.
+
+The other form of corruption is less well understood, but it was resolved
+by the change I described above.
+
+I have two pathological test cases which triggered these bugs.
+Unfortunately, the causes are totally independent, and I was seeing the
+&quot;caching bug&quot; when trying your isochronous patch, and thus saw no
+improvement.  However, after resolving the &quot;caching bug,&quot; I moved on to a
+different test case which revealed corruption again, and here your patch
+was the solution.
+
+I would like to ask you to push your patch upstream, and to investigate the
+efficacy of mine.  I don't know anything about VMAs, but I know this works
+for me.
+
+Thank you very much for your assistance.  I am happy to run further tests
+on my platform if you want.
+
+Best Regards
+
+
+      
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005854.html">[Linux-uvc-devel] Nokia Booklet 3G webcam - Microdia/Sonix	Technology Co., Ltd. 	(0c45:6409)
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5855">[ date ]</a>
+              <a href="thread.html#5855">[ thread ]</a>
+              <a href="subject.html#5855">[ subject ]</a>
+              <a href="author.html#5855">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

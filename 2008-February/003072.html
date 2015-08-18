@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Disabling Auto Exposure
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Disabling%20Auto%20Exposure&In-Reply-To=%3C200802190109.35718.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003064.html">
+   <LINK REL="Next"  HREF="003079.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Disabling Auto Exposure</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Disabling%20Auto%20Exposure&In-Reply-To=%3C200802190109.35718.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Disabling Auto Exposure">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Feb 19 01:09:35 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003064.html">[Linux-uvc-devel] Disabling Auto Exposure
+</A></li>
+        <LI>Next message: <A HREF="003079.html">[Linux-uvc-devel] Omnivision oem in Dell sp2208wfp monitor: it is	working here
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3072">[ date ]</a>
+              <a href="thread.html#3072">[ thread ]</a>
+              <a href="subject.html#3072">[ subject ]</a>
+              <a href="author.html#3072">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Fr&#233;d&#233;rick,
+
+On Sunday 17 February 2008, Fr&#233;d&#233;rik Rozon wrote:
+&gt;<i> Hi everyone,
+</I>&gt;<i>
+</I>&gt;<i> I know this has been discused before, but I just can't disable the
+</I>&gt;<i> auto exposure feature on my Quickcam pro 5000. I'm coding a computer
+</I>&gt;<i> vision program using the latest version of uvc (as of Febuary 16th).
+</I>&gt;<i> I'm a newbie user of uvc, and I've look some sample programs, and I'm
+</I>&gt;<i> confused about the fact that the IDs of the commands seems to change
+</I>&gt;<i> between versions of uvc. So how do I know which one is the correct
+</I>&gt;<i> one? Is V4L2_CID_EXPOSURE_AUTO the correct command ID for this
+</I>&gt;<i> feature?
+</I>
+That's the right control. I apologise for the control IDs mess. New controls 
+are being added to V4L2 to prepare for a future inclusion of the UVC driver 
+in the mainline Linux kernel. I had to break binary compatibility in the 
+process.
+
+&gt;<i> Here is the code I use for setting a control:
+</I>&gt;<i>
+</I>&gt;<i> int
+</I>&gt;<i> input_set_control (struct vdIn * device, unsigned int control, int val)
+</I>&gt;<i> {
+</I>&gt;<i>
+</I>&gt;<i>     int fd, ret;
+</I>&gt;<i>     struct v4l2_control c;
+</I>&gt;<i>
+</I>&gt;<i>     c.id  = control;
+</I>&gt;<i>     c.value = val;
+</I>&gt;<i>     ret = ioctl (fd, VIDIOC_S_CTRL, &amp;c);
+</I>&gt;<i>
+</I>&gt;<i>     return ret;
+</I>&gt;<i> }
+</I>&gt;<i>
+</I>&gt;<i> It always returns -1 for V4L2_CID_EXPOSURE_AUTO.
+</I>
+Always use -W -Wall when compiling C code and fix the warnings. fd is used 
+uninitialised. You must open the device before using it. If the above sample 
+is an edited version of your code, check errno upon return of the ioctl call.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003064.html">[Linux-uvc-devel] Disabling Auto Exposure
+</A></li>
+	<LI>Next message: <A HREF="003079.html">[Linux-uvc-devel] Omnivision oem in Dell sp2208wfp monitor: it is	working here
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3072">[ date ]</a>
+              <a href="thread.html#3072">[ thread ]</a>
+              <a href="subject.html#3072">[ subject ]</a>
+              <a href="author.html#3072">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

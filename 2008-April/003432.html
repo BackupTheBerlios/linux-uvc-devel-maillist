@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Fwd: Re: ehci-hcd issue with webcam /	uvcvideo driver
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Fwd%3A%20Re%3A%20ehci-hcd%20issue%20with%20webcam%20/%0A%09uvcvideo%20driver&In-Reply-To=%3C200804241417.10957.herton%40mandriva.com.br%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003416.html">
+   <LINK REL="Next"  HREF="003434.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Fwd: Re: ehci-hcd issue with webcam /	uvcvideo driver</H1>
+    <B>Herton Ronaldo Krzesinski</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Fwd%3A%20Re%3A%20ehci-hcd%20issue%20with%20webcam%20/%0A%09uvcvideo%20driver&In-Reply-To=%3C200804241417.10957.herton%40mandriva.com.br%3E"
+       TITLE="[Linux-uvc-devel] Fwd: Re: ehci-hcd issue with webcam /	uvcvideo driver">herton at mandriva.com.br
+       </A><BR>
+    <I>Thu Apr 24 19:17:10 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003416.html">[Linux-uvc-devel] Fwd: Re: ehci-hcd issue with webcam /	uvcvideo driver
+</A></li>
+        <LI>Next message: <A HREF="003434.html">[Linux-uvc-devel] Fwd: Re: ehci-hcd issue with webcam /	uvcvideo driver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3432">[ date ]</a>
+              <a href="thread.html#3432">[ thread ]</a>
+              <a href="subject.html#3432">[ subject ]</a>
+              <a href="author.html#3432">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Em Wednesday 23 April 2008 00:01:14 Herton Ronaldo Krzesinski escreveu:
+&gt;<i> Em Monday 21 April 2008 18:14:52 Laurent Pinchart escreveu:
+</I>&gt;<i> &gt; Hi everybody,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Alan Stern was kind enough to write a fix a few weeks ago for a video
+</I>&gt;<i> &gt; streaming issue that some of you encountered.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; In order to get the fix included in 2.6.26, David Brownell would like to
+</I>&gt;<i> &gt; know if the Linux UVC driver still suffers from the problem when used
+</I>&gt;<i> &gt; with 2.6.25 *without* the patch.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Could you please be kind enough to test 2.6.25 and report results ?
+</I>&gt;<i>
+</I>&gt;<i> I was testing today with a stock 2.6.25 without the patch and got no
+</I>&gt;<i> problems. So may be another thing fixed it. If I encounter any problem I'll
+</I>&gt;<i> report.
+</I>
+Hmm, I got the same problem now with stock 2.6.25. I discovered that the 
+problem is only reproducible when you lower UVC_MAX_ISO_PACKETS in the 
+sources, at least here. I was trying to avoid page allocation failures in 
+another machine lowering from 40 to 8 (after reading 
+<A HREF="http://article.gmane.org/gmane.linux.drivers.uvc.devel/1956">http://article.gmane.org/gmane.linux.drivers.uvc.devel/1956</A>), I didn't had 
+time to investigate more so was forgotten:
+
+uvcvideo: device USB2.0 Camera requested null bandwidth, defaulting to lowest.
+kopete: page allocation failure. order:5, mode:0x0
+Pid: 6996, comm: kopete Not tainted 2.6.24.4-desktop-2mdvoem #1
+ [&lt;c010645a&gt;] show_trace_log_lvl+0x1a/0x30
+ [&lt;c0106ec2&gt;] show_trace+0x12/0x20
+ [&lt;c010794c&gt;] dump_stack+0x6c/0x80
+ [&lt;c016e5a8&gt;] __alloc_pages+0x278/0x360
+ [&lt;c016e6df&gt;] __get_free_pages+0x4f/0x60
+ [&lt;c010a25a&gt;] dma_alloc_coherent+0xba/0x110
+ [&lt;ccdd7a17&gt;] hcd_buffer_alloc+0x47/0x80 [usbcore]
+ [&lt;ccdcd335&gt;] usb_buffer_alloc+0x25/0x30 [usbcore]
+ [&lt;ccf59bf8&gt;] uvc_init_video+0x158/0x3b0 [uvcvideo]
+ [&lt;ccf59e9a&gt;] uvc_video_enable+0x4a/0x50 [uvcvideo]
+ [&lt;ccf59229&gt;] uvc_v4l2_do_ioctl+0x999/0xfb0 [uvcvideo]
+ [&lt;ccf40283&gt;] video_usercopy+0xc3/0x230 [videodev]
+ [&lt;ccf58263&gt;] uvc_v4l2_ioctl+0x43/0x50 [uvcvideo]
+ [&lt;c019a578&gt;] do_ioctl+0x88/0xa0
+ [&lt;c019a7af&gt;] vfs_ioctl+0x21f/0x2a0
+ [&lt;c019a883&gt;] sys_ioctl+0x53/0x70
+ [&lt;c010532e&gt;] sysenter_past_esp+0x6b/0xa1
+ =======================
+Mem-info:
+DMA per-cpu:
+CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   
+0
+CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   
+0
+Normal per-cpu:
+CPU    0: Hot: hi:   42, btch:   7 usd:  33   Cold: hi:   14, btch:   3 usd:  
+13
+CPU    1: Hot: hi:   42, btch:   7 usd:  40   Cold: hi:   14, btch:   3 usd:  
+12
+Active:30836 inactive:8955 dirty:0 writeback:0 unstable:0
+ free:528 slab:3006 mapped:12950 pagetables:371 bounce:0
+DMA free:836kB min:144kB low:180kB high:216kB active:9980kB inactive:1260kB 
+present:16256kB pages_scanned:65 all_unreclaimable? no
+lowmem_reserve[]: 0 173 173 173
+Normal free:1276kB min:1608kB low:2008kB high:2412kB active:113364kB 
+inactive:34560kB present:177292kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0 0
+DMA: 9*4kB 0*8kB 1*16kB 1*32kB 0*64kB 0*128kB 1*256kB 1*512kB 0*1024kB 
+0*2048kB 0*4096kB = 852kB
+Normal: 30*4kB 4*8kB 0*16kB 0*32kB 0*64kB 1*128kB 0*256kB 0*512kB 1*1024kB 
+0*2048kB 0*4096kB = 1304kB
+Swap cache: add 0, delete 0, find 0/0, race 0+0
+Free swap  = 1084348kB
+Total swap = 1084348kB
+Free swap:       1084348kB
+48768 pages of RAM
+0 pages of HIGHMEM
+1454 reserved pages
+58649 pages shared
+0 pages swap cached
+0 pages dirty
+0 pages writeback
+12950 pages mapped
+3006 pages slab
+371 pages pagetableS
+
+Without lowering UVC_MAX_ISO_PACKETS I get the above in one machine (it has 
+indeed not much main memory, it's a notebook where free reports 184MB, main 
+memory is shared with onboard video it seems). But recently I saw streaming 
+issues after lowering it in another webcam, so I'm not using this anymore for 
+every machine, then I didn't catch too the -45 errors anymore, now I finally 
+discovered what was happening.
+
+So may be we have two bugs here then:
+- Memory allocation in uvcvideo doesn't work for all cases, urb allocation 
+should be revisited or is it ok?
+- -45 errors are hidden and only reproducible in some hardware or when 
+lowering UVC_MAX_ISO_PACKETS with some hardware combination (here only one 
+machine showed -45 errors with UVC_MAX_ISO_PACKETS lowered until now).
+
+&gt;<i>
+</I>&gt;<i> &gt; Best regards,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Laurent Pinchart
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; ----------  Forwarded Message  ----------
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Subject: Re: ehci-hcd issue with webcam / uvcvideo driver
+</I>&gt;<i> &gt; Date: Monday 21 April 2008
+</I>&gt;<i> &gt; From: Alan Stern &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">stern at rowland.harvard.edu</A>&gt;
+</I>&gt;<i> &gt; To: Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Mon, 21 Apr 2008, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; &gt; &gt; Below is an updated version of the patch.  If you can, replace the
+</I>&gt;<i> &gt; &gt; &gt; earlier version with this one and give it some good stress testing.
+</I>&gt;<i> &gt; &gt; &gt; If everything works okay, I'll submit it for inclusion in the
+</I>&gt;<i> &gt; &gt; &gt; official kernel.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I've received several reports from people who tested your patch with
+</I>&gt;<i> &gt; &gt; the Linux UVC driver. They were all positive, the patch fixed their
+</I>&gt;<i> &gt; &gt; problem and introduced no regression they noticed. Could the patch be
+</I>&gt;<i> &gt; &gt; scheduled for 2.6.26 ?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Dave had some questions, in particular, whether your testers still
+</I>&gt;<i> &gt; encounter problems when running 2.6.25 without the patch.  It would be
+</I>&gt;<i> &gt; nice to know the answer, either way.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; (IMO the patch ought to be merged even if the problems are no longer
+</I>&gt;<i> &gt; present, because what it does is basically correct.  There may be a
+</I>&gt;<i> &gt; detail or two I missed -- it always helps to have someone else review
+</I>&gt;<i> &gt; changes like this -- but on the whole the idea is right.)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; For reference, the current version of the patch is below.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Alan Stern
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> []'s
+</I>&gt;<i> Herton
+</I>
+-- 
+[]'s
+Herton
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003416.html">[Linux-uvc-devel] Fwd: Re: ehci-hcd issue with webcam /	uvcvideo driver
+</A></li>
+	<LI>Next message: <A HREF="003434.html">[Linux-uvc-devel] Fwd: Re: ehci-hcd issue with webcam /	uvcvideo driver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3432">[ date ]</a>
+              <a href="thread.html#3432">[ thread ]</a>
+              <a href="subject.html#3432">[ subject ]</a>
+              <a href="author.html#3432">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

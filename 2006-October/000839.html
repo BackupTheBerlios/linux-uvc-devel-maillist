@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcview, QC fusion and FC5
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcview%2C%20QC%20fusion%20and%20FC5&In-Reply-To=%3Cop.tgqcz2qzsttmjo%40maya%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000838.html">
+   <LINK REL="Next"  HREF="000840.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcview, QC fusion and FC5</H1>
+    <B>Martin Rubli</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcview%2C%20QC%20fusion%20and%20FC5&In-Reply-To=%3Cop.tgqcz2qzsttmjo%40maya%3E"
+       TITLE="[Linux-uvc-devel] uvcview, QC fusion and FC5">martin_rubli at logitech.com
+       </A><BR>
+    <I>Sun Oct  1 08:44:16 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000838.html">[Linux-uvc-devel] uvcview, QC fusion and FC5
+</A></li>
+        <LI>Next message: <A HREF="000840.html">[Linux-uvc-devel] uvcview, QC fusion and FC5
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#839">[ date ]</a>
+              <a href="thread.html#839">[ thread ]</a>
+              <a href="subject.html#839">[ subject ]</a>
+              <a href="author.html#839">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey Richard,
+
+&gt;<i>   I'm running 2.6.17-1.257_FC5 and have compiled uvcvideo from source.
+</I>&gt;<i> It seems to have installed OK as uvccapture can happily grab still
+</I>&gt;<i> images. I can't get anything else working though.
+</I>
+If you can capture images at all, that's already a good sign. It means the  
+driver works and the problem is (probably) elsewhere. :-)
+
+&gt;<i>    'xawtv -hwscan' - sees the device OK
+</I>&gt;<i> This is xawtv-3.95, running on Linux/i686 (2.6.17-1.2157_FC5)
+</I>&gt;<i> looking for available devices
+</I>&gt;<i> /dev/video0: OK                         [ -device /dev/video0 ]
+</I>&gt;<i>     type : v4l2
+</I>&gt;<i>     name : DViCO FusionHDTV DVB-T Plus
+</I>&gt;<i>     flags: overlay capture tuner
+</I>&gt;<i>
+</I>&gt;<i> /dev/video1: OK                         [ -device /dev/video1 ]
+</I>&gt;<i>     type : v4l2
+</I>&gt;<i>     name : DViCO FusionHDTV DVB-T Plus
+</I>&gt;<i>     flags: overlay capture tuner
+</I>&gt;<i>
+</I>&gt;<i> /dev/video2: OK                         [ -device /dev/video2 ]
+</I>&gt;<i>     type : v4l2
+</I>&gt;<i>     name : USB Video Class device
+</I>&gt;<i>     flags:  capture
+</I>
+Another good sign, although xawtv is known not to work correctly with UVC  
+webcams.
+
+&gt;<i>   'luvcview -d/dev/video2'
+</I>&gt;<i> uvcview version 0.1.7
+</I>&gt;<i> Video driver: x11
+</I>&gt;<i> A window manager is available
+</I>&gt;<i> video /dev/video0
+</I>&gt;<i> Unable to set format: 22.
+</I>&gt;<i>  Init v4L2 failed !! exit fatal
+</I>
+Look closely:
+&gt;<i> video /dev/video0
+</I>
+Yes, luvcview is really picky about parsing the command line arguments.  
+You must have a space after &quot;-d&quot;, then it should work.
+
+&gt;<i>  I have also tried ekiga which also detects the webcam but give me
+</I>&gt;<i> 'Failed to open device' messages.
+</I>&gt;<i>   I am running as root and have granted rwx permissions to all for
+</I>&gt;<i> /dev/video2 just to be sure that wasn't the problem.
+</I>
+Ekiga 2.0.2 is the first version to work correctly with UVC webcams AFAIK.  
+Which version are you using?
+
+&gt;<i>  Does anyone have any advice on what I should try now?
+</I>
+A few things come to mind: Don't give up, report bugs where appropriate,  
+and help us improve webcam support on Linux. :-)
+
+&gt;<i> 'cat /var/log/messages'
+</I>&gt;<i> Oct  1 11:02:19 mythbox syslogd 1.4.1: restart.
+</I>&gt;<i> Oct  1 11:19:14 mythbox kernel: usb 1-3: new high speed USB device
+</I>&gt;<i> using ehci_hcd and address 4
+</I>&gt;<i> Oct  1 11:19:14 mythbox kernel: usb 1-3: configuration #1 chosen from 1  
+</I>&gt;<i> choice
+</I>&gt;<i> Oct  1 11:19:14 mythbox kernel: uvcvideo: Found UVC 1.00 device
+</I>&gt;<i> &lt;unnamed&gt; (046d:08c1)
+</I>&gt;<i> Oct  1 11:19:15 mythbox kernel: 4:3:1: cannot set freq 0 to ep 0x86
+</I>&gt;<i> Oct  1 11:19:16 mythbox kernel: 4:3:2: cannot set freq 0 to ep 0x86
+</I>&gt;<i> Oct  1 11:19:17 mythbox kernel: 4:3:3: cannot get freq at ep 0x86
+</I>&gt;<i> Oct  1 11:19:33 mythbox kernel: uvcvideo: Failed to query (132) UVC
+</I>&gt;<i> control 4 (unit 2) : -32.
+</I>&gt;<i> Oct  1 11:21:42 mythbox gconfd (mythtv-5036): starting (version
+</I>&gt;<i> 2.14.0), pid 5036 user 'mythtv'
+</I>&gt;<i> Oct  1 11:21:42 mythbox gconfd (mythtv-5036): Resolved address
+</I>&gt;<i> &quot;xml:readonly:/etc/gconf/gconf.xml.mandatory&quot; to a read-only
+</I>&gt;<i> configuration source at position 0
+</I>&gt;<i> Oct  1 11:21:42 mythbox gconfd (mythtv-5036): Resolved address
+</I>&gt;<i> &quot;xml:readwrite:/home/mythtv/.gconf&quot; to a writable configuration source
+</I>&gt;<i> at position 1
+</I>&gt;<i> Oct  1 11:21:42 mythbox gconfd (mythtv-5036): Resolved address
+</I>&gt;<i> &quot;xml:readonly:/etc/gconf/gconf.xml.defaults&quot; to a read-only
+</I>&gt;<i> configuration source at position 2
+</I>&gt;<i> Oct  1 11:32:01 mythbox kernel: uvcvideo: Failed to query (135) UVC
+</I>&gt;<i> control 2 (unit 2) : -110.
+</I>&gt;<i> Oct  1 11:32:01 mythbox kernel: uvcvideo: Failed to query (130) UVC
+</I>&gt;<i> control 2 (unit 2) : -75.
+</I>&gt;<i> Oct  1 11:32:02 mythbox kernel: uvcvideo: Failed to query (135) UVC
+</I>&gt;<i> control 2 (unit 2) : -110.
+</I>&gt;<i> Oct  1 11:32:02 mythbox kernel: uvcvideo: Failed to query (130) UVC
+</I>&gt;<i> control 2 (unit 2) : -75.
+</I>&gt;<i> Oct  1 11:32:02 mythbox kernel: uvcvideo: Failed to query (131) UVC
+</I>&gt;<i> control 2 (unit 2) : -32.
+</I>&gt;<i> Oct  1 11:32:03 mythbox kernel: uvcvideo: Failed to query (135) UVC
+</I>&gt;<i> control 2 (unit 2) : -110.
+</I>
+Yes, these are bad. If you see those you might need to retry whatever  
+caused the error or replug the camera. It's caused by a bug in the Fusion  
+firmware that occurs one some USB controllers. We're currently testing a  
+quick workaround and are still analyzing the problem so that future  
+cameras won't have the same problems.
+
+Cheers,
+Martin
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000838.html">[Linux-uvc-devel] uvcview, QC fusion and FC5
+</A></li>
+	<LI>Next message: <A HREF="000840.html">[Linux-uvc-devel] uvcview, QC fusion and FC5
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#839">[ date ]</a>
+              <a href="thread.html#839">[ thread ]</a>
+              <a href="subject.html#839">[ subject ]</a>
+              <a href="author.html#839">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

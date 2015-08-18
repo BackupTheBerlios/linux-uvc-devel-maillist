@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [RFC,	PATCH] USB: EHCI: Allow users to override 80% max	periodic bandwidth
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%2C%0A%09PATCH%5D%20USB%3A%20EHCI%3A%20Allow%20users%20to%20override%2080%25%20max%09periodic%20bandwidth&In-Reply-To=%3C20110623140539.GA4403%40tugrik.mns.mnsspb.ru%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006663.html">
+   <LINK REL="Next"  HREF="006665.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [RFC,	PATCH] USB: EHCI: Allow users to override 80% max	periodic bandwidth</H1>
+    <B>Kirill Smelkov</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%2C%0A%09PATCH%5D%20USB%3A%20EHCI%3A%20Allow%20users%20to%20override%2080%25%20max%09periodic%20bandwidth&In-Reply-To=%3C20110623140539.GA4403%40tugrik.mns.mnsspb.ru%3E"
+       TITLE="[Linux-uvc-devel] [RFC,	PATCH] USB: EHCI: Allow users to override 80% max	periodic bandwidth">kirr at mns.spb.ru
+       </A><BR>
+    <I>Thu Jun 23 16:05:39 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006663.html">[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+</A></li>
+        <LI>Next message: <A HREF="006665.html">[Linux-uvc-devel] [RFC,	PATCH] USB: EHCI: Allow users to override 80% max	periodic bandwidth
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6664">[ date ]</a>
+              <a href="thread.html#6664">[ thread ]</a>
+              <a href="subject.html#6664">[ subject ]</a>
+              <a href="author.html#6664">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed, Jun 22, 2011 at 03:22:28PM -0400, Alan Stern wrote:
+&gt;<i> On Wed, 22 Jun 2011, Kirill Smelkov wrote:
+</I>&gt;<i> 
+</I>&gt;<i> &gt; There are cases, when 80% max isochronous bandwidth is too limiting.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; For example I have two USB video capture cards which stream uncompressed
+</I>&gt;<i> &gt; video, and to stream full NTSC + PAL videos we'd need
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;     NTSC 640x480 YUV422 @30fps      ~17.6 MB/s
+</I>&gt;<i> &gt;     PAL  720x576 YUV422 @25fps      ~19.7 MB/s
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; isoc bandwidth.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Now, due to limited alt settings in capture devices NTSC one ends up
+</I>&gt;<i> &gt; streaming with max_pkt_size=2688  and  PAL with max_pkt_size=2892, both
+</I>&gt;<i> &gt; with interval=1. In terms of microframe time allocation this gives
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;     NTSC    ~53us
+</I>&gt;<i> &gt;     PAL     ~57us
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; and together
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;     ~110us  &gt;  100us == 80% of 125us uframe time.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; So those two devices can't work together simultaneously because the'd
+</I>&gt;<i> &gt; over allocate isochronous bandwidth.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 80% seemed a bit arbitrary to me, and I've tried to raise it to 90% and
+</I>&gt;<i> &gt; both devices started to work together, so I though sometimes it would be
+</I>&gt;<i> &gt; a good idea for users to override hardcoded default of max 80% isoc
+</I>&gt;<i> &gt; bandwidth.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; After all, isn't it a user who should decide how to load the bus? If I
+</I>&gt;<i> &gt; can live with 10% or even 5% bulk bandwidth that should be ok. I'm a USB
+</I>&gt;<i> &gt; newcomer, but that 80% seems to be chosen pretty arbitrary to me, just
+</I>&gt;<i> &gt; to serve as a reasonable default.
+</I>&gt;<i> 
+</I>&gt;<i> This seems like the sort of feature somebody might reasonably want to 
+</I>&gt;<i> use -- if they know exactly what they're doing.
+</I>
+Yes, thanks, exactly my case. Now I know the idea won't be rejected it
+can be polished.
+
+
+&gt;<i> &gt; NOTE: for two streams with max_pkt_size=3072 (worst case) both time
+</I>&gt;<i> &gt; allocation would be 60us+60us=120us which is 96% periodic bandwidth
+</I>&gt;<i> &gt; leaving 4% for bulk and control. I think this should work too.
+</I>&gt;<i> 
+</I>&gt;<i> At 480 Mb/s, each microframe holds 7500 bytes (less if you count 
+</I>&gt;<i> bit-stuffing).  4% of that is 300 bytes, which is not enough for a 
+</I>&gt;<i> 512-byte bulk packet.  I think you'd run into trouble trying to do any 
+</I>&gt;<i> serious bulk transfers on such a tight schedule.
+</I>
+Yes, you seem to be right.
+
+I still think 4% is maybe enough for control traffic.
+
+
+&gt;<i> &gt; Signed-off-by: Kirill Smelkov &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">kirr at mns.spb.ru</A>&gt;
+</I>&gt;<i> &gt; Cc: Alan Stern &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">stern at rowland.harvard.edu</A>&gt;
+</I>&gt;<i> &gt; ---
+</I>&gt;<i> &gt;  drivers/usb/host/ehci-hcd.c   |   16 ++++++++++++++++
+</I>&gt;<i> &gt;  drivers/usb/host/ehci-sched.c |   17 +++++++----------
+</I>&gt;<i> &gt;  2 files changed, 23 insertions(+), 10 deletions(-)
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
+</I>&gt;<i> &gt; index c606b02..1d36e72 100644
+</I>&gt;<i> &gt; --- a/drivers/usb/host/ehci-hcd.c
+</I>&gt;<i> &gt; +++ b/drivers/usb/host/ehci-hcd.c
+</I>&gt;<i> &gt; @@ -112,6 +112,14 @@ static unsigned int hird;
+</I>&gt;<i> &gt;  module_param(hird, int, S_IRUGO);
+</I>&gt;<i> &gt;  MODULE_PARM_DESC(hird, &quot;host initiated resume duration, +1 for each 75us\n&quot;);
+</I>&gt;<i> &gt;  
+</I>&gt;<i> &gt; +/*
+</I>&gt;<i> &gt; + * max periodic time per microframe
+</I>&gt;<i> &gt; + * (be careful, USB 2.0 requires it to be 100us = 80% of 125us)
+</I>&gt;<i> &gt; + */
+</I>&gt;<i> &gt; +static unsigned int uframe_periodic_max = 100;
+</I>&gt;<i> &gt; +module_param(uframe_periodic_max, uint, S_IRUGO);
+</I>&gt;<i> &gt; +MODULE_PARM_DESC(uframe_periodic_max, &quot;maximum allowed periodic part of a microframe, us&quot;);
+</I>&gt;<i> &gt; +
+</I>&gt;<i> 
+</I>&gt;<i> This probably should be a sysfs attribute rather than a module 
+</I>&gt;<i> parameter, so that it can be applied to individual buses separately.
+</I>
+Agree
+
+
+&gt;<i> &gt;  #define	INTR_MASK (STS_IAA | STS_FATAL | STS_PCD | STS_ERR | STS_INT)
+</I>&gt;<i> &gt;  
+</I>&gt;<i> &gt;  /*-------------------------------------------------------------------------*/
+</I>&gt;<i> &gt; @@ -571,6 +579,14 @@ static int ehci_init(struct usb_hcd *hcd)
+</I>&gt;<i> &gt;  	hcc_params = ehci_readl(ehci, &amp;ehci-&gt;caps-&gt;hcc_params);
+</I>&gt;<i> &gt;  
+</I>&gt;<i> &gt;  	/*
+</I>&gt;<i> &gt; +	 * tell user, if using non-standard (80% == 100 usec/uframe) bandwidth
+</I>&gt;<i> &gt; +	 */
+</I>&gt;<i> &gt; +	if (uframe_periodic_max != 100)
+</I>&gt;<i> &gt; +		ehci_info(ehci, &quot;using non-standard max periodic bandwith &quot;
+</I>&gt;<i> &gt; +				&quot;(%u%% == %u usec/uframe)&quot;,
+</I>&gt;<i> &gt; +				100*uframe_periodic_max/125, uframe_periodic_max);
+</I>&gt;<i> &gt; +
+</I>&gt;<i> &gt; +	/*
+</I>&gt;<i> 
+</I>&gt;<i> Check for invalid values.  This should never be less than 100 or 
+</I>&gt;<i> greater than 125.
+</I>
+Ok. By the way, why should we limit it to be not less than 100?
+Likewise, a user who knows exactly what he/she is doing could limit
+periodic bandwidth to be less than 80% required by USB specification.
+
+
+&gt;<i> &gt;  	 * hw default: 1K periodic list heads, one per frame.
+</I>&gt;<i> &gt;  	 * periodic_size can shrink by USBCMD update if hcc_params allows.
+</I>&gt;<i> &gt;  	 */
+</I>&gt;<i> &gt; diff --git a/drivers/usb/host/ehci-sched.c b/drivers/usb/host/ehci-sched.c
+</I>&gt;<i> &gt; index d12426f..fb374f2 100644
+</I>&gt;<i> &gt; --- a/drivers/usb/host/ehci-sched.c
+</I>&gt;<i> &gt; +++ b/drivers/usb/host/ehci-sched.c
+</I>&gt;<i> &gt; @@ -172,7 +172,7 @@ periodic_usecs (struct ehci_hcd *ehci, unsigned frame, unsigned uframe)
+</I>&gt;<i> &gt;  		}
+</I>&gt;<i> &gt;  	}
+</I>&gt;<i> &gt;  #ifdef	DEBUG
+</I>&gt;<i> &gt; -	if (usecs &gt; 100)
+</I>&gt;<i> &gt; +	if (usecs &gt; uframe_periodic_max)
+</I>&gt;<i> 
+</I>&gt;<i> These changes all seem right.
+</I>
+Thanks. I'll try to prepare updated patch.
+
+
+Kirill
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006663.html">[Linux-uvc-devel] Webcam with H264 encoder not in Devicelist
+</A></li>
+	<LI>Next message: <A HREF="006665.html">[Linux-uvc-devel] [RFC,	PATCH] USB: EHCI: Allow users to override 80% max	periodic bandwidth
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6664">[ date ]</a>
+              <a href="thread.html#6664">[ thread ]</a>
+              <a href="subject.html#6664">[ subject ]</a>
+              <a href="author.html#6664">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

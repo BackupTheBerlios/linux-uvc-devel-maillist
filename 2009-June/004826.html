@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20VIDIOC_%5BGS%5D_JPEGCOMP%20support&In-Reply-To=%3C200906022008.45012.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004825.html">
+   <LINK REL="Next"  HREF="004815.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20VIDIOC_%5BGS%5D_JPEGCOMP%20support&In-Reply-To=%3C200906022008.45012.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Jun  2 20:08:44 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004825.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+        <LI>Next message: <A HREF="004815.html">[Linux-uvc-devel] Possible to use 2 streaming interface withUVC	driver?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4826">[ date ]</a>
+              <a href="thread.html#4826">[ thread ]</a>
+              <a href="subject.html#4826">[ subject ]</a>
+              <a href="author.html#4826">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Jon,
+
+On Tuesday 02 June 2009 19:34:55 Jon Fairbairn wrote:
+&gt;<i> Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; writes:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I would still be interested in messages printed by the
+</I>&gt;<i> &gt; uvcvideo driver in the kernel log when running motion.
+</I>&gt;<i>
+</I>&gt;<i> With trace=15, there's quite a lot. I've removed what I think
+</I>&gt;<i> is boring, but let me know if I've trimmed too much:
+</I>&gt;<i>
+</I>&gt;<i> uvcvideo: Adding mapping Brightness [... and various other controls]
+</I>&gt;<i> uvcvideo: Probing generic UVC device 4
+</I>&gt;<i> uvcvideo: Found format MJPEG.
+</I>&gt;<i> uvcvideo: - 640x480 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 320x240 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 160x120 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 352x288 (30.0 fps)
+</I>&gt;<i> uvcvideo: - 176x144 (30.0 fps)
+</I>&gt;<i> uvcvideo: Found format YUV 4:2:2 (YUYV). [... same resolutions as above]
+</I>&gt;<i>
+</I>&gt;<i> uvcvideo: Found a Status endpoint (addr 82).
+</I>&gt;<i> uvcvideo: Found UVC 1.00 device Live! Cam Optia (041e:4057)
+</I>&gt;<i> uvcvideo: Added control 00000000-0000-0000-0000-000000000101/2 to device 4
+</I>&gt;<i> entity 5 [... more similar &quot;Added control...&quot; lines]
+</I>&gt;<i> uvcvideo: Scanning UVC chain: OT 3 &lt;- XU 6 &lt;- PU 5 &lt;- SU 4 &lt;- IT 1
+</I>&gt;<i> uvcvideo: Found a valid video chain (1 -&gt; 3).
+</I>&gt;<i> uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling
+</I>&gt;<i> workaround. input: Live! Cam Optia as
+</I>&gt;<i> /devices/pci0000:00/0000:00:02.1/usb1/1-4/1-4:1.0/input/input10 uvcvideo:
+</I>&gt;<i> UVC device initialized.
+</I>&gt;<i> usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> USB Video Class driver (v0.1.0)
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 10000x10000.
+</I>&gt;<i> uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+</I>&gt;<i> uvcvideo: UVC non compliance - GET_MIN/MAX(PROBE) incorrectly supported.
+</I>&gt;<i> Enabling workaround. [ the next section repeats continually while motion is
+</I>&gt;<i> running ]
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 352x288.
+</I>&gt;<i> uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+</I>&gt;<i> uvcvideo: Trying format 0x47504a4d (MJPG): 352x288.
+</I>&gt;<i> uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+</I>&gt;<i> uvcvideo: Setting jpeg quality to 100.
+</I>&gt;<i> uvcvideo: Control 0x0098090e not found.
+</I>&gt;<i> uvcvideo: Control 0x0098090f not found.
+</I>&gt;<i> uvcvideo: Control 0x00980911 not found.
+</I>&gt;<i> uvcvideo: Control 0x00980912 not found.
+</I>&gt;<i> uvcvideo: Control 0x00980913 not found.
+</I>&gt;<i> uvcvideo: Control 0x08000000 not found.
+</I>&gt;<i> uvcvideo: Control 0x08000001 not found.
+</I>&gt;<i> uvcvideo: device Live! Cam Optia requested null bandwidth, defaulting to
+</I>&gt;<i> lowest.
+</I>
+The problem might be in motion then.
+
+&gt;<i> &gt; &gt; mplayer with -tv mjpeg
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; It might still be using MJPEG, although this sounds a bit
+</I>&gt;<i> &gt; weird.
+</I>&gt;<i>
+</I>&gt;<i> It doesn't look like it...
+</I>&gt;<i>
+</I>&gt;<i> &gt; If you load the uvcvideo driver with trace=15 the
+</I>&gt;<i> &gt; driver will print various debug messages to the kernel
+</I>&gt;<i> &gt; log. You will be able to trace all format get/set calls
+</I>&gt;<i> &gt; made by mplayer.
+</I>&gt;<i>
+</I>&gt;<i> uvcvideo: Trying format 0x56595559 (YUYV): 640x480.
+</I>&gt;<i> uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+</I>&gt;<i> uvcvideo: Trying format 0x32315659 (YV12): 640x480.
+</I>&gt;<i> uvcvideo: Unsupported format 0x32315659.
+</I>&gt;<i> uvcvideo: Trying format 0x32315559 (YU12): 640x480.
+</I>&gt;<i> uvcvideo: Unsupported format 0x32315559.
+</I>&gt;<i> uvcvideo: Trying format 0x59565955 (UYVY): 640x480.
+</I>&gt;<i> uvcvideo: Unsupported format 0x59565955.
+</I>&gt;<i> uvcvideo: Trying format 0x56595559 (YUYV): 640x480.
+</I>&gt;<i> uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+</I>&gt;<i> uvcvideo: Trying format 0x56595559 (YUYV): 352x480.
+</I>&gt;<i> uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+</I>&gt;<i> uvcvideo: Trying format 0x56595559 (YUYV): 352x288.
+</I>&gt;<i> uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+</I>&gt;<i> uvcvideo: Control 0x00980909 not found.
+</I>&gt;<i> uvcvideo: device Live! Cam Optia requested null bandwidth, defaulting to
+</I>&gt;<i> lowest. uvcvideo: Control 0x00980909 not found.
+</I>
+And there might be a problem in mplayer as well.
+
+I'm afraid there's not much I can do, applications bugs need to be fixed in 
+the application. You should contact the appropriate maintainers for help.
+
+Best regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004825.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+	<LI>Next message: <A HREF="004815.html">[Linux-uvc-devel] Possible to use 2 streaming interface withUVC	driver?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4826">[ date ]</a>
+              <a href="thread.html#4826">[ thread ]</a>
+              <a href="subject.html#4826">[ subject ]</a>
+              <a href="author.html#4826">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

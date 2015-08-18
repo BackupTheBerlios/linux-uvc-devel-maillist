@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20suyin%20crystal%20eye%20webcam%20064e%3Aa103%20not%20working&In-Reply-To=%3Cebff8ece0905192029v5ed79fd6nee0e9162f2261ad5%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004782.html">
+   <LINK REL="Next"  HREF="004789.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working</H1>
+    <B>bruce m beach</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20suyin%20crystal%20eye%20webcam%20064e%3Aa103%20not%20working&In-Reply-To=%3Cebff8ece0905192029v5ed79fd6nee0e9162f2261ad5%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working">brucembeach at gmail.com
+       </A><BR>
+    <I>Wed May 20 05:29:27 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004782.html">[Linux-uvc-devel] R: Re:  Hotplug event
+</A></li>
+        <LI>Next message: <A HREF="004789.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4784">[ date ]</a>
+              <a href="thread.html#4784">[ thread ]</a>
+              <a href="subject.html#4784">[ subject ]</a>
+              <a href="author.html#4784">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello Laurent
+
+&gt;<i> &gt;    ioctl: VIDIOC_S_STD(std=0x0 []): Invalid argument
+</I>&gt;<i> &gt;    why is the ioctl call failing?
+</I>&gt;<i> Because VIDIOC_S_STD isn't supported by webcam drivers (that ioctl only makes
+</I>&gt;<i> sense for analog video). xawtv should be able to cope with that. You might
+</I>&gt;<i> want to upgrade it.
+</I>
+I have xawtv-3.95 which is the latest stable release.
+
+&gt;<i> &gt;      and why does it keep telling me
+</I>&gt;<i> &gt;      no way to get: 384x288 16 bit TrueColor (LE)
+</I>&gt;<i> &gt;      no way to get: 2048x1572 32 bit TrueColor (BE: rgb)
+</I>&gt;<i>
+</I>&gt;<i> Is that related to the webcam or to the display ?
+</I>
+This I don't know. Xorg.0.log gives me
+
+(==) RADEON(0): Depth 24, (==) framebuffer bpp 32
+(II) RADEON(0): Pixel depth = 24 bits stored in 4 bytes (32 bpp pixmaps)
+(==) RADEON(0): Default visual is TrueColor
+(**) RADEON(0): Option &quot;DRI&quot;
+
+so the message may be a side effect of something else especially if
+it doesn't ring a bell for you. I think xawtv may not be working at all
+since the webcam green light doesn't come on whereas with luvcview it
+does. At this point I'm not going to bother with it.
+
+&gt;<i> &gt;     Anyway any ideas as to how to proceed are appreciated.
+</I>&gt;<i> Use luvcview for testing. If luvcview doesn't work xawtv will not work either.
+</I>
+Okay. Here's what I have done to the code in luvcview, (luvcview-20070512)
+since it looks like it might take a long time to get this going.
+
+1) added -g to the CFLAGS to add debugging support for gdb if it ever
+   gets to that level.
+2) set static int debug = 1; in v4l2uvc.c to get whatever error
+   messages it has.
+3) For starts added a perror message at the beginning of every function
+   call like below:
+
+int check_videoIn(struct vdIn *vd, char *device)
+{
+int ret;
+perror(&quot;START init_v4l2&quot;);
+
+Later on if needed I could add some kind of switch to turn them on
+and off. This has tracked down the a problem with terminating the
+program. Currently only kill -9 will work. Have a look at the following
+output notice the last entry:
+
+ ... ... ...
+ ... ... ...
+START dec_rec2: Success
+START idct: Success
+START idct: Success
+START idct: Success
+START idct: Success
+START idct: Success
+START idct: Success
+START yuv420pto422: Success
+START dec_readmarker: Success
+START eventThread: Success
+START uvcGrab: Success
+START video_enable: Success
+uvcGrab: memset(&amp;vd-&gt;buf, 0, sizeof(struct v4l2_buffer));: Success
+uvcGrab: vd-&gt;buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;));: Success
+uvcGrab: vd-&gt;buf.memory = V4L2_MEMORY_MMAP;: Success
+uvcGrab: ret=ioctl(vd-&gt;fd, VIDIOC_DQBUF, &amp;vd-&gt;buf); (BEFORE THE CALL): Success
+uvcGrab: ret = ioctl(vd-&gt;fd, VIDIOC_DQBUF, &amp;vd-&gt;buf (AFTER THE CALL);: Success
+uvcGrab just before  Capture a single raw frame: Success
+V4L2_PIX_FMT_MJPEG: Success
+START jpeg_decode: Success
+bytes in used 77389
+END uvcGrab normal: Success
+START uvcGrab: Success
+uvcGrab: memset(&amp;vd-&gt;buf, 0, sizeof(struct v4l2_buffer));: Success
+uvcGrab: vd-&gt;buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;));: Success
+uvcGrab: vd-&gt;buf.memory = V4L2_MEMORY_MMAP;: Success
+uvcGrab: ret=ioctl(vd-&gt;fd, VIDIOC_DQBUF, &amp;vd-&gt;buf); (BEFORE THE CALL): Success
+                                                     ^^^^^^ ^^^ ^^^^
+The program does all its initializations printing out lots of stuff (which
+I don't show here) and eventually arrives at uvcGrab (Which I assume is the
+routine entered at the frame rate to get the camera data by whatever method).
+The call is completed once, some other stuff is executed, it is entered
+again, calls
+
+    ret=ioctl(vd-&gt;fd, VIDIOC_DQBUF, &amp;vd-&gt;buf)
+
+and never returns. (notice the message (BEFORE THE CALL). It stays
+in the call until kill -9 luvcview(PID) is executed.
+
+&quot;ps x&quot; gives:
+
+2592 pts/3    Sl+    0:00 luvcview
+
+indicating interruptible sleep (waiting for an event to complete) and
+multi threaded. On question is why doesn't it time out?
+
+I have another webcam (0c45:6009 Microdia VideoCAM ExpressII) that uses
+&quot;modprobe sn9c102&quot; to work. If I run it with luvcview it is only gives
+a green screen but the uvcGrab looping  works and it terminates normally.
+I have another program (sn-webcam) where the ExpressII works okay.
+
+By the way doing &quot;make&quot; on luvcview gives a lot of redefinitions like:
+
+uvcvideo.h:31:1: warning: &quot;V4L2_CID_WHITE_BALANCE_TEMPERATURE&quot; redefined
+
+I assume this is intentional. Anyway looking forward to you comments.
+
+Bruce
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004782.html">[Linux-uvc-devel] R: Re:  Hotplug event
+</A></li>
+	<LI>Next message: <A HREF="004789.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4784">[ date ]</a>
+              <a href="thread.html#4784">[ thread ]</a>
+              <a href="subject.html#4784">[ subject ]</a>
+              <a href="author.html#4784">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

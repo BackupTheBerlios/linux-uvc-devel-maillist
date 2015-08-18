@@ -1,0 +1,239 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Running multiple webcams on the same hub
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Running%20multiple%20webcams%20on%20the%20same%20hub&In-Reply-To=%3C4C87A9A0.5090502%40open-t.co.uk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005937.html">
+   <LINK REL="Next"  HREF="005939.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Running multiple webcams on the same hub</H1>
+    <B>Sebastian</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Running%20multiple%20webcams%20on%20the%20same%20hub&In-Reply-To=%3C4C87A9A0.5090502%40open-t.co.uk%3E"
+       TITLE="[Linux-uvc-devel] Running multiple webcams on the same hub">shop at open-t.co.uk
+       </A><BR>
+    <I>Wed Sep  8 17:20:00 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005937.html">[Linux-uvc-devel] Running multiple webcams on the same hub
+</A></li>
+        <LI>Next message: <A HREF="005939.html">[Linux-uvc-devel] Another Confirmed Model
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5938">[ date ]</a>
+              <a href="thread.html#5938">[ thread ]</a>
+              <a href="subject.html#5938">[ subject ]</a>
+              <a href="author.html#5938">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I've posted the stuff below a while ago - but I've just discovered I was 
+actually replying privately to the original poster by mistake. So a bit 
+late, but I will post it again to the list - just in case anybody is 
+interested.
+
+On 09/08/2010 03:04 PM, Martin wrote:
+&gt;<i> OK, so the current linux UVC driver doesn't support still image capture.
+</I>&gt;<i>
+</I>&gt;<i> What is needed to implement that?
+</I>&gt;<i>
+</I>&gt;<i> Is it just a case of programming in the data structures, or is there a
+</I>&gt;<i> lot more needed for decoding/converting a captured image and interfacing?
+</I>&gt;<i>
+</I>&gt;<i> Will a new /dev device need creating dedicated to still image capture?...
+</I>&gt;<i>
+</I>&gt;<i> How much interest is there for that? (Presumably there will be some so
+</I>&gt;<i> as to utilise HD webcams to their full resolution...)
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i> Martin
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> On 30/08/10 12:30, Martin wrote:
+</I>&gt;&gt;<i> On 27/08/10 15:14, Martin wrote:
+</I>&gt;&gt;&gt;<i> The problem:
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>  From reading around this list and elsewhere, it appears that you simply
+</I>&gt;&gt;&gt;<i> cannot run more than one webcam video stream per USB root hub.
+</I>
+I have managed to get 4 cameras working, at 10fps and 640x480 on one usb 
+2.0 controller. The only way I managed to achieve this was by using 
+mjpeg capable cameras - and forcing the stream in mjpeg format directly 
+from the webcam - not in raw video.
+
+Also, according to my experiments - it looks like the compression rate 
+varies from camera to camera (probably a characteristic of the internal 
+chipset) - which will affect the usb bandwidth used. I have 4 different 
+mjpeg capable webcam models - I could run some measurements.
+
+VLC is capable of requesting mjpeg stream. FFmpeg was capable - but the 
+syntax changed. However, it looks like it is possible to set the camera 
+in mjpeg mode using v4l2-ctl first - which would open up the possibility 
+of using other capture software which is not capable of requesting an 
+mjpeg stream - I think.
+
+One more thing - avoid Microsoft LifeCam Cinema HD - it requests a 
+constant amount of bandwidth - regardless of resolution or compression 
+used - so that is a no go. Unless you modify the v4l2/uvc driver - to 
+ignore the bandwidth requests from camera.
+
+Hope the above helps a bit,
+
+Sebastian
+
+&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> When enabled for video streaming, the webcam reserves the full
+</I>&gt;&gt;&gt;<i> isochronous bandwidth needed to stream data at the selected resolution
+</I>&gt;&gt;&gt;<i> and framerate, regardless...
+</I>&gt;<i>
+</I>&gt;<i> [...]
+</I>&gt;<i>
+</I>&gt;&gt;&gt;<i> *A possible solution* ?
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Instead, could the UVC driver 'simulate' a reduced framerate by instead
+</I>&gt;&gt;&gt;<i> using the &quot;STILL_IMAGE_FRAME&quot; mode of the webcam and grab for itself a
+</I>&gt;&gt;&gt;<i> set number of images per second? Or even only when polled by a read from
+</I>&gt;&gt;&gt;<i> the user application?
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> On *nix, &quot;everything is a file&quot;... Could the uvc driver accept reading
+</I>&gt;&gt;&gt;<i> of /dev/videoX by the command &quot;cp&quot; so that still image data is copied,
+</I>&gt;&gt;&gt;<i> formatted for a jpg or png?
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Could the &quot;quirks&quot; setting be abused to set the image grab rate? Or some
+</I>&gt;&gt;&gt;<i> other neater method?
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> That still looks to be the best solution. The webcam is supposed to
+</I>&gt;&gt;<i> support still image capture, but how do I do that?! Is there a nice
+</I>&gt;&gt;<i> little snippet of C code that I can compile to grab a still image to a
+</I>&gt;&gt;<i> jpg or png?
+</I>&gt;<i>
+</I>&gt;<i> [...]
+</I>&gt;<i>
+</I>&gt;&gt;&gt;<i> Further details:
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> I'm trying to use two webcams simultaneously:
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>    iManufacturer           1 Sweex
+</I>&gt;&gt;&gt;<i>    iProduct                2 WC060 Series HD Webcam
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> On separate hubs, they work fine. On the same hub, the second one to
+</I>&gt;&gt;&gt;<i> start shows the error:
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> &quot;Error starting stream VIDIOC_STREAMON: No space left on device&quot;.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> I've only got the one root hub on the system I want to use for the two
+</I>&gt;&gt;&gt;<i> webcams!
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Their descriptors show:
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>          bFrameIntervalType                  2
+</I>&gt;&gt;&gt;<i>          dwFrameInterval( 0)           2000000
+</I>&gt;&gt;&gt;<i>          dwFrameInterval( 1)           4000000
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Can I tweak the UVC driver to preferentially choose the slower frame
+</I>&gt;&gt;&gt;<i> rate available?
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Aside: The MJPG format doesn't seem to work, nor are any compression
+</I>&gt;&gt;&gt;<i> settings visible...
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Given a few hints or a patch, I can hack the kernel module to test :-)
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> This is running on Gentoo, kernel 2.6.34 using the in-kernel uvc module.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Any comment/ideas welcomed.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Regards,
+</I>&gt;&gt;&gt;<i> Martin
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>  From lsusb -v (excerpt):
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> VideoStreaming Interface Descriptor:
+</I>&gt;&gt;&gt;<i>          bLength                            34
+</I>&gt;&gt;&gt;<i>          bDescriptorType                    36
+</I>&gt;&gt;&gt;<i>          bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;&gt;&gt;<i>          bFrameIndex                         9
+</I>&gt;&gt;&gt;<i>          bmCapabilities                   0x00
+</I>&gt;&gt;&gt;<i>            Still image unsupported
+</I>&gt;&gt;&gt;<i>          wWidth                           1600
+</I>&gt;&gt;&gt;<i>          wHeight                          1200
+</I>&gt;&gt;&gt;<i>          dwMinBitRate                   768000
+</I>&gt;&gt;&gt;<i>          dwMaxBitRate                196608000
+</I>&gt;&gt;&gt;<i>          dwMaxVideoFrameBufferSize     3840000
+</I>&gt;&gt;&gt;<i>          dwDefaultFrameInterval        2000000
+</I>&gt;&gt;&gt;<i>          bFrameIntervalType                  2
+</I>&gt;&gt;&gt;<i>          dwFrameInterval( 0)           2000000
+</I>&gt;&gt;&gt;<i>          dwFrameInterval( 1)           4000000
+</I>&gt;&gt;&gt;<i> VideoStreaming Interface Descriptor:
+</I>&gt;&gt;&gt;<i>          bLength                            42
+</I>&gt;&gt;&gt;<i>          bDescriptorType                    36
+</I>&gt;&gt;&gt;<i>          bDescriptorSubtype                  3 (STILL_IMAGE_FRAME)
+</I>&gt;&gt;&gt;<i>          bEndpointAddress                    0
+</I>&gt;&gt;&gt;<i>          bNumImageSizePatterns               9
+</I>&gt;&gt;&gt;<i>          wWidth( 0)                        640
+</I>&gt;&gt;&gt;<i>          wHeight( 0)                       480
+</I>&gt;&gt;&gt;<i>          wWidth( 1)                        352
+</I>&gt;&gt;&gt;<i>          wHeight( 1)                       288
+</I>&gt;&gt;&gt;<i>          wWidth( 2)                        320
+</I>&gt;&gt;&gt;<i>          wHeight( 2)                       240
+</I>&gt;&gt;&gt;<i>          wWidth( 3)                        176
+</I>&gt;&gt;&gt;<i>          wHeight( 3)                       144
+</I>&gt;&gt;&gt;<i>          wWidth( 4)                        160
+</I>&gt;&gt;&gt;<i>          wHeight( 4)                       120
+</I>&gt;&gt;&gt;<i>          wWidth( 5)                        800
+</I>&gt;&gt;&gt;<i>          wHeight( 5)                       600
+</I>&gt;&gt;&gt;<i>          wWidth( 6)                       1280
+</I>&gt;&gt;&gt;<i>          wHeight( 6)                       960
+</I>&gt;&gt;&gt;<i>          wWidth( 7)                       1280
+</I>&gt;&gt;&gt;<i>          wHeight( 7)                      1024
+</I>&gt;&gt;&gt;<i>          wWidth( 8)                       1600
+</I>&gt;&gt;&gt;<i>          wHeight( 8)                      1200
+</I>&gt;&gt;&gt;<i>          bNumCompressionPatterns             9
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005937.html">[Linux-uvc-devel] Running multiple webcams on the same hub
+</A></li>
+	<LI>Next message: <A HREF="005939.html">[Linux-uvc-devel] Another Confirmed Model
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5938">[ date ]</a>
+              <a href="thread.html#5938">[ thread ]</a>
+              <a href="subject.html#5938">[ subject ]</a>
+              <a href="author.html#5938">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] BisonCam 5986:0203 kills USB
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20BisonCam%205986%3A0203%20kills%20USB&In-Reply-To=%3C200911260138.00802.stephan.diestelhorst%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005338.html">
+   <LINK REL="Next"  HREF="005341.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] BisonCam 5986:0203 kills USB</H1>
+    <B>Stephan Diestelhorst</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20BisonCam%205986%3A0203%20kills%20USB&In-Reply-To=%3C200911260138.00802.stephan.diestelhorst%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] BisonCam 5986:0203 kills USB">stephan.diestelhorst at gmail.com
+       </A><BR>
+    <I>Thu Nov 26 01:38:00 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005338.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+        <LI>Next message: <A HREF="005341.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5340">[ date ]</a>
+              <a href="thread.html#5340">[ thread ]</a>
+              <a href="subject.html#5340">[ subject ]</a>
+              <a href="author.html#5340">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Again with proper sender. Sorry.
+Am Donnerstag 26 November 2009 00:13:23 schrieb Stephan Diestelhorst:
+&gt;<i> Am Mittwoch 25 November 2009 23:38:25 schrieb Alan Stern:
+</I>&gt;<i> &gt; On Wed, 25 Nov 2009, Stephan Diestelhorst wrote:
+</I>&gt;<i> &gt; You should add a dump_stack() line to handshake_on_error_set_halt(), 
+</I>&gt;<i> &gt; just after the ehci_err() call.  Then we'd be able to see the failure 
+</I>&gt;<i> &gt; pathway and determine whether it really was caused by the delay being 
+</I>&gt;<i> &gt; too short.
+</I>&gt;<i> 
+</I>&gt;<i> Will do that now and report back.
+</I>&gt;<i>
+</I>&gt;<i> I have bumped the delay up to 1000 us, and could not trigger the
+</I>&gt;<i> issue, even with doing modprobe uvcvideo; rmmod uvcvideo in a loop for
+</I>&gt;<i> several hundred interations, with varying delays between the insert
+</I>&gt;<i> and removal. However, I am not sure, whether this is actually stress
+</I>&gt;<i> testing anything.
+</I>
+Gotcha. Tried again with 500 us delay and the repeated modprobe/rmmod.
+Crashed the thing quite quickly, see attachment for the relevant
+excerpt (including call stack) from dmesg.
+
+Now back to bumping up the value. rant { The compilation speed on this
+machine does not help, though. Partly thanks to the disk encryption
+eating some of the few Atom-FLOPS. Maybe compiling on an unencrypted
+USB key does the trick. Erm, no. For that the USB system should work
+:<i>-/ }
+</I>
+Cheers,
+  Stephan
+-------------- next part --------------
+[  208.638789] usbcore: deregistering interface driver uvcvideo
+[  246.782150] uvcvideo: Found UVC 1.00 device BisonCam, NB Pro (5986:0203)
+[  246.786416] input: BisonCam, NB Pro as /devices/pci0000:00/0000:00:1d.7/usb1/1-5/1-5:1.0/input/input10
+[  246.786612] usbcore: registered new interface driver uvcvideo
+[  246.786621] USB Video Class driver (v0.1.0)
+[  246.820018] ehci_hcd 0000:00:1d.7: force halt; handhake f8042024 00004000 00000000 -&gt; -110
+[  246.820018] Pid: 2332, comm: hald-probe-vide Tainted: G         C 2.6.31.4-bison-u2000 #14
+[  246.820018] Call Trace:
+[  246.820018]  [&lt;c0563aa1&gt;] ? printk+0x18/0x1f
+[  246.820018]  [&lt;c04174fc&gt;] handshake_on_error_set_halt+0x8c/0xa0
+[  246.820018]  [&lt;c0417651&gt;] enable_periodic+0x51/0xa0
+[  246.820018]  [&lt;c0418df6&gt;] qh_schedule+0x236/0x300
+[  246.820018]  [&lt;c041cc01&gt;] ehci_urb_enqueue+0x631/0xc80
+[  246.820018]  [&lt;c040616f&gt;] usb_hcd_submit_urb+0x13f/0xaf0
+[  246.820018]  [&lt;c013ac21&gt;] ? enqueue_task_fair+0x31/0x70
+[  246.820018]  [&lt;c011b911&gt;] ? native_smp_send_reschedule+0x31/0x50
+[  246.820018]  [&lt;c013012e&gt;] ? resched_task+0x5e/0x70
+[  246.820018]  [&lt;c0139977&gt;] ? try_to_wake_up+0xf7/0x350
+[  246.820018]  [&lt;c0566338&gt;] ? _spin_lock+0x8/0x10
+[  246.820018]  [&lt;c01f4612&gt;] ? __d_lookup+0x102/0x110
+[  246.820018]  [&lt;c0406f4d&gt;] usb_submit_urb+0xdd/0x240
+[  246.820018]  [&lt;f837eea5&gt;] ? uvc_v4l2_open+0x75/0x160 [uvcvideo]
+[  246.820018]  [&lt;c040aeb2&gt;] ? usb_autopm_do_interface+0x82/0xf0
+[  246.820018]  [&lt;f838241b&gt;] uvc_status_start+0x1b/0x20 [uvcvideo]
+[  246.820018]  [&lt;f837eedc&gt;] uvc_v4l2_open+0xac/0x160 [uvcvideo]
+[  246.820018]  [&lt;c01e60ca&gt;] ? exact_lock+0xa/0x20
+[  246.820018]  [&lt;f8112932&gt;] v4l2_open+0x62/0xa0 [videodev]
+[  246.820018]  [&lt;c01e631d&gt;] chrdev_open+0xcd/0x190
+[  246.820018]  [&lt;c01e14d9&gt;] __dentry_open+0xb9/0x230
+[  246.820018]  [&lt;c01e1735&gt;] nameidata_to_filp+0x55/0x70
+[  246.820018]  [&lt;c01e6250&gt;] ? chrdev_open+0x0/0x190
+[  246.820018]  [&lt;c01ef0da&gt;] do_filp_open+0x53a/0x920
+[  246.820018]  [&lt;c01af591&gt;] ? unlock_page+0x41/0x50
+[  246.820018]  [&lt;c01c7038&gt;] ? __do_fault+0x388/0x470
+[  246.820018]  [&lt;c01e1270&gt;] do_sys_open+0x50/0x150
+[  246.820018]  [&lt;c01e13d9&gt;] sys_open+0x29/0x40
+[  246.820018]  [&lt;c01033ac&gt;] syscall_call+0x7/0xb
+[  247.079713] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.087168] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.094976] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.102383] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.109743] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.113368] hub 1-0:1.0: Cannot enable port 6.  Maybe the USB cable is bad?
+[  247.117367] hub 1-0:1.0: cannot disable port 6 (err = -108)
+[  247.120767] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.124569] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.127725] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.130755] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.134138] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.136794] hub 1-0:1.0: Cannot enable port 6.  Maybe the USB cable is bad?
+[  247.139802] hub 1-0:1.0: cannot disable port 6 (err = -108)
+[  247.142394] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.145476] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.148030] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.150844] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.153222] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.155875] hub 1-0:1.0: Cannot enable port 6.  Maybe the USB cable is bad?
+[  247.158207] hub 1-0:1.0: cannot disable port 6 (err = -108)
+[  247.160913] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.163136] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.165388] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.168111] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.170241] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  247.172308] hub 1-0:1.0: Cannot enable port 6.  Maybe the USB cable is bad?
+[  247.174908] hub 1-0:1.0: cannot disable port 6 (err = -108)
+[  247.177043] hub 1-0:1.0: cannot disable port 6 (err = -108)
+[  247.179673] hub 1-0:1.0: hub_port_status failed (err = -108)
+[  247.829353] usbcore: deregistering interface driver uvcvideo
+[  247.908608] uvcvideo: Found UVC 1.00 device BisonCam, NB Pro (5986:0203)
+[  247.908661] uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling workaround.
+[  247.908678] uvcvideo: Failed to query (129) UVC probe control : -108 (exp. 26).
+[  247.911117] uvcvideo: Failed to initialize the device (-5).
+[  247.913213] usbcore: registered new interface driver uvcvideo
+[  247.913224] USB Video Class driver (v0.1.0)
+[  248.948360] usbcore: deregistering interface driver uvcvideo
+[  248.987338] uvcvideo: Found UVC 1.00 device BisonCam, NB Pro (5986:0203)
+[  248.987410] uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling workaround.
+[  248.987432] uvcvideo: Failed to query (129) UVC probe control : -108 (exp. 26).
+[  248.991170] uvcvideo: Failed to initialize the device (-5).
+[  248.996860] usbcore: registered new interface driver uvcvideo
+[  248.996873] USB Video Class driver (v0.1.0)
+[  250.027311] usbcore: deregistering interface driver uvcvideo
+[  250.065112] uvcvideo: Found UVC 1.00 device BisonCam, NB Pro (5986:0203)
+[  250.065166] uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling workaround.
+[  250.065184] uvcvideo: Failed to query (129) UVC probe control : -108 (exp. 26).
+[  250.067093] uvcvideo: Failed to initialize the device (-5).
+[  250.069135] usbcore: registered new interface driver uvcvideo
+[  250.069147] USB Video Class driver (v0.1.0)
+[  251.105638] usbcore: deregistering interface driver uvcvideo
+[  251.142583] uvcvideo: Found UVC 1.00 device BisonCam, NB Pro (5986:0203)
+[  251.142623] uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling workaround.
+[  251.142634] uvcvideo: Failed to query (129) UVC probe control : -108 (exp. 26).
+[  251.144805] uvcvideo: Failed to initialize the device (-5).
+[  251.147469] usbcore: registered new interface driver uvcvideo
+[  251.147481] USB Video Class driver (v0.1.0)
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005338.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+	<LI>Next message: <A HREF="005341.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5340">[ date ]</a>
+              <a href="thread.html#5340">[ thread ]</a>
+              <a href="subject.html#5340">[ subject ]</a>
+              <a href="author.html#5340">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

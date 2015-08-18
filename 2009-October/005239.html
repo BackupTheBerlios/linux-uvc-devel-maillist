@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks	046d:0991&quot;
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20again%20%22Logitech%20QuickCam%20Pro%20for%20Notebooks%0A%09046d%3A0991%22&In-Reply-To=%3C200910220155.25481.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005234.html">
+   <LINK REL="Next"  HREF="005241.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks	046d:0991&quot;</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20again%20%22Logitech%20QuickCam%20Pro%20for%20Notebooks%0A%09046d%3A0991%22&In-Reply-To=%3C200910220155.25481.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks	046d:0991&quot;">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu Oct 22 01:55:25 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005234.html">[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks 046d:0991&quot;
+</A></li>
+        <LI>Next message: <A HREF="005241.html">[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks 046d:0991&quot;
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5239">[ date ]</a>
+              <a href="thread.html#5239">[ thread ]</a>
+              <a href="subject.html#5239">[ subject ]</a>
+              <a href="author.html#5239">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Alexey,
+
+On Thursday 15 October 2009 21:00:59 Alexey Fisher wrote:
+&gt;<i> I did some simple dirty hack, it prevent webcam from being killed by cheese.
+</I>&gt;<i> On other site it make cheese work too.
+</I>&gt;<i> Like Paulo said,  the camera is slow and it need more time to make thirst
+</I>&gt;<i> start, some time it need 8 seconds on second start it need about 2 seconds. 
+</I>&gt;<i> If we call STREAMOFF before we get EOF, the camera will die.
+</I>
+Which EOF are you talking about here ? The UVC bit in the video packets header 
+? How have you tested that ?
+
+&gt;<i> IMHO, the driver should decide if camera ready or not. The easiest way
+</I>&gt;<i> is, to add SLOWSTART quirk. Correct way probobly will be to check if camera
+</I>&gt;<i> ready or not.
+</I>&gt;<i> Any ideas how to make it? Or any other ideas?
+</I>&gt;<i> 
+</I>&gt;<i> I know, cheese use some bruteforce way to get settings, but the bug in
+</I>&gt;<i> cheese make the bug in uvcvideo easy to reproduce.
+</I>
+It's not a bug in uvcvideo but a bug in the camera. Have you been to isolate 
+exactly which sequence of ioctls issued by Cheese make the camera crash ? I'd 
+like more information about that.
+
+
+
+&gt;<i> here is this hack:
+</I>&gt;<i> 
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> b/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> index f960e8e..fdc7007 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_video.c
+</I>&gt;<i> @@ -794,7 +794,7 @@ static void uvc_uninit_video(struct uvc_streaming
+</I>&gt;<i> *stream, int free_buffers)
+</I>&gt;<i> {
+</I>&gt;<i> 	struct urb *urb;
+</I>&gt;<i> 	unsigned int i;
+</I>&gt;<i> -
+</I>&gt;<i> +	msleep(5000);
+</I>&gt;<i> 	for (i = 0; i &lt; UVC_URBS; ++i) {
+</I>&gt;<i> 	urb = stream-&gt;urb[i];
+</I>&gt;<i> 	if (urb == NULL)
+</I>&gt;<i> @@ -985,7 +985,7 @@ static int uvc_init_video(struct uvc_streaming
+</I>&gt;<i> *stream, gfp_t gfp_flags)
+</I>&gt;<i> 			return ret;
+</I>&gt;<i> 		}
+</I>&gt;<i> 	}
+</I>&gt;<i> -
+</I>&gt;<i> +	msleep(5000);
+</I>&gt;<i> 	return 0;
+</I>&gt;<i> }
+</I>
+I hate random sleeps. Really. I'll need more information about the bug, as 
+well as a simple userspace test application, before making any such change to 
+the driver.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005234.html">[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks 046d:0991&quot;
+</A></li>
+	<LI>Next message: <A HREF="005241.html">[Linux-uvc-devel] again &quot;Logitech QuickCam Pro for Notebooks 046d:0991&quot;
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5239">[ date ]</a>
+              <a href="thread.html#5239">[ thread ]</a>
+              <a href="subject.html#5239">[ subject ]</a>
+              <a href="author.html#5239">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

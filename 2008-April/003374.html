@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] svn 200 on 2.6.10 kernel
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20svn%20200%20on%202.6.10%20kernel&In-Reply-To=%3C4806330A.9070402%40redembedded.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003361.html">
+   <LINK REL="Next"  HREF="003378.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] svn 200 on 2.6.10 kernel</H1>
+    <B>Darren Longhorn</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20svn%20200%20on%202.6.10%20kernel&In-Reply-To=%3C4806330A.9070402%40redembedded.com%3E"
+       TITLE="[Linux-uvc-devel] svn 200 on 2.6.10 kernel">darren.longhorn at redembedded.com
+       </A><BR>
+    <I>Wed Apr 16 19:10:34 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003361.html">[Linux-uvc-devel] svn 200 on 2.6.10 kernel
+</A></li>
+        <LI>Next message: <A HREF="003378.html">[Linux-uvc-devel] svn 200 on 2.6.10 kernel
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3374">[ date ]</a>
+              <a href="thread.html#3374">[ thread ]</a>
+              <a href="subject.html#3374">[ subject ]</a>
+              <a href="author.html#3374">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+Laurent Pinchart wrote:
+&gt;<i> 2.6.10 is indeed quite old, and definitely unsupported by the Linux UVC 
+</I>&gt;<i> driver. You might be able to make it work, but I can't guarantee anything.
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>OK, I'll try and make it work. I understand when you say such an old 
+kernel is unsupported, but I will continue to ask questions as I address 
+problems if I may.
+&gt;&gt;<i> The first problem appears to be that I have another definition of
+</I>&gt;&gt;<i> kzalloc, so I guess I could just remove the one in uvc_driver.c ?
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> This is strange, as kzalloc has been introduced in 2.6.14. Are you using a 
+</I>&gt;<i> patched version of the 2.6.10 kernel ?
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>Yes, I am. It's the Texas Instruments version of the Monta Visyta 
+distribution. I have previoulsy had a patched version of uvc svn 148 
+that worked with one web cam, but I have had little success with others. 
+I want to try and move to the latest svn to be able to support a better 
+range of cameras.
+&gt;<i> If the kzalloc implementation in your kernel sources is compatible with what 
+</I>&gt;<i> the Linux UVC driver expects it should be safe to remove it from 
+</I>&gt;<i> uvc_compat.h.
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>It looks like that is the case.
+
+My next issue was that back in 2.6.10 'struct usb_device' defined in 
+linux/usb.h does not have a field named 'product'. It seemed harmless to 
+me to simply remove the use of that field.
+
+The final issue I saw in uvc_driver.c is unknown type for pm_message_t 
+used as a parameter in uvc_suspend(). As the parameter isn't used I just 
+#defined it as u32.
+
+
+So now I have moced on to uvc_status.c where I get the following errors:
+
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">guest at UbuntuBuildVM</A>:~/fp/ext/lib/driver/linux/webcam/uvc$ make 
+CROSS_COMPILE=arm_v5t_le-  uvcvideo
+Building USB Video Class driver...
+make[1]: Entering directory 
+`/home/guest/fp/ext/lib/kernel/linux/montavista/lsp/ti-davinci'
+  CC [M]  /home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_driver.o
+  CC [M]  /home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.o
+/home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.c:19:29: 
+linux/usb_input.h: No such file or directory
+/home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.c: In function 
+`uvc_input_init':
+/home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.c:36: warning: 
+implicit declaration of function `input_allocate_device'
+/home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.c:36: warning: 
+assignment makes pointer from integer without a cast
+/home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.c:50: warning: 
+implicit declaration of function `usb_to_input_id'
+/home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.c:54: error: 
+structure has no member named `cdev'
+/home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.c:60: error: 
+void value not ignored as it ought to be
+/home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.c:67: warning: 
+implicit declaration of function `input_free_device'
+make[2]: *** 
+[/home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.o] Error 1
+make[1]: *** [_module_/home/guest/fp/ext/lib/driver/linux/webcam/uvc] 
+Error 2
+make[1]: Leaving directory 
+`/home/guest/fp/ext/lib/kernel/linux/montavista/lsp/ti-davinci'
+make: *** [uvcvideo] Error 2
+
+I have neither &lt;linux/usb_input.h&gt; nor implementations of 
+input_allocate_device(), usb_to_input() or input_free_device(). What is 
+the purpose of these functions and do you think it would be posible to 
+provide local implementations?
+
+Thanks in advance for any suggestions.
+
+Darren
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080416/bc84210c/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080416/bc84210c/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003361.html">[Linux-uvc-devel] svn 200 on 2.6.10 kernel
+</A></li>
+	<LI>Next message: <A HREF="003378.html">[Linux-uvc-devel] svn 200 on 2.6.10 kernel
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3374">[ date ]</a>
+              <a href="thread.html#3374">[ thread ]</a>
+              <a href="subject.html#3374">[ subject ]</a>
+              <a href="author.html#3374">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

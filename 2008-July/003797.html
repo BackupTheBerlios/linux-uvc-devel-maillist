@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Concurent accesses to multiple devices.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Concurent%20accesses%20to%20multiple%20devices.&In-Reply-To=%3C200807091848.02046.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003794.html">
+   <LINK REL="Next"  HREF="003800.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Concurent accesses to multiple devices.</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Concurent%20accesses%20to%20multiple%20devices.&In-Reply-To=%3C200807091848.02046.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Concurent accesses to multiple devices.">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Jul  9 18:48:01 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003794.html">[Linux-uvc-devel] Concurent accesses to multiple devices.
+</A></li>
+        <LI>Next message: <A HREF="003800.html">[Linux-uvc-devel] Concurent accesses to multiple devices.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3797">[ date ]</a>
+              <a href="thread.html#3797">[ thread ]</a>
+              <a href="subject.html#3797">[ subject ]</a>
+              <a href="author.html#3797">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Pierre,
+
+On Wednesday 09 July 2008, MARTIN Pierre wrote:
+&gt;<i> Hello list people :)
+</I>&gt;<i>
+</I>&gt;<i> i have been posting about some issues i had a couple of monthes ago.
+</I>&gt;<i> The company i'm working for was in the need of a system with 5
+</I>&gt;<i> webcams, able to shoot simultaneously &quot;objects&quot; from 5 different POVs.
+</I>&gt;<i> The generated pictures are then used for 3D modeling.
+</I>&gt;<i>
+</I>&gt;<i> Big problem, the &quot;object&quot; is a horse, so the total time of shooting
+</I>&gt;<i> has to be around 10 seconds, not more, because holding a horse still
+</I>&gt;<i> for more than 10 seconds require super powers, which we don't have (Or
+</I>&gt;<i> are too expensive, i dont know) :)
+</I>&gt;<i>
+</I>&gt;<i> So we bought 5 quickcam 9000 pro, since the required resolution to
+</I>&gt;<i> have a find 3D mesh is 1600x1200.
+</I>&gt;<i>
+</I>&gt;<i> Actually, all the webcams are wired to a single USB hub, and a little
+</I>&gt;<i> application i have coded handles a very simple queue when the user
+</I>&gt;<i> presses the &quot;shoot&quot; button.
+</I>&gt;<i> The application simply calls the uvccapture command, waits for it to
+</I>&gt;<i> finish, stores the result, and starts uvccapture on the next camera (/
+</I>&gt;<i> dev/video0 / 1 / 2 / 3 / 4) and so on.
+</I>&gt;<i>
+</I>&gt;<i> The task takes around 18 seconds it's a bit too much.
+</I>&gt;<i>
+</I>&gt;<i> So i was wondering... Why not to use two USB hubs to wire the cameras,
+</I>&gt;<i> 3 cameras on the first hub, two on the second, so the application will
+</I>&gt;<i> be able to shoot two cams at the same time, then again, then the one
+</I>&gt;<i> remaining?
+</I>&gt;<i>
+</I>&gt;<i> So today i coded this workflow on my application, /dev/video0 to /dev/
+</I>&gt;<i> video2 on the first hub, /dev/video3 and /dev/video4 on the other.
+</I>&gt;<i> The goal was to shoot video0 / video 3 at the same time, then video1 /
+</I>&gt;<i> video4 at the same time, then /dev/video3.
+</I>&gt;<i> And i was very surprised to see that the system doesn't allows me
+</I>&gt;<i> simultaneous requests to the driver.
+</I>&gt;<i>
+</I>&gt;<i> Is there any solution to that?
+</I>
+Logitech cameras don't support MJPEG compression for 1600x1200. Streaming such 
+a high resolution in YUV requires a high bandwidth, and USB 2.0 doesn't 
+provide enough bandwidth to stream from two 1600x1200 cameras at the same 
+time.
+
+Logitech webcams are quite slow to initialise the first time you use them, but 
+might be faster the second time your run your application if you don't 
+disconnect the cameras. Could you please try that and let me know if it 
+helps ?
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003794.html">[Linux-uvc-devel] Concurent accesses to multiple devices.
+</A></li>
+	<LI>Next message: <A HREF="003800.html">[Linux-uvc-devel] Concurent accesses to multiple devices.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3797">[ date ]</a>
+              <a href="thread.html#3797">[ thread ]</a>
+              <a href="subject.html#3797">[ subject ]</a>
+              <a href="author.html#3797">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

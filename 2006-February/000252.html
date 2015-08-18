@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [SVN] Added preliminary pan/tilt support for Quickcam Orbit MP
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BSVN%5D%20Added%20preliminary%20pan/tilt%20support%20for%20Quickcam%20Orbit%20MP&In-Reply-To=%3C200602071532.32531.mxhaard%40magic.fr%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000253.html">
+   <LINK REL="Next"  HREF="000254.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [SVN] Added preliminary pan/tilt support for Quickcam Orbit MP</H1>
+    <B>michel Xhaard</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BSVN%5D%20Added%20preliminary%20pan/tilt%20support%20for%20Quickcam%20Orbit%20MP&In-Reply-To=%3C200602071532.32531.mxhaard%40magic.fr%3E"
+       TITLE="[Linux-uvc-devel] [SVN] Added preliminary pan/tilt support for Quickcam Orbit MP">mxhaard at magic.fr
+       </A><BR>
+    <I>Tue Feb  7 15:32:32 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000253.html">[Linux-uvc-devel] [SVN] Added preliminary pan/tilt support for Quickcam Orbit MP
+</A></li>
+        <LI>Next message: <A HREF="000254.html">[Linux-uvc-devel] luvcview support pan /tilt :)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#252">[ date ]</a>
+              <a href="thread.html#252">[ thread ]</a>
+              <a href="subject.html#252">[ subject ]</a>
+              <a href="author.html#252">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Le Mardi 7 F&#233;vrier 2006 14:45, Laurent Pinchart a &#233;crit&#160;:
+&gt;<i> &gt; The pantilt reset now work fine , but the pan tilt relative, not really
+</I>&gt;<i> &gt; like i need  :)
+</I>&gt;<i> &gt; as i did not really understand, how the signed value are in the 4 char
+</I>&gt;<i> &gt; array, i have try to set up one union like that :
+</I>&gt;<i> &gt; union pantilt {
+</I>&gt;<i> &gt; 	struct {
+</I>&gt;<i> &gt; 		short pan;
+</I>&gt;<i> &gt; 		short tilt;
+</I>&gt;<i> &gt; 	} s16;
+</I>&gt;<i> &gt; 	int value;
+</I>&gt;<i> &gt; } pantilt;
+</I>&gt;<i> &gt; so i expect s16.pan reffer to the signed value of pan  and
+</I>&gt;<i> &gt; s16.tilt to the tilt value.
+</I>&gt;<i> &gt; as a result the sign of relative goes right, tilt and pan is not mixed
+</I>&gt;<i> &gt; and i can scan min to max or max to min , but difficukt to stop the scan
+</I>&gt;<i> &gt; between :(
+</I>&gt;<i>
+</I>&gt;<i> I just noticed that there's an endianess problem in the driver. Please try
+</I>&gt;<i> the following code.
+</I>&gt;<i>
+</I>&gt;<i> ---------------------------------------------------------------------------
+</I>&gt;<i>-- union pantilt {
+</I>&gt;<i> 	unsigned char bytes[4];
+</I>&gt;<i> 	int value;
+</I>&gt;<i> } pantilt;
+</I>&gt;<i>
+</I>&gt;<i> pantilt.bytes[0] = (pan &gt;&gt; 0) &amp; 0xff;
+</I>&gt;<i> pantilt.bytes[1] = (pan &gt;&gt; 8) &amp; 0xff;
+</I>&gt;<i> pantilt.bytes[2] = (tilt &gt;&gt; 0) &amp; 0xff;
+</I>&gt;<i> pantilt.bytes[3] = (tilt &gt;&gt; 8) &amp; 0xff;
+</I>&gt;<i>
+</I>&gt;<i> ctrl.value = pantilt.value;
+</I>&gt;<i> ---------------------------------------------------------------------------
+</I>&gt;<i>--
+</I>&gt;<i>
+</I>&gt;<i> This will only work on little endian platforms. Please note that the
+</I>&gt;<i> interface will probably change as soon as I find time to rework the
+</I>&gt;<i> controls handling code.
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="http://lists.berlios.de/mailman/listinfo/linux-uvc-devel">http://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>
+Feb  7 15:29:51 linux kernel: uvcvideo: Failed to query (135) UVC control 4 
+(unit 2) : -110.
+Feb  7 15:29:51 linux kernel: uvcvideo: Failed to query (130) UVC control 4 
+(unit 2) : -75.
+Feb  7 15:30:06 linux kernel: uvcvideo: Failed to query (1) UVC control 1 
+(unit 2) : -32.
+Feb  7 15:30:06 linux kernel: uvcvideo: Failed to query (1) UVC control 1 
+(unit 2) : -32.
+Feb  7 15:30:40 linux su: (to root) michel on /dev/pts/4
+Feb  7 15:30:40 linux su: (to root) michel on /dev/pts/4
+-- 
+Michel Xhaard
+<A HREF="http://mxhaard.free.fr">http://mxhaard.free.fr</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000253.html">[Linux-uvc-devel] [SVN] Added preliminary pan/tilt support for Quickcam Orbit MP
+</A></li>
+	<LI>Next message: <A HREF="000254.html">[Linux-uvc-devel] luvcview support pan /tilt :)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#252">[ date ]</a>
+              <a href="thread.html#252">[ thread ]</a>
+              <a href="subject.html#252">[ subject ]</a>
+              <a href="author.html#252">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

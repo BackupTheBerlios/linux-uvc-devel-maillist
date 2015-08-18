@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Driver hangs at DQBUF ioctl
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Driver%20hangs%20at%20DQBUF%20ioctl&In-Reply-To=%3C200806301739.45386.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003680.html">
+   <LINK REL="Next"  HREF="003668.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Driver hangs at DQBUF ioctl</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Driver%20hangs%20at%20DQBUF%20ioctl&In-Reply-To=%3C200806301739.45386.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Driver hangs at DQBUF ioctl">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Jun 30 17:39:45 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003680.html">[Linux-uvc-devel] Driver hangs at DQBUF ioctl
+</A></li>
+        <LI>Next message: <A HREF="003668.html">[Linux-uvc-devel] [HOW-TO] Upside-down image from UVC webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3691">[ date ]</a>
+              <a href="thread.html#3691">[ thread ]</a>
+              <a href="subject.html#3691">[ subject ]</a>
+              <a href="author.html#3691">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Gregor,
+
+On Thursday 26 June 2008, Gregor Jasny wrote:
+&gt;<i> Hi all,
+</I>&gt;<i>
+</I>&gt;<i> this got a somewhat lengthy bugreport.
+</I>
+Thanks for the report.
+
+&gt;<i> Some words to my environment: 
+</I>&gt;<i>
+</I>&gt;<i> These traces were produced on a Core2Duo (in amd64 mode) with a ASUS P5B
+</I>&gt;<i> board and vanilla Linux 2.6.25.8. I observed the same behavior on a 32bit
+</I>&gt;<i> QuadCore with a Logitech 9000 and Linux 2.6.25.6.
+</I>&gt;<i>
+</I>&gt;<i> This is the trace from my app. As you can see, the main thread (17460)
+</I>&gt;<i> queues the buffer, starts the grabbing thread right after the STREAMON and
+</I>&gt;<i> queries brightness, contrast, hue and saturation.
+</I>&gt;<i> The grabbing thread tries to dequeue a buffer and hangs:
+</I>&gt;<i>
+</I>&gt;<i> -&gt; Thread=17460 ioctl=c058560f          QBUF
+</I>&gt;<i> &lt;- Thread=17460 ioctl=c058560f ret=0    QBUF
+</I>&gt;<i> -&gt; Thread=17460 ioctl=c058560f          QBUF
+</I>&gt;<i> &lt;- Thread=17460 ioctl=c058560f ret=0    QBUF
+</I>&gt;<i> -&gt; Thread=17460 ioctl=40045612          STREAMON
+</I>&gt;<i> &lt;- Thread=17460 ioctl=40045612 ret=0    STREAMON
+</I>&gt;<i> -&gt; Thread=17460 ioctl=c0445624          QUERYCTRL
+</I>&gt;<i> -&gt; Thread=17487 ioctl=c0585611          DQBUF
+</I>&gt;<i> &lt;- Thread=17460 ioctl=c0445624 ret=0    QUERYCTRL
+</I>&gt;<i> -&gt; Thread=17460 ioctl=c008561b          G_CTRL
+</I>&gt;<i> &lt;- Thread=17460 ioctl=c008561b ret=0    G_CTRL
+</I>&gt;<i> -&gt; Thread=17460 ioctl=c0445624          QUERYCTRL
+</I>&gt;<i> &lt;- Thread=17460 ioctl=c0445624 ret=0    QUERYCTRL
+</I>&gt;<i> -&gt; Thread=17460 ioctl=c008561b          G_CTRL
+</I>&gt;<i> &lt;- Thread=17460 ioctl=c008561b ret=0    G_CTRL
+</I>&gt;<i> -&gt; Thread=17460 ioctl=c0445624          QUERYCTRL
+</I>&gt;<i> &lt;- Thread=17460 ioctl=c0445624 ret=0    QUERYCTRL
+</I>&gt;<i> -&gt; Thread=17460 ioctl=c008561b          G_CTRL
+</I>&gt;<i> &lt;- Thread=17460 ioctl=c008561b ret=0    G_CTRL
+</I>&gt;<i> -&gt; Thread=17460 ioctl=c0445624          QUERYCTRL
+</I>&gt;<i> &lt;- Thread=17460 ioctl=c0445624 ret=0    QUERYCTRL
+</I>&gt;<i> -&gt; Thread=17460 ioctl=c008561b          G_CTRL
+</I>&gt;<i> &lt;- Thread=17460 ioctl=c008561b ret=0    G_CTRL
+</I>
+This looks valid to me. I'm not aware of a specific code path that would fail 
+on that.
+
+[snip]
+
+&gt;<i> One maybe interesting observation: If I reload the module after a
+</I>&gt;<i> deadlock and let the camera plugged in, the following trace is produced:
+</I>&gt;<i> A now started luvcview blocks during dqbuf, too (See next trace).
+</I>&gt;<i> The only way to get a working camera again is to replug the camera.
+</I>
+This suggests a device issue, but let's not rule out driver issues too fast.
+
+[snip]
+
+&gt;<i> Every time the driver is loaded, the driver prints the following line:
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>&gt;<i>
+</I>&gt;<i> Would it be possible to suppress this query by a camera specific quirk?
+</I>
+Probably, although the query shouldn't hurt. The driver issues a GET_DEF query 
+on the video control, and falls back to GET_CUR when GET_DEF fails.
+
+&gt;<i> Where in the driver should I add what traces?
+</I>
+uvc_video_complete() and uvc_video_decode_start() are good candidates. Print a 
+message for each incoming isochronous packet with its status, its length and 
+the first few bytes of the header. I would like to know if the driver 
+receives any data at all from the camera.
+
+&gt;<i> Is it possible to let a dqbuf ioctl have a time out?
+</I>
+You could replace wait_event_interruptible() with 
+wait_event_interruptible_timeout() in uvc_queue_waiton(). I'm not sure if 
+V4L2 allows that behaviour though. You can already turn DQBUF into a 
+non-blocking operation by setting the O_NONBLOCK flag when you open the 
+device.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003680.html">[Linux-uvc-devel] Driver hangs at DQBUF ioctl
+</A></li>
+	<LI>Next message: <A HREF="003668.html">[Linux-uvc-devel] [HOW-TO] Upside-down image from UVC webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3691">[ date ]</a>
+              <a href="thread.html#3691">[ thread ]</a>
+              <a href="subject.html#3691">[ subject ]</a>
+              <a href="author.html#3691">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

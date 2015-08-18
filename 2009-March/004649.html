@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech QuickCam Pro 9000, unable to get more then 5 fps when live recording, whats going on?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20Pro%209000%2C%0A%20unable%20to%20get%20more%20then%205%20fps%20when%20live%20recording%2C%20whats%20going%20on%3F&In-Reply-To=%3C49BCE7AF.40504%40powercraft.nl%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004646.html">
+   <LINK REL="Next"  HREF="004644.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech QuickCam Pro 9000, unable to get more then 5 fps when live recording, whats going on?</H1>
+    <B>Jelle de Jong</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20Pro%209000%2C%0A%20unable%20to%20get%20more%20then%205%20fps%20when%20live%20recording%2C%20whats%20going%20on%3F&In-Reply-To=%3C49BCE7AF.40504%40powercraft.nl%3E"
+       TITLE="[Linux-uvc-devel] Logitech QuickCam Pro 9000, unable to get more then 5 fps when live recording, whats going on?">jelledejong at powercraft.nl
+       </A><BR>
+    <I>Sun Mar 15 12:34:07 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004646.html">[Linux-uvc-devel] Logitech QuickCam Pro 9000,	unable to get more then 5 fps when live recording, whats going on?
+</A></li>
+        <LI>Next message: <A HREF="004644.html">[Linux-uvc-devel] Lenovo Thinkpad SL400 webcam also needs	&quot;quirks=16&quot;
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4649">[ date ]</a>
+              <a href="thread.html#4649">[ thread ]</a>
+              <a href="subject.html#4649">[ subject ]</a>
+              <a href="author.html#4649">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi laurent, thanks for your mail.
+
+Laurent Pinchart wrote:
+&gt;<i> Hi Jelle,
+</I>&gt;<i> 
+</I>&gt;<i> On Friday 13 March 2009 22:38:57 Jelle de Jong wrote:
+</I>&gt;&gt;<i> I did a lot more testing today (this is full day 5 already) and I found
+</I>&gt;&gt;<i> some very disturbing discoveries!
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I can watch the webcam at width=320:height=240:fps=30 and have the
+</I>&gt;&gt;<i> correct result. However when going over this resolution I will get only
+</I>&gt;&gt;<i> 15 fps and i can max go to 640x480 resolution.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Any idea why a tool as guvcviewer seems to output 800x600 and even
+</I>&gt;&gt;<i> 1600x1200 but mplayer does not want go higher as 640x480 (it does go lower)
+</I>&gt;<i> 
+</I>&gt;<i> Available resolutions depend on the image format. Your camera supports 
+</I>&gt;<i> uncompressed YUYV up to 1600x1200 and MJPEG up to 960x720. This doesn't 
+</I>&gt;<i> explain why MPlayer won't go any higher than 640x480 though, but you should be 
+</I>&gt;<i> aware that the selected image format affects the available resolutions.
+</I>
+Yes I am aware of the dependencies between video codec and fps and the
+resolutions. In my reports2.tar.gz in my previous mails. you can see I
+tried both video capture modes of the webcam the video modes are in the
+mplayer outputs logs. But to be sure the problem does is not my fault or
+my webcams, I would like to have some other test reporst form other users
+when they try to use mplayer and mencoder. I sent some basics commands in
+my previous mail to the mailinglist, would you be willing to test them?
+
+&gt;<i> 
+</I>&gt;&gt;<i> I upgraded to guvcview 1.0.2 and tested some more there is still the
+</I>&gt;&gt;<i> issue that i get lower fps when recording. Could somebody test recording
+</I>&gt;&gt;<i> 800x600 with 25fps and sound, if its really 25fps the sound will be in
+</I>&gt;&gt;<i> sync.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Also i tested the v4l2 fields of the webcam and there are a lot of errors
+</I>&gt;&gt;<i> and non working fields. Is the device really v4l2 compatible? Could
+</I>&gt;&gt;<i> somebody check this out further?
+</I>&gt;<i> 
+</I>&gt;<i> What do you mean by v4l2 fields ? What kind of errors do you get ? Are they 
+</I>&gt;<i> pure userspace, or does the driver print error messages to the kernel log as 
+</I>&gt;<i> well ?
+</I>
+See the v4l-info2.log attachment in my previous messages to the list,
+there i used some commands to get the v4l2 capabilities but the output is
+full with errors, I would really appreciated it if somebody could run
+these commands o there working webcams.
+
+&gt;<i> 
+</I>&gt;&gt;<i> I also want to use the device on headless machines so no X. How can I
+</I>&gt;&gt;<i> configure the device then so it does not use auto exposure...?
+</I>&gt;<i> 
+</I>&gt;<i> Use a command line tool such as v4l2-ctl or uvcdynctrl (part of the libwebcam 
+</I>&gt;<i> package, make sure you use the SVN version) to change controls.
+</I>
+I cant find the v4l2-ctl tools! I will look at the libwebcam and hope it
+will be worth the investment in time.
+
+&gt;<i> 
+</I>&gt;&gt;<i> I attacked all test reports I made that lead to my conclusions please
+</I>&gt;&gt;<i> look at them.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I can be contacted on chat.freenode.org as /msg tuxcrafter
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Does somebody know a usb device that can be used for recording with v4l2
+</I>&gt;&gt;<i> capable tools at at-leased 25pfs and 800x600 some auto balancing and
+</I>&gt;&gt;<i> focusing would be nice to.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Again please checkout the attachment.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Thanks in advance for help.
+</I>&gt;<i> 
+</I>&gt;<i> Best regards,
+</I>&gt;<i> 
+</I>&gt;<i> Laurent Pinchart
+</I>
+Best regards,
+
+Jelle de Jong
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004646.html">[Linux-uvc-devel] Logitech QuickCam Pro 9000,	unable to get more then 5 fps when live recording, whats going on?
+</A></li>
+	<LI>Next message: <A HREF="004644.html">[Linux-uvc-devel] Lenovo Thinkpad SL400 webcam also needs	&quot;quirks=16&quot;
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4649">[ date ]</a>
+              <a href="thread.html#4649">[ thread ]</a>
+              <a href="subject.html#4649">[ subject ]</a>
+              <a href="author.html#4649">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

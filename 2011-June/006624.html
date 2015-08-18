@@ -1,0 +1,365 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH v2] uvcvideo: Extract timestamp-related	statistics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%20v2%5D%20uvcvideo%3A%20Extract%20timestamp-related%0A%09statistics&In-Reply-To=%3C1308214767-30766-1-git-send-email-laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006615.html">
+   <LINK REL="Next"  HREF="006639.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH v2] uvcvideo: Extract timestamp-related	statistics</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%20v2%5D%20uvcvideo%3A%20Extract%20timestamp-related%0A%09statistics&In-Reply-To=%3C1308214767-30766-1-git-send-email-laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] [PATCH v2] uvcvideo: Extract timestamp-related	statistics">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu Jun 16 10:59:27 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006615.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+        <LI>Next message: <A HREF="006639.html">[Linux-uvc-devel] [PATCH v2] uvcvideo: Extract	timestamp-related statistics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6624">[ date ]</a>
+              <a href="thread.html#6624">[ thread ]</a>
+              <a href="subject.html#6624">[ subject ]</a>
+              <a href="author.html#6624">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Signed-off-by: Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt;
+---
+ drivers/media/video/uvc/uvc_video.c |  196 ++++++++++++++++++++++++++++++++++-
+ drivers/media/video/uvc/uvcvideo.h  |   39 +++++++
+ 2 files changed, 234 insertions(+), 1 deletions(-)
+
+Hi Yann,
+
+Here's a second version of the patch that prints the estimated SOF frequency.
+With this information we should have all the stats we need. Let me know if you
+think something is missing. I will then run this on the webcams I own and post
+the results.
+
+diff --git a/drivers/media/video/uvc/uvc_video.c b/drivers/media/video/uvc/uvc_video.c
+index fc766b9..feb585b 100644
+--- a/drivers/media/video/uvc/uvc_video.c
++++ b/drivers/media/video/uvc/uvc_video.c
+@@ -358,6 +358,191 @@ int uvc_commit_video(struct uvc_streaming *stream,
+ }
+ 
+ /* ------------------------------------------------------------------------
++ * Timestamp statistics
++ */
++
++static void uvc_video_stats_decode(struct uvc_streaming *stream,
++		const __u8 *data, int len)
++{
++	unsigned int header_size;
++	bool has_pts = false;
++	bool has_scr = false;
++	u16 scr_sof;
++	u32 scr_stc;
++	u32 pts;
++
++	if (stream-&gt;stats.stream.nb_frames == 0 &amp;&amp;
++	    stream-&gt;stats.frame.nb_packets == 0)
++		ktime_get_ts(&amp;stream-&gt;stats.stream.start_ts);
++
++	switch (data[1] &amp; (UVC_STREAM_PTS | UVC_STREAM_SCR)) {
++	case UVC_STREAM_PTS | UVC_STREAM_SCR:
++		header_size = 12;
++		has_pts = true;
++		has_scr = true;
++		break;
++	case UVC_STREAM_PTS:
++		header_size = 6;
++		has_pts = true;
++		break;
++	case UVC_STREAM_SCR:
++		header_size = 8;
++		has_scr = true;
++		break;
++	default:
++		header_size = 2;
++		break;
++	}
++
++	/* Check for invalid headers. */
++	if (len &lt; header_size) {
++		stream-&gt;stats.frame.nb_invalid_headers++;
++		return;
++	}
++
++	/* Extract the timestamps. */
++	if (has_pts)
++		pts = get_unaligned_le32(&amp;data[2]);
++
++	if (has_scr) {
++		scr_stc = get_unaligned_le32(&amp;data[header_size - 6]);
++		scr_sof = get_unaligned_le16(&amp;data[header_size - 2]);
++	}
++
++	/* Is PTS constant through the whole frame ? */
++	if (has_pts &amp;&amp; stream-&gt;stats.frame.nb_pts) {
++		if (stream-&gt;stats.frame.pts != pts) {
++			stream-&gt;stats.frame.nb_pts_diffs++;
++			stream-&gt;stats.frame.last_pts_diff =
++				stream-&gt;stats.frame.nb_packets;
++		}
++	}
++
++	if (has_pts) {
++		stream-&gt;stats.frame.nb_pts++;
++		stream-&gt;stats.frame.pts = pts;
++	}
++
++	/* Do all frames have a PTS in their first non-empty packet, or before
++	 * their first empty packet ?
++	 */
++	if (stream-&gt;stats.frame.size == 0) {
++		if (len &gt; header_size)
++			stream-&gt;stats.frame.has_initial_pts = has_pts;
++		if (len == header_size &amp;&amp; has_pts)
++			stream-&gt;stats.frame.has_early_pts = true;
++	}
++
++	/* Do the SCR.STC and SCR.SOF fields vary through the frame ? */
++	if (has_scr &amp;&amp; stream-&gt;stats.frame.nb_scr) {
++		if (stream-&gt;stats.frame.scr_stc != scr_stc)
++			stream-&gt;stats.frame.nb_scr_diffs++;
++	}
++
++	if (has_scr) {
++		/* Expand the SOF counter to 32 bits and store its value. */
++		if (stream-&gt;stats.stream.nb_frames &gt; 0 ||
++		    stream-&gt;stats.frame.nb_scr &gt; 0)
++			stream-&gt;stats.stream.scr_sof_count +=
++				(scr_sof - stream-&gt;stats.stream.scr_sof) % 2048;
++		stream-&gt;stats.stream.scr_sof = scr_sof;
++
++		stream-&gt;stats.frame.nb_scr++;
++		stream-&gt;stats.frame.scr_stc = scr_stc;
++		stream-&gt;stats.frame.scr_sof = scr_sof;
++
++		if (scr_sof &lt; stream-&gt;stats.stream.min_sof)
++			stream-&gt;stats.stream.min_sof = scr_sof;
++		if (scr_sof &gt; stream-&gt;stats.stream.max_sof)
++			stream-&gt;stats.stream.max_sof = scr_sof;
++	}
++
++	if (stream-&gt;stats.frame.size == 0 &amp;&amp; len &gt; header_size)
++		stream-&gt;stats.frame.first_data = stream-&gt;stats.frame.nb_packets;
++
++	stream-&gt;stats.frame.size += len - header_size;
++	stream-&gt;stats.frame.nb_packets++;
++	if (len &gt; header_size)
++		stream-&gt;stats.frame.nb_non_empty_packets++;
++
++	if (data[1] &amp; UVC_STREAM_ERR)
++		stream-&gt;stats.frame.nb_errors++;
++}
++
++static void uvc_video_stats_update(struct uvc_streaming *stream)
++{
++	struct uvc_stats_frame *frame = &amp;stream-&gt;stats.frame;
++
++	uvc_trace(UVC_TRACE_TIMESTAMP, &quot;frame %u stats: %u/%u/%u packets &quot;
++		  &quot;%u/%u/%u pts (%searly %sinitial) %u/%u scr\n&quot;,
++		  stream-&gt;sequence, frame-&gt;first_data,
++		  frame-&gt;nb_non_empty_packets, frame-&gt;nb_packets,
++		  frame-&gt;nb_pts_diffs, frame-&gt;last_pts_diff, frame-&gt;nb_pts,
++		  frame-&gt;has_early_pts ? &quot;&quot; : &quot;!&quot;,
++		  frame-&gt;has_initial_pts ? &quot;&quot; : &quot;!&quot;,
++		  frame-&gt;nb_scr_diffs, frame-&gt;nb_scr);
++
++	stream-&gt;stats.stream.nb_frames++;
++
++	if (frame-&gt;has_early_pts)
++		stream-&gt;stats.stream.nb_pts_early++;
++	if (frame-&gt;has_initial_pts)
++		stream-&gt;stats.stream.nb_pts_initial++;
++	if (frame-&gt;last_pts_diff &lt;= frame-&gt;first_data)
++		stream-&gt;stats.stream.nb_pts_constant++;
++	if (frame-&gt;nb_scr &gt;= frame-&gt;nb_non_empty_packets)
++		stream-&gt;stats.stream.nb_scr_count_ok++;
++	if (frame-&gt;nb_scr_diffs + 1 == frame-&gt;nb_scr)
++		stream-&gt;stats.stream.nb_scr_diffs_ok++;
++
++	memset(&amp;stream-&gt;stats.frame, 0, sizeof(stream-&gt;stats.frame));
++}
++
++static void uvc_video_stats_dump(struct uvc_streaming *stream)
++{
++	unsigned int scr_sof_freq;
++	unsigned int duration;
++	struct timespec ts;
++
++	ktime_get_ts(&amp;ts);
++
++	ts.tv_sec -= stream-&gt;stats.stream.start_ts.tv_sec;
++	ts.tv_nsec -= stream-&gt;stats.stream.start_ts.tv_nsec;
++	if (ts.tv_nsec &lt; 0) {
++		ts.tv_sec--;
++		ts.tv_nsec += 1000000000;
++	}
++
++	/* Compute the SCR.SOF frequency estimate. At the nominal 1kHz SOF
++	 * frequency this will not overflow before more than 1h.
++	 */
++	duration = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
++	if (duration != 0)
++		scr_sof_freq = stream-&gt;stats.stream.scr_sof_count * 1000
++			     / duration;
++	else
++		scr_sof_freq = 0;
++
++	uvc_trace(UVC_TRACE_TIMESTAMP, &quot;stream stats: %u frames %u early pts &quot;
++		  &quot;%u initial pts %u pts ok %u scr count ok %u scr diff ok, &quot;
++		  &quot;%u &lt;= sof &lt;= %u, sof freq %u.%03u kHz\n&quot;,
++		  stream-&gt;stats.stream.nb_frames,
++		  stream-&gt;stats.stream.nb_pts_early,
++		  stream-&gt;stats.stream.nb_pts_initial,
++		  stream-&gt;stats.stream.nb_pts_constant,
++		  stream-&gt;stats.stream.nb_scr_count_ok,
++		  stream-&gt;stats.stream.nb_scr_diffs_ok,
++		  stream-&gt;stats.stream.min_sof, stream-&gt;stats.stream.max_sof,
++		  scr_sof_freq / 1000, scr_sof_freq % 1000);
++}
++
++static void uvc_video_stats_init(struct uvc_streaming *stream)
++{
++	memset(&amp;stream-&gt;stats, 0, sizeof(stream-&gt;stats));
++	stream-&gt;stats.stream.min_sof = 2048;
++}
++
++/* ------------------------------------------------------------------------
+  * Video codecs
+  */
+ 
+@@ -431,8 +616,13 @@ static int uvc_video_decode_start(struct uvc_streaming *stream,
+ 	/* Increase the sequence number regardless of any buffer states, so
+ 	 * that discontinuous sequence numbers always indicate lost frames.
+ 	 */
+-	if (stream-&gt;last_fid != fid)
++	if (stream-&gt;last_fid != fid) {
+ 		stream-&gt;sequence++;
++		if (stream-&gt;sequence)
++			uvc_video_stats_update(stream);
++	}
++
++	uvc_video_stats_decode(stream, data, len);
+ 
+ 	/* Store the payload FID bit and return immediately when the buffer is
+ 	 * NULL.
+@@ -861,6 +1051,8 @@ static void uvc_uninit_video(struct uvc_streaming *stream, int free_buffers)
+ 	struct urb *urb;
+ 	unsigned int i;
+ 
++	uvc_video_stats_dump(stream);
++
+ 	for (i = 0; i &lt; UVC_URBS; ++i) {
+ 		urb = stream-&gt;urb[i];
+ 		if (urb == NULL)
+@@ -994,6 +1186,8 @@ static int uvc_init_video(struct uvc_streaming *stream, gfp_t gfp_flags)
+ 	stream-&gt;bulk.skip_payload = 0;
+ 	stream-&gt;bulk.payload_size = 0;
+ 
++	uvc_video_stats_init(stream);
++
+ 	if (intf-&gt;num_altsetting &gt; 1) {
+ 		struct usb_host_endpoint *best_ep = NULL;
+ 		unsigned int best_psize = 3 * 1024;
+diff --git a/drivers/media/video/uvc/uvcvideo.h b/drivers/media/video/uvc/uvcvideo.h
+index 20107fd..2dfa309 100644
+--- a/drivers/media/video/uvc/uvcvideo.h
++++ b/drivers/media/video/uvc/uvcvideo.h
+@@ -495,6 +495,44 @@ struct uvc_streaming {
+ 
+ 	__u32 sequence;
+ 	__u8 last_fid;
++
++	struct {
++		struct {
++			struct timespec start_ts;	/* Stream start timestamp */
++			unsigned int nb_frames;		/* Number of frames */
++			unsigned int nb_pts_constant;	/* Number of frames with constant PTS */
++			unsigned int nb_pts_early;	/* Number of frames with early PTS */
++			unsigned int nb_pts_initial;	/* Number of frames with initial PTS */
++			unsigned int nb_scr_count_ok;	/* Number of frames with at least one SCR per non empty packet */
++			unsigned int nb_scr_diffs_ok;	/* Number of frames with varying SCR.STC */
++			unsigned int scr_sof_count;	/* STC.SOF counter accumulated since stream start */
++			unsigned int scr_sof;		/* STC.SOF of the last packet */
++			unsigned int min_sof;		/* Minimum STC.SOF value */
++			unsigned int max_sof;		/* Maximum STC.SOF value */
++		} stream;
++
++		struct uvc_stats_frame {
++			unsigned int size;		/* Number of bytes captured */
++			unsigned int first_data;	/* Index of the first non-empty packet */
++
++			unsigned int nb_packets;	/* Number of packets */
++			unsigned int nb_non_empty_packets;	/* Number of non-empty packets */
++			unsigned int nb_invalid_headers;/* Number of packets with an invalid header */
++			unsigned int nb_errors;		/* Number of packets with the error bit set */
++
++			unsigned int nb_pts;		/* Number of packets with a PTS timestamp */
++			unsigned int nb_pts_diffs;	/* Number of PTS differences inside a frame */
++			unsigned int last_pts_diff;	/* Index of the last PTS difference */
++			bool has_initial_pts;		/* Whether the first non-empty packet has a PTS */
++			bool has_early_pts;		/* Whether a PTS is present before the first non-empty packet */
++			u32 pts;			/* PTS of the last packet */
++
++			unsigned int nb_scr;		/* Number of packets with a SCR timestamp */
++			unsigned int nb_scr_diffs;	/* Number of SCR.STC differences inside a frame */
++			u16 scr_sof;			/* SCR.SOF of the last packet */
++			u32 scr_stc;			/* SCR.STC of the last packet */
++		} frame;
++	} stats;
+ };
+ 
+ enum uvc_device_state {
+@@ -566,6 +604,7 @@ struct uvc_driver {
+ #define UVC_TRACE_SUSPEND	(1 &lt;&lt; 8)
+ #define UVC_TRACE_STATUS	(1 &lt;&lt; 9)
+ #define UVC_TRACE_VIDEO		(1 &lt;&lt; 10)
++#define UVC_TRACE_TIMESTAMP	(1 &lt;&lt; 11)
+ 
+ #define UVC_WARN_MINMAX		0
+ #define UVC_WARN_PROBE_DEF	1
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006615.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+	<LI>Next message: <A HREF="006639.html">[Linux-uvc-devel] [PATCH v2] uvcvideo: Extract	timestamp-related statistics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6624">[ date ]</a>
+              <a href="thread.html#6624">[ thread ]</a>
+              <a href="subject.html#6624">[ subject ]</a>
+              <a href="author.html#6624">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

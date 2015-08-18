@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Buffer overflow in uvc-video.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Buffer%20overflow%20in%20uvc-video.&In-Reply-To=%3C20080920201258.66c4c657%40i.geek.nz%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004058.html">
+   <LINK REL="Next"  HREF="004064.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Buffer overflow in uvc-video.</H1>
+    <B>Ralph Loader</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Buffer%20overflow%20in%20uvc-video.&In-Reply-To=%3C20080920201258.66c4c657%40i.geek.nz%3E"
+       TITLE="[Linux-uvc-devel] Buffer overflow in uvc-video.">suckfish at ihug.co.nz
+       </A><BR>
+    <I>Sat Sep 20 10:12:58 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004058.html">[Linux-uvc-devel] new UVC device
+</A></li>
+        <LI>Next message: <A HREF="004064.html">[Linux-uvc-devel] Buffer overflow in uvc-video.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4061">[ date ]</a>
+              <a href="thread.html#4061">[ thread ]</a>
+              <a href="subject.html#4061">[ subject ]</a>
+              <a href="author.html#4061">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+There appears to be a buffer overflow in
+drivers/media/video/uvc/uvc_ctrl.c:
+
+Sep 20 17:53:12 i kernel: BUG kmalloc-8 (Not tainted): Redzone
+overwritten Sep 20 17:53:12 i kernel:
+--------------------------------------------------------------------
+--------- Sep 20 17:53:12 i kernel:
+Sep 20 17:53:12 i kernel: INFO: 0xf2c5ce08-0xf2c5ce0b. First byte 0xa1
+instead of 0xcc 
+Sep 20 17:53:12 i kernel: INFO: Allocated in
+uvc_query_v4l2_ctrl+0x3c/0x239 [uvcvideo] age=13 cpu=1 pid=4975
+...
+
+
+A fixed size 8-byte buffer is allocated, and a variable size field is
+read into it; there is no particular bound on the size of the field
+(it is dependent on hardware and configuration) and it can overflow
+[also verified by inserting printk's.]
+
+The patch below attempts to size the buffer to the correctly; I do not
+know if sufficient validation of that size is carried out.
+
+Cheers,
+Ralph Loader.
+
+diff --git a/drivers/media/video/uvc/uvc_ctrl.c
+b/drivers/media/video/uvc/uvc_ct rl.c
+index 6ef3e52..feab12a 100644
+--- a/drivers/media/video/uvc/uvc_ctrl.c
++++ b/drivers/media/video/uvc/uvc_ctrl.c
+@@ -592,7 +592,7 @@ int uvc_query_v4l2_ctrl(struct uvc_video_device
+*video, if (ctrl == NULL)
+                return -EINVAL;
+ 
+-       data = kmalloc(8, GFP_KERNEL);
++       data = kmalloc(ctrl-&gt;info-&gt;size, GFP_KERNEL);
+        if (data == NULL)
+                return -ENOMEM;
+ 
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004058.html">[Linux-uvc-devel] new UVC device
+</A></li>
+	<LI>Next message: <A HREF="004064.html">[Linux-uvc-devel] Buffer overflow in uvc-video.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4061">[ date ]</a>
+              <a href="thread.html#4061">[ thread ]</a>
+              <a href="subject.html#4061">[ subject ]</a>
+              <a href="author.html#4061">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Multiple camera framerate.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multiple%20camera%20framerate.&In-Reply-To=%3C4BD70E75.8060804%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005704.html">
+   <LINK REL="Next"  HREF="005706.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Multiple camera framerate.</H1>
+    <B>Dennis Muhlestein</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multiple%20camera%20framerate.&In-Reply-To=%3C4BD70E75.8060804%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Multiple camera framerate.">djmuhlestein at gmail.com
+       </A><BR>
+    <I>Tue Apr 27 18:19:01 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005704.html">[Linux-uvc-devel] Multiple camera framerate.
+</A></li>
+        <LI>Next message: <A HREF="005706.html">[Linux-uvc-devel] (no subject)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5710">[ date ]</a>
+              <a href="thread.html#5710">[ thread ]</a>
+              <a href="subject.html#5710">[ subject ]</a>
+              <a href="author.html#5710">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 04/27/2010 05:48 AM, Paulo Assis wrote:
+&gt;<i> Ian
+</I>&gt;<i>
+</I>&gt;<i> 2010/4/27 Ian Latter&lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">ian.latter at midnightcode.org</A>&gt;:
+</I>&gt;&gt;&gt;<i> You can grab frames at whatever speed you want, but it's
+</I>&gt;&gt;<i> the camera
+</I>&gt;&gt;&gt;<i> framerate that will make a difference in the usb bandwidth
+</I>&gt;&gt;<i> and not the
+</I>&gt;&gt;&gt;<i> amount of frames you get with your application.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> So, if you don't take a frame from the UVC driver, it will
+</I>&gt;&gt;<i> simply
+</I>&gt;&gt;<i> continue to refresh an internal buffer with new frames from the
+</I>&gt;&gt;<i> camera device?
+</I>&gt;<i>
+</I>&gt;<i> Think of it like this, the necessary bandwidth is requested by the
+</I>&gt;<i> device and it will depend on the compression, resolution and
+</I>&gt;<i> framerate, in fact I think some (&quot;buggy&quot;) devices will always request
+</I>&gt;<i> the maximum bandwidth causing problems on initialization, for these
+</I>&gt;<i> devices I think uvcvideo uses it's own algorithm to calc the necessary
+</I>&gt;<i> bandwidth.
+</I>
+Do the number of URBs have any effect at all?  I made an initial attempt 
+to check this a while back by recompiling the driver with UVC_URBS as 1 
+or 2 instead of 5.  Changed the MAX_ISO_PACKETS a lot smaller too.  I 
+wanted to see if perhaps submitting less URBs would somehow lessen the 
+bandwidth requirements.  It didn't fix the problem though.
+
+I suspect that somewhere in an underlying layer, whether kernel or 
+physical, something is checking that bandwidth requirement for the 
+configured endpoints and then denying new URBs being submitted.  I'm not 
+opposed to modifying something at a lower level but I haven't found the 
+spot at this point.  I guess if the error comes from the physical hub 
+there isn't much to be done then.
+
+&gt;<i>
+</I>&gt;<i> Also the device will always try to dispatch frames at the requested
+</I>&gt;<i> framerate, if you don't grab them they will simply be dropped by the
+</I>&gt;<i> driver.
+</I>
+I wonder if there is some way to restrict URB submitting to around 10 
+fps?  Perhaps a semaphore on the number of cameras that can be 
+submitting URBs at all.  If I go ahead and configure all the cameras to 
+run at 15 fps but only submit URBs for say 3 of the cameras at a time it 
+seems it would work.  I'm not worried about dropping 1/3 of the frames. 
+  I don't think I can write them all out to storage fast enough anyway. 
+  (I can come close to keeping up with 10 fps on 8 cameras though.)
+
+-Dennis
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005704.html">[Linux-uvc-devel] Multiple camera framerate.
+</A></li>
+	<LI>Next message: <A HREF="005706.html">[Linux-uvc-devel] (no subject)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5710">[ date ]</a>
+              <a href="thread.html#5710">[ thread ]</a>
+              <a href="subject.html#5710">[ subject ]</a>
+              <a href="author.html#5710">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

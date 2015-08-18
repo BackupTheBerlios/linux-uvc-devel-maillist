@@ -1,0 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Panasonic NV-GS180 hardly works
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Panasonic%20NV-GS180%20hardly%20works&In-Reply-To=%3Cc43b2e150706041207s7ebd91d6j8a8ca62f95f2b9c%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001772.html">
+   <LINK REL="Next"  HREF="001774.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Panasonic NV-GS180 hardly works</H1>
+    <B>wixor</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Panasonic%20NV-GS180%20hardly%20works&In-Reply-To=%3Cc43b2e150706041207s7ebd91d6j8a8ca62f95f2b9c%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Panasonic NV-GS180 hardly works">wixorpeek at gmail.com
+       </A><BR>
+    <I>Mon Jun  4 21:07:46 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001772.html">[Linux-uvc-devel] Linux-uvc-devel Digest, Vol 12, Issue 3
+</A></li>
+        <LI>Next message: <A HREF="001774.html">[Linux-uvc-devel] Panasonic NV-GS180 hardly works
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1773">[ date ]</a>
+              <a href="thread.html#1773">[ thread ]</a>
+              <a href="subject.html#1773">[ subject ]</a>
+              <a href="author.html#1773">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+I have Panasonic NV-GS180 (ID 04da:2318) digital camera with &quot;webcam
+mode&quot;. when uvcvideo driver discovers it, says:
+
+usb 2-9: new full speed USB device using ohci_hcd and address 2
+usb 2-9: configuration #1 chosen from 1 choice
+uvcvideo: Found UVC 1.00 device DVC (04da:2318)
+usbcore: registered new interface driver uvcvideo
+USB Video Class driver (v0.1.0)
+
+and /dev/video1 appears. But no known v4l framegrabber is able to use it.
+
+---------------------------------------------------------------------------------------------------------------
+mplayer with v4l2 drivers says:
+
+Selected driver: v4l2
+ name: Video 4 Linux 2 input
+ author: Martin Olschewski &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">olschewski at zpr.uni-koeln.de</A>&gt;
+ comment: first try, more to come ;-)
+v4l2: ioctl get standard failed: Invalid argument
+Selected device: DVC
+ Capabilites:  video capture  streaming
+ supported norms:
+ inputs: 0 = Camera;
+ Current input: 0
+ Current format: unknown (0x47504a4d)
+v4l2: ioctl set format failed: Invalid argument
+v4l2: ioctl set format failed: Invalid argument
+v4l2: ioctl set format failed: Invalid argument
+v4l2: ioctl set format failed: Invalid argument
+v4l2: ioctl set format failed: Invalid argument
+v4l2: ioctl set format failed: Invalid argument
+v4l2: ioctl set format failed: Invalid argument
+v4l2: ioctl set format failed: Invalid argument
+v4l2: ioctl enum norm failed: Invalid argument
+Error: Cannot set norm!
+Selected input hasn't got a tuner!
+v4l2: ioctl set mute failed: Invalid argument
+v4l2: ioctl query control failed: Invalid argument
+v4l2: ioctl query control failed: Invalid argument
+v4l2: ioctl query control failed: Invalid argument
+v4l2: ioctl query control failed: Invalid argument
+FPS not specified in the header or invalid, use the -fps option.
+No stream found.
+
+v4l2: ioctl set mute failed: Invalid argument
+v4l2: 0 frames successfully processed, 0 frames dropped.
+
+when provided with -fps setting (tried various ranging from 1 to 25),
+floods console with
+v4l2: ioctl dequeue buffer failed: Invalid argument, idx = 0
+
+---------------------------------------------------------------------------------------------------------------
+mplayer with v4l driver says:
+
+TV file format detected.
+Selected driver: v4l
+ name: Video 4 Linux input
+ author: Alex Beregszaszi
+ comment: under development
+=================================================================
+ WARNING: YOU ARE USING V4L DEMUXER WITH V4L2 DRIVERS!!!
+ As the V4L1 compatibility layer is broken, this may not work.
+ If you encounter any problems, use driver=v4l2 instead.
+ Bugreports on driver=v4l with v4l2 drivers will be ignored.
+=================================================================
+Selected device: DVC
+ Capabilites: capture
+ Device type: 1
+ Supported sizes: 48x32 =&gt; 320x240
+ Inputs: 1
+ioctl get channel failed: Invalid argument
+ioctl get mbuf failed: Invalid argument
+Segmentation fault
+
+---------------------------------------------------------------------------------------------------------------
+mencoder gets: (in dmesg)
+mencoder[7143] trap divide error rip:51cb31 rsp:7ffff5e02dd0 error:0
+mencoder[7181]: segfault at 0000000000000008 rip 0000000000517aa7 rsp
+00007ffffb1eb378 error 4
+
+---------------------------------------------------------------------------------------------------------------
+xcam gets:
+
+v4l1 ioctl VIDIOCGCAP, dir=r- (0x803c7601)
+v4l2 ioctl VIDIOC_QUERYCAP, dir=r- (0x80685600)
+v4l2 ioctl VIDIOC_ENUMINPUT, dir=rw (0xc050561a)
+v4l2 ioctl VIDIOC_ENUMINPUT, dir=rw (0xc050561a)
+v4l2 ioctl VIDIOC_ENUM_FMT, dir=rw (0xc0405602)
+v4l2 ioctl VIDIOC_TRY_FMT, dir=rw (0xc0d05640)
+ppdev0: registered pardevice
+ppdev0: unregistered pardevice
+v4l1 ioctl VIDIOCGCAP, dir=r- (0x803c7601)
+v4l2 ioctl VIDIOC_QUERYCAP, dir=r- (0x80685600)
+v4l2 ioctl VIDIOC_ENUMINPUT, dir=rw (0xc050561a)
+v4l2 ioctl VIDIOC_ENUMINPUT, dir=rw (0xc050561a)
+v4l2 ioctl VIDIOC_ENUM_FMT, dir=rw (0xc0405602)
+v4l2 ioctl VIDIOC_TRY_FMT, dir=rw (0xc0d05640)
+v4l1 ioctl VIDIOCGCHAN, dir=rw (0xc0307602)
+v4l2 ioctl VIDIOC_ENUMINPUT, dir=rw (0xc050561a)
+v4l2 ioctl VIDIOC_G_STD, dir=r- (0x80085617)
+uvcvideo: Unsupported ioctl 0x80085617
+xcam[10553]: segfault at 0000000000000048 rip 000000000040563b rsp
+00007fff1b8c8df0 error 4
+
+[I have honestly no idea what ppdev does here, but these messages
+appear evey time I launch xcam]
+
+---------------------------------------------------------------------------------------------------------------
+xawtv shows no image and says:
+
+This is xawtv-3.95.dfsg.1, running on Linux/x86_64 (2.6.21)
+/dev/video1 [v4l2]: no overlay support
+v4l-conf had some trouble, trying to continue anyway
+Warning: Cannot convert string
+&quot;-*-ledfixed-medium-r-*--39-*-*-*-c-*-*-*&quot; to type FontStruct
+ioctl: VIDIOC_G_STD(std=0x2b83d4c9f14d
+[PAL_B,PAL_G,PAL_H,PAL_D1,PAL_M,NTSC_M,NTSC_M_JP,?,?,SECAM_B,SECAM_H,SECAM_L,?ATSC_8_VSB,(null),(null),(null),(null),(null),(null),(null),(null),(null),(null),(null)]):
+Invalid argument
+ioctl: VIDIOC_S_STD(std=0x0 []): Invalid argument
+no way to get: 384x288 32 bit TrueColor (LE: bgr-)
+
+---------------------------------------------------------------------------------------------------------------
+gqcam shows green image and says:
+Error reading image...
+dmesg says:
+uvcvideo: Unknown ioctl 0x8030560a
+uvcvideo: Unknown ioctl 0x400e7607
+(I've enabled trace-level-64, so there are much more different
+messages, but these two seem most interesting).
+
+---------------------------------------------------------------------------------------------------------------
+vlc gives just no image. Moreover, these apps behave slight
+differently in each run, but the main &quot;idea&quot; is the same - i didn't
+manage to get image captured even once. I've tried all methods and
+known applications. I've searched this mailing list. Your website says
+this chipset is supported (as far as I understand this). So what am I
+missing? Thanks for paying attention
+
+--
+wixor
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001772.html">[Linux-uvc-devel] Linux-uvc-devel Digest, Vol 12, Issue 3
+</A></li>
+	<LI>Next message: <A HREF="001774.html">[Linux-uvc-devel] Panasonic NV-GS180 hardly works
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1773">[ date ]</a>
+              <a href="thread.html#1773">[ thread ]</a>
+              <a href="subject.html#1773">[ subject ]</a>
+              <a href="author.html#1773">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

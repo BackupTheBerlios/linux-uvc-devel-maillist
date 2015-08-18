@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Max number of packets in an isochronous URB
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Max%20number%20of%20packets%20in%20an%20isochronous%20URB&In-Reply-To=%3C1178794223.2966.46.camel%40altrandsd%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001727.html">
+   <LINK REL="Next"  HREF="001729.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Max number of packets in an isochronous URB</H1>
+    <B>julien quelen</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Max%20number%20of%20packets%20in%20an%20isochronous%20URB&In-Reply-To=%3C1178794223.2966.46.camel%40altrandsd%3E"
+       TITLE="[Linux-uvc-devel] Max number of packets in an isochronous URB">jq03 at tid.es
+       </A><BR>
+    <I>Thu May 10 12:50:23 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001727.html">[Linux-uvc-devel] Max number of packets in an isochronous URB
+</A></li>
+        <LI>Next message: <A HREF="001729.html">[Linux-uvc-devel] Max number of packets in an isochronous URB
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1728">[ date ]</a>
+              <a href="thread.html#1728">[ thread ]</a>
+              <a href="subject.html#1728">[ subject ]</a>
+              <a href="author.html#1728">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+On Thu, 2007-05-10 at 10:56 +0200, Laurent Pinchart wrote:
+&gt;<i> Hi Julien,
+</I>&gt;<i> 
+</I>&gt;<i> &gt; I am working on video capture with several cameras.
+</I>&gt;<i> &gt; I have Logitech QuickCam UltraVision webcams.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Is it possible to reduce the number of packets per isochronous URB in
+</I>&gt;<i> &gt; uvcvideo driver?
+</I>&gt;<i> &gt; By default, UVC_MAX_ISO_PACKETS is egual to 40.
+</I>&gt;<i> 
+</I>&gt;<i> Yes that should be possible. I'm curious, why do you want to do that ?
+</I>
+I try to capture images with several synchronized cameras. I started
+with 2.
+In the configuration I use my cams, (2 captures at JPEG VGA 30fps), I
+observe:
+- An image output period granularity of 5ms for each camera (difference
+between 2 consecutive images queued in the same cam is either 30ms or
+35ms). This comes from the fact that an URB is received in uvc driver
+every 5ms (40 packets of 125us). So as the real period of the streaming
+emitted by the camera is 30fps (I verified with packets PTS and SCR
+fields), an EOF is detected (and the corresponding image is queued) by
+uvc after 30ms, or 35 ms sometimes.
+
+- A image synchronisation jump between 2 cameras. When my 2 cameras are
+synchronized more or less, I still observe some delay jumps of 35ms
+immediately recovered on the next frame. My explication is: Let's
+suppose my 2 cameras are synchronized.The 5ms period granularity makes
+that potentially 1 image can be queued in one driver 5 ms after the
+corresponding synchro image on the other driver. During these 5ms, if I
+dequeue an image (VIDIOC_DQBUF) on the 2 driver, I put the 2 queues in
+a different state.=&gt;one frame desynchro
+
+That why I would like to minimize this 5ms time..
+
+&gt;<i> 
+</I>&gt;<i> &gt; When I change this value to 10 for example, image capture with 1 cam
+</I>&gt;<i> &gt; works fine. However, as soon as i add and capture from a second camera,
+</I>&gt;<i> &gt; images on both cams appear wrong (bad colours, image cut)..
+</I>&gt;<i> 
+</I>&gt;<i> Does it work with 40 packets ?
+</I>
+Yes 2 cams capture works fine with 40 packets. For info, it works also
+for any higher multiple of 40 (80, 120, 160 ..packets), but not for any
+other value.. I can't explain why..
+
+Thanks for reading and your help!
+
+Regards,
+
+Julien
+&gt;<i> 
+</I>&gt;<i> Cheers,
+</I>&gt;<i> 
+</I>&gt;<i> Laurent Pinchart
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001727.html">[Linux-uvc-devel] Max number of packets in an isochronous URB
+</A></li>
+	<LI>Next message: <A HREF="001729.html">[Linux-uvc-devel] Max number of packets in an isochronous URB
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1728">[ date ]</a>
+              <a href="thread.html#1728">[ thread ]</a>
+              <a href="subject.html#1728">[ subject ]</a>
+              <a href="author.html#1728">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

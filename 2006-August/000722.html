@@ -1,0 +1,175 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech QC Orbit MP not working - uvccapture	andluvcview fail
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QC%20Orbit%20MP%20not%20working%20-%20uvccapture%0A%09andluvcview%20fail&In-Reply-To=%3C200608221044.59179.henk%40spaaij.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000721.html">
+   <LINK REL="Next"  HREF="000723.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech QC Orbit MP not working - uvccapture	andluvcview fail</H1>
+    <B>Henk Spaaij</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QC%20Orbit%20MP%20not%20working%20-%20uvccapture%0A%09andluvcview%20fail&In-Reply-To=%3C200608221044.59179.henk%40spaaij.net%3E"
+       TITLE="[Linux-uvc-devel] Logitech QC Orbit MP not working - uvccapture	andluvcview fail">hspaaij at gmail.com
+       </A><BR>
+    <I>Tue Aug 22 19:44:58 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000721.html"> [Linux-uvc-devel] 新発想100％企画！！
+</A></li>
+        <LI>Next message: <A HREF="000723.html"> [Linux-uvc-devel] 近日開催致します。
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#722">[ date ]</a>
+              <a href="thread.html#722">[ thread ]</a>
+              <a href="subject.html#722">[ subject ]</a>
+              <a href="author.html#722">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks Ajay,
+
+On Tuesday 22 August 2006 00:15, Ajay wrote:
+&gt;<i> use -d and /dev/video2 together. it should appear as follows on the
+</I>&gt;<i> command prompt:
+</I>&gt;<i>
+</I>&gt;<i> /$uvccapture -d/dev/video2 -v /
+</I>&gt;<i>
+</I>&gt;<i> hope it helps!! I had the same problem and got solved using what I just
+</I>&gt;<i> said.
+</I>
+I tried it and the good news is that it does make a difference. 
+
+The bad news is that uvccapture hangs forever and the USB system becomes unstable.
+My guess is that the 'uvcvideo' kernel module gets into a bad state.
+
+More detailed information:
+The LED light on the camera comes on, but uvccapture hangs.
+---
+$uvccapture -d/dev/video2 -v
+Using videodevice: /dev/video2
+Saving images to: snap.jpg
+Image size: 320x240
+Taking snapshot every 0 seconds
+Taking images using mmap
+Resetting camera settings
+Camera brightness level is 127
+Camera contrast level is 32
+Camera saturation level is 32
+Camera gain level is 0
+---
+After a minute or so I hit Ctrl-C:
+---
+Exiting...
+---
+Needed to run kill -9 to stop the process.
+
+'lsof |grep uvccapture' gives an idea what it is doing:
+---
+bash      10230       henk  cwd       DIR      253,0      4096     215518 /home/henk/tmp/uvccapture-0.4
+bash      10233       henk  cwd       DIR      253,0      4096     215518 /home/henk/tmp/uvccapture-0.4
+uvccaptur 10664       henk  cwd       DIR      253,0      4096     215518 /home/henk/tmp/uvccapture-0.4
+uvccaptur 10664       henk  rtd       DIR        3,4      4096          2 /
+uvccaptur 10664       henk  txt       REG      253,0     22066     215568 /home/henk/tmp/uvccapture-0.4/uvccapture
+uvccaptur 10664       henk  mem       REG        0,0                    0 [heap] (stat: No such file or directory)
+uvccaptur 10664       henk  mem       CHR       81,2                 8981 /dev/v4l/video2
+uvccaptur 10664       henk  mem       REG        3,4   1206808    4573692 /lib/tls/libc.so
+uvccaptur 10664       henk  mem       REG        3,4    124204    3835866 /usr/lib/libjpeg.so.62.0.0
+uvccaptur 10664       henk  mem       REG        3,4    104100    4573691 /lib/ld-2.3.6.so
+uvccaptur 10664       henk    0u      CHR      136,1                    3 /dev/pts/1
+uvccaptur 10664       henk    1u      CHR      136,1                    3 /dev/pts/1
+uvccaptur 10664       henk    2u      CHR      136,1                    3 /dev/pts/1
+uvccaptur 10664       henk    3u      CHR       81,2                 8981 /dev/v4l/video2
+uvccaptur 10664       henk    4r      REG        3,4     20411     967972 /usr/share/X11/locale/iso8859-1/Compose
+uvccaptur 10664       henk    5r      REG        3,4     20411     967972 /usr/share/X11/locale/iso8859-1/Compose
+uvccaptur 10664       henk   10r      REG        3,4     20411     967972 /usr/share/X11/locale/iso8859-1/Compose
+---
+
+dmesg gives the dreaded &quot;uvcvideo: Failed to query:&quot;, followed by 
+errors of the USB card reader which is plugged in another USB slot.
+---
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32 (exp: 26).
+uvcvideo: Failed to query (135) UVC control 2 (unit 2) : -110 (exp: 2).
+uvcvideo: Failed to query (129) UVC control 2 (unit 2) : -32 (exp: 2).
+uvcvideo: Failed to query (130) UVC control 3 (unit 2) : -32 (exp: 2).
+uvcvideo: Failed to query (129) UVC control 2 (unit 2) : -32 (exp: 2).
+uvcvideo: Failed to query (132) UVC control 2 (unit 2) : -32 (exp: 2).
+uvcvideo: Failed to query (135) UVC control 7 (unit 2) : -32 (exp: 2).
+uvcvideo: Failed to query (135) UVC control 3 (unit 2) : -32 (exp: 2).
+uvcvideo: Failed to query (130) UVC control 9 (unit 2) : -32 (exp: 2).
+usb 3-2: reset high speed USB device using ehci_hcd and address 3
+usb 3-2: reset high speed USB device using ehci_hcd and address 3
+usb 3-2: reset high speed USB device using ehci_hcd and address 3
+usb 3-2: reset high speed USB device using ehci_hcd and address 3
+usb 3-2: reset high speed USB device using ehci_hcd and address 3
+sd 2:0:0:2: scsi: Device offlined - not ready after error recovery
+sd 2:0:0:2: rejecting I/O to offline device
+sd 2:0:0:2: rejecting I/O to offline device
+sd 2:0:0:2: rejecting I/O to offline device
+sd 2:0:0:2: rejecting I/O to offline device
+sdd : READ CAPACITY failed.
+sdd : status=0, message=00, host=1, driver=00
+sdd : sense not available.
+sd 2:0:0:2: rejecting I/O to offline device
+sdd: Write Protect is off
+sdd: Mode Sense: 00 00 00 00
+sdd: assuming drive cache: write through
+usb 3-2: reset high speed USB device using ehci_hcd and address 3
+---
+
+lspci:
+---
+00:00.0 Host bridge: nVidia Corporation nForce3 250Gb Host Bridge (rev a1)
+00:01.0 ISA bridge: nVidia Corporation nForce3 250Gb LPC Bridge (rev a2)
+00:01.1 SMBus: nVidia Corporation nForce 250Gb PCI System Management (rev a1)
+00:02.0 USB Controller: nVidia Corporation CK8S USB Controller (rev a1)
+00:02.1 USB Controller: nVidia Corporation CK8S USB Controller (rev a1)
+00:02.2 USB Controller: nVidia Corporation nForce3 EHCI USB 2.0 Controller (rev a2)
+00:05.0 Bridge: nVidia Corporation CK8S Ethernet Controller (rev a2)
+00:06.0 Multimedia audio controller: nVidia Corporation nForce3 250Gb AC'97 Audio Controller (rev a1)
+00:08.0 IDE interface: nVidia Corporation CK8S Parallel ATA Controller (v2.5) (rev a2)
+00:0a.0 IDE interface: nVidia Corporation CK8S Serial ATA Controller (v2.5) (rev a2)
+00:0b.0 PCI bridge: nVidia Corporation nForce3 250Gb AGP Host to PCI Bridge (rev a2)
+00:0e.0 PCI bridge: nVidia Corporation nForce3 250Gb PCI-to-PCI Bridge (rev a2)
+00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] HyperTransport Technology Configuration
+00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Address Map
+00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRAM Controller
+00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Miscellaneous Control
+01:00.0 VGA compatible controller: nVidia Corporation NV25 [GeForce4 Ti 4200] (rev a3)
+02:08.0 Multimedia video controller: Internext Compression Inc iTVC16 (CX23416) MPEG-2 Encoder (rev 01)
+02:09.0 Multimedia video controller: Brooktree Corporation Bt878 Video Capture (rev 11)
+02:09.1 Multimedia controller: Brooktree Corporation Bt878 Audio Capture (rev 11)
+02:0d.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8169 Gigabit Ethernet (rev 10)
+---
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000721.html"> [Linux-uvc-devel] 新発想100％企画！！
+</A></li>
+	<LI>Next message: <A HREF="000723.html"> [Linux-uvc-devel] 近日開催致します。
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#722">[ date ]</a>
+              <a href="thread.html#722">[ thread ]</a>
+              <a href="subject.html#722">[ subject ]</a>
+              <a href="author.html#722">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

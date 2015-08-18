@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] setting different device numbers other	than	/dev/video0
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20setting%20different%20device%20numbers%20other%0A%09than%09/dev/video0&In-Reply-To=%3C20081202214908.GA28407%40sunshine.barsnick.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004309.html">
+   <LINK REL="Next"  HREF="004316.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] setting different device numbers other	than	/dev/video0</H1>
+    <B>Moritz Barsnick</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20setting%20different%20device%20numbers%20other%0A%09than%09/dev/video0&In-Reply-To=%3C20081202214908.GA28407%40sunshine.barsnick.net%3E"
+       TITLE="[Linux-uvc-devel] setting different device numbers other	than	/dev/video0">barsnick at gmx.net
+       </A><BR>
+    <I>Tue Dec  2 22:49:08 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004309.html">[Linux-uvc-devel] setting different device numbers other than	/dev/video0
+</A></li>
+        <LI>Next message: <A HREF="004316.html">[Linux-uvc-devel] setting different device numbers other than	/dev/video0
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4312">[ date ]</a>
+              <a href="thread.html#4312">[ thread ]</a>
+              <a href="subject.html#4312">[ subject ]</a>
+              <a href="author.html#4312">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Tue, Dec 02, 2008 at 00:04:37 +1100, Rob wrote:
+&gt;<i> Hi All
+</I>&gt;<i> 
+</I>&gt;<i> I was wondering if anyone knew of a way to load the uvcvideo driver so as to
+</I>&gt;<i> pick a different device other than /dev/video0 (say /dev/video1).
+</I>
+linux-uvc calls video_register_device() without a third argument (-1),
+and thereby leaves it up to the system to determine the device node.
+
+I am told that the correct way to do this nowadays is in your udev
+configuration.  However I haven't quickly found any instruction how to
+do this. I'd be happy if someone follows up on this list.
+
+On the other hand, I once wrote a patch to add your desired behavior to
+linux-uvc, with the parameter &quot;dev_req&quot;.  You find it attached.  Feel
+free to build your module(s) with this patch if it's of any help to
+you. :-) Note that the &quot;/dev/video&quot; references are of course
+assumptions and possibly incorrect, only the device node (number) is
+determined, not the actual device's filename.
+
+Moritz
+-------------- next part --------------
+diff -ur linux-uvc-trunk-r205/uvc_driver.c linux-uvc-trunk-r205-device_request/uvc_driver.c
+--- linux-uvc-trunk-r205/uvc_driver.c	2008-04-27 23:10:01.000000000 +0200
++++ linux-uvc-trunk-r205-device_request/uvc_driver.c	2008-04-27 23:13:52.000000000 +0200
+@@ -47,6 +47,7 @@
+ #endif
+ 
+ static unsigned int uvc_quirks_param;
++static unsigned int uvc_dev_req_param = -1;
+ unsigned int uvc_trace_param;
+ 
+ /* ------------------------------------------------------------------------
+@@ -1464,11 +1465,16 @@
+ 	dev-&gt;video.vdev = vdev;
+ 	video_set_drvdata(vdev, &amp;dev-&gt;video);
+ 
+-	if (video_register_device(vdev, VFL_TYPE_GRABBER, -1) &lt; 0) {
++	if (uvc_dev_req_param != -1) {
++		uvc_printk(KERN_INFO, &quot;Explicitly requesting device node %d (/dev/video%d).\n&quot;, uvc_dev_req_param, uvc_dev_req_param);
++	}
++
++	if (video_register_device(vdev, VFL_TYPE_GRABBER, uvc_dev_req_param) &lt; 0) {
+ 		dev-&gt;video.vdev = NULL;
+ 		video_device_release(vdev);
+ 		return -1;
+ 	}
++	uvc_printk(KERN_INFO, &quot;Registered as device node %d (/dev/video%d).\n&quot;, vdev-&gt;minor &amp; 0x3F, vdev-&gt;minor &amp; 0x3F);
+ 
+ 	return 0;
+ }
+@@ -1914,6 +1920,7 @@
+ static void __exit uvc_cleanup(void)
+ {
+ 	usb_deregister(&amp;uvc_driver.driver);
++	uvc_printk(KERN_INFO, &quot;Deregistered driver.\n&quot;);
+ }
+ 
+ module_init(uvc_init);
+@@ -1923,6 +1930,8 @@
+ MODULE_PARM_DESC(quirks, &quot;Forced device quirks&quot;);
+ module_param_named(trace, uvc_trace_param, uint, S_IRUGO|S_IWUSR);
+ MODULE_PARM_DESC(trace, &quot;Trace level bitmask&quot;);
++module_param_named(dev_req, uvc_dev_req_param, int, S_IRUGO|S_IWUSR);
++MODULE_PARM_DESC(dev_req, &quot;Request device node X (/dev/videoX) instead of automatic&quot;);
+ 
+ MODULE_AUTHOR(DRIVER_AUTHOR);
+ MODULE_DESCRIPTION(DRIVER_DESC);
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004309.html">[Linux-uvc-devel] setting different device numbers other than	/dev/video0
+</A></li>
+	<LI>Next message: <A HREF="004316.html">[Linux-uvc-devel] setting different device numbers other than	/dev/video0
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4312">[ date ]</a>
+              <a href="thread.html#4312">[ thread ]</a>
+              <a href="subject.html#4312">[ subject ]</a>
+              <a href="author.html#4312">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Discard%20overrun%20%28corrupted%29%20RX%20images&In-Reply-To=%3C314384.29017.qm%40web120001.mail.ne1.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005776.html">
+   <LINK REL="Next"  HREF="005781.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images</H1>
+    <B>P F</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRFC%5D%20Discard%20overrun%20%28corrupted%29%20RX%20images&In-Reply-To=%3C314384.29017.qm%40web120001.mail.ne1.yahoo.com%3E"
+       TITLE="[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images">public_filter at yahoo.com
+       </A><BR>
+    <I>Wed Jun  9 02:59:30 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005776.html">[Linux-uvc-devel] 064e:a136 Not Supported
+</A></li>
+        <LI>Next message: <A HREF="005781.html">[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5777">[ date ]</a>
+              <a href="thread.html#5777">[ thread ]</a>
+              <a href="subject.html#5777">[ subject ]</a>
+              <a href="author.html#5777">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+First of all, thank you for providing such great Linux support for webcams.&#160; I have encountered an issue in this area that I hope you experts can help with.
+
+I am using UVC/V4L on an embedded system, and I am experiencing a problem with corrupted camera images.&#160; The system consists of a custom ASIC with an ARM926EJ-S and OHCI USB host controller connected to a UVC camera which supports only MJPEG.
+
+The problem I have is that buffers dequeued in user space occasionally contain corrupted JPEGs.&#160; This corruption ranges from slight, with a row of macroblocks shifted, to severe, with the JPEG being totally undecompressible.
+
+If I enable UVC_TRACE_FRAME, I see several instances of:
+&quot;uvcvideo: USB isochronous frame lost (-70).&quot;
+in dmesg.&#160; I have noticed a correlation between the presence of this message and visual corruption in captured JPEGs.
+
+I see that this error code corresponds to -ECOMM, which in turn corresponds to TD_BUFFEROVERRUN in the isochronous packet status.&#160; I assume that this is caused by CPU starvation, which should just manifest as dropped frames.
+
+However, I think these overrun frames are not being dropped, and instead are being passed to user space in an indeterminate state, leading to the visual corruption that I've witnessed.
+
+The attached patch (against 2.6.31) is my na&#239;ve attempt at fixing the problem.&#160; It does appear to resolve the corruption, but I am not entirely sure it's the correct thing to do.&#160; Does it look reasonable?&#160; I would appreciate any feedback.
+
+Thank you,
+Filter
+
+
+      
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: uvc.patch
+Type: text/x-diff
+Size: 593 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100608/e82ebd13/attachment.patch">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100608/e82ebd13/attachment.patch</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005776.html">[Linux-uvc-devel] 064e:a136 Not Supported
+</A></li>
+	<LI>Next message: <A HREF="005781.html">[Linux-uvc-devel] [RFC] Discard overrun (corrupted) RX images
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5777">[ date ]</a>
+              <a href="thread.html#5777">[ thread ]</a>
+              <a href="subject.html#5777">[ subject ]</a>
+              <a href="author.html#5777">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

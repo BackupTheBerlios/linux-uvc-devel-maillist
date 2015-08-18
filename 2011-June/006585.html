@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] test results and a patch for timestamps in UVC
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20test%20results%20and%20a%20patch%20for%20timestamps%20in%20UVC&In-Reply-To=%3C1307859849.4149.8.camel%40zwerg%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006565.html">
+   <LINK REL="Next"  HREF="006591.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] test results and a patch for timestamps in UVC</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20test%20results%20and%20a%20patch%20for%20timestamps%20in%20UVC&In-Reply-To=%3C1307859849.4149.8.camel%40zwerg%3E"
+       TITLE="[Linux-uvc-devel] test results and a patch for timestamps in UVC">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Sun Jun 12 08:24:09 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006565.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+        <LI>Next message: <A HREF="006591.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6585">[ date ]</a>
+              <a href="thread.html#6585">[ thread ]</a>
+              <a href="subject.html#6585">[ subject ]</a>
+              <a href="author.html#6585">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+please use &quot;uvc_trace(UVC_TRACE_DESCR,&quot; or pr_debug instead of printk.
+So you can enable verbosity only if you need.
+
+On Di, 2011-06-07 at 17:56 +0200, Yann Sionneau wrote:
+&gt;<i> Hi again,
+</I>&gt;<i> 
+</I>&gt;<i> here is as attached file a new patch that applies to linux 2.6.39 tree 
+</I>&gt;<i> (linux-2.6.git, tag v2.6.39).
+</I>&gt;<i> 
+</I>&gt;<i> This patch now prints at the end of each stream :
+</I>&gt;<i> 
+</I>&gt;<i> (*) total number of PTS (taking into account each packet)
+</I>&gt;<i> (*) total number of SCR
+</I>&gt;<i> (*) total number of ERR
+</I>&gt;<i> (*) number of packets without PTS (nb_missing_pts)
+</I>&gt;<i> (*) number of packets without SCR (nb_missing_scr)
+</I>&gt;<i> 
+</I>&gt;<i> It will print as well for each packet (beware, it will hugely flood your 
+</I>&gt;<i> syslog) :
+</I>&gt;<i> 
+</I>&gt;<i> (*) SCR
+</I>&gt;<i> (*) diff with previous packet's SCR
+</I>&gt;<i> (*) PTS
+</I>&gt;<i> (*) diff with previous packet's PTS
+</I>&gt;<i> 
+</I>&gt;<i> Beware, to see the &quot;end of stream&quot; statistics, you have to scroll up a 
+</I>&gt;<i> little bit, it will be somewhere in the end of the per-packet 
+</I>&gt;<i> information flood.
+</I>&gt;<i> 
+</I>&gt;<i> Some results inline in the e-mail.
+</I>&gt;<i> 
+</I>&gt;<i> On 06/06/2011 11:22 PM, Yann Sionneau wrote:
+</I>&gt;<i> &gt; Le 06/06/11 19:42, Laurent Pinchart a &#233;crit :
+</I>&gt;<i> &gt;&gt; Hi Yann,
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; Thanks for the patch.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; On Friday 03 June 2011 15:48:59 Yann Sionneau wrote:
+</I>&gt;<i> &gt;&gt;&gt; Hi Laurent and the UVC list,
+</I>&gt;<i> &gt;&gt;&gt;
+</I>&gt;<i> &gt;&gt;&gt; Here is a patch [snip]
+</I>&gt;<i> &gt;&gt; You should take all UVC packets into account, not just the first one for each
+</I>&gt;<i> &gt;&gt; frame.
+</I>&gt;<i> &gt; Yes I don't know why in my head I thought only the first uvc packet
+</I>&gt;<i> &gt; would have a header for the frame with timestamps and such, but it makes
+</I>&gt;<i> &gt; no sense, each packet has its own header and the start of frame is just
+</I>&gt;<i> &gt; signaled by the toggling of the FID :)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;&gt; the important information are
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; - do all frames have a PTS timestamp in their first packet ?
+</I>&gt;<i> &gt; It seems so yes, at least on the two webcams I tried with the patch.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;&gt; - do all non-empty packets for a frame have a PTS timestamp, and is it
+</I>&gt;<i> &gt;&gt; constant through the whole frame as it should be ?
+</I>&gt;<i> &gt; Let's modify the patch to count the PTS and SCR of all packets instead
+</I>&gt;<i> &gt; of only one per frame in order to sort this out !
+</I>&gt;<i> I tested with the Logitech HD Pro C910, all packets have a PTS.
+</I>&gt;<i> PTS are indeed constant through the whole frame as it should be.
+</I>&gt;<i> &gt;&gt; - how many SCR timestamps do we have per frame ? are they constant through the
+</I>&gt;<i> &gt;&gt; whole frame or do they vary as they should ?
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt; Same here !
+</I>&gt;<i> With the same webcam, all packets have a SCR.
+</I>&gt;<i> The SCR value does vary through each frame, as it should do.
+</I>&gt;<i> The difference between the previous SCR is usually the same, except at a 
+</I>&gt;<i> regular interval where there is a &quot;jump&quot; in SCR values.
+</I>&gt;<i> 
+</I>&gt;<i> for example, SCR - SCR_prev would be 7 times the same difference, and 
+</I>&gt;<i> then it will change for just one time, and then go back to the old 
+</I>&gt;<i> difference for 7 times etc.
+</I>&gt;<i> 
+</I>&gt;<i> &gt;&gt;&gt; [snip]
+</I>&gt;<i> &gt; Thanks for your review and comments, will submit a new patch ASAP !
+</I>
+-- 
+Regards,
+        Alexey
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006565.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+	<LI>Next message: <A HREF="006591.html">[Linux-uvc-devel] test results and a patch for timestamps in UVC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6585">[ date ]</a>
+              <a href="thread.html#6585">[ thread ]</a>
+              <a href="subject.html#6585">[ subject ]</a>
+              <a href="author.html#6585">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

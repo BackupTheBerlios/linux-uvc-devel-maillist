@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Driver improvement suggestion: Prefer device node, and more	consistant messaging
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%0A%09%3D%3Futf-8%3Fq%3FDriver_improvement_suggestion%3D3A_Pref%3F%3D%0A%09%3D%3Futf-8%3Fq%3Fer_device_node%3D2C_and_more%3D09consistant_messaging%3F%3D&In-Reply-To=%3C200803252258.44612.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003263.html">
+   <LINK REL="Next"  HREF="003302.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Driver improvement suggestion: Prefer device node, and more	consistant messaging</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%0A%09%3D%3Futf-8%3Fq%3FDriver_improvement_suggestion%3D3A_Pref%3F%3D%0A%09%3D%3Futf-8%3Fq%3Fer_device_node%3D2C_and_more%3D09consistant_messaging%3F%3D&In-Reply-To=%3C200803252258.44612.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Driver improvement suggestion: Prefer device node, and more	consistant messaging">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Mar 25 22:58:44 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003263.html">[Linux-uvc-devel] Driver improvement suggestion: Prefer device node,	and more	consistant messaging
+</A></li>
+        <LI>Next message: <A HREF="003302.html">[Linux-uvc-devel] Driver improvement suggestion: Prefer	device	node, and more?consistant messaging
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3299">[ date ]</a>
+              <a href="thread.html#3299">[ thread ]</a>
+              <a href="subject.html#3299">[ subject ]</a>
+              <a href="author.html#3299">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Moritz,
+
+On Monday 24 March 2008, Moritz Barsnick wrote:
+&gt;<i> Hi Laurent, UVCers,
+</I>&gt;<i>
+</I>&gt;<i> I have a small suggestion for the linux-uvc driver. Currently, the
+</I>&gt;<i> driver lets V4L2 automatically select the device node (/dev/videoX).
+</I>&gt;<i> But we all know that order of loading modules, init times, et.al. may
+</I>&gt;<i> influence the order, therefore I thought it might by practical to
+</I>&gt;<i> introduce a module option to request a specific device node.
+</I>&gt;<i>
+</I>&gt;<i> Caveat: My implementation is by all means incomplete. It will only work
+</I>&gt;<i> for one device (and actually fail for any subsequent ones AFAICT,
+</I>&gt;<i> unless you reset the parameter in /sys/), and is totally unflexible. On
+</I>&gt;<i> the other hand. it doesn't intrude if you don't provide a parameter.
+</I>&gt;<i>
+</I>&gt;<i> I forsee flexible functionality as you can find e.g. in the pwc webcam
+</I>&gt;<i> driver[*]. Their implementation also fails if the requested node is not
+</I>&gt;<i> available, but it provides a type and serial number dependant
+</I>&gt;<i> selection.
+</I>
+This should be done using udev rules. You can then assign a device node to a 
+camera based on various parameters such as the device serial number, its 
+VID/PID or the module name. This is much more flexible than forcing a 
+specific minor with a module parameter.
+
+&gt;<i> Furthermore, while quick-hacking this code, I noticed that linux-uvc
+</I>&gt;<i> a) doesn't report its version -&gt; use macro MODULE_VERSION()
+</I>&gt;<i> b) doesn't provide parameter descriptions (which can be queried with
+</I>&gt;<i>    &quot;modinfo uvcvideo&quot;) -&gt; use macro MODULE_PARM_DESC()
+</I>
+I've committed a fix for a) and b). Thanks for reporting them.
+
+&gt;<i> c) doesn't report which device node it actually assigns to the device,
+</I>&gt;<i>    which is very useful in dmesg (and which other drivers tend to do).
+</I>
+The device minor can be useful, but the message in your patch can be 
+misleading as well. The video0 device node doesn't have to be 
+called /dev/video0. Some distributions name the device node /dev/v4l/video0. 
+The allocated device minor can easily be found using sysfs and I'm a bit 
+scared an incorrect /dev/videoX reference in the kernel log messages might 
+confuse users.
+
+&gt;<i> So please consider the attached patch two seperate suggestions:
+</I>&gt;<i> - general messaging and API documentation improvements
+</I>&gt;<i> - a stub for requesting a particular device node.
+</I>&gt;<i>
+</I>&gt;<i> Please let me know if you consider it useful, or have something better
+</I>&gt;<i> to suggest.
+</I>
+As stated above, I think device node naming should be handled by udev.
+
+&gt;<i> Thanks for listening, and thanks for the ever so valuable driver!
+</I>&gt;<i>
+</I>&gt;<i> Patch is against SVN r195.
+</I>&gt;<i> I've tested with Logitech QuickCam Fusion on two machines.
+</I>&gt;<i>
+</I>&gt;<i> Kind regards,
+</I>&gt;<i> Moritz
+</I>&gt;<i>
+</I>&gt;<i> [*] called device hints in pwc-if.c
+</I>
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003263.html">[Linux-uvc-devel] Driver improvement suggestion: Prefer device node,	and more	consistant messaging
+</A></li>
+	<LI>Next message: <A HREF="003302.html">[Linux-uvc-devel] Driver improvement suggestion: Prefer	device	node, and more?consistant messaging
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3299">[ date ]</a>
+              <a href="thread.html#3299">[ thread ]</a>
+              <a href="subject.html#3299">[ subject ]</a>
+              <a href="author.html#3299">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Issue with recent uvcvideo
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Issue%20with%20recent%20uvcvideo&In-Reply-To=%3C200811121509.47478.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004211.html">
+   <LINK REL="Next"  HREF="004219.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Issue with recent uvcvideo</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Issue%20with%20recent%20uvcvideo&In-Reply-To=%3C200811121509.47478.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Issue with recent uvcvideo">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Nov 12 15:09:47 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004211.html">[Linux-uvc-devel] [INFO] Source code repository has been moved to	linuxtv.org
+</A></li>
+        <LI>Next message: <A HREF="004219.html">[Linux-uvc-devel] [PATCH] Video/UVC: Port mainlined uvc video	driver to NOMMU
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4212">[ date ]</a>
+              <a href="thread.html#4212">[ thread ]</a>
+              <a href="subject.html#4212">[ subject ]</a>
+              <a href="author.html#4212">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Hans,
+
+On Wednesday 12 November 2008, Hans de Goede wrote:
+&gt;<i> Laurent Pinchart wrote:
+</I>&gt;<i> &gt; Hi Filippo,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Wednesday 12 November 2008, Filippo Argiolas wrote:
+</I>&gt;<i>
+</I>&gt;<i> &lt;snip&gt;
+</I>&gt;<i>
+</I>&gt;<i> &gt;&gt; The webcam light never turns on, maybe something is failing with webcam
+</I>&gt;<i> &gt;&gt; initialization.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I've compared the two traces (both kernel log messages and libv4l) and
+</I>&gt;<i> &gt; they are identical for the initialisation part.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Two things bother me. First of all, libv4l spams the the driver (and thus
+</I>&gt;<i> &gt; the camera) with VIDIOC_TRY_FMT requests. Given the fragile state of many
+</I>&gt;<i> &gt; webcam firmwares, I wouldn't be surprised if some of them would simply
+</I>&gt;<i> &gt; crash.
+</I>&gt;<i>
+</I>&gt;<i> Hmm, uvcvideo is sort of unique here in that TRY_FMT actually generates io
+</I>&gt;<i> (I know this is not something uvcvideo can help). What libv4l does, it
+</I>&gt;<i> finds out which formats the cam can support using ENUM_FMT (it does this
+</I>&gt;<i> only once), and then when a TRY_FMT is emulated by libv4l, and the app
+</I>&gt;<i> requested format is something libv4l can convert too, it will do a try_fmt
+</I>&gt;<i> with the app requested settings for all formats returned by enum_fmt to see
+</I>&gt;<i> using which format comes closes to what the app has requested. This is done
+</I>&gt;<i> because quite a few apps support different resolutions at different formats
+</I>&gt;<i> (including some uvc cams).
+</I>&gt;<i>
+</I>&gt;<i> If this really turns out to be a problem we need to look into this. Would
+</I>&gt;<i> using ENUM_FRAMESIZE for all formats once be better?
+</I>
+If the driver supports it, ENUM_FRAMESIZE is much better. This is exactly what 
+is was designed for after all. TRY_FMT should then be used after the format 
+and size has been selected from the enumerated list as the last step in 
+format negotiation.
+
+In this specific case I don't think the tsunami of TRY_FMT requests annoyed 
+the camera, so there's no hurry. It could even be a good hardware stress 
+test :-)
+
+&gt;<i> &gt; Then, and this might be the real issue here, the application calls
+</I>&gt;<i> &gt; VIDIOC_S_FMT but libv4l doesn't relay that to the driver. I suppose
+</I>&gt;<i> &gt; there's a check in the library that compares the requested format with
+</I>&gt;<i> &gt; the current format and returns immediately if they are identical. This
+</I>&gt;<i> &gt; means the camera doesn't receive any set format request between the two
+</I>&gt;<i> &gt; runs. I wouldn't be surprised if camera developers never expected that.
+</I>&gt;<i>
+</I>&gt;<i> Correct, libv4l tries to cause as little IO as possible.
+</I>
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004211.html">[Linux-uvc-devel] [INFO] Source code repository has been moved to	linuxtv.org
+</A></li>
+	<LI>Next message: <A HREF="004219.html">[Linux-uvc-devel] [PATCH] Video/UVC: Port mainlined uvc video	driver to NOMMU
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4212">[ date ]</a>
+              <a href="thread.html#4212">[ thread ]</a>
+              <a href="subject.html#4212">[ subject ]</a>
+              <a href="author.html#4212">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

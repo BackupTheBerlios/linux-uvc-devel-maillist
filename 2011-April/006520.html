@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Input/Output error setting	V4L2_CID_EXPOSURE_AUTO values
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Input/Output%20error%20setting%0A%09V4L2_CID_EXPOSURE_AUTO%20values&In-Reply-To=%3C825511.42773.qm%40web161315.mail.bf1.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006512.html">
+   <LINK REL="Next"  HREF="006499.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Input/Output error setting	V4L2_CID_EXPOSURE_AUTO values</H1>
+    <B>Ben Mesander</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Input/Output%20error%20setting%0A%09V4L2_CID_EXPOSURE_AUTO%20values&In-Reply-To=%3C825511.42773.qm%40web161315.mail.bf1.yahoo.com%3E"
+       TITLE="[Linux-uvc-devel] Input/Output error setting	V4L2_CID_EXPOSURE_AUTO values">ben at cardinalpeak.com
+       </A><BR>
+    <I>Fri Apr 29 18:07:03 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006512.html">[Linux-uvc-devel] Input/Output error setting	V4L2_CID_EXPOSURE_AUTO values
+</A></li>
+        <LI>Next message: <A HREF="006499.html">[Linux-uvc-devel] lsusb listing for Creative Live Cam (which isn't in the uvcvideo devices list)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6520">[ date ]</a>
+              <a href="thread.html#6520">[ thread ]</a>
+              <a href="subject.html#6520">[ subject ]</a>
+              <a href="author.html#6520">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+  Thank you for explaining the history behind some of the #define confusion I've 
+seen between different versions of V4L2 and uvcvideo.
+
+  I eventually determined the following experimentally - the uvcvideo driver, at 
+least for my camera (a logitech, USB id 046d:0809) supports two of the four 
+possible exposure modes. The others return I/O error - which I don't understand, 
+if the camera doesn't support them, shouldn't it be EINVAL instead?
+
+enum  v4l2_exposure_auto_type {
+      V4L2_EXPOSURE_MANUAL = 0, /* Gives I/O error */
+      V4L2_EXPOSURE_AUTO = 1, /* works */
+      V4L2_EXPOSURE_SHUTTER_PRIORITY = 2, /* Gives I/O error */
+      V4L2_EXPOSURE_APERTURE_PRIORITY = 3 /* works */
+};
+
+Fortunately, the mode I wanted, aperture priority, works.
+
+Regards,
+Ben
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110429/605ad0d9/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110429/605ad0d9/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006512.html">[Linux-uvc-devel] Input/Output error setting	V4L2_CID_EXPOSURE_AUTO values
+</A></li>
+	<LI>Next message: <A HREF="006499.html">[Linux-uvc-devel] lsusb listing for Creative Live Cam (which isn't in the uvcvideo devices list)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6520">[ date ]</a>
+              <a href="thread.html#6520">[ thread ]</a>
+              <a href="subject.html#6520">[ subject ]</a>
+              <a href="author.html#6520">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

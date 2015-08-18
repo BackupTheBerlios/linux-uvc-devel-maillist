@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] Apple iSight
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Apple%20iSight&In-Reply-To=%3C200711131752.53135.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002437.html">
+   <LINK REL="Next"  HREF="002445.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] Apple iSight</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Apple%20iSight&In-Reply-To=%3C200711131752.53135.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] Apple iSight">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Nov 13 17:52:53 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002437.html">[Linux-uvc-devel] [PATCH] Apple iSight
+</A></li>
+        <LI>Next message: <A HREF="002445.html">[Linux-uvc-devel] [PATCH] Apple iSight
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2441">[ date ]</a>
+              <a href="thread.html#2441">[ thread ]</a>
+              <a href="subject.html#2441">[ subject ]</a>
+              <a href="author.html#2441">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Ivan,
+
+On Sunday 11 November 2007, Ivan N. Zlatev wrote:
+&gt;<i> On 11/10/07, Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+</I>&gt;<i> &gt; Hi Ivan, Tom, Felix and all other iSight users.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Thursday 08 November 2007, Felix M&#246;ller wrote:
+</I>&gt;<i> &gt; &gt; Hi,
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;&gt; But as we currently stand everything works so nicely as it is. Why
+</I>&gt;<i> &gt; &gt; &gt;&gt; should we have to spend precious time to port all of it to user
+</I>&gt;<i> &gt; &gt; &gt;&gt; land, read on how to write udev rules, bash scripts and what the
+</I>&gt;<i> &gt; &gt; &gt;&gt; best solution for distributions will be in terms of all of that.
+</I>&gt;<i> &gt; &gt; &gt;&gt;
+</I>&gt;<i> &gt; &gt; &gt;&gt; :-(
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; I think usability is also an argument. For a user it is already
+</I>&gt;<i> &gt; &gt; &gt; complex enough to install the driver without firmware, scripts etc. I
+</I>&gt;<i> &gt; &gt; &gt; think it is better to have a solution, that &quot;just works&quot; and can be
+</I>&gt;<i> &gt; &gt; &gt; handled by users easily in contrast to an very clean solutions noone
+</I>&gt;<i> &gt; &gt; &gt; understands.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; yes I think so too.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; And I think firmware loading from the kernel is not that uncommon the
+</I>&gt;<i> &gt; &gt; new intel wlan driver iwlwifi loads its firmware too.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; EZ-USB firmware loading have traditionally been done in userspace. The
+</I>&gt;<i> &gt; fxload utility has been designed for that purpose. I'm also not keen on
+</I>&gt;<i> &gt; adding a dependency on SHA1 to the Linux UVC driver, especially if only
+</I>&gt;<i> &gt; one buggy device requires it.
+</I>&gt;<i>
+</I>&gt;<i> I see. Kernel space fxload firmware loader sounds a bit off scope.
+</I>
+It's a bit out of scope for the Linux UVC driver, but it might still be 
+useful.
+
+Basically, my position is that I don't want to decide if firmware loading 
+should be done in userspace or kernelspace. EZ-USB firmware loading is 
+currently done in userspace by the fxload utility. I'm not against moving 
+this to the kernel if USB gurus (I'm thinking about the linux-usb-devel 
+mailing list) think it would be a better approach. In that case, I would 
+however insist on implementing this in a generic way, not specific to the 
+Linux UVC driver.
+
+To summarise the issue, I'm ok with a userspace implementation (which already 
+exists). If you feel the task would be better handled in the kernel, I would 
+be ok with a generic kernelspace approved the linux-usb-devel.
+
+&gt;<i> Do you know off the top of your head a driver I can look into for their
+</I>&gt;<i> fxload based userspace hotplug(?) integration (scripts?)? I am willing
+</I>&gt;<i> to look into a fxload based setup as long as it's convenient for
+</I>&gt;<i> distributions.
+</I>
+The Xilinx ISE toolchain uses fxload. The software can be downloaded at no 
+cost. As the package is a bit big (around 1GB), here's the udev rule:
+
+BUS==&quot;usb&quot;, ACTION==&quot;add&quot;, SYSFS{idVendor}==&quot;03fd&quot;, SYSFS{idProduct}==&quot;0009&quot;, 
+RUN+=&quot;/sbin/fxload -v -t fx2 -I /usr/share/xusbdfwu.hex -d $TEMPNODE&quot;
+
+Cheers,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002437.html">[Linux-uvc-devel] [PATCH] Apple iSight
+</A></li>
+	<LI>Next message: <A HREF="002445.html">[Linux-uvc-devel] [PATCH] Apple iSight
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2441">[ date ]</a>
+              <a href="thread.html#2441">[ thread ]</a>
+              <a href="subject.html#2441">[ subject ]</a>
+              <a href="author.html#2441">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

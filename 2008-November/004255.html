@@ -1,0 +1,228 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Quickam E 3500 plus and auto exposure
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quickam%20E%203500%20plus%20and%20auto%20exposure&In-Reply-To=%3C200811180030.35529.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004260.html">
+   <LINK REL="Next"  HREF="004240.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Quickam E 3500 plus and auto exposure</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quickam%20E%203500%20plus%20and%20auto%20exposure&In-Reply-To=%3C200811180030.35529.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Quickam E 3500 plus and auto exposure">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Nov 18 00:30:35 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004260.html">[Linux-uvc-devel] Kernel messages (Was: Re: Quickam E 3500	plus	and auto exposure)
+</A></li>
+        <LI>Next message: <A HREF="004240.html">[Linux-uvc-devel] Audio slow
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4255">[ date ]</a>
+              <a href="thread.html#4255">[ thread ]</a>
+              <a href="subject.html#4255">[ subject ]</a>
+              <a href="author.html#4255">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Mauro,
+
+On Sunday 16 November 2008, Mauro Grauso wrote:
+&gt;<i> Hi again Laurent,
+</I>&gt;<i>
+</I>&gt;<i> Right after writing to you I started playing with uvcdynctrl controls
+</I>&gt;<i> and I've found out that setting  'Exposure (Absolute)' to a lower
+</I>&gt;<i> value solves my problem.
+</I>&gt;<i>
+</I>&gt;<i> Now what remains to understand is how come the settings are changed.
+</I>&gt;<i>
+</I>&gt;<i> &gt; &gt; I compiled the latest uvcdynctrl (0.2) and here is some output:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I'm afraid that's outdated :-/ Could you please check the last version
+</I>&gt;<i> &gt; out from the SVN repository ?
+</I>&gt;<i>
+</I>&gt;<i> As I wrote before I identified the setting that gave me problems, but
+</I>&gt;<i> on your request I tried also the SVN version and I can confirm you
+</I>&gt;<i> that the 0.20 is the latest.
+</I>
+Don't rely on the version number, it hasn't been updated in SVN. Please use 
+the SVN version.
+
+&gt;<i> &gt; Please try to modify the exposure controls using the -s option to
+</I>&gt;<i> &gt; uvcdynctrl.
+</I>&gt;<i>
+</I>&gt;<i> That's exactly what I did and got me a smooth stream (the 'Exposure
+</I>&gt;<i> (Absolute)' control).
+</I>&gt;<i>
+</I>&gt;<i> &gt; Set the driver trace parameter to 64 before plugging the camera (echo 64
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;&gt; /sys/modules/uvcvideo/parameters/trace). The driver will then log a
+</I>&gt;<i> &gt;&gt; message
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; when an ioctl is called. Plug the camera and check if a userspace
+</I>&gt;<i> &gt; application invokes VIDIOC_S_CTRL to restore controls.
+</I>&gt;<i>
+</I>&gt;<i> This is the syslog after enabling the trace when I plug the camera:
+</I>&gt;<i> Nov 16 17:22:02 greywolf kernel: [24925.857046] usb 2-1: new high
+</I>&gt;<i> speed USB device using ehci_hcd and address 10
+</I>&gt;<i> Nov 16 17:22:02 greywolf kernel: [24926.102991] usb 2-1: configuration
+</I>&gt;<i> #1 chosen from 1 choice
+</I>&gt;<i> Nov 16 17:22:02 greywolf kernel: [24926.103473] uvcvideo: Found UVC
+</I>&gt;<i> 1.00 device &lt;unnamed&gt; (046d:09a4)
+</I>&gt;<i> Nov 16 17:22:02 greywolf kernel: [24926.135418] input: UVC Camera
+</I>&gt;<i> (046d:09a4) as
+</I>&gt;<i> /devices/pci0000:00/0000:00:02.1/usb2/2-1/2-1:1.0/input/input11 Nov 16
+</I>&gt;<i> 17:22:03 greywolf kernel: [24926.397739]
+</I>&gt;<i> VIDIOC_QUERYCAPVIDIOCGCAPVIDIOC_QUERYCAPVIDIOC_ENUMINPUTVIDIOC_ENUMINPUTVID
+</I>&gt;<i>IOC_ENUM_FMTVIDIOC_TRY_FMT&lt;3&gt;10:3:1: cannot set freq 16000 to ep 0x86
+</I>&gt;<i> Nov 16 17:22:03 greywolf kernel: [24927.400217] uvcvideo: Failed to
+</I>&gt;<i> query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+</I>&gt;<i> Nov 16 17:22:04 greywolf kernel: [24927.515251]
+</I>&gt;<i> VIDIOC_QUERYCAPVIDIOC_G_FMTVIDIOC_S_FMT&lt;3&gt;uvcvideo: Failed to query
+</I>&gt;<i> (1) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>&gt;<i> Nov 16 17:22:05 greywolf kernel: [24927.849383]
+</I>&gt;<i> VIDIOC_G_FMTVIDIOC_S_FMT&lt;3&gt;uvcvideo: Failed to query (1) UVC control 1
+</I>&gt;<i> (unit 0) : -110 (exp. 26).
+</I>&gt;<i> Nov 16 17:22:05 greywolf kernel: [24928.848506]
+</I>&gt;<i> VIDIOC_ENUMINPUTVIDIOC_G_INPUTVIDIOC_ENUMINPUTVIDIOC_ENUMSTD&lt;7&gt;uvcvideo:
+</I>&gt;<i> Unsupported ioctl 0xc0405619
+</I>&gt;<i> Nov 16 17:22:06 greywolf kernel: [24928.848769]
+</I>&gt;<i> VIDIOC_ENUMINPUTVIDIOC_ENUM_FMTVIDIOC_ENUM_FMTVIDIOC_ENUM_FMTVIDIOC_G_FMTVI
+</I>&gt;<i>DIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC
+</I>&gt;<i>_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_F
+</I>&gt;<i>MTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVI
+</I>&gt;<i>DIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMT&lt;3&gt;uvc
+</I>&gt;<i>video: Failed to query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+</I>&gt;<i> Nov 16 17:22:07 greywolf kernel: [24929.849271]
+</I>&gt;<i> VIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVID
+</I>&gt;<i>IOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_
+</I>&gt;<i>G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FM
+</I>&gt;<i>TVIDIOC_S_FMT&lt;3&gt;uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110
+</I>&gt;<i> (exp. 26).
+</I>
+Sorry for the garbage in the kernel log. I've fixed the uvcvideo driver and 
+pushed the patch to the repository.
+
+Anyway, the log clearly shows that a userspace process plays with VIDIOC_G_FMT 
+and VIDIOC_S_FMT. Could you please apply the attached patch (on top of the 
+latest driver source from the Mercurial tree) ? It prints the task name in 
+kernel log messages.
+
+&gt;<i> &gt;&gt; If I click on &quot;auto exposure off&quot; I still get &quot;Set Auto Exposure off
+</I>&gt;<i> &gt;&gt; error&quot; in stderr.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Please try to set the auto exposure control with uvcdynctrl.
+</I>&gt;<i>
+</I>&gt;<i> Setting auto exposure fails even with uvcdynctrl. It's on by default
+</I>&gt;<i> and doesn't seen to be changable (Even if the control is correcrly
+</I>&gt;<i> identified).
+</I>&gt;<i>
+</I>&gt;<i>   Exposure, Auto
+</I>&gt;<i>     ID      : 0x00000000,
+</I>&gt;<i>     Type    : Choice,
+</I>&gt;<i>     Flags   : { CAN_READ, CAN_WRITE },
+</I>&gt;<i>     Values  : { 'Auto Mode'[0], 'Manual Mode'[1], 'Shutter Priority
+</I>&gt;<i> Mode'[2], 'Aperture Priority Mode'[3] },
+</I>&gt;<i>     Default : 3
+</I>&gt;<i>
+</I>&gt;<i> but:
+</I>&gt;<i> /uvcdynctrl-0.2 --get='Exposure, Auto'
+</I>&gt;<i> [libwebcam] Unknown V4L2 control ID encountered: 10094849
+</I>&gt;<i> [libwebcam] Unknown V4L2 control ID encountered: 10094850
+</I>&gt;<i> [libwebcam] Unknown V4L2 control ID encountered: 10094851
+</I>&gt;<i> ERROR: Unknown control specified.
+</I>&gt;<i>
+</I>&gt;<i> and:
+</I>&gt;<i> ./uvcdynctrl-0.2 --set='Exposure, Auto' 0
+</I>&gt;<i> [libwebcam] Unknown V4L2 control ID encountered: 10094849
+</I>&gt;<i> [libwebcam] Unknown V4L2 control ID encountered: 10094850
+</I>&gt;<i> [libwebcam] Unknown V4L2 control ID encountered: 10094851
+</I>&gt;<i> ERROR: Unknown control specified.
+</I>
+Please use the SVN version. It should fix the problem.
+
+&gt;<i> When I do that the syslog shows:
+</I>&gt;<i> Nov 16 17:24:46 greywolf kernel: [24930.848233]
+</I>&gt;<i> VIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVID
+</I>&gt;<i>IOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_QUERYCTRLVIDIOC_QUERYCTR
+</I>&gt;<i>LVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUER
+</I>&gt;<i>YCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_
+</I>&gt;<i>QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVID
+</I>&gt;<i>IOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTR
+</I>&gt;<i>LVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUER
+</I>&gt;<i>YMENUVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_
+</I>&gt;<i>QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVID
+</I>&gt;<i>IOC_CROPCAPVIDIOC_S_CROPVIDIOC_S_INPUTVIDIOC_QUERYCTRLVIDIOC_S_CTRLVIDIOC_QU
+</I>&gt;<i>ERYCTRLVIDIOC_S_CTRLVIDIOC_QUERYCTRLVIDIOC_S_CTRLVIDIOC_QUERYCTRLVIDIOC_QUER
+</I>&gt;<i>YCTRLVIDIOC_STREAMOFFVIDIOC_QUERYCAPVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_Q
+</I>&gt;<i>UERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYC Nov 16
+</I>&gt;<i> 17:25:29 greywolf kernel:
+</I>&gt;<i> RLVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYCTRLVIDIOC_QU
+</I>&gt;<i>ERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIO
+</I>&gt;<i>C_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLV
+</I>&gt;<i>IDIOC_QUERYCAPVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCT
+</I>&gt;<i>RLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYMENUVIDIOC_QUE
+</I>&gt;<i>RYMENUVIDIOC_QUERYMENUVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC
+</I>&gt;<i>_QUERYCTRLVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYMENUVI
+</I>&gt;<i>DIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCAPVIDIOC_QUERYCTR
+</I>&gt;<i>LVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUER
+</I>&gt;<i>YCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_
+</I>&gt;<i>QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYMENUVID
+</I>&gt;<i>IOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYCTRLVIDIOC_QUERYCTR
+</I>&gt;<i>LVIDIOC_QUERYCTRLVIDIOC_QUERYCAPVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERY
+</I>&gt;<i>CTR LVIDI
+</I>&gt;<i>
+</I>&gt;<i> &gt; I really doubt the camera includes an EEPROM to store control values (but
+</I>&gt;<i> &gt; I might of course be wrong). Please try to set auto-exposure off with
+</I>&gt;<i> &gt; uvcdynctrl. If it works the problem is probably in luvcview. If it
+</I>&gt;<i> &gt; doesn't we'll have a look somewhere else.
+</I>&gt;<i>
+</I>&gt;<i> As told, the auto exposure can't be set with any software. Maybe I
+</I>&gt;<i> open the camera to see if there's an EPROM?
+</I>
+Start by trying the attached patch and let's see what task accesses the 
+device.
+
+Best regards,
+
+Laurent Pinchart
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: task-comm.patch
+Type: text/x-diff
+Size: 771 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20081118/32154417/attachment.patch">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20081118/32154417/attachment.patch</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004260.html">[Linux-uvc-devel] Kernel messages (Was: Re: Quickam E 3500	plus	and auto exposure)
+</A></li>
+	<LI>Next message: <A HREF="004240.html">[Linux-uvc-devel] Audio slow
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4255">[ date ]</a>
+              <a href="thread.html#4255">[ thread ]</a>
+              <a href="subject.html#4255">[ subject ]</a>
+              <a href="author.html#4255">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

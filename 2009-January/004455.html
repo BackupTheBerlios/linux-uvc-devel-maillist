@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo module crashes on load attempt
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20module%20crashes%20on%20load%20attempt&In-Reply-To=%3CC5882AF9.2804A%25jmk%40foofus.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004461.html">
+   <LINK REL="Next"  HREF="004467.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo module crashes on load attempt</H1>
+    <B>jmk</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20module%20crashes%20on%20load%20attempt&In-Reply-To=%3CC5882AF9.2804A%25jmk%40foofus.net%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo module crashes on load attempt">jmk at foofus.net
+       </A><BR>
+    <I>Tue Jan  6 04:24:09 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004461.html">[Linux-uvc-devel] uvc web cam not supported
+</A></li>
+        <LI>Next message: <A HREF="004467.html">[Linux-uvc-devel] uvcvideo module crashes on load attempt
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4455">[ date ]</a>
+              <a href="thread.html#4455">[ thread ]</a>
+              <a href="subject.html#4455">[ subject ]</a>
+              <a href="author.html#4455">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I&#185;ve been successfully using a Logitech QuickCam Pro 9000 with the linux-uvc
+module (iirc, linux-uvc-0.1.0_pre173) for a while. Recently, I installed the
+devel version of v4l in order to test out the new hd-pvr driver.
+Unfortunately, while the hd-pvr module is working nicely for me, it appears
+that the new version of uvcvideo isn&#185;t. Below is the dmesg output when the
+system attempts to load the module. Any suggestions on what might be causing
+the issue or what steps to take to work around it would be greatly
+appreciated.
+
+Thanks,
+Joe
+
+uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:0990)
+------------[ cut here ]------------
+kernel BUG at /h/downloads/multimedia/myth/hd-pvr/hdpvr/v4l/v4l2-dev.c:261!
+invalid opcode: 0000 [#1] PREEMPT SMP
+Modules linked in: snd_usb_lib uvcvideo snd_rawmidi snd_hwdep sr_mod bttv
+ir_common videobuf_dma_sg videobuf_core btcx_risc geode_aes snd_seq_oss
+snd_seq_midi_event
+ snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss lirc_serial lirc_dev
+dv1394 wm8775 cx25840 msp3400 saa7127 saa7115 tuner tea5767 tda8290
+tuner_xc2028 xc5000 tda9887 tuner_simple tuner_types mt20xx tea5761 ivtv
+snd_hda_intel snd_pcm firmware_class nvidia(P) snd_timer snd cx2341x hdpvr
+snd_page_alloc parport_pc videodev v4l2_compat_ioctl32 parport pl2303
+mct_u232 v4l1_compat usbserial v4l2_common forcedeth tveeprom ohci1394 sg
+k8temp i2c_nforce2
+
+Pid: 7305, comm: modprobe Tainted: P        (2.6.24-gentoo-r8 #3)
+EIP: 0060:[&lt;f0fca538&gt;] EFLAGS: 00010246 CPU: 0
+EIP is at video_register_device_index+0x408/0x450 [videodev]
+EAX: 00000000 EBX: 00000000 ECX: ffffffff EDX: ee937200
+ESI: ffffffff EDI: 00000000 EBP: dfb910c0 ESP: de2a5c6c
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process modprobe (pid: 7305, ti=de2a4000 task=e3c90000 task.ti=de2a4000)
+Stack: 000035b6 00000010 000000c0 00000000 ee937200 ffffffff eeea8800
+00000000
+       ffffffff 00000000 ee937200 00000001 dfb910c0 f0fca58f ffffffff
+f12f1ad1
+       ee937348 00000020 f12faa53 0000046d 00000990 df8ec000 df8ec030
+df8ec028
+Call Trace:
+ [&lt;f0fca58f&gt;] video_register_device+0xf/0x20 [videodev]
+ [&lt;f12f1ad1&gt;] uvc_simplify_fraction+0x6f1/0x790 [uvcvideo]
+ [&lt;f12f27bf&gt;] uvc_delete+0xc4f/0x1eb0 [uvcvideo]
+ [&lt;c02fa01a&gt;] idr_get_empty_slot+0xea/0x270
+ [&lt;c02fa227&gt;] ida_get_new_above+0x87/0x180
+ [&lt;c03e5d65&gt;] usb_probe_interface+0x75/0x100
+ [&lt;c037f598&gt;] driver_sysfs_add+0x58/0x80
+ [&lt;c037f6ce&gt;] driver_probe_device+0x8e/0x190
+ [&lt;c04ccc3d&gt;] klist_next+0x5d/0xa0
+ [&lt;c037f910&gt;] __driver_attach+0x80/0x90
+ [&lt;c037eaaa&gt;] bus_for_each_dev+0x3a/0x60
+ [&lt;c037f536&gt;] driver_attach+0x16/0x20
+ [&lt;c037f890&gt;] __driver_attach+0x0/0x90
+ [&lt;c037ee5b&gt;] bus_add_driver+0x8b/0x1e0
+ [&lt;c03e5cf0&gt;] usb_probe_interface+0x0/0x100
+ [&lt;c03e58e5&gt;] usb_register_driver+0x95/0x110
+ [&lt;f127d06f&gt;] init_module+0x6f/0x86 [uvcvideo]
+ [&lt;c014a28b&gt;] sys_init_module+0x16b/0x1930
+ [&lt;c010437e&gt;] sysenter_past_esp+0x5f/0x85
+ =======================
+Code: 15 fd f0 89 81 5c 01 00 00 e9 89 fc ff ff 8b 4c 24 38 b8 b0 15 fd f0
+8b 54 24 10 89 8a b0 01 00 00 e8 0d 3c 50 cf e9 14 ff ff ff &lt;0f&gt; 0b eb fe bb
+c0 e9 fc f0 89 5c 24 04 c7 04 24 cf f0 fc f0 e8
+EIP: [&lt;f0fca538&gt;] video_register_device_index+0x408/0x450 [videodev] SS:ESP
+0068:de2a5c6c
+---[ end trace fae1aa80ab5d0dfd ]---
+
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090105/2866b64b/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090105/2866b64b/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004461.html">[Linux-uvc-devel] uvc web cam not supported
+</A></li>
+	<LI>Next message: <A HREF="004467.html">[Linux-uvc-devel] uvcvideo module crashes on load attempt
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4455">[ date ]</a>
+              <a href="thread.html#4455">[ thread ]</a>
+              <a href="subject.html#4455">[ subject ]</a>
+              <a href="author.html#4455">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

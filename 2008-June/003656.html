@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20SOLVED%3A%20upside-down%20image%20from%20SONIX%20laptop%0A%09embedded%20webcam&In-Reply-To=%3C879e1f2b0806201024w7a4adb04ld54042895614798e%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003655.html">
+   <LINK REL="Next"  HREF="003672.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam</H1>
+    <B>Marco Argiolas</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20SOLVED%3A%20upside-down%20image%20from%20SONIX%20laptop%0A%09embedded%20webcam&In-Reply-To=%3C879e1f2b0806201024w7a4adb04ld54042895614798e%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam">arjos85 at gmail.com
+       </A><BR>
+    <I>Fri Jun 20 19:24:25 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003655.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+        <LI>Next message: <A HREF="003672.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3656">[ date ]</a>
+              <a href="thread.html#3656">[ thread ]</a>
+              <a href="subject.html#3656">[ subject ]</a>
+              <a href="author.html#3656">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Richard,
+
+You shouldn't have allocated extra memory in the first place. Instead of
+&gt;<i> modifying the whole frame at once, you should instead replace the call to
+</I>&gt;<i> memcpy() in uvc_video_decode_data() and revert the image there. Computation
+</I>&gt;<i> of boundaries and memory offsets might be a bit more difficult, but you
+</I>&gt;<i> will
+</I>&gt;<i> speed up the process and you'll avoid allocating an extra buffer.
+</I>&gt;<i>
+</I>
+Thank you for this suggestion,
+I haven't thought about this solution before.
+
+The purpose of GFP_ATOMIC is not to speed up memory allocation, but to make
+&gt;<i> sure that memory allocation will not sleep. This is required here, as
+</I>&gt;<i> uvc_video_decode_data() is called in interrupt context where you're not
+</I>&gt;<i> allowed to sleep.
+</I>
+
+So, in this way I'm sure memory allocation won't sleep and I can say it is
+the fastest way (and also the only one suggested in this case)  to allocate
+memory. Is it right?
+
+
+&gt;<i> As explained above, you should modify the existing memcpy() instead of
+</I>&gt;<i> adding
+</I>&gt;<i> a new one. The statement your mention will then not have to be modified.
+</I>&gt;<i>
+</I>
+Here it is the new patch of &quot;uvc_video_decode_data()&quot; (I was going crazy
+with the computation of all offset) and as attachement you can find the
+modded &quot;uvc_video.c&quot; file:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+$ diff -u original modded
+--- original    2008-06-20 19:15:28.000000000 +0200
++++ modded      2008-06-20 19:11:31.000000000 +0200
+@@ -4,6 +4,11 @@
+        struct uvc_video_queue *queue = &amp;video-&gt;queue;
+        unsigned int maxlen, nbytes;
+        void *mem;
++       unsigned int
++               pixel_size,
++               to_be_copied,
++               shift_right,
++               buf_offset;
+
+        if (len &lt;= 0)
+                return;
+@@ -12,11 +17,29 @@
+        maxlen = buf-&gt;buf.length - buf-&gt;buf.bytesused;
+        mem = queue-&gt;mem + buf-&gt;buf.m.offset + buf-&gt;buf.bytesused;
+        nbytes = min((unsigned int)len, maxlen);
+-       memcpy(mem, data, nbytes);
+-       buf-&gt;buf.bytesused += nbytes;
+
+-       if (len &gt; maxlen) {
++       pixel_size = video-&gt;streaming-&gt;cur_frame-&gt;wWidth *
+video-&gt;streaming-&gt;format-&gt;bpp / 8;
++       to_be_copied = 0;
++       while( nbytes &gt; 0 ) { // Are there other bytes to be copied?
++               shift_right = buf-&gt;buf.bytesused % pixel_size;
++               if ( nbytes &gt; pixel_size - shift_right)
++                       to_be_copied = pixel_size - shift_right ;
++               else    to_be_copied = nbytes;
++
++               if (shift_right &gt; 0 )
++                       buf_offset = to_be_copied - shift_right ;
++               else    buf_offset = pixel_size;
++               memcpy( queue-&gt;mem + buf-&gt;buf.m.offset + pixel_size *
+video-&gt;streaming-&gt;cur_frame-&gt;wHeight - buf-&gt;buf.bytesused - buf_offset,
++                       data,
++                       to_be_copied ) ;
++
++               data += to_be_copied;
++               buf-&gt;buf.bytesused += to_be_copied ;
++               nbytes -= to_be_copied;
++       }
+
++       if (len &gt;= maxlen) {
+                uvc_trace(UVC_TRACE_FRAME, &quot;Frame complete (overflow).\n&quot;);
+                buf-&gt;state = UVC_BUF_STATE_DONE;
+        }
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Unluckly also if now I don't allocate any memory, with bigger resolutions
+the final video seems to be a little bit slower than with the allocation
+(previous solution).
+Please if you can/need try both my solutions and let me know your results!!!
+Which one is the fastest?
+Please let also me know if you think I made some mistakes that slow down
+this last version of uvcvideo without memory allocation.
+
+Thank you a lot for your help!!
+
+Marco Argiolas
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080620/246d90b7/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080620/246d90b7/attachment.html</A>&gt;
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: uvc_video.c
+Type: text/x-csrc
+Size: 29160 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080620/246d90b7/attachment.c">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080620/246d90b7/attachment.c</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003655.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+	<LI>Next message: <A HREF="003672.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3656">[ date ]</a>
+              <a href="thread.html#3656">[ thread ]</a>
+              <a href="subject.html#3656">[ subject ]</a>
+              <a href="author.html#3656">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

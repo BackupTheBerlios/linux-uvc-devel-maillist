@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] 05c8:0403 listed as supported but is not	working
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%2005c8%3A0403%20listed%20as%20supported%20but%20is%20not%0A%09working&In-Reply-To=%3C4E496AF6.4060303%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006803.html">
+   <LINK REL="Next"  HREF="006800.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] 05c8:0403 listed as supported but is not	working</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%2005c8%3A0403%20listed%20as%20supported%20but%20is%20not%0A%09working&In-Reply-To=%3C4E496AF6.4060303%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] 05c8:0403 listed as supported but is not	working">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Mon Aug 15 20:52:38 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006803.html">[Linux-uvc-devel] 05c8:0403 listed as supported but is not	working
+</A></li>
+        <LI>Next message: <A HREF="006800.html">[Linux-uvc-devel] 05c8:0403 listed as supported but is not	working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6799">[ date ]</a>
+              <a href="thread.html#6799">[ thread ]</a>
+              <a href="subject.html#6799">[ subject ]</a>
+              <a href="author.html#6799">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+i decoded your usbmon dump, here is how usually looks conversation
+between webcam and pc:
+
+1) webcam send some data, and the it get response from the host, to
+confirm that data as recived, this is the confiramtion:
+ffff8800844a0c00 0.000106 S Zi:1:033:1 -115:?:? 32
+ 512 =
+0(-18:0:2688:0) 1(-18:2688:2688:0) 2(-18:5376:2688:0) 3(-18:8064:2688:0)
+4(-18:10752:2688:0) 5(-18:13440:2688:0) 6(-18:16128:2688:0)
+7(-18:18816:2688:0) 8(-18:21504:2688:0) 9(-18:24192:2688:0)
+10(-18:26880:2688:0) 11(-18:29568:2688:0) 12(-18:32256:2688:0)
+13(-18:34944:2688:0) 14(-18:37632:2688:0) 15(-18:40320:2688:0)
+16(-18:43008:2688:0) 17(-18:45696:2688:0) 18(-18:48384:2688:0)
+19(-18:51072:2688:0) 20(-18:53760:2688:0) 21(-18:56448:2688:0)
+22(-18:59136:2688:0) 23(-18:61824:2688:0) 24(-18:64512:2688:0)
+25(-18:67200:2688:0) 26(-18:69888:2688:0) 27(-18:72576:2688:0)
+28(-18:75264:2688:0) 29(-18:77952:2688:0) 30(-18:80640:2688:0)
+31(-18:83328:2688:0)
+
+a) 0(-18:0:2688:0) -&gt; 0 ist the packet number in usb buffer, -18 -
+Cross-device link; 0 - memory offset in usb buffer; 2688 - maxPacketSize
+2) the data from web cam usually looks almost like this:
+ffff8800844a6800 0.003874 C Zi:1:033:1 0:?:? 32
+ 22028 =
+0(0:0:12:0) :   &lt;-- same like before, every thing is ok
+0c8c48d99c282e1ede288a03  &lt;-- uvc header, but no image data. (usually ok
+too)
+1(0:2688:12:0) :
+0c8c48d99c288125de288b03
+2(0:5376:12:0) :
+0c8c48d99c28d42cde288b03
+3(0:8064:12:0) :
+0c8c48d99c282734de288b03
+4(0:10752:12:0) :
+0c8c48d99c287a3bde288b03
+5(0:13440:12:0) :
+0c8c48d99c28cd42de288b03
+6(0:16128:12:0) :
+0c8c48d99c28204ade288b03
+7(0:18816:12:0) :
+0c8c48d99c287351de288b03
+8(0:21504:12:0) :
+0c8c48d99c28c658de288b03
+9(-71:24192:0:0)  &lt;--- this is first bad packet. -71 - EPROTO, Protocol
+error. At this stage no packet was or should be send by from pc to the
+cam. It's mean the error source should be inside of the cam.
+10(-71:26880:0:0) 11(-71:29568:0:0) 12(-71:32256:0:0) 13(-71:34944:0:0)
+14(-71:37632:0:0) 15(-71:40320:0:0) 16(-71:43008:0:0) 17(-71:45696:0:0)
+18(-71:48384:0:0) 19(-71:51072:0:0) 20(-71:53760:0:0) 21(-71:56448:0:0)
+22(-71:59136:0:0) 23(-71:61824:0:0) 24(-71:64512:0:0) 25(-71:67200:0:0)
+26(-71:69888:0:0) 27(-71:72576:0:0) 28(-71:75264:0:0) 29(-71:77952:0:0)
+30(-71:80640:0:0) 31(-71:83328:0:0)
+
+Before &quot;USB Protocol error&quot; your camera send about 640 packets without
+video data, but with uvc headers. I assume it filed at this stage.
+
+I do not see any reasons where uvcvideo driver made some error. I assume
+that this webcam is broken.
+
+
+On 14.08.2011 22:08, overclocked wrote:
+&gt;<i> Hello,
+</I>&gt;<i> 
+</I>&gt;<i> unfortunately, I have no possibility to check webcam on Windows (I have
+</I>&gt;<i> only Ubuntu 11.04 on my laptop and currently do not have a storage to
+</I>&gt;<i> backup all and install Windows to check it).
+</I>&gt;<i> 
+</I>&gt;<i> I have used wireshark on Linux...
+</I>&gt;<i> 
+</I>&gt;<i> There are 2 usb interfaces:
+</I>&gt;<i> usbmon1 and usbmon2
+</I>&gt;<i> 
+</I>&gt;<i> I have captured the usbmon1... See  file attached.
+</I>&gt;<i> 
+</I>&gt;<i> I also have captured usbdump.
+</I>&gt;<i> It's 120 Mb, so I have used depositfiles for it:
+</I>&gt;<i> <A HREF="http://depositfiles.com/files/ssee74mok">http://depositfiles.com/files/ssee74mok</A>
+</I>&gt;<i> 
+</I>&gt;<i> Also I have noticed that after some time webcam disappears from lsusb...
+</I>&gt;<i> 
+</I>&gt;<i> Thank You in advance,
+</I>&gt;<i> Kind Regards,
+</I>&gt;<i> 
+</I>&gt;<i> Andrey.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> On 08/14/2011 06:12 PM, Alexey Fisher wrote:
+</I>&gt;&gt;<i> Hi,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> can you confirm, this webcam do work on windows with uvcvideo driver?
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> If yes, can you capture usb traffic like it described here:
+</I>&gt;&gt;<i> <A HREF="http://lindi.iki.fi/lindi/usb/usbsnoop.txt">http://lindi.iki.fi/lindi/usb/usbsnoop.txt</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> As alternative you can use wireshark.
+</I>&gt;&gt;<i> Your webcam located on Bus 001 Device 017, some times you need to know
+</I>&gt;&gt;<i> it to capture usb dump.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Also it will be good to have usb dump from linux, usbmon module should
+</I>&gt;&gt;<i> be loaded/compiled.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> To capture you need:
+</I>&gt;&gt;<i> cat /dev/usbmon1 &gt; usbdump
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> use Ctrl+C to stop it.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> gzip usbdump
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Actually you can use wireshark on linux as well.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> if it really big use rapidshare or filesonic or some thing like this
+</I>&gt;&gt;<i> for upload.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Am 14.08.2011 13:58, schrieb overclocked:
+</I>&gt;&gt;&gt;<i> Yes, thank you for the answer.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> See files in the attachment.
+</I>&gt;&gt;<i>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006803.html">[Linux-uvc-devel] 05c8:0403 listed as supported but is not	working
+</A></li>
+	<LI>Next message: <A HREF="006800.html">[Linux-uvc-devel] 05c8:0403 listed as supported but is not	working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6799">[ date ]</a>
+              <a href="thread.html#6799">[ thread ]</a>
+              <a href="subject.html#6799">[ subject ]</a>
+              <a href="author.html#6799">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

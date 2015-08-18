@@ -1,0 +1,247 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20LifeCam%20Cinema%20%28045e%3A075d%29%0A%09bandwidth%20reservation%20issues%3F&In-Reply-To=%3Ce77a8d391001101845u25afbb94pc8bdcdb824e25250%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005481.html">
+   <LINK REL="Next"  HREF="005487.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?</H1>
+    <B>Seth W</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20LifeCam%20Cinema%20%28045e%3A075d%29%0A%09bandwidth%20reservation%20issues%3F&In-Reply-To=%3Ce77a8d391001101845u25afbb94pc8bdcdb824e25250%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?">oztiks at yewnix.net
+       </A><BR>
+    <I>Mon Jan 11 03:45:21 CET 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005481.html">[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?
+</A></li>
+        <LI>Next message: <A HREF="005487.html">[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5482">[ date ]</a>
+              <a href="thread.html#5482">[ thread ]</a>
+              <a href="subject.html#5482">[ subject ]</a>
+              <a href="author.html#5482">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks for the prompt response - I had actually tried MJPEG in mencoder (not
+sure how to test it in ffmpeg); but for some reason it allocates the same
+exact bandwidth as well, no matter what resolution, codec (mjpeg or yuv), or
+frame rate. If you can provide any insight into this or suggest any other
+methods of testing I would greatly appreciate it. Once again, I'd like to
+thank you for your time.
+
+---
+
+320x240, 5fps, MJPG:
+
+cvlc  -vv v4l2:///dev/video0 :v4l2-vdev=&quot;/dev/video0&quot;  :v4l2-width=320
+:<i>v4l2-height=240 :v4l2-fps=5 :v4l2-caching=300 :v4l2-chroma=MJPG
+</I>--no-plugins-cache --album-art=0
+
+[chopped output]
+[0xb6300c08] v4l2 demux debug: using streaming i/o (mmap)
+[0xb6300c08] v4l2 demux debug: trying specified size 320x240
+[0xb6300c08] v4l2 demux debug: Driver requires at most 153600 bytes to store
+a complete image
+[0xb6300c08] v4l2 demux debug: Interlacing setting: progressive
+[0xb6300c08] v4l2 demux debug: supported frame intervals for MJPG, 320x240:
+[0xb6300c08] v4l2 demux debug:     supported frame interval: 1/30
+[0xb6300c08] v4l2 demux debug:     supported frame interval: 1/20
+[0xb6300c08] v4l2 demux debug:     supported frame interval: 1/15
+[0xb6300c08] v4l2 demux debug:     supported frame interval: 1/10
+[0xb6300c08] v4l2 demux debug:     supported frame interval: 2/15
+[0xb6300c08] v4l2 demux debug: added new video es MJPG 320x240
+[0xb6500608] main input debug: selecting program id=0
+[0xb6300c08] v4l2 demux debug: User set fps=5.000000
+[0xb6300c08] main demux debug: using access_demux module &quot;v4l2&quot;
+[0xb6300c08] main demux debug: TIMER module_need() : 260.411 ms - Total
+260.411 ms / 1 intvls (Avg 260.411 ms)
+[0xb63019b0] main decoder debug: looking for decoder module: 39 candidates
+[0xb63019b0] avcodec decoder debug: libavcodec initialized (interface
+0x342900)
+[0xb63019b0] avcodec decoder debug: using direct rendering
+[0xb63019b0] avcodec decoder debug: ffmpeg codec (Motion JPEG Video) started
+[0xb63019b0] main decoder debug: using decoder module &quot;avcodec&quot;
+[0xb63019b0] main decoder debug: TIMER module_need() : 2.954 ms - Total
+2.954 ms / 1 intvls (Avg 2.954 ms)
+[0xb63019b0] main decoder debug: thread (decoder) created at priority 0
+(input/decoder.c:315)
+[0xb63019b0] main decoder debug: thread started
+[0xb6500608] main input debug: `v4l2:///dev/video0' successfully opened
+--
+dmesg:
+uvcvideo: Device requested 3072 B/frame bandwidth.
+uvcvideo: Allocated 5 URB buffers of 32x3072 bytes each.
+-----
+
+1280x800, 30FPS, mjpeg:
+
+ cvlc  -vv v4l2:///dev/video0 :v4l2-vdev=&quot;/dev/video0&quot;  :v4l2-width=1280
+:<i>v4l2-height=800 :v4l2-fps=30 :v4l2-caching=300 :v4l2-chroma=MJPG
+</I>--no-plugins-cache --album-art=0
+
+[0xb6600e90] v4l2 demux debug: trying specified size 1280x800
+[0xb6600e90] v4l2 demux debug: Driver requires at most 1843200 bytes to
+store a complete image
+[0xb6600e90] v4l2 demux debug: Interlacing setting: progressive
+[0xb6600e90] v4l2 demux debug: supported frame intervals for MJPG, 1280x720:
+[0xb6600e90] v4l2 demux debug:     supported frame interval: 1/30
+[0xb6600e90] v4l2 demux debug:     supported frame interval: 1/20
+[0xb6600e90] v4l2 demux debug:     supported frame interval: 1/15
+[0xb6600e90] v4l2 demux debug:     supported frame interval: 1/10
+[0xb6600e90] v4l2 demux debug:     supported frame interval: 2/15
+[0xb6600e90] v4l2 demux debug: added new video es MJPG 1280x720
+[0xb6700608] main input debug: selecting program id=0
+[0xb6600e90] v4l2 demux debug: User set fps=30.000000
+[0xb6600e90] main demux debug: using access_demux module &quot;v4l2&quot;
+[0xb6600e90] main demux debug: TIMER module_need() : 252.439 ms - Total
+252.439 ms / 1 intvls (Avg 252.439 ms)
+[0xb6601c58] main decoder debug: looking for decoder module: 39 candidates
+[0xb6601c58] avcodec decoder debug: libavcodec initialized (interface
+0x342900)
+[0xb6601c58] avcodec decoder debug: using direct rendering
+[0xb6601c58] avcodec decoder debug: ffmpeg codec (Motion JPEG Video) started
+[0xb6601c58] main decoder debug: using decoder module &quot;avcodec&quot;
+[0xb6601c58] main decoder debug: TIMER module_need() : 2.521 ms - Total
+2.521 ms / 1 intvls (Avg 2.521 ms)
+[0xb6601c58] main decoder debug: thread (decoder) created at priority 0
+(input/decoder.c:315)
+[0xb6601c58] main decoder debug: thread started
+[0xb6700608] main input debug: `v4l2:///dev/video0' successfully opened
+------
+dmesg:
+
+uvcvideo: Device requested 3072 B/frame bandwidth.
+uvcvideo: Allocated 5 URB buffers of 32x3072 bytes each.
+
+-----
+
+1280x800, 30fps, YUY2:
+
+[0xb6a00e90] v4l2 demux debug: using streaming i/o (mmap)
+[0xb6a00e90] v4l2 demux debug: trying specified size 1280x800
+[0xb6a00e90] v4l2 demux debug: Driver requires at most 2048000 bytes to
+store a complete image
+[0xb6a00e90] v4l2 demux debug: Interlacing setting: progressive
+[0xb6a00e90] v4l2 demux debug: supported frame intervals for YUY2, 1280x800:
+[0xb6a00e90] v4l2 demux debug:     supported frame interval: 1/10
+[0xb6a00e90] v4l2 demux debug: added new video es YUY2 1280x800
+[0xb6b00608] main input debug: selecting program id=0
+[0xb6a00e90] v4l2 demux debug: User set fps=30.000000
+[0xb6a00e90] main demux debug: using access_demux module &quot;v4l2&quot;
+[0xb6a00e90] main demux debug: TIMER module_need() : 253.072 ms - Total
+253.072 ms / 1 intvls (Avg 253.072 ms)
+[0xb6a01c58] main decoder debug: looking for decoder module: 39 candidates
+[0xb6a01c58] rawvideo decoder warning: invalid frame rate 0/0, using 25 fps
+instead
+[0xb6a01c58] main decoder debug: using decoder module &quot;rawvideo&quot;
+[0xb6a01c58] main decoder debug: TIMER module_need() : 0.836 ms - Total
+0.836 ms / 1 intvls (Avg 0.836 ms)
+[0xb6a01c58] main decoder debug: thread started
+[0xb6a01c58] main decoder debug: thread (decoder) created at priority 0
+(input/decoder.c:315)
+[0xb6b00608] main input debug: `v4l2:///dev/video0' successfully opened
+
+dmesg:
+
+uvcvideo: Device requested 3072 B/frame bandwidth.
+uvcvideo: Allocated 5 URB buffers of 32x3072 bytes each.
+
+-----------------------
+
+
+
+On Sun, Jan 10, 2010 at 8:30 PM, Laurent Pinchart &lt;
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt; wrote:
+
+&gt;<i> Hi Seth,
+</I>&gt;<i>
+</I>&gt;<i> On Wednesday 06 January 2010 03:54:11 Seth W wrote:
+</I>&gt;<i> &gt; Here you are. Thanks  in advance for your assistance. (PS - Please note
+</I>&gt;<i> &gt; there are two cameras, both same make/model therefore share the same ID)
+</I>&gt;<i>
+</I>&gt;<i> Thanks for the information. The device supports the following bandwidths
+</I>&gt;<i> (unrelated information removed for the sake of clarity):
+</I>&gt;<i>
+</I>&gt;<i> &gt;         wMaxPacketSize     0x0080  1x 128 bytes
+</I>&gt;<i> &gt;         wMaxPacketSize     0x0100  1x 256 bytes
+</I>&gt;<i> &gt;         wMaxPacketSize     0x0200  1x 512 bytes
+</I>&gt;<i> &gt;         wMaxPacketSize     0x0400  1x 1024 bytes
+</I>&gt;<i> &gt;         wMaxPacketSize     0x0c00  2x 1024 bytes
+</I>&gt;<i> &gt;         wMaxPas.cketSize     0x1400  3x 1024 bytes
+</I>&gt;<i>
+</I>&gt;<i> Your previous e-mail included an excerpt from the kernel log clearly
+</I>&gt;<i> showing
+</I>&gt;<i> that the device asked for 3x 1024 bytes per microframe in both 640x480 and
+</I>&gt;<i> 1280x800.
+</I>&gt;<i>
+</I>&gt;<i> The default frame rate at those resolutions is 30fps and 10fps
+</I>&gt;<i> respectively.
+</I>&gt;<i> As every pixel takes 2 bytes in uncompressed YUV, this leads to
+</I>&gt;<i>
+</I>&gt;<i> 640*480*2*30 = 18000 KiB/s
+</I>&gt;<i> 1280*800*2*10 = 20000 KiB/s
+</I>&gt;<i>
+</I>&gt;<i> Divided by 8000 microframes per second, we get
+</I>&gt;<i>
+</I>&gt;<i> 640x480 -&gt; 2304 bytes / microframe
+</I>&gt;<i> 1280x800 -&gt; 2560 bytes / microframe
+</I>&gt;<i>
+</I>&gt;<i> The lowest bandwidth compatible with those values is 3x 1024 bytes per
+</I>&gt;<i> microframe, which is too high to stream from both cameras at the same time.
+</I>&gt;<i>
+</I>&gt;<i> You could try lowering the frame rate. The average required bandwidth will
+</I>&gt;<i> be
+</I>&gt;<i> lower, but the device might not have enough internal memory to store a
+</I>&gt;<i> complete frame and smooth bandwidth usage. In that case it will still ask
+</I>&gt;<i> for
+</I>&gt;<i> a high bandwidth, and streaming from two devices simultaneously will fail.
+</I>&gt;<i>
+</I>&gt;<i> The other option is to use MJPEG instead of YUV. That will reduce the
+</I>&gt;<i> bandwidth requirements drastically, but you will have to decompress the
+</I>&gt;<i> MJPEG
+</I>&gt;<i> stream
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Regards,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100110/6787c88b/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100110/6787c88b/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005481.html">[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?
+</A></li>
+	<LI>Next message: <A HREF="005487.html">[Linux-uvc-devel] Microsoft LifeCam Cinema (045e:075d)	bandwidth reservation issues?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5482">[ date ]</a>
+              <a href="thread.html#5482">[ thread ]</a>
+              <a href="subject.html#5482">[ subject ]</a>
+              <a href="author.html#5482">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

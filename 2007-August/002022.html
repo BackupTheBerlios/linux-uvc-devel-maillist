@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Problems with 0c45:62c0
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problems%20with%200c45%3A62c0&In-Reply-To=%3C200708212110.59588.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002011.html">
+   <LINK REL="Next"  HREF="002014.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Problems with 0c45:62c0</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problems%20with%200c45%3A62c0&In-Reply-To=%3C200708212110.59588.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Problems with 0c45:62c0">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Aug 21 21:10:59 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002011.html">[Linux-uvc-devel] Problems with 0c45:62c0
+</A></li>
+        <LI>Next message: <A HREF="002014.html">[Linux-uvc-devel] Dell Inspiron 1520 Web cam works with Linux-uvc
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2022">[ date ]</a>
+              <a href="thread.html#2022">[ thread ]</a>
+              <a href="subject.html#2022">[ subject ]</a>
+              <a href="author.html#2022">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Calad,
+
+On Sunday 19 August 2007, Calad Sigilon wrote:
+&gt;<i> Out of the blue, perhaps with a kernel update, the driver stopped working
+</I>&gt;<i> in Kopete, mplayer, and xawtv.
+</I>
+*perhaps* with a kernel update ? That's the kind of crucial information needed 
+to find out what happen :-) Please check if your kernel has been updated, and 
+if so, please report the original version and the current version.
+
+&gt;<i> Kopete and mplayer show a green screen.  
+</I>&gt;<i> Xawtv just shows a black screen.  Luvcview has never worked for it, and
+</I>&gt;<i> still doesn't. I'm at a total loss of what to suggest... a whole bunch of
+</I>&gt;<i> output is below:
+</I>&gt;<i>
+</I>&gt;<i> lsusb -v -d 0c45:62c0:
+</I>&gt;<i> Bus 001 Device 002: ID 0c45:62c0 Microdia
+</I>[snip]
+
+&gt;<i>
+</I>&gt;<i> luvcview:
+</I>&gt;<i> luvcview version 0.2.1
+</I>&gt;<i> Video driver: x11
+</I>&gt;<i> A window manager is available
+</I>&gt;<i> video /dev/video0
+</I>&gt;<i> Unable to set format: 22.
+</I>&gt;<i>  Init v4L2 failed !! exit fatal
+</I>
+Your webcam doesn't support MJPEG, which luvcview defaults to. Try luvcview -f 
+yuv.
+
+&gt;<i> xawtv:
+</I>&gt;<i> This is xawtv-3.95, running on Linux/x86_64 ( 2.6.22-gentoo-r2)
+</I>&gt;<i> WARNING: Your X-Server has no DGA support.
+</I>&gt;<i> /dev/video0 [v4l2]: no overlay support
+</I>&gt;<i> v4l-conf had some trouble, trying to continue anyway
+</I>&gt;<i> Warning: Cannot convert string &quot;-*-ledfixed-medium-r-*--39-*-*-*-c-*-*-*&quot;
+</I>&gt;<i> to type FontStruct
+</I>&gt;<i> ioctl: VIDIOC_G_STD(std=0x2b34702f2d0d
+</I>&gt;<i> [PAL_B,PAL_G,PAL_H,PAL_M,PAL_Nc,PAL_60,NTSC_M_JP,SECAM_B,SECAM_D,SECAM_G,SE
+</I>&gt;<i>CAM_H,SECAM_K1,(null),(null),(null),(null),(null),(null),(null),(null),(null
+</I>&gt;<i>),(null)]): Invalid argument
+</I>&gt;<i> ioctl: VIDIOC_S_STD(std=0x0 []): Invalid argument
+</I>&gt;<i> ioctl: VIDIOC_DQBUF(index=0;type=VIDEO_CAPTURE;bytesused=0;flags=0x0
+</I>&gt;<i> [];field=ANY;;timecode.type=0;timecode.flags=0;timecode.frames=0;timecode.s
+</I>&gt;<i>econds=0;timecode.minutes=0;timecode.hours=0;timecode.userbits=&quot;&quot;;sequence=0
+</I>&gt;<i>;memory=unknown): Invalid argument
+</I>
+Has xawtv ever worked ? It requires a patch.
+
+&gt;<i> mplayer:
+</I>&gt;<i> MPlayer dev-SVN-rUNKNOWN-4.1.2 (C) 2000-2007 MPlayer Team
+</I>&gt;<i> CPU: AMD Turion(tm) 64 X2  (Family: 15, Model: 72, Stepping: 2)
+</I>&gt;<i> CPUflags:  MMX: 1 MMX2: 1 3DNow: 1 3DNow2: 1 SSE: 1 SSE2: 1
+</I>&gt;<i> Compiled with runtime CPU detection.
+</I>&gt;<i> mplayer: could not connect to socket
+</I>&gt;<i> mplayer: No such file or directory
+</I>&gt;<i> Failed to open LIRC support. You will not be able to use your remote
+</I>&gt;<i> control.
+</I>&gt;<i>
+</I>&gt;<i> Playing <A HREF="tv://.">tv://.</A>
+</I>&gt;<i> TV file format detected.
+</I>&gt;<i> Selected driver: dummy
+</I>&gt;<i>  name: NULL-TV
+</I>&gt;<i>  author: alex
+</I>&gt;<i>  comment:
+</I>&gt;<i> Selected input hasn't got a tuner!
+</I>&gt;<i> ==========================================================================
+</I>&gt;<i> Opening video decoder: [raw] RAW Uncompressed Video
+</I>&gt;<i> VDec: vo config request - 320 x 200 (preferred colorspace: Planar YV12)
+</I>&gt;<i> VDec: using Planar YV12 as output csp (no 0)
+</I>&gt;<i> Movie-Aspect is undefined - no prescaling applied.
+</I>&gt;<i> VO: [xv] 320x200 =&gt; 320x200 Planar YV12
+</I>&gt;<i> Selected video codec: [rawyv12] vfm: raw (RAW YV12)
+</I>&gt;<i> ==========================================================================
+</I>&gt;<i> Audio: no sound
+</I>&gt;<i> Starting playback...
+</I>&gt;<i> V:   1.0 533/533 ??% ??% ??,?% 0 0
+</I>&gt;<i>
+</I>&gt;<i> &lt;&lt;hangs, needs -9.&gt;&gt;
+</I>&gt;<i> MPlayer interrupted by signal 2 in module: flip_page
+</I>&gt;<i>
+</I>&gt;<i> /var/log/messages:
+</I>&gt;<i> Aug 19 00:56:47 SYSTEM uvcvideo: Found UVC 1.00 device USB 2.0 Camera
+</I>&gt;<i> (0c45:62c0)
+</I>&gt;<i> Aug 19 00:56:47 SYSTEM usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> Aug 19 00:56:47 SYSTEM USB Video Class driver (v0.1.0)
+</I>
+Do you get more messages in the kernel log after running all of the above 
+programs ?
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002011.html">[Linux-uvc-devel] Problems with 0c45:62c0
+</A></li>
+	<LI>Next message: <A HREF="002014.html">[Linux-uvc-devel] Dell Inspiron 1520 Web cam works with Linux-uvc
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2022">[ date ]</a>
+              <a href="thread.html#2022">[ thread ]</a>
+              <a href="subject.html#2022">[ subject ]</a>
+              <a href="author.html#2022">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

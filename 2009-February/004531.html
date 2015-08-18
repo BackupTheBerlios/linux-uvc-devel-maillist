@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Problems cross compiling uvc
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problems%20cross%20compiling%20uvc&In-Reply-To=%3C864811E44DB83D4DB83B667A4631E755010D6A51%40nurburg.Trinity.local%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004530.html">
+   <LINK REL="Next"  HREF="004535.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Problems cross compiling uvc</H1>
+    <B>Jonathan Roberts</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problems%20cross%20compiling%20uvc&In-Reply-To=%3C864811E44DB83D4DB83B667A4631E755010D6A51%40nurburg.Trinity.local%3E"
+       TITLE="[Linux-uvc-devel] Problems cross compiling uvc">JRoberts at trinityconvergence.com
+       </A><BR>
+    <I>Fri Feb  6 17:56:23 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004530.html">[Linux-uvc-devel] [PATCH] Video/UVC: Port mainlined uvc video	driver to NOMMU
+</A></li>
+        <LI>Next message: <A HREF="004535.html">[Linux-uvc-devel] Problems cross compiling uvc
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4531">[ date ]</a>
+              <a href="thread.html#4531">[ thread ]</a>
+              <a href="subject.html#4531">[ subject ]</a>
+              <a href="author.html#4531">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all,
+
+I am having a few problems with both a Quickcam Pro 9000 and a Creative
+Live Optia AF camera on an embedded platform. Before I start digging
+into the cause of the problems I thought I have better move to the
+latest version of the UVC driver.
+
+The version of the driver that I have working was the last revision in
+the old SVN repository. With this version I simply modified the makefile
+to point to my Kernel directory and specified my tool chain on the
+command line with a CROSS_COMPILE=.... parameter.
+
+With the latest version of UVC that I checked out of mercurial today,
+the build process has become much more involved the build environment
+does not seem to have any built in support for cross compilers unless I
+am missing something. 
+
+In order to cross compile the UVC module I modified the root makefile to
+add a definition of CROSS_COMPILE and then changed the targets to:
+
+install:
+        $(MAKE) -C $(BUILD_DIR) CROSS_COMPILE=$(CROSS_COMPILE) install
+%::
+        $(MAKE) -C $(BUILD_DIR) CROSS_COMPILE=$(CROSS_COMPILE)
+$(MAKECMDGOALS)
+
+In the v4l/Makefile I changed the SRCDIR and the OUTDIR to point to my
+kernel source tree. Everything seems to build ok, but when I try and
+insert the module on my target I get an error from insmod:
+
+	insmod: cannot insert './uvcvideo.ko': unknown symbol in module
+
+dmesg shows the following:
+
+uvcvideo: disagrees about version of symbol video_devdata
+uvcvideo: Unknown symbol video_devdata
+uvcvideo: disagrees about version of symbol video_unregister_device
+uvcvideo: Unknown symbol video_unregister_device
+uvcvideo: disagrees about version of symbol video_device_alloc
+uvcvideo: Unknown symbol video_device_alloc
+uvcvideo: disagrees about version of symbol video_register_device
+uvcvideo: Unknown symbol video_register_device
+uvcvideo: disagrees about version of symbol video_usercopy
+uvcvideo: Unknown symbol video_usercopy
+uvcvideo: disagrees about version of symbol video_device_release
+uvcvideo: Unknown symbol video_device_release
+
+I gather that this shows some sort of missmatch between the environment
+that the module was built for and the environment on the target board.
+Is that correct? Are these issues related to these messages that I get
+when the modules are built?: 
+
+WARNING: /uvcvideo/v4l/v4l2-common: 'v4l2_chip_ident_i2c_client'
+exported twice. Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-common: 'v4l2_chip_match_i2c_client'
+exported twice. Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-common: 'v4l2_chip_match_host' exported
+twice. Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-common: 'v4l2_ctrl_next' exported twice.
+Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-common: 'v4l2_ctrl_query_menu' exported
+twice. Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-common: 'v4l2_ctrl_query_fill_std' exported
+twice. Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-common: 'v4l2_ctrl_query_fill' exported
+twice. Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-common: 'v4l2_ctrl_get_menu' exported twice.
+Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-common: 'v4l2_ctrl_check' exported twice.
+Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-common: 'v4l2_prio_check' exported twice.
+Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-common: 'v4l2_prio_max' exported twice.
+Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-common: 'v4l2_prio_close' exported twice.
+Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-common: 'v4l2_prio_open' exported twice.
+Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-common: 'v4l2_prio_change' exported twice.
+Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-common: 'v4l2_prio_init' exported twice.
+Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-int-device: 'v4l2_int_ioctl_1' exported
+twice. Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-int-device: 'v4l2_int_ioctl_0' exported
+twice. Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-int-device: 'v4l2_int_device_unregister'
+exported twice. Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/v4l2-int-device: 'v4l2_int_device_register'
+exported twice. Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/videodev: 'video_unregister_device' exported
+twice. Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/videodev: 'video_register_device' exported twice.
+Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/videodev: 'video_devdata' exported twice.
+Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/videodev: 'video_device_release' exported twice.
+Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/videodev: 'video_device_alloc' exported twice.
+Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/videodev: 'video_ioctl2' exported twice. Previous
+export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/videodev: 'video_usercopy' exported twice.
+Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/videodev: 'v4l_printk_ioctl' exported twice.
+Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/videodev: 'v4l2_type_names' exported twice.
+Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/videodev: 'v4l2_field_names' exported twice.
+Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/videodev: 'v4l2_video_std_construct' exported
+twice. Previous export was in drivers/built-in.ko
+WARNING: /uvcvideo/v4l/videodev: 'v4l2_norm_to_name' exported twice.
+Previous export was in drivers/built-in.ko
+
+Building the old code against the same kernel results in a module that
+installs correctly, so I guess I have misconfigured something, but I am
+not sure what! Any suggestions would be greatfully received.
+
+Thanks
+
+Jonathan
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004530.html">[Linux-uvc-devel] [PATCH] Video/UVC: Port mainlined uvc video	driver to NOMMU
+</A></li>
+	<LI>Next message: <A HREF="004535.html">[Linux-uvc-devel] Problems cross compiling uvc
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4531">[ date ]</a>
+              <a href="thread.html#4531">[ thread ]</a>
+              <a href="subject.html#4531">[ subject ]</a>
+              <a href="author.html#4531">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

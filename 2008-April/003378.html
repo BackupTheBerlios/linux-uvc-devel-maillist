@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] svn 200 on 2.6.10 kernel
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20svn%20200%20on%202.6.10%20kernel&In-Reply-To=%3C200804162040.17810.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003374.html">
+   <LINK REL="Next"  HREF="003391.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] svn 200 on 2.6.10 kernel</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20svn%20200%20on%202.6.10%20kernel&In-Reply-To=%3C200804162040.17810.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] svn 200 on 2.6.10 kernel">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Apr 16 20:40:17 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003374.html">[Linux-uvc-devel] svn 200 on 2.6.10 kernel
+</A></li>
+        <LI>Next message: <A HREF="003391.html">[Linux-uvc-devel] svn 200 on 2.6.10 kernel
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3378">[ date ]</a>
+              <a href="thread.html#3378">[ thread ]</a>
+              <a href="subject.html#3378">[ subject ]</a>
+              <a href="author.html#3378">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Darren,
+
+On Wednesday 16 April 2008, Darren Longhorn wrote:
+&gt;<i> Hi Laurent,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart wrote:
+</I>&gt;<i> &gt; 2.6.10 is indeed quite old, and definitely unsupported by the Linux UVC
+</I>&gt;<i> &gt; driver. You might be able to make it work, but I can't guarantee
+</I>&gt;<i> &gt; anything.
+</I>&gt;<i>
+</I>&gt;<i> OK, I'll try and make it work. I understand when you say such an old
+</I>&gt;<i> kernel is unsupported, but I will continue to ask questions as I address
+</I>&gt;<i> problems if I may.
+</I>
+Sure, no problem.
+
+&gt;<i> &gt;&gt; The first problem appears to be that I have another definition of
+</I>&gt;<i> &gt;&gt; kzalloc, so I guess I could just remove the one in uvc_driver.c ?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; This is strange, as kzalloc has been introduced in 2.6.14. Are you using
+</I>&gt;<i> &gt; a patched version of the 2.6.10 kernel ?
+</I>&gt;<i>
+</I>&gt;<i> Yes, I am. It's the Texas Instruments version of the Monta Visyta
+</I>&gt;<i> distribution. I have previoulsy had a patched version of uvc svn 148
+</I>&gt;<i> that worked with one web cam, but I have had little success with others.
+</I>&gt;<i> I want to try and move to the latest svn to be able to support a better
+</I>&gt;<i> range of cameras.
+</I>&gt;<i>
+</I>&gt;<i> &gt; If the kzalloc implementation in your kernel sources is compatible with
+</I>&gt;<i> &gt; what the Linux UVC driver expects it should be safe to remove it from
+</I>&gt;<i> &gt; uvc_compat.h.
+</I>&gt;<i>
+</I>&gt;<i> It looks like that is the case.
+</I>&gt;<i>
+</I>&gt;<i> My next issue was that back in 2.6.10 'struct usb_device' defined in
+</I>&gt;<i> linux/usb.h does not have a field named 'product'. It seemed harmless to
+</I>&gt;<i> me to simply remove the use of that field.
+</I>
+usb_device.product is a string filled by USB core with the product name as 
+retrieved from the device. You can leave it out if you don't care about the 
+product name returned by the device.
+
+&gt;<i> The final issue I saw in uvc_driver.c is unknown type for pm_message_t
+</I>&gt;<i> used as a parameter in uvc_suspend(). As the parameter isn't used I just
+</I>&gt;<i> #defined it as u32.
+</I>
+You should instead look at your kernel sources, check what parameters the 
+uvc_suspend function expects, and modify it accordingly.
+
+&gt;<i> So now I have moced on to uvc_status.c where I get the following errors:
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">guest at UbuntuBuildVM</A>:~/fp/ext/lib/driver/linux/webcam/uvc$ make
+</I>&gt;<i> CROSS_COMPILE=arm_v5t_le-  uvcvideo
+</I>&gt;<i> Building USB Video Class driver...
+</I>&gt;<i> make[1]: Entering directory
+</I>&gt;<i> `/home/guest/fp/ext/lib/kernel/linux/montavista/lsp/ti-davinci'
+</I>&gt;<i>   CC [M]  /home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_driver.o
+</I>&gt;<i>   CC [M]  /home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.o
+</I>&gt;<i> /home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.c:19:29:
+</I>&gt;<i> linux/usb_input.h: No such file or directory
+</I>&gt;<i> /home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.c: In function
+</I>&gt;<i> `uvc_input_init':
+</I>&gt;<i> /home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.c:36: warning:
+</I>&gt;<i> implicit declaration of function `input_allocate_device'
+</I>&gt;<i> /home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.c:36: warning:
+</I>&gt;<i> assignment makes pointer from integer without a cast
+</I>&gt;<i> /home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.c:50: warning:
+</I>&gt;<i> implicit declaration of function `usb_to_input_id'
+</I>&gt;<i> /home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.c:54: error:
+</I>&gt;<i> structure has no member named `cdev'
+</I>&gt;<i> /home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.c:60: error:
+</I>&gt;<i> void value not ignored as it ought to be
+</I>&gt;<i> /home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.c:67: warning:
+</I>&gt;<i> implicit declaration of function `input_free_device'
+</I>&gt;<i> make[2]: ***
+</I>&gt;<i> [/home/guest/fp/ext/lib/driver/linux/webcam/uvc/uvc_status.o] Error 1
+</I>&gt;<i> make[1]: *** [_module_/home/guest/fp/ext/lib/driver/linux/webcam/uvc]
+</I>&gt;<i> Error 2
+</I>&gt;<i> make[1]: Leaving directory
+</I>&gt;<i> `/home/guest/fp/ext/lib/kernel/linux/montavista/lsp/ti-davinci'
+</I>&gt;<i> make: *** [uvcvideo] Error 2
+</I>&gt;<i>
+</I>&gt;<i> I have neither &lt;linux/usb_input.h&gt; nor implementations of
+</I>&gt;<i> input_allocate_device(), usb_to_input() or input_free_device(). What is
+</I>&gt;<i> the purpose of these functions and do you think it would be posible to
+</I>&gt;<i> provide local implementations?
+</I>
+The input layer is used to report button events to userspace. If you don't 
+care about camera buttons you can remove uvc_status.c completely.
+
+Cheers,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003374.html">[Linux-uvc-devel] svn 200 on 2.6.10 kernel
+</A></li>
+	<LI>Next message: <A HREF="003391.html">[Linux-uvc-devel] svn 200 on 2.6.10 kernel
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3378">[ date ]</a>
+              <a href="thread.html#3378">[ thread ]</a>
+              <a href="subject.html#3378">[ subject ]</a>
+              <a href="author.html#3378">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

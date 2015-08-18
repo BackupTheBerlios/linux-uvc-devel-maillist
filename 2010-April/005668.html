@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] some questions about uvc
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20some%20questions%20about%20uvc&In-Reply-To=%3C201004111304.59639.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005653.html">
+   <LINK REL="Next"  HREF="005654.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] some questions about uvc</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20some%20questions%20about%20uvc&In-Reply-To=%3C201004111304.59639.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] some questions about uvc">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Sun Apr 11 13:04:58 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005653.html">[Linux-uvc-devel] some questions about uvc
+</A></li>
+        <LI>Next message: <A HREF="005654.html">[Linux-uvc-devel] uvcvideo: Failed to submit URB 0 (-28) on ARM	target.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5668">[ date ]</a>
+              <a href="thread.html#5668">[ thread ]</a>
+              <a href="subject.html#5668">[ subject ]</a>
+              <a href="author.html#5668">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Monday 05 April 2010 18:41:21 loody wrote:
+&gt;<i> &gt;&gt; Dear all:
+</I>&gt;<i> &gt;&gt; I try to fix the uvc driver on my mips platform.
+</I>&gt;<i> &gt;&gt; But I got the messages as I append at the end of letter, the messages
+</I>&gt;<i> &gt;&gt; are triggered by capture.c the sample c code at the official website.
+</I>&gt;<i> &gt;&gt; I have some questions:
+</I>&gt;<i> &gt;&gt; 1. why the uvc resend the urb in uvc_video_complete?
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Because the USB core doesn't resubmit URBs automatically. If the driver
+</I>&gt;<i> &gt; didn't do it there, it would only receive a few URBs (currently
+</I>&gt;<i> &gt; hardcoded to 5 in the driver) and then stop.
+</I>&gt;<i> 
+</I>&gt;<i> I find the place where you mention and it seems we use a recursive
+</I>&gt;<i> method to send urbs in UVC, right?
+</I>
+It's not recursive. The uvc_video_complete function is called in response to a 
+USB controller interrupt. It will resubmit the URB, and then return without 
+waiting for the URB to be completed. The function will then be called again 
+when the next URB completes.
+
+&gt;<i> &gt;&gt; 2. from the log, it seems uvc keep catching when the VIDIOC_STREAMON
+</I>&gt;<i> &gt;&gt; passed from v4l2 to uvc.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I'm not sure to get what you mean.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;&gt; 3. if the answer of 1 is yes; what will uvc does when he get
+</I>&gt;<i> &gt;&gt; VIDIOC_QBUF and VIDIOC_DQBUF ?
+</I>&gt;<i> &gt;&gt;     ( in my opinion, uvc should starting catpureing when he receives
+</I>&gt;<i> &gt;&gt; VIDIOC_QBUF and stop when the buffer is full. Then it pass the buffer
+</I>&gt;<i> &gt;&gt; above when he got VIDIOC_DQBUF. But from the log below, it start
+</I>&gt;<i> &gt;&gt; captureing when he got VIDIOC_STREAMON. Am i right?)
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; THe driver instructs the device to start sending data when it receives
+</I>&gt;<i> &gt; VIDIOC_STREAMON. If there's no buffer queued the data will just be
+</I>&gt;<i> &gt; discarded.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;&gt; 4. if my assumption above is correct, uvc start capture at
+</I>&gt;<i> &gt;&gt; VIDIOC_DQBUF and stop when buffer full. it should stop capture when
+</I>&gt;<i> &gt;&gt; frame complete in the log appears.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; It could, but just discarding the data is enough.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;&gt; VIDIOC_STREAMON
+</I>&gt;<i> &gt;&gt; uvcvideo: Failed to resubmit video URB (-38).
+</I>&gt;<i> &gt;&gt; uvcvideo: Failed to resubmit video URB (-38).
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; -38 is -ENOSYS, and that error is returned by very few USB host
+</I>&gt;<i> &gt; controller drivers. Which controller are you using on your platform ?
+</I>&gt;<i> &gt; Chances are you might need to fix it.
+</I>&gt;<i> 
+</I>&gt;<i> EHCI controller and I am wondering whether the error comes from my slowly
+</I>&gt;<i> cpu. My cpu is running at 400Mhz
+</I>
+Now that's weird. The ENOSYS error isn't documented in the USB error codes, 
+and I can't find any reference to it in the EHCI driver. Are you using some 
+sort of exotic platform, with a vendor-specific kernel ?
+
+&gt;<i> &gt;&gt; uvcvideo: Frame complete (overflow).
+</I>&gt;<i> &gt;&gt; uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> &gt;&gt; uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> &gt;&gt; uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> &gt;&gt; uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> &gt;&gt; uvcvideo: Dropping payload (out of sync).
+</I>&gt;<i> 
+</I>&gt;<i> BTW, if I look at the correct place in the driver, why uvc doesn't
+</I>&gt;<i> support r/w io and userptr?
+</I>
+Because nobody bothered to implement that :-)
+
+read/write support is slow, and I'm not sure it will be implemented. I got a 
+patch for userptr support, I need to clean and submit it.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005653.html">[Linux-uvc-devel] some questions about uvc
+</A></li>
+	<LI>Next message: <A HREF="005654.html">[Linux-uvc-devel] uvcvideo: Failed to submit URB 0 (-28) on ARM	target.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5668">[ date ]</a>
+              <a href="thread.html#5668">[ thread ]</a>
+              <a href="subject.html#5668">[ subject ]</a>
+              <a href="author.html#5668">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

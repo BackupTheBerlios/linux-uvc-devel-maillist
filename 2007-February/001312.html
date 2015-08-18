@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] -Werror fixes for uvcvideo
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20-Werror%20fixes%20for%20uvcvideo&In-Reply-To=%3C20070131155224.D63447%40xorpc.icir.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="001318.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] -Werror fixes for uvcvideo</H1>
+    <B>Luigi Rizzo</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20-Werror%20fixes%20for%20uvcvideo&In-Reply-To=%3C20070131155224.D63447%40xorpc.icir.org%3E"
+       TITLE="[Linux-uvc-devel] -Werror fixes for uvcvideo">rizzo at icir.org
+       </A><BR>
+    <I>Thu Feb  1 00:52:24 CET 2007</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="001318.html">[Linux-uvc-devel] -Werror fixes for uvcvideo
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1312">[ date ]</a>
+              <a href="thread.html#1312">[ thread ]</a>
+              <a href="subject.html#1312">[ subject ]</a>
+              <a href="author.html#1312">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+attached are just a couple of trivial patches to
+uvcvideo to suppress some compiler warnings - one
+related to a missing const, one related to
+pointer arithmetic done on a void *
+
+On passing - i notice that in a couple of structs
+in uvcvideo.h you are used unnamed unions, which are
+a gcc extension which is not guaranteed to be supported
+in the future.
+
+I suppose that, besides convenience, the choice has been
+inspired by a similar pattern in videodev2.h .
+
+Before the use gets too widespread, it might be a good
+idea to use standard C and put a name to the union ?
+The changes to the source now are relatively small,
+and this would prevent the use
+of unnamed unions in derived works, which would require
+far more work to be fixed.
+
+cheers
+luigi
+-----------------------------------+-------------------------------------
+  Luigi RIZZO, <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">rizzo at iet.unipi.it</A>  . Dip. di Ing. dell'Informazione
+  <A HREF="http://www.iet.unipi.it/~luigi/">http://www.iet.unipi.it/~luigi/</A>  . Universita` di Pisa
+  TEL/FAX: +39-050-2217.533/600    . via Diotisalvi 2, 56122 PISA (Italy)
+  Mobile   +39-347-0373137
+-----------------------------------+-------------------------------------
+
+diff -ubwr trunk/trunk/uvc_ctrl.c ./uvc_ctrl.c
+--- trunk/trunk/uvc_ctrl.c	Wed Jan 31 23:53:36 2007
++++ ./uvc_ctrl.c	Wed Jan 31 23:29:59 2007
+@@ -795,6 +795,7 @@
+ 	mutex_unlock(&amp;uvc_driver.ctrl_mutex);
+ }
+ 
++static
+ void uvc_ctrl_add_mapping(struct uvc_control_mapping *mapping)
+ {
+ 	struct uvc_control_info *info;
+diff -ubwr trunk/trunk/uvc_driver.c ./uvc_driver.c
+--- trunk/trunk/uvc_driver.c	Wed Jan 31 23:53:36 2007
++++ ./uvc_driver.c	Wed Jan 31 21:36:15 2007
+@@ -664,7 +664,7 @@
+ 		unit-&gt;type = VC_EXTENSION_UNIT;
+ 		memcpy(unit-&gt;extension.guidExtensionCode, &amp;buffer[4], 16);
+ 		unit-&gt;extension.bNumControls = buffer[20];
+-		unit-&gt;extension.bNrInPins = le16_to_cpup((__le16*)&amp;buffer[21]);
++		unit-&gt;extension.bNrInPins = le16_to_cpup((const __le16*)&amp;buffer[21]);
+ 		unit-&gt;extension.baSourceID = (__u8*)unit + sizeof *unit;
+ 		memcpy(unit-&gt;extension.baSourceID, &amp;buffer[22], p);
+ 		unit-&gt;extension.bControlSize = buffer[22+p];
+diff -ubwr trunk/trunk/uvcvideo.h ./uvcvideo.h
+--- trunk/trunk/uvcvideo.h	Wed Jan 31 23:53:36 2007
++++ ./uvcvideo.h	Wed Jan 31 23:23:50 2007
+@@ -478,7 +478,7 @@
+ };
+ 
+ struct uvc_video_queue {
+-	void *mem;
++	char *mem;	/* we do pointer arithmetic here */
+ 	unsigned int streaming;
+ 	__u32 sequence;
+ 	__u8 last_fid;
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="001318.html">[Linux-uvc-devel] -Werror fixes for uvcvideo
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1312">[ date ]</a>
+              <a href="thread.html#1312">[ thread ]</a>
+              <a href="subject.html#1312">[ subject ]</a>
+              <a href="author.html#1312">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

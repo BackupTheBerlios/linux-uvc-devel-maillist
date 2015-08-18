@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] control string localization
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20control%20string%20localization&In-Reply-To=%3C59cf47a80910091542l2493ca43i5be1dcd98fc483f9%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005203.html">
+   <LINK REL="Next"  HREF="005214.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] control string localization</H1>
+    <B>Paulo Assis</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20control%20string%20localization&In-Reply-To=%3C59cf47a80910091542l2493ca43i5be1dcd98fc483f9%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] control string localization">pj.assis at gmail.com
+       </A><BR>
+    <I>Sat Oct 10 00:42:20 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005203.html">[Linux-uvc-devel] [PATCH] [resend] Finally fix Logitech Quickcam	for Notebooks Pro
+</A></li>
+        <LI>Next message: <A HREF="005214.html">[Linux-uvc-devel] control string localization
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5212">[ date ]</a>
+              <a href="thread.html#5212">[ thread ]</a>
+              <a href="subject.html#5212">[ subject ]</a>
+              <a href="author.html#5212">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Laurent,
+so it seems you are quite busy at the moment so I hacked the driver to
+use v4l2_ctrl_get_name (patch attached)
+I've tested the on a 2.6.31 kernel and it seems to be working OK, I
+just remove the hardcoded name strings from uvc_ctrl_mappings and add
+them back using  v4l2_ctrl_get_name in uvc_ctrl_init.
+Don't know if this is enought but like I said everything seems to be
+working as expexted.
+
+Best regards,
+Paulo
+
+2009/9/18 Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt;:
+&gt;<i> Hi Paulo,
+</I>&gt;<i>
+</I>&gt;<i> On Sunday 13 September 2009 15:32:20 Paulo Assis wrote:
+</I>&gt;&gt;<i> Hi,
+</I>&gt;&gt;<i> Currently, uvc driver and I guess all other v4l2 video drivers use
+</I>&gt;&gt;<i> internal stored control strings.
+</I>&gt;&gt;<i> This poses a problem when adding localization for this strings, since
+</I>&gt;&gt;<i> they can change between drivers.
+</I>&gt;&gt;<i> Even if driver developers are careful enough to return the same string
+</I>&gt;&gt;<i> for the correspondent control ID, a slight difference: Brightness or
+</I>&gt;&gt;<i> brightness is enough for a failed translation.
+</I>&gt;&gt;<i> Since the control ID's are defined in the V4L2 API is there any
+</I>&gt;&gt;<i> special reason why the correspondent control strings are not.
+</I>&gt;&gt;<i> I may be failing to see this correctly but at least for me it seems
+</I>&gt;&gt;<i> much logical that if all standard control IDs are already defined
+</I>&gt;&gt;<i> there, then also the name string should be made available through this
+</I>&gt;&gt;<i> central public API, making it exactly the same for all drivers.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> If I'm wrong please feel free to shut me up, and kick me in the but. :-)
+</I>&gt;<i>
+</I>&gt;<i> You're right, and there's already such a central public API. Have a look at
+</I>&gt;<i> v4l2_ctrl_get_name in drivers/media/video/v4l2-common.c.
+</I>&gt;<i>
+</I>&gt;<i> I'll try to switch the uvcvideo driver to v4l2_ctrl_get_name when I'll find
+</I>&gt;<i> some free time.
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Regards,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i>
+</I>-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: uvc_v4l2_ctrl_get_name.patch
+Type: text/x-diff
+Size: 7295 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091009/8ae82ff1/attachment.patch">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091009/8ae82ff1/attachment.patch</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005203.html">[Linux-uvc-devel] [PATCH] [resend] Finally fix Logitech Quickcam	for Notebooks Pro
+</A></li>
+	<LI>Next message: <A HREF="005214.html">[Linux-uvc-devel] control string localization
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5212">[ date ]</a>
+              <a href="thread.html#5212">[ thread ]</a>
+              <a href="subject.html#5212">[ subject ]</a>
+              <a href="author.html#5212">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

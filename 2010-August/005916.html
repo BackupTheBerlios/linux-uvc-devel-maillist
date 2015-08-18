@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech Webcam Pro 9000
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20Webcam%20Pro%209000&In-Reply-To=%3CAANLkTinK1L0Bku59doCdiKL9rGN6JfFBkTq2jTDWBDg4%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005917.html">
+   <LINK REL="Next"  HREF="005918.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech Webcam Pro 9000</H1>
+    <B>Camilo S.</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20Webcam%20Pro%209000&In-Reply-To=%3CAANLkTinK1L0Bku59doCdiKL9rGN6JfFBkTq2jTDWBDg4%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Logitech Webcam Pro 9000">cmsvalenzuela at gmail.com
+       </A><BR>
+    <I>Sun Aug 29 14:48:29 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005917.html">[Linux-uvc-devel] Running multiple webcams on the same hub
+</A></li>
+        <LI>Next message: <A HREF="005918.html">[Linux-uvc-devel] [UVC] [Linux-UVC] put_unaligned_le32
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5916">[ date ]</a>
+              <a href="thread.html#5916">[ thread ]</a>
+              <a href="subject.html#5916">[ subject ]</a>
+              <a href="author.html#5916">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi there people, I need to make some questions about Logitech Webcam Pro
+9000, im currently working on My graduation proyect at my University i
+decided to build a Augmented reality app,
+for this issue we needed to buy this camera and we are working with it on
+Ubuntu 10, we are using a driver for the camera that works fine, but i would
+like to know how to have more control
+of the camera parameters... so well this are my questions (please have in
+mind this my first try with linux dirvers for camera, so probably my
+question will not have the detail they need, any help you can give ill
+appreciate it a lot)
+
+1. i was reading specifications of Logitech Webcam Pro 9000 at
+<A HREF="http://www.logitech.com/en-us/webcam-communications/webcams/devices/6333,">http://www.logitech.com/en-us/webcam-communications/webcams/devices/6333,</A>
+but i could not find specification about
+mm wide-angle lens. how can i know that for this cam.
+
+2. im currently using this videosource file that use Gvars3 library to
+handle some things, but i could not find, a good manual, or other way to
+control cam,
+
+here is source i have. (this is source by George Klein for his proyect PTAM
+<A HREF="http://www.robots.ox.ac.uk/~gk/PTAM/">http://www.robots.ox.ac.uk/~gk/PTAM/</A>  - this is the tool with we are
+learning to use AR for our proyect),
+
+// Copyright 2008 Isis Innovation Limited
+#include &quot;VideoSource.h&quot;
+#include &lt;cvd/Linux/v4lbuffer.h&gt;
+#include &lt;cvd/colourspace_convert.h&gt;
+#include &lt;cvd/colourspaces.h&gt;
+#include &lt;gvars3/instances.h&gt;
+
+using namespace CVD;
+using namespace std;
+using namespace GVars3;
+
+VideoSource::VideoSource()
+{
+  cout &lt;&lt; &quot;  VideoSource_Linux: Opening video source...&quot; &lt;&lt; endl;
+  string QuickCamFile = GV3::get&lt;string&gt;(&quot;VideoSource.V4LDevice&quot;,
+&quot;/dev/video0&quot;);
+  ImageRef irSize = GV3::get&lt;ImageRef&gt;(&quot;VideoSource.Resolution&quot;,
+ImageRef(640,480));
+  int nFrameRate = GV3::get&lt;int&gt;(&quot;VideoSource.Framerate&quot;, 30);
+  V4LBuffer&lt;yuv422&gt;* pvb = new V4LBuffer&lt;yuv422&gt;(QuickCamFile, irSize, -1,
+false, nFrameRate);
+  mirSize = pvb-&gt;size();
+  mptr = pvb;
+  cout &lt;&lt; &quot;  ... got video source.&quot; &lt;&lt; endl;
+};
+
+ImageRef VideoSource::Size()
+{
+  return mirSize;
+};
+
+void VideoSource::GetAndFillFrameBWandRGB(Image&lt;byte&gt; &amp;imBW, Image&lt;Rgb&lt;byte&gt;
+&gt;<i> &amp;imRGB)
+</I>{
+  V4LBuffer&lt;yuv422&gt;* pvb = (V4LBuffer&lt;yuv422&gt;*) mptr;
+  VideoFrame&lt;yuv422&gt; *pVidFrame = pvb-&gt;get_frame();
+  convert_image(*pVidFrame, imBW);
+  convert_image(*pVidFrame, imRGB);
+  pvb-&gt;put_frame(pVidFrame);
+}
+
+about this source.... i would to know how to change parameters to use
+features of camera or a manaul to read maybe.
+
+
+thanks in advance
+
+kind regards
+Camilo Mauricio Soto Valenzuela
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100829/33b17ac5/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100829/33b17ac5/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005917.html">[Linux-uvc-devel] Running multiple webcams on the same hub
+</A></li>
+	<LI>Next message: <A HREF="005918.html">[Linux-uvc-devel] [UVC] [Linux-UVC] put_unaligned_le32
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5916">[ date ]</a>
+              <a href="thread.html#5916">[ thread ]</a>
+              <a href="subject.html#5916">[ subject ]</a>
+              <a href="author.html#5916">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

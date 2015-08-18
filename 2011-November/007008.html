@@ -1,0 +1,181 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Working with Logitech B990: Issues.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Working%20with%20Logitech%20B990%3A%20Issues.&In-Reply-To=%3C4EB23B55.3070201%40fisher-privat.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007063.html">
+   <LINK REL="Next"  HREF="007010.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Working with Logitech B990: Issues.</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Working%20with%20Logitech%20B990%3A%20Issues.&In-Reply-To=%3C4EB23B55.3070201%40fisher-privat.net%3E"
+       TITLE="[Linux-uvc-devel] Working with Logitech B990: Issues.">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Thu Nov  3 07:57:25 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007063.html">[Linux-uvc-devel] Simultaneous encoded stream and unencoded	preview.
+</A></li>
+        <LI>Next message: <A HREF="007010.html">[Linux-uvc-devel] Annoying HTTPS in link to list archive.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7008">[ date ]</a>
+              <a href="thread.html#7008">[ thread ]</a>
+              <a href="subject.html#7008">[ subject ]</a>
+              <a href="author.html#7008">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Am 03.11.2011 07:56, schrieb Alexey Rempel:
+&gt;<i> Am 03.11.2011 02:20, schrieb Kaz Kylheku:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Hey all,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I'm working with the B990 on an ARM-based embedded system based on
+</I>&gt;&gt;<i> linux-2.6.27.47.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> H.264 is coming out of the cam, but I don't see an SPS/PPS, and all the
+</I>&gt;&gt;<i> frames are
+</I>&gt;&gt;<i> P slices, e.g. like this and similar:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> 00 00 00 01 61 9a 00 38 37 e0 20 30 ...
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Secondly, after some period of running, the USB controller throws up an
+</I>&gt;&gt;<i> over-current error,
+</I>&gt;&gt;<i> and then the device is not usable without a reboot. Maybe this big sucker
+</I>&gt;&gt;<i> really draws too much current?
+</I>
+Interesting, i tested some different Logitech webcams. The standard
+cams, which can do only yav and jpeg, suck ~170 mA in low qulity mode
+(frame rate higer then 15fps). By frame rate lower or equal to 15fps,
+they go to high quality mode, and suck ~200 mA. Do h264 encoder will
+really add 300mA more?
+
+&gt;&gt;<i> Usually I am not able to two consecutive successful opens of the device.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> By the way, I patched the driver to make the trace and quirks sysctl
+</I>&gt;&gt;<i> parameters, since I have it compiled into the kernel.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Index: linux-2.6.27.47/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;&gt;<i> ===================================================================
+</I>&gt;&gt;<i> --- linux-2.6.27.47.orig/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;&gt;<i> +++ linux-2.6.27.47/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;&gt;<i> @@ -30,6 +30,7 @@
+</I>&gt;&gt;<i> #include &lt;linux/usb.h&gt;
+</I>&gt;&gt;<i> #include &lt;linux/videodev2.h&gt;
+</I>&gt;&gt;<i> #include &lt;linux/vmalloc.h&gt;
+</I>&gt;&gt;<i> +#include &lt;linux/sysctl.h&gt;
+</I>&gt;&gt;<i> #include &lt;linux/wait.h&gt;
+</I>&gt;&gt;<i> #include &lt;asm/atomic.h&gt;
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> @@ -39,6 +40,7 @@
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> #define DRIVER_AUTHOR &quot;Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt;&quot;
+</I>&gt;&gt;<i> #define DRIVER_DESC &quot;USB Video Class driver&quot;
+</I>&gt;&gt;<i> +#define DRIVER_NAME &quot;uvcvideo&quot;
+</I>&gt;&gt;<i> #ifndef DRIVER_VERSION
+</I>&gt;&gt;<i> #define DRIVER_VERSION &quot;v0.1.0&quot;
+</I>&gt;&gt;<i> #endif
+</I>&gt;&gt;<i> @@ -1970,6 +1972,37 @@ struct uvc_driver uvc_driver = {
+</I>&gt;&gt;<i> },
+</I>&gt;&gt;<i> };
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> +static struct ctl_table uvc_sysctl_entries[] =
+</I>&gt;&gt;<i> +{
+</I>&gt;&gt;<i> + {
+</I>&gt;&gt;<i> + .procname = &quot;trace&quot;,
+</I>&gt;&gt;<i> + .data = &amp;uvc_trace_param,
+</I>&gt;&gt;<i> + .maxlen = sizeof( int ),
+</I>&gt;&gt;<i> + .mode = 0644,
+</I>&gt;&gt;<i> + .proc_handler = &amp;proc_dointvec,
+</I>&gt;&gt;<i> + },
+</I>&gt;&gt;<i> + {
+</I>&gt;&gt;<i> + .procname = &quot;quirks&quot;,
+</I>&gt;&gt;<i> + .data = &amp;uvc_quirks_param,
+</I>&gt;&gt;<i> + .maxlen = sizeof( int ),
+</I>&gt;&gt;<i> + .mode = 0644,
+</I>&gt;&gt;<i> + .proc_handler = &amp;proc_dointvec,
+</I>&gt;&gt;<i> + },
+</I>&gt;&gt;<i> + { .ctl_name = 0 }
+</I>&gt;&gt;<i> +};
+</I>&gt;&gt;<i> +
+</I>&gt;&gt;<i> +static struct ctl_table uvc_sysctl_root[] =
+</I>&gt;&gt;<i> +{
+</I>&gt;&gt;<i> + {
+</I>&gt;&gt;<i> + .procname = &quot;uvc_video&quot;,
+</I>&gt;&gt;<i> + .mode = 0555,
+</I>&gt;&gt;<i> + .child = uvc_sysctl_entries,
+</I>&gt;&gt;<i> + },
+</I>&gt;&gt;<i> + { .ctl_name = 0 }
+</I>&gt;&gt;<i> +};
+</I>&gt;&gt;<i> +
+</I>&gt;&gt;<i> +static struct ctl_table_header *uvc_sysctl_header;
+</I>&gt;&gt;<i> +
+</I>&gt;&gt;<i> static int __init uvc_init(void)
+</I>&gt;&gt;<i> {
+</I>&gt;&gt;<i> int result;
+</I>&gt;&gt;<i> @@ -1981,14 +2014,22 @@ static int __init uvc_init(void)
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> uvc_ctrl_init();
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> + uvc_sysctl_header = register_sysctl_table(uvc_sysctl_root);
+</I>&gt;&gt;<i> +
+</I>&gt;&gt;<i> result = usb_register(&amp;uvc_driver.driver);
+</I>&gt;&gt;<i> +
+</I>&gt;&gt;<i> if (result == 0)
+</I>&gt;&gt;<i> - printk(KERN_INFO DRIVER_DESC &quot; (&quot; DRIVER_VERSION &quot;)\n&quot;);
+</I>&gt;&gt;<i> + printk(KERN_INFO DRIVER_NAME &quot;: &quot; DRIVER_DESC &quot; (&quot; DRIVER_VERSION
+</I>&gt;&gt;<i> &quot;)\n&quot;);
+</I>&gt;&gt;<i> +
+</I>&gt;&gt;<i> + if (uvc_sysctl_header == 0)
+</I>&gt;&gt;<i> + printk(KERN_ERR DRIVER_NAME &quot;: unable to register sysctl table\n&quot;);
+</I>&gt;&gt;<i> +
+</I>&gt;&gt;<i> return result;
+</I>&gt;&gt;<i> }
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> static void __exit uvc_cleanup(void)
+</I>&gt;&gt;<i> {
+</I>&gt;&gt;<i> + unregister_sysctl_table(uvc_sysctl_header);
+</I>&gt;&gt;<i> usb_deregister(&amp;uvc_driver.driver);
+</I>&gt;&gt;<i> }
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007063.html">[Linux-uvc-devel] Simultaneous encoded stream and unencoded	preview.
+</A></li>
+	<LI>Next message: <A HREF="007010.html">[Linux-uvc-devel] Annoying HTTPS in link to list archive.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7008">[ date ]</a>
+              <a href="thread.html#7008">[ thread ]</a>
+              <a href="subject.html#7008">[ subject ]</a>
+              <a href="author.html#7008">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

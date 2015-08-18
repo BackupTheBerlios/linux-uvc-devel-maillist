@@ -1,0 +1,256 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Running multiple webcams on the same hub
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Running%20multiple%20webcams%20on%20the%20same%20hub&In-Reply-To=%3C4C7B9668.6020204%40ml1.co.uk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005915.html">
+   <LINK REL="Next"  HREF="005916.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Running multiple webcams on the same hub</H1>
+    <B>Martin</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Running%20multiple%20webcams%20on%20the%20same%20hub&In-Reply-To=%3C4C7B9668.6020204%40ml1.co.uk%3E"
+       TITLE="[Linux-uvc-devel] Running multiple webcams on the same hub">m_uvcdev at ml1.co.uk
+       </A><BR>
+    <I>Mon Aug 30 13:30:48 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005915.html">[Linux-uvc-devel] Running multiple webcams on the same hub
+</A></li>
+        <LI>Next message: <A HREF="005916.html">[Linux-uvc-devel] Logitech Webcam Pro 9000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5917">[ date ]</a>
+              <a href="thread.html#5917">[ thread ]</a>
+              <a href="subject.html#5917">[ subject ]</a>
+              <a href="author.html#5917">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 27/08/10 15:14, Martin wrote:
+&gt;<i> The problem:
+</I>&gt;<i> 
+</I>&gt;<i> From reading around this list and elsewhere, it appears that you simply
+</I>&gt;<i> cannot run more than one webcam video stream per USB root hub.
+</I>&gt;<i> 
+</I>&gt;<i> When enabled for video streaming, the webcam reserves the full
+</I>&gt;<i> isochronous bandwidth needed to stream data at the selected resolution
+</I>&gt;<i> and framerate, regardless...
+</I>
+Kindly, a direct reply suggested:
+
+####
+...the only way I've managed to get multiple cameras working was by
+using the mjpeg format. I've got this way working 3 cameras at 10fps
+640x480 resolution on same root usb hub - and it looked like I might be
+able to get a fourth one. I would suggest you start by checking the
+specs for your cameras - if they are supposed to support mjpeg.
+
+Don't know how you are trying to get them working on mjpeg, but I used
+the command:
+
+ffmpeg -vcodec mjpeg -f video4linux2 -r 10 -s 640x480 -i /dev/video0
+ouputfile.ext
+
+The '-vcodec mjpeg' has to go in front of the '-i' option in order to
+request the stream in mjpeg format from the camera - after the '-i' it
+will merely convert the stream to mjpeg.
+####
+
+Tried that and a few variations... Although the mjpeg streaming is
+accepted, there is no output. I've had the same non-result with other
+applications I've tried for getting a mjpeg stream from the WV060 webcam
+and the uvcvideo driver.
+
+
+&gt;<i> *A possible solution* ?
+</I>&gt;<i> 
+</I>&gt;<i> Instead, could the UVC driver 'simulate' a reduced framerate by instead
+</I>&gt;<i> using the &quot;STILL_IMAGE_FRAME&quot; mode of the webcam and grab for itself a
+</I>&gt;<i> set number of images per second? Or even only when polled by a read from
+</I>&gt;<i> the user application?
+</I>&gt;<i> 
+</I>&gt;<i> On *nix, &quot;everything is a file&quot;... Could the uvc driver accept reading
+</I>&gt;<i> of /dev/videoX by the command &quot;cp&quot; so that still image data is copied,
+</I>&gt;<i> formatted for a jpg or png?
+</I>&gt;<i> 
+</I>&gt;<i> Could the &quot;quirks&quot; setting be abused to set the image grab rate? Or some
+</I>&gt;<i> other neater method?
+</I>
+That still looks to be the best solution. The webcam is supposed to
+support still image capture, but how do I do that?! Is there a nice
+little snippet of C code that I can compile to grab a still image to a
+jpg or png?
+
+
+A gruesome work-around that does work is to use old USB 1.1 hubs to
+force the WC060 to a lower data rate. You can then have many webcams
+connected to your system! However...
+
+The WC060 reduces the maximum resolution to 640x480 rather than reduce
+the framerate. Quite a waste for the 1600x1200 that it supports;
+
+The USB 1.1 hubs must be plugged directly into the USB 2.0 root hub for
+a USB 1.1 root hub to be allocated (or for the UVC driver to work?);
+
+Use &quot;lsusb -t&quot; and &quot;lsusb -v&quot; to see what is happening.
+
+
+The USB 1.1 hubs that I picked up for very cheap correctly announce
+themselves as USB 1.1 but have a product name of &quot;USB hub 2.0&quot;. Very
+Marketing-esq nasty!
+
+eg:
+
+Bus 003 Device 002: ID 05e3:0606 Genesys Logic, Inc. USB 2.0 Hub /
+D-Link DUB-H4 USB 2.0 Hub
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               2.00
+  bDeviceClass            9 Hub
+  bDeviceSubClass         0 Unused
+  bDeviceProtocol         0 Full speed (or root) hub
+  bMaxPacketSize0         8
+  idVendor           0x05e3 Genesys Logic, Inc.
+  idProduct          0x0606 USB 2.0 Hub / D-Link DUB-H4 USB 2.0 Hub
+  bcdDevice            7.02
+  iManufacturer           1 ALCOR
+  iProduct                2 USB Hub 2.0
+
+
+Note: &quot;Full speed&quot; = USB 1.1 and &quot;High speed&quot; = USB 2.0 ... Hence,
+despite the confusing &quot;2.0&quot; in the descriptors, it is actually USB 1.1.
+
+
+
+Is the UVC driver still being developed? Are there features support yet
+to be added?
+
+Or is all this a problem of the user-side application software?
+
+
+Regards,
+Martin
+
+
+
+&gt;<i> Further details:
+</I>&gt;<i> 
+</I>&gt;<i> I'm trying to use two webcams simultaneously:
+</I>&gt;<i> 
+</I>&gt;<i>   iManufacturer           1 Sweex
+</I>&gt;<i>   iProduct                2 WC060 Series HD Webcam
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> On separate hubs, they work fine. On the same hub, the second one to
+</I>&gt;<i> start shows the error:
+</I>&gt;<i> 
+</I>&gt;<i> &quot;Error starting stream VIDIOC_STREAMON: No space left on device&quot;.
+</I>&gt;<i> 
+</I>&gt;<i> I've only got the one root hub on the system I want to use for the two
+</I>&gt;<i> webcams!
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Their descriptors show:
+</I>&gt;<i> 
+</I>&gt;<i>         bFrameIntervalType                  2
+</I>&gt;<i>         dwFrameInterval( 0)           2000000
+</I>&gt;<i>         dwFrameInterval( 1)           4000000
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Can I tweak the UVC driver to preferentially choose the slower frame
+</I>&gt;<i> rate available?
+</I>&gt;<i> 
+</I>&gt;<i> Aside: The MJPG format doesn't seem to work, nor are any compression
+</I>&gt;<i> settings visible...
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Given a few hints or a patch, I can hack the kernel module to test :-)
+</I>&gt;<i> 
+</I>&gt;<i> This is running on Gentoo, kernel 2.6.34 using the in-kernel uvc module.
+</I>&gt;<i> 
+</I>&gt;<i> Any comment/ideas welcomed.
+</I>&gt;<i> 
+</I>&gt;<i> Regards,
+</I>&gt;<i> Martin
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> From lsusb -v (excerpt):
+</I>&gt;<i> 
+</I>&gt;<i> VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            34
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  5 (FRAME_UNCOMPRESSED)
+</I>&gt;<i>         bFrameIndex                         9
+</I>&gt;<i>         bmCapabilities                   0x00
+</I>&gt;<i>           Still image unsupported
+</I>&gt;<i>         wWidth                           1600
+</I>&gt;<i>         wHeight                          1200
+</I>&gt;<i>         dwMinBitRate                   768000
+</I>&gt;<i>         dwMaxBitRate                196608000
+</I>&gt;<i>         dwMaxVideoFrameBufferSize     3840000
+</I>&gt;<i>         dwDefaultFrameInterval        2000000
+</I>&gt;<i>         bFrameIntervalType                  2
+</I>&gt;<i>         dwFrameInterval( 0)           2000000
+</I>&gt;<i>         dwFrameInterval( 1)           4000000
+</I>&gt;<i> VideoStreaming Interface Descriptor:
+</I>&gt;<i>         bLength                            42
+</I>&gt;<i>         bDescriptorType                    36
+</I>&gt;<i>         bDescriptorSubtype                  3 (STILL_IMAGE_FRAME)
+</I>&gt;<i>         bEndpointAddress                    0
+</I>&gt;<i>         bNumImageSizePatterns               9
+</I>&gt;<i>         wWidth( 0)                        640
+</I>&gt;<i>         wHeight( 0)                       480
+</I>&gt;<i>         wWidth( 1)                        352
+</I>&gt;<i>         wHeight( 1)                       288
+</I>&gt;<i>         wWidth( 2)                        320
+</I>&gt;<i>         wHeight( 2)                       240
+</I>&gt;<i>         wWidth( 3)                        176
+</I>&gt;<i>         wHeight( 3)                       144
+</I>&gt;<i>         wWidth( 4)                        160
+</I>&gt;<i>         wHeight( 4)                       120
+</I>&gt;<i>         wWidth( 5)                        800
+</I>&gt;<i>         wHeight( 5)                       600
+</I>&gt;<i>         wWidth( 6)                       1280
+</I>&gt;<i>         wHeight( 6)                       960
+</I>&gt;<i>         wWidth( 7)                       1280
+</I>&gt;<i>         wHeight( 7)                      1024
+</I>&gt;<i>         wWidth( 8)                       1600
+</I>&gt;<i>         wHeight( 8)                      1200
+</I>&gt;<i>         bNumCompressionPatterns             9
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005915.html">[Linux-uvc-devel] Running multiple webcams on the same hub
+</A></li>
+	<LI>Next message: <A HREF="005916.html">[Linux-uvc-devel] Logitech Webcam Pro 9000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5917">[ date ]</a>
+              <a href="thread.html#5917">[ thread ]</a>
+              <a href="subject.html#5917">[ subject ]</a>
+              <a href="author.html#5917">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

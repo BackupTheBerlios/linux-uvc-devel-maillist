@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Adding dynamic controls
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Adding%20dynamic%20controls&In-Reply-To=%3C201104221126.51878.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006484.html">
+   <LINK REL="Next"  HREF="006487.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Adding dynamic controls</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Adding%20dynamic%20controls&In-Reply-To=%3C201104221126.51878.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Adding dynamic controls">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Fri Apr 22 11:26:51 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006484.html">[Linux-uvc-devel] How to 'quirk' more than 3 same &quot;YUYV&quot;	streaming web-cams
+</A></li>
+        <LI>Next message: <A HREF="006487.html">[Linux-uvc-devel] [PATCH] uvcvideo: FIX_BANDWIDTH quirk for	Hercules Classic Silver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6485">[ date ]</a>
+              <a href="thread.html#6485">[ thread ]</a>
+              <a href="subject.html#6485">[ subject ]</a>
+              <a href="author.html#6485">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Paul,
+
+On Thursday 31 March 2011 08:13:07 Paul Jurczak wrote:
+&gt;<i> Hello,
+</I>&gt;<i> 
+</I>&gt;<i> I'm trying to add dynamic controls for a camera with undocumented XUs (Gear
+</I>&gt;<i> Head WC1300). lsusb shows presence of XU: VideoControl Interface
+</I>&gt;<i> Descriptor:
+</I>&gt;<i>         bLength                28
+</I>&gt;<i>         bDescriptorType        36
+</I>&gt;<i>         bDescriptorSubtype      6 (EXTENSION_UNIT)
+</I>&gt;<i>         bUnitID                 4
+</I>&gt;<i>         guidExtensionCode         {e3deaebb-c2ec-4d42-802c-72f2eb3dfb57}
+</I>&gt;<i>         bNumControl             8
+</I>&gt;<i>         bNrPins                 1
+</I>&gt;<i>         baSourceID( 0)          1
+</I>&gt;<i>         bControlSize            3
+</I>&gt;<i>         bmControls( 0)       0x59
+</I>&gt;<i>         bmControls( 1)       0x80
+</I>&gt;<i>         bmControls( 2)       0x80
+</I>&gt;<i>         iExtension              0
+</I>&gt;<i> Documentation of camera processor (Vimicro VC0342) indicates availability
+</I>&gt;<i> of image processing on/off and 8/10-bit raw controls. My plan is a brute
+</I>&gt;<i> force approach to test all possible values of controls.
+</I>&gt;<i> 
+</I>&gt;<i> I'm having some problems with the API. Adding a control with
+</I>&gt;<i> UVCIOC_CTRL_ADD succeeds even with bogus parameters (e.g. wrong GUID).
+</I>
+On recent kernels UVCIOC_CTRL_ADD is a no-op and will always return -EEXIST. 
+On older kernels it will succeed regardless of whether your webcam includes an 
+XU with the given GUID, as added controls are not specific to a given webcam.
+
+&gt;<i> Mapping it with UVCIOC_CTRL_MAP succeeds too.
+</I>
+Adding a mapping will succeed even if the camera doesn't implement the given 
+control. Set the trace parameter to 65535 before adding mappings, the driver 
+will print additional information to the kernel log, including whether the UVC 
+control identified by the mapping is found in the device.
+
+&gt;<i> Trying VIDIOC_QUERYCTRL or UVCIOC_CTRL_GET fails with EINVAL. Is it normal
+</I>&gt;<i> that UVCIOC_CTRL_ADD works fine with random GUID? In addition to 0 return
+</I>&gt;<i> value from UVCIOC_CTRL_ADD, trying to add the same control again produces
+</I>&gt;<i> EEXIST error, so it seems that it was accepted by the driver.
+</I>
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006484.html">[Linux-uvc-devel] How to 'quirk' more than 3 same &quot;YUYV&quot;	streaming web-cams
+</A></li>
+	<LI>Next message: <A HREF="006487.html">[Linux-uvc-devel] [PATCH] uvcvideo: FIX_BANDWIDTH quirk for	Hercules Classic Silver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6485">[ date ]</a>
+              <a href="thread.html#6485">[ thread ]</a>
+              <a href="subject.html#6485">[ subject ]</a>
+              <a href="author.html#6485">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

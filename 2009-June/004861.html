@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvcvideo%3A%20workaround%20invalid%20formats%0A%09exposed%20by%20buggy%20webcam&In-Reply-To=%3C200906081135.16166.herton%40mandriva.com.br%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004854.html">
+   <LINK REL="Next"  HREF="004863.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam</H1>
+    <B>Herton Ronaldo Krzesinski</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvcvideo%3A%20workaround%20invalid%20formats%0A%09exposed%20by%20buggy%20webcam&In-Reply-To=%3C200906081135.16166.herton%40mandriva.com.br%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam">herton at mandriva.com.br
+       </A><BR>
+    <I>Mon Jun  8 16:35:15 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004854.html">[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam
+</A></li>
+        <LI>Next message: <A HREF="004863.html">[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4861">[ date ]</a>
+              <a href="thread.html#4861">[ thread ]</a>
+              <a href="subject.html#4861">[ subject ]</a>
+              <a href="author.html#4861">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Em Domingo 07 Junho 2009, &#224;s 19:41:05, Laurent Pinchart escreveu:
+&gt;<i> Hi Herton,
+</I>&gt;<i> 
+</I>&gt;<i> On Thursday 04 June 2009 19:23:17 Herton Ronaldo Krzesinski wrote:
+</I>&gt;<i> &gt; Em Quinta-feira 04 Junho 2009, &#224;s 07:41:03, Laurent Pinchart escreveu:
+</I>&gt;<i> &gt; &gt; Hi Herton,
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; On Wednesday 03 June 2009 23:02:33 Herton Ronaldo Krzesinski wrote:
+</I>&gt;<i> &gt; &gt; &gt; Fix this by not failing entirely if we have found an invalid format, as
+</I>&gt;<i> &gt; &gt; &gt; we can still have a valid format. The initial problem and solution
+</I>&gt;<i> &gt; &gt; &gt; (patch) was debugged and done by Clevo (probably by Michael Wang),
+</I>&gt;<i> &gt; &gt; &gt; which uses the affected webcam in one of their laptops. I'm forwarding
+</I>&gt;<i> &gt; &gt; &gt; their fix plus additional code that I noticed to be needed for generic
+</I>&gt;<i> &gt; &gt; &gt; cases that decrements properly streaming-&gt;nformats and checks later if
+</I>&gt;<i> &gt; &gt; &gt; we really found at least one valid format, and if there were really no
+</I>&gt;<i> &gt; &gt; &gt; valid formats we make sure then to return with error.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; What about modifying uvc_parse_streaming() to stop parsing the interface
+</I>&gt;<i> &gt; &gt; descriptors when it encounters a non CS Interface descriptor instead ?
+</I>&gt;<i> &gt; &gt; Something like
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Yep, it works for me too and it's better since then we don't allocate extra
+</I>&gt;<i> &gt; memory that we don't use for streaming-&gt;format
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; But your solution stops to count formats at the first buffer[1] !=
+</I>&gt;<i> &gt; CS_INTERFACE, is it possible that CS_INTERFACE and ! CS_INTERFACE are
+</I>&gt;<i> &gt; mixed? (!= CS_INTERFACE not always the last one) In this case is better to
+</I>&gt;<i> &gt; continue, like patch below:
+</I>&gt;<i> 
+</I>&gt;<i> In theory, yes, the device can be as buggy as you want :-) Don't forget that 
+</I>&gt;<i> we're dealing with UVC devices here, so I don't expect buggy devices to be the 
+</I>&gt;<i> norm. I'd rather apply my patch, as it's less intrusive, and deal with other 
+</I>&gt;<i> buggy devices later if needed.
+</I>
+Yep, for me it's fine also applying the less intrusive approach, lets hope we
+don't get more buggy ones :)
+
+&gt;<i> 
+</I>&gt;<i> Best regards,
+</I>&gt;<i> 
+</I>&gt;<i> Laurent Pinchart
+</I>
+--
+[]'s
+Herton
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004854.html">[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam
+</A></li>
+	<LI>Next message: <A HREF="004863.html">[Linux-uvc-devel] [PATCH] uvcvideo: workaround invalid formats	exposed by buggy webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4861">[ date ]</a>
+              <a href="thread.html#4861">[ thread ]</a>
+              <a href="subject.html#4861">[ subject ]</a>
+              <a href="author.html#4861">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

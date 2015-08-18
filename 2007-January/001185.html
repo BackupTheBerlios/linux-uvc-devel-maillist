@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Automatic Gain Control
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Automatic%20Gain%20Control&In-Reply-To=%3C200701110907.46797.mxhaard%40magic.fr%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001184.html">
+   <LINK REL="Next"  HREF="001160.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Automatic Gain Control</H1>
+    <B>Michel Xhaard</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Automatic%20Gain%20Control&In-Reply-To=%3C200701110907.46797.mxhaard%40magic.fr%3E"
+       TITLE="[Linux-uvc-devel] Automatic Gain Control">mxhaard at magic.fr
+       </A><BR>
+    <I>Thu Jan 11 09:07:46 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001184.html">[Linux-uvc-devel] Automatic Gain Control
+</A></li>
+        <LI>Next message: <A HREF="001160.html">[Linux-uvc-devel] Automatic Gain Control
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1185">[ date ]</a>
+              <a href="thread.html#1185">[ thread ]</a>
+              <a href="subject.html#1185">[ subject ]</a>
+              <a href="author.html#1185">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Le Jeudi 11 Janvier 2007 04:21, Martin Rubli a &#233;crit&#160;:
+&gt;<i> Michel,
+</I>&gt;<i>
+</I>&gt;<i> On Wed, 10 Jan 2007 01:49:31 -0800, Michel Xhaard &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">mxhaard at magic.fr</A>&gt; wrote:
+</I>&gt;<i> &gt;&gt; &gt; Seem strange that we cannot change the exposure in manuel
+</I>&gt;<i> &gt;&gt; &gt; mode ?
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; There should be a control to set the absolute exposure time ...
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; &gt; Is there a way to set/reset the autowhite balance too ? a lot of
+</I>&gt;<i> &gt;&gt; &gt; robotic project need these features
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; ... and one for white balance temperature. I'll double check tomorrow on
+</I>&gt;<i> &gt;&gt; my Linux machine but those are standard UVC controls that our cameras
+</I>&gt;<i> &gt;&gt; support.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I have try to used it (look at the last luvcview release) but that did
+</I>&gt;<i> &gt; not work on my orbit. luvcview use the same code for all control, each
+</I>&gt;<i> &gt; control can be up or down from the v4l2 step parameter luvcview test if
+</I>&gt;<i> &gt; we are
+</I>&gt;<i> &gt; between min and max and then apply the needed change. For some strange
+</I>&gt;<i> &gt; reason exposure and white balance always return a value outside the
+</I>&gt;<i> &gt; range ? maybe i am wrong here, but i don't see the reason :( Help are
+</I>&gt;<i> &gt; welcome !!
+</I>&gt;<i>
+</I>&gt;<i> I've just tested it and both controls work for me. Here's what they look
+</I>&gt;<i> like on my Fusion (2006 model):
+</I>i have tested only with the orbit (a old one from 2005 :)) 
+&gt;<i>
+</I>&gt;<i> Listing available controls for device video0:
+</I>&gt;<i>    White Balance Temperature
+</I>&gt;<i>      ID      : 8,
+</I>&gt;<i>      Type    : Dword,
+</I>&gt;<i>      Flags   : { CAN_READ, CAN_WRITE, IS_CUSTOM },
+</I>&gt;<i>      Values  : [ 0 .. 10000, step size: 10 ],
+</I>&gt;<i>      Default : 4000
+</I>&gt;<i>    White Balance Temperature, Auto
+</I>&gt;<i>      ID      : 9,
+</I>&gt;<i>      Type    : Boolean,
+</I>&gt;<i>      Flags   : { CAN_READ, CAN_WRITE, IS_CUSTOM },
+</I>&gt;<i>      Values  : [ 0 .. 9984, step size: 0 ],
+</I>&gt;<i>      Default : 1
+</I>&gt;<i>    Exposure (Absolute)
+</I>&gt;<i>      ID      : 17,
+</I>&gt;<i>      Type    : Dword,
+</I>&gt;<i>      Flags   : { CAN_READ, CAN_WRITE, IS_CUSTOM },
+</I>&gt;<i>      Values  : [ 0 .. 9984, step size: 0 ],
+</I>&gt;<i>      Default : 0
+</I>&gt;<i>    Auto-exposure mode
+</I>&gt;<i>      ID      : 15,
+</I>&gt;<i>      Type    : Choice,
+</I>&gt;<i>      Flags   : { CAN_READ, CAN_WRITE },
+</I>&gt;<i>      Values  : { 'Manual'[1], 'Aperture priority'[8] },
+</I>&gt;<i>      Default : 8
+</I>&gt;<i> [...]
+</I>&gt;<i>
+</I>&gt;<i> The zero step size for the absolute exposure time is obviously wrong. I
+</I>&gt;<i> don't currently have my USB analyzer to check what's going on there. Also,
+</I>&gt;<i> I get errors when I try to read these controls. This seems to be why the
+</I>&gt;<i> controls don't work in luvcview.
+</I>Yes luvcview used the step value.
+&gt;<i>
+</I>&gt;<i> Apart from that everything seems okay. Both controls, white balance and
+</I>&gt;<i> exposure time, do what they should in my test application. I'll post an
+</I>&gt;<i> update as soon as I find out what's going on there.
+</I>Thanks, i will double check with another webcam.
+&gt;<i>
+</I>&gt;<i> Cheers,
+</I>&gt;<i> Martin
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>Cheers,
+-- 
+Michel Xhaard
+<A HREF="http://mxhaard.free.fr">http://mxhaard.free.fr</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001184.html">[Linux-uvc-devel] Automatic Gain Control
+</A></li>
+	<LI>Next message: <A HREF="001160.html">[Linux-uvc-devel] Automatic Gain Control
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1185">[ date ]</a>
+              <a href="thread.html#1185">[ thread ]</a>
+              <a href="subject.html#1185">[ subject ]</a>
+              <a href="author.html#1185">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

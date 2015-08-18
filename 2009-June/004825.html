@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20VIDIOC_%5BGS%5D_JPEGCOMP%20support&In-Reply-To=%3Cwfprdm7d4w.fsf%40calligramme.charmers%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004824.html">
+   <LINK REL="Next"  HREF="004826.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support</H1>
+    <B>Jon Fairbairn</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20VIDIOC_%5BGS%5D_JPEGCOMP%20support&In-Reply-To=%3Cwfprdm7d4w.fsf%40calligramme.charmers%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support">jon.fairbairn at cl.cam.ac.uk
+       </A><BR>
+    <I>Tue Jun  2 19:34:55 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004824.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+        <LI>Next message: <A HREF="004826.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4825">[ date ]</a>
+              <a href="thread.html#4825">[ thread ]</a>
+              <a href="subject.html#4825">[ subject ]</a>
+              <a href="author.html#4825">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Hi Laurent,
+
+Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; writes:
+&gt;<i> On Tuesday 02 June 2009 17:17:36 Jon Fairbairn wrote:
+</I>&gt;&gt;<i> Thanks. I downloaded the source for the kernel I'm running,
+</I>&gt;&gt;<i> applied the patch (it applied cleanly), so I built it and
+</I>&gt;&gt;<i> insmodded it, and ran motion -- this message
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>    motion: [1] VIDIOC_G_JPEGCOMP not supported but it should
+</I>&gt;&gt;<i>    be (does your webcam driver support this ioctl?)
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> no longer appears,
+</I>&gt;<i>
+</I>&gt;<i> Good.
+</I>&gt;<i>
+</I>&gt;&gt;<i> but I still get
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>    motion: [1] Video device fatal error - Closing video
+</I>&gt;&gt;<i>    device
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> That might be bug in motion, but I'm not sure what else to
+</I>&gt;&gt;<i> use to test it.
+</I>&gt;<i>
+</I>&gt;<i> Does the driver print anything in the kernel log when the problem happens ?
+</I>
+Not normally; there's the ignorable
+uvcvideo: device Live! Cam Optia requested null bandwidth, defaulting to lowest.
+but nothing else unless I set the trace parameter.
+
+&gt;&gt;<i> luvcview and mjpeg-streamer work in MJPEG mode, but they did
+</I>&gt;&gt;<i> before the patch, so that's no test either.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> What would be the right way to test this?
+</I>&gt;<i>
+</I>&gt;<i> From your report it seems you mostly experience userspace
+</I>&gt;<i> application issues.
+</I>
+maybe, but only because I was looking around for an app that
+would send the right ioctls and count as a decent test...
+
+&gt;<i> I would still be interested in messages printed by the
+</I>&gt;<i> uvcvideo driver in the kernel log when running motion.
+</I>
+With trace=15, there's quite a lot. I've removed what I think
+is boring, but let me know if I've trimmed too much:
+
+uvcvideo: Adding mapping Brightness [... and various other controls]
+uvcvideo: Probing generic UVC device 4
+uvcvideo: Found format MJPEG.
+uvcvideo: - 640x480 (30.0 fps)
+uvcvideo: - 320x240 (30.0 fps)
+uvcvideo: - 160x120 (30.0 fps)
+uvcvideo: - 352x288 (30.0 fps)
+uvcvideo: - 176x144 (30.0 fps)
+uvcvideo: Found format YUV 4:2:2 (YUYV). [... same resolutions as above]
+
+uvcvideo: Found a Status endpoint (addr 82).
+uvcvideo: Found UVC 1.00 device Live! Cam Optia (041e:4057)
+uvcvideo: Added control 00000000-0000-0000-0000-000000000101/2 to device 4 entity 5
+[... more similar &quot;Added control...&quot; lines]
+uvcvideo: Scanning UVC chain: OT 3 &lt;- XU 6 &lt;- PU 5 &lt;- SU 4 &lt;- IT 1
+uvcvideo: Found a valid video chain (1 -&gt; 3).
+uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling workaround.
+input: Live! Cam Optia as /devices/pci0000:00/0000:00:02.1/usb1/1-4/1-4:1.0/input/input10
+uvcvideo: UVC device initialized.
+usbcore: registered new interface driver uvcvideo
+USB Video Class driver (v0.1.0)
+uvcvideo: Trying format 0x47504a4d (MJPG): 10000x10000.
+uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+uvcvideo: UVC non compliance - GET_MIN/MAX(PROBE) incorrectly supported. Enabling workaround.
+[ the next section repeats continually while motion is running ]
+uvcvideo: Trying format 0x47504a4d (MJPG): 352x288.
+uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+uvcvideo: Trying format 0x47504a4d (MJPG): 352x288.
+uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+uvcvideo: Setting jpeg quality to 100.
+uvcvideo: Control 0x0098090e not found.
+uvcvideo: Control 0x0098090f not found.
+uvcvideo: Control 0x00980911 not found.
+uvcvideo: Control 0x00980912 not found.
+uvcvideo: Control 0x00980913 not found.
+uvcvideo: Control 0x08000000 not found.
+uvcvideo: Control 0x08000001 not found.
+uvcvideo: device Live! Cam Optia requested null bandwidth, defaulting to lowest.
+
+
+&gt;&gt;<i> mplayer with -tv mjpeg
+</I>
+&gt;<i> It might still be using MJPEG, although this sounds a bit
+</I>&gt;<i> weird.
+</I>
+It doesn't look like it...
+
+&gt;<i> If you load the uvcvideo driver with trace=15 the
+</I>&gt;<i> driver will print various debug messages to the kernel
+</I>&gt;<i> log. You will be able to trace all format get/set calls
+</I>&gt;<i> made by mplayer.
+</I>
+uvcvideo: Trying format 0x56595559 (YUYV): 640x480.
+uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+uvcvideo: Trying format 0x32315659 (YV12): 640x480.
+uvcvideo: Unsupported format 0x32315659.
+uvcvideo: Trying format 0x32315559 (YU12): 640x480.
+uvcvideo: Unsupported format 0x32315559.
+uvcvideo: Trying format 0x59565955 (UYVY): 640x480.
+uvcvideo: Unsupported format 0x59565955.
+uvcvideo: Trying format 0x56595559 (YUYV): 640x480.
+uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+uvcvideo: Trying format 0x56595559 (YUYV): 352x480.
+uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+uvcvideo: Trying format 0x56595559 (YUYV): 352x288.
+uvcvideo: Using default frame interval 33333.3 us (30.0 fps).
+uvcvideo: Control 0x00980909 not found.
+uvcvideo: device Live! Cam Optia requested null bandwidth, defaulting to lowest.
+uvcvideo: Control 0x00980909 not found.
+
+I hope that helps!
+
+Thanks,
+  J&#243;n
+
+-- 
+J&#243;n Fairbairn                                 <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Jon.Fairbairn at cl.cam.ac.uk</A>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004824.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+	<LI>Next message: <A HREF="004826.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4825">[ date ]</a>
+              <a href="thread.html#4825">[ thread ]</a>
+              <a href="subject.html#4825">[ subject ]</a>
+              <a href="author.html#4825">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

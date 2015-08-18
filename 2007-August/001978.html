@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] I cannot get my Apple iSight to work
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20I%20cannot%20get%20my%20Apple%20iSight%20to%20work&In-Reply-To=%3C46C2FD1E.4010805%40derklecks.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001976.html">
+   <LINK REL="Next"  HREF="001979.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] I cannot get my Apple iSight to work</H1>
+    <B>Felix M&#246;ller</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20I%20cannot%20get%20my%20Apple%20iSight%20to%20work&In-Reply-To=%3C46C2FD1E.4010805%40derklecks.de%3E"
+       TITLE="[Linux-uvc-devel] I cannot get my Apple iSight to work">felix at derklecks.de
+       </A><BR>
+    <I>Wed Aug 15 15:18:22 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001976.html">[Linux-uvc-devel] I cannot get my Apple iSight to work
+</A></li>
+        <LI>Next message: <A HREF="001979.html">[Linux-uvc-devel] I cannot get my Apple iSight to work
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1978">[ date ]</a>
+              <a href="thread.html#1978">[ thread ]</a>
+              <a href="subject.html#1978">[ subject ]</a>
+              <a href="author.html#1978">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+&gt;<i> First of all, sorry for the late reply.
+</I>&gt;<i> 
+</I>&gt;<i> On Sunday 12 August 2007, Felix M&#246;ller wrote:
+</I>&gt;&gt;<i> Felix M&#246;ller schrieb:
+</I>&gt;&gt;&gt;<i> Hi,
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> I cannot get my iSight in an early 2006 MacBook working.
+</I>&gt;<i> 
+</I>&gt;&gt;&gt;<i> Is there anything I could try? I am willing to compile from SVN or
+</I>&gt;&gt;&gt;<i> provide any needed information.
+</I>&gt;<i> 
+</I>&gt;<i> The current version of the iSight patch doesn't apply cleanly to the latest 
+</I>&gt;<i> SVN revision. You could fix the patch and test it. You will have to load the 
+</I>&gt;<i> firmware with a userspace utility.
+</I>Ok I did:
+# patch -p0 &lt; isight.fw.patch
+# gcc -g `pkg-config --cflags --libs libusb` -o extract extract.c
+
+Your extract version does not work for me I got:
+# ./extract AppleUSBVideoSupport
+Once device 0x5ac 0x8300
+Loading firmware for one iSight
+Invalid firmware length 23389, load aborted
+Loaded firmware for one iSight
+Once device 0x0 0x0
+Once device 0x0 0x0
+
+After some googling I found an extract.c in
+<A HREF="http://people.freedesktop.org/~rbultje/linux-uvc-0.1.0-d.tar.gz">http://people.freedesktop.org/~rbultje/linux-uvc-0.1.0-d.tar.gz</A> which is
+working.
+
+After loading the firmware I have:
+# lsusb
+Bus 005 Device 004: ID 05ac:8501 Apple Computer, Inc.
+
+Now I downloaded current SVN and switched back to r106 and applied your
+patch:
+# svn checkout <A HREF="svn://svn.berlios.de/linux-uvc/linux-uvc/trunk">svn://svn.berlios.de/linux-uvc/linux-uvc/trunk</A>
+# svn update -r 106
+# patch -p0 &lt; isight.mine.patch
+
+But after modprobing uvcvideo with trace=255 I just get ...
+&gt;<i> USB Video Class driver (v0.1.0)
+</I>&gt;<i> usbcore: deregistering interface driver uvcvideo
+</I>&gt;<i> uvcvideo: Adding mapping Brightness to control 00000000-0000-0000-0000-000000000101/2.
+</I>&gt;<i> uvcvideo: Adding mapping Contrast to control 00000000-0000-0000-0000-000000000101/3.
+</I>&gt;<i> uvcvideo: Adding mapping Hue to control 00000000-0000-0000-0000-000000000101/6.
+</I>&gt;<i> uvcvideo: Adding mapping Saturation to control 00000000-0000-0000-0000-000000000101/7.
+</I>&gt;<i> uvcvideo: Adding mapping Sharpness to control 00000000-0000-0000-0000-000000000101/8.
+</I>&gt;<i> uvcvideo: Adding mapping Gamma to control 00000000-0000-0000-0000-000000000101/9.
+</I>&gt;<i> uvcvideo: Adding mapping Backlight Compensation to control 00000000-0000-0000-0000-000000000101/1.
+</I>&gt;<i> uvcvideo: Adding mapping Gain to control 00000000-0000-0000-0000-000000000101/4.
+</I>&gt;<i> uvcvideo: Adding mapping Power Line Frequency to control 00000000-0000-0000-0000-000000000101/5.
+</I>&gt;<i> uvcvideo: Adding mapping Hue, Auto to control 00000000-0000-0000-0000-000000000101/16.
+</I>&gt;<i> uvcvideo: Adding mapping Pan (relative) to control 63610682-5070-49ab-b8cc-b3855e8d2256/1.
+</I>&gt;<i> uvcvideo: Adding mapping Tilt (relative) to control 63610682-5070-49ab-b8cc-b3855e8d2256/1.
+</I>&gt;<i> uvcvideo: Adding mapping Pan/Tilt (reset) to control 63610682-5070-49ab-b8cc-b3855e8d2256/2.
+</I>&gt;<i> uvcvideo: Adding mapping Exposure, Auto to control 00000000-0000-0000-0000-000000000001/2.
+</I>&gt;<i> uvcvideo: Adding mapping Exposure (Absolute) to control 00000000-0000-0000-0000-000000000001/4.
+</I>&gt;<i> uvcvideo: Adding mapping White Balance Temperature, Auto to control 00000000-0000-0000-0000-000000000101/11.
+</I>&gt;<i> uvcvideo: Adding mapping White Balance Temperature to control 00000000-0000-0000-0000-000000000101/10.
+</I>&gt;<i> usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> USB Video Class driver (v0.1.0)
+</I>
+... and no video device is created.
+
+So now I am stuck again ... What could I try?
+
+<A HREF="http://people.freedesktop.org/~rbultje/isight.patch">http://people.freedesktop.org/~rbultje/isight.patch</A> seems to be against
+revision 40 thats probably quiet old ...
+
+Thanks for your answer! Hope you have another hint.
+
+greetings Felix
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001976.html">[Linux-uvc-devel] I cannot get my Apple iSight to work
+</A></li>
+	<LI>Next message: <A HREF="001979.html">[Linux-uvc-devel] I cannot get my Apple iSight to work
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1978">[ date ]</a>
+              <a href="thread.html#1978">[ thread ]</a>
+              <a href="subject.html#1978">[ subject ]</a>
+              <a href="author.html#1978">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

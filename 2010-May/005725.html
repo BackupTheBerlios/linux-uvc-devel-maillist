@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Philips SPC530NC (0471:2034) fails
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Philips%20SPC530NC%20%280471%3A2034%29%20fails&In-Reply-To=%3C201005071635.37840.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005724.html">
+   <LINK REL="Next"  HREF="005732.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Philips SPC530NC (0471:2034) fails</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Philips%20SPC530NC%20%280471%3A2034%29%20fails&In-Reply-To=%3C201005071635.37840.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Philips SPC530NC (0471:2034) fails">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Fri May  7 16:35:37 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005724.html">[Linux-uvc-devel] Philips SPC530NC (0471:2034) fails
+</A></li>
+        <LI>Next message: <A HREF="005732.html">[Linux-uvc-devel] Philips SPC530NC (0471:2034) fails
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5725">[ date ]</a>
+              <a href="thread.html#5725">[ thread ]</a>
+              <a href="subject.html#5725">[ subject ]</a>
+              <a href="author.html#5725">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Paulo,
+
+On Wednesday 05 May 2010 10:59:26 Paulo Assis wrote:
+&gt;<i> Hi,
+</I>&gt;<i> Are you sure the camera supports MJPG ?
+</I>
+That's indeed the problem.
+
+&gt;<i> It seems to report only a uncompressed format (YUYV ?).
+</I>&gt;<i> You can check the supported formats with luvcview, guvcview or
+</I>&gt;<i> uvcdynctrl (libwebcam)
+</I>
+It can also be checked from the USB descriptors:
+
+[snip]
+
+&gt;<i> &gt;   Interface Descriptor:
+</I>&gt;<i> &gt;     bLength                 9
+</I>&gt;<i> &gt;     bDescriptorType         4
+</I>&gt;<i> &gt;     bInterfaceNumber        1
+</I>&gt;<i> &gt;     bAlternateSetting       0
+</I>&gt;<i> &gt;     bNumEndpoints           0
+</I>&gt;<i> &gt;     bInterfaceClass        14 Video
+</I>&gt;<i> &gt;     bInterfaceSubClass      2 Video Streaming
+</I>&gt;<i> &gt;     bInterfaceProtocol      0
+</I>&gt;<i> &gt;     iInterface              0
+</I>
+in the Video Streaming interface,
+
+&gt;<i> &gt;     VideoStreaming Interface Descriptor:
+</I>&gt;<i> &gt;       bLength                            27
+</I>&gt;<i> &gt;       bDescriptorType                    36
+</I>&gt;<i> &gt;       bDescriptorSubtype                  4 (FORMAT_UNCOMPRESSED)
+</I>&gt;<i> &gt;       bFormatIndex                        1
+</I>&gt;<i> &gt;       bNumFrameDescriptors                2
+</I>&gt;<i> &gt;       guidFormat
+</I>&gt;<i> &gt;  {59555932-0000-1000-8000-00aa00389b71}
+</I>&gt;<i> &gt;       bBitsPerPixel                      16
+</I>&gt;<i> &gt;       bDefaultFrameIndex                  1
+</I>&gt;<i> &gt;       bAspectRatioX                       0
+</I>&gt;<i> &gt;       bAspectRatioY                       0
+</I>&gt;<i> &gt;       bmInterlaceFlags                 0x00
+</I>&gt;<i> &gt;         Interlaced stream or variable: No
+</I>&gt;<i> &gt;         Fields per frame: 1 fields
+</I>&gt;<i> &gt;         Field 1 first: No
+</I>&gt;<i> &gt;         Field pattern: Field 1 only
+</I>&gt;<i> &gt;         bCopyProtect                      0
+</I>
+descriptors of type 36 (class-specific) report, among other information, the 
+formats supported by the device. In this case there's a single format 
+descriptor, of subtype 4 (FORMAT_UNCOMPRESSED). Devices supporting MJPEG have 
+a subtype 6 descriptor (in addition to the FORMAT_UNCOMPRESSED descriptor if 
+they support uncompressed formats).
+
+There's no need to verify this with luvcview.
+
+Alternatively, setting the trace level to 3 when loading the uvcvideo driver 
+will print the formats supported by the device.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005724.html">[Linux-uvc-devel] Philips SPC530NC (0471:2034) fails
+</A></li>
+	<LI>Next message: <A HREF="005732.html">[Linux-uvc-devel] Philips SPC530NC (0471:2034) fails
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5725">[ date ]</a>
+              <a href="thread.html#5725">[ thread ]</a>
+              <a href="subject.html#5725">[ subject ]</a>
+              <a href="author.html#5725">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

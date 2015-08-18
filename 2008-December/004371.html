@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] select timeout &amp; frame rate
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20select%20timeout%20%26%20frame%20rate&In-Reply-To=%3C200812172302.54571.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004367.html">
+   <LINK REL="Next"  HREF="004372.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] select timeout &amp; frame rate</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20select%20timeout%20%26%20frame%20rate&In-Reply-To=%3C200812172302.54571.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] select timeout &amp; frame rate">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Dec 17 23:02:54 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004367.html">[Linux-uvc-devel] select timeout &amp; frame rate
+</A></li>
+        <LI>Next message: <A HREF="004372.html">[Linux-uvc-devel] USB1 support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4371">[ date ]</a>
+              <a href="thread.html#4371">[ thread ]</a>
+              <a href="subject.html#4371">[ subject ]</a>
+              <a href="author.html#4371">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Darren,
+
+On Wednesday 17 December 2008, Darren Longhorn wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> I'm using a camera (1cac:a332 kinstone C8) with uvc (SVN r233, fairly
+</I>&gt;<i> old, I know). Usually, I sue this camera at 320x240 resolution at a
+</I>&gt;<i> frame rate of 20f/s. When I try and up the frame size to 640x480, I
+</I>&gt;<i> always get a timeout when I do a select().
+</I>&gt;<i>
+</I>&gt;<i> I expected that if I passed a long enough timeout to select that it
+</I>&gt;<i> would eventually indicate that a frame is ready, but that turned out not
+</I>&gt;<i> to be true. It doesn't matter what value of timeout I pass to select -
+</I>&gt;<i> the call just pends for whatever time I specify, but still always times
+</I>&gt;<i> out.
+</I>&gt;<i>
+</I>&gt;<i> After a bit of investigation I discovered that if I reduce the frame
+</I>&gt;<i> rate specified to the camera via the stream parameters, I can then
+</I>&gt;<i> select and dequeue a frame. It seems as though this is the critical
+</I>&gt;<i> value - unless I indicate a low enough frame rate the camera never
+</I>&gt;<i> captures a frame. i.e. the camera must be able to capture a frame within
+</I>&gt;<i> the frame rate given, regardless of how long a timeout is specified to
+</I>&gt;<i> select.
+</I>&gt;<i>
+</I>&gt;<i> Is this correct behaviour?
+</I>
+No it isn't. The application should receive video frames regardless of the 
+selected frame rate. This probably indicates a bug (either in the camera 
+itself or in the uvcvideo driver).
+
+select() times out when no frame is ready. I can see two main reasons for 
+that. The camera could fail to send video data to the host, or the driver 
+could drop video frames because it believes they are incomplete/corrupted.
+
+&gt;<i> Could someone point me at the part of the source code where the timeout
+</I>&gt;<i> is implemented?
+</I>
+The select() timeout itself is implemented outside the uvcvideo driver. When 
+select() is invoked the driver's uvc_v4l2_poll() function (in uvc_v4l2.c) is 
+called. This calls uvc_queue_poll() which in turn calls poll_wait() on a wait 
+queue. select() waits on that wait queue entry until the timeout elapses or 
+the driver signals a wake-up condition on the wait queue by walling wake_up() 
+in uvc_queue_next_buffer().
+
+To understand where your problem comes from you should set the uvcvideo trace 
+level to UVC_TRACE_FRAME. The driver will print extra messages to the kernel 
+log when it receives data from the camera.
+
+You should also upgrade to the latest driver. It now has a nodrop module 
+option that you can activate to disable incomplete frame drop. Alternatively 
+you can remove the frame drop code at the beginning of 
+uvc_queue_next_buffer(). 
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004367.html">[Linux-uvc-devel] select timeout &amp; frame rate
+</A></li>
+	<LI>Next message: <A HREF="004372.html">[Linux-uvc-devel] USB1 support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4371">[ date ]</a>
+              <a href="thread.html#4371">[ thread ]</a>
+              <a href="subject.html#4371">[ subject ]</a>
+              <a href="author.html#4371">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] UVC userpointer  streaming (memory mapping)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20UVC%20userpointer%20%20streaming%20%28memory%20mapping%29&In-Reply-To=%3C201006071031.32169.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005767.html">
+   <LINK REL="Next"  HREF="005771.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] UVC userpointer  streaming (memory mapping)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20UVC%20userpointer%20%20streaming%20%28memory%20mapping%29&In-Reply-To=%3C201006071031.32169.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] UVC userpointer  streaming (memory mapping)">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Mon Jun  7 10:31:31 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005767.html">[Linux-uvc-devel] UVC userpointer  streaming (memory mapping)
+</A></li>
+        <LI>Next message: <A HREF="005771.html">[Linux-uvc-devel] UVC userpointer  streaming (memory mapping)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5769">[ date ]</a>
+              <a href="thread.html#5769">[ thread ]</a>
+              <a href="subject.html#5769">[ subject ]</a>
+              <a href="author.html#5769">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Andreas,
+
+On Tuesday 01 June 2010 16:14:35 Andreas Auer wrote:
+&gt;<i> Thanks for the answer. I'll try to add this changes by myself.
+</I>&gt;<i> 
+</I>&gt;<i> Right now, I can get the physical pfn of the user pointer. The first
+</I>&gt;<i> approach that came into my mind was to get a pointer to the page struct
+</I>&gt;<i> with the pfn_to_page(...) function.
+</I>&gt;<i> You already added a new function called uvc_buffer_write which maps
+</I>&gt;<i> (kmap_atomic) the pfn associated with the page struct into the kernel
+</I>&gt;<i> space (basically the logical kernel address is returned). And then the
+</I>&gt;<i> data from the uvc cam is copied to the buffer and finally, the pfn is
+</I>&gt;<i> unmapped with kunmap_atomic.
+</I>&gt;<i> 
+</I>&gt;<i> So, I thought this should work. But, I'm getting a paging error:
+</I>&gt;<i> &quot;Unable to handle kernel paging request at virtual address cdf46000&quot;
+</I>&gt;<i> 
+</I>&gt;<i> Could that paging error occur because the physical page resides outside
+</I>&gt;<i> of the physical memory that linux holds. That means I specified 216MB
+</I>&gt;<i> for Linux. The memory from 216MB to 256MB is reserved for the DSP. And
+</I>&gt;<i> the user pointer passed to the UVC driver points to 223MB which is above
+</I>&gt;<i> the memory of Linux.
+</I>
+That's correct. Linux doesn't handle that memory, and didn't create any struct 
+page for it. pfn_to_page() on such memory isn't valid, which means you can't 
+call kmap_atomic in that case.
+
+&gt;<i> So, maybe the MMU doesn't know that there are physical pages and has no
+</I>&gt;<i> mapping for it!?
+</I>
+The MMU has mappings for that memory, but I don't think those can be easily 
+accessed from the UVC driver interrupt handler. The userspace mapping (created 
+through mmap on the DSP driver) is specific to the userspace application, and 
+the kernel mapping (created through ioremap in the DSP driver), if it exists, 
+isn't easily accessible.
+
+I can think of two ways to solve the problem. The first one would be to 
+ioremap() the memory using its physical address. You would then get a kernel 
+virtual mapping. I'm not sure if that would work though (cache coherency 
+issues come to mind). The second way is to change the way the UVC interrupt 
+handler works, and add completed URBs to a list instead of decoding them. A 
+workqueue would then decode the URBs, using copy_to_user instead of 
+kmap/memcpy/kunmap. That approach will introduce more delay in URB processing 
+and might thus require an increased number of URBs. It would be nice to 
+experiment with it.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005767.html">[Linux-uvc-devel] UVC userpointer  streaming (memory mapping)
+</A></li>
+	<LI>Next message: <A HREF="005771.html">[Linux-uvc-devel] UVC userpointer  streaming (memory mapping)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5769">[ date ]</a>
+              <a href="thread.html#5769">[ thread ]</a>
+              <a href="subject.html#5769">[ subject ]</a>
+              <a href="author.html#5769">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

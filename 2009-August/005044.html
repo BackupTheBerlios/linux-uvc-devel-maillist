@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] 0ac8:c31d not working with 2.6.30
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%200ac8%3Ac31d%20not%20working%20with%202.6.30&In-Reply-To=%3C200908100005.39043.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005043.html">
+   <LINK REL="Next"  HREF="005045.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] 0ac8:c31d not working with 2.6.30</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%200ac8%3Ac31d%20not%20working%20with%202.6.30&In-Reply-To=%3C200908100005.39043.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] 0ac8:c31d not working with 2.6.30">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Mon Aug 10 00:05:38 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005043.html">[Linux-uvc-devel] 0ac8:c31d not working with 2.6.30
+</A></li>
+        <LI>Next message: <A HREF="005045.html">[Linux-uvc-devel] 0ac8:c31d not working with 2.6.30
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5044">[ date ]</a>
+              <a href="thread.html#5044">[ thread ]</a>
+              <a href="subject.html#5044">[ subject ]</a>
+              <a href="author.html#5044">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Stefan,
+
+On Sunday 09 August 2009 00:15:10 Stefan Sassenberg wrote:
+&gt;<i> Laurent Pinchart schrieb:
+</I>&gt;<i> &gt; On Saturday 08 August 2009 10:46:19 Stefan Sassenberg wrote:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I've got a Samsung 2263UW with integrated webcam 0ac8:c31d.
+</I>&gt;<i> &gt; &gt; Viedo works well with kernel 2.6.29-gentoo-r4, but does not with
+</I>&gt;<i> &gt; &gt; 2.6.30-gentoo-r4. There is no error message or other message that points
+</I>&gt;<i> &gt; &gt; me to the problem.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;  From dmesg (with either kernel):
+</I>&gt;<i> &gt; &gt; uvcvideo 1-1.3:1.0: usb_probe_interface
+</I>&gt;<i> &gt; &gt; uvcvideo 1-1.3:1.0: usb_probe_interface - got id
+</I>&gt;<i> &gt; &gt; uvcvideo: Found UVC 1.00 device NMG 3M Webcam  (0ac8:c31d)
+</I>&gt;<i> &gt; &gt; input: NMG 3M Webcam  as /class/input/input5
+</I>&gt;<i> &gt; &gt; usb 1-1.3: link qh2-0001/ffff8800bf0e9280 start 1 [1/0 us]
+</I>&gt;<i> &gt; &gt; usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> &gt; &gt; USB Video Class driver (v0.1.0)
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; When I use the device with luvcview (with either kernel):
+</I>&gt;<i> &gt; &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">stefan at ds9</A> ~ $ luvcview -d /dev/video2
+</I>&gt;<i> &gt; &gt; luvcview version 0.2.1
+</I>&gt;<i> &gt; &gt; Video driver: x11
+</I>&gt;<i> &gt; &gt; A window manager is available
+</I>&gt;<i> &gt; &gt; video /dev/video2
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; but with kernel 2.6.30 the window shows just a green area and the
+</I>&gt;<i> &gt; &gt; controls.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I'm not sure which modules are necessary for the correct operation. I
+</I>&gt;<i> &gt; &gt; think the only one is uvcvideo.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; That's a know problem, fixed by the following patch
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; <A HREF="http://linuxtv.org/hg/v4l-dvb/rev/da81aafb9c5d">http://linuxtv.org/hg/v4l-dvb/rev/da81aafb9c5d</A>
+</I>&gt;<i>
+</I>&gt;<i> I'm afraid, that doesn't help, there's still only the green area.
+</I>&gt;<i>
+</I>&gt;<i> Is there any way to check if I applied the patch correctly? In my
+</I>&gt;<i> uvcvideo.mod.c I find three equal lines
+</I>&gt;<i> MODULE_ALIAS(&quot;usb:v0AC8p*d*dc*dsc*dp*ic0Eisc01ip00*&quot;);
+</I>
+Oops, my bad. I've sent a patch to the linux-media mailing list that should be 
+applied on top of that one. It seems the v4l maintainer forgot to fold the two 
+patches together (or even apply the second one). I've reminded him today and 
+told him it's urgent, I hope that will go in 2.6.31.
+
+The patch can be found at <A HREF="http://article.gmane.org/gmane.linux.drivers.video-">http://article.gmane.org/gmane.linux.drivers.video-</A>
+input-infrastructure/8265/
+
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005043.html">[Linux-uvc-devel] 0ac8:c31d not working with 2.6.30
+</A></li>
+	<LI>Next message: <A HREF="005045.html">[Linux-uvc-devel] 0ac8:c31d not working with 2.6.30
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5044">[ date ]</a>
+              <a href="thread.html#5044">[ thread ]</a>
+              <a href="subject.html#5044">[ subject ]</a>
+              <a href="author.html#5044">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

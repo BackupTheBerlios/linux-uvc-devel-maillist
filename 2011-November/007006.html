@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Working with Logitech B990: Issues.
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Working%20with%20Logitech%20B990%3A%20Issues.&In-Reply-To=%3C7f64ed4e85a9d95b2eb13c4a1a3816c4%40127.0.0.1%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007001.html">
+   <LINK REL="Next"  HREF="007019.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Working with Logitech B990: Issues.</H1>
+    <B>Kaz Kylheku</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Working%20with%20Logitech%20B990%3A%20Issues.&In-Reply-To=%3C7f64ed4e85a9d95b2eb13c4a1a3816c4%40127.0.0.1%3E"
+       TITLE="[Linux-uvc-devel] Working with Logitech B990: Issues.">kaz at kylheku.com
+       </A><BR>
+    <I>Thu Nov  3 02:20:30 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007001.html">[Linux-uvc-devel] Chicony web cam not working
+</A></li>
+        <LI>Next message: <A HREF="007019.html">[Linux-uvc-devel] Working with Logitech B990: Issues.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7006">[ date ]</a>
+              <a href="thread.html#7006">[ thread ]</a>
+              <a href="subject.html#7006">[ subject ]</a>
+              <a href="author.html#7006">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Hey all,
+
+I'm working with the B990 on an ARM-based embedded system based on 
+linux-2.6.27.47.
+
+H.264 is coming out of the cam, but I don't see an SPS/PPS, and all 
+the frames are
+P slices, e.g. like this and similar:
+
+ 00 00 00 01 61 9a 00 38 37 e0 20 30 ...
+
+Secondly, after some period of running, the USB controller throws up 
+an over-current error,
+and then the device is not usable without a reboot. Maybe this big 
+sucker
+really draws too much current?
+
+Usually I am not able to two consecutive successful opens of the 
+device.
+
+By the way, I patched the driver to make the trace and quirks sysctl
+parameters, since I have it compiled into the kernel.
+
+
+Index: linux-2.6.27.47/drivers/media/video/uvc/uvc_driver.c
+===================================================================
+--- linux-2.6.27.47.orig/drivers/media/video/uvc/uvc_driver.c
++++ linux-2.6.27.47/drivers/media/video/uvc/uvc_driver.c
+@@ -30,6 +30,7 @@
+ #include &lt;linux/usb.h&gt;
+ #include &lt;linux/videodev2.h&gt;
+ #include &lt;linux/vmalloc.h&gt;
++#include &lt;linux/sysctl.h&gt;
+ #include &lt;linux/wait.h&gt;
+ #include &lt;asm/atomic.h&gt;
+
+@@ -39,6 +40,7 @@
+
+ #define DRIVER_AUTHOR          &quot;Laurent Pinchart 
+&lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt;&quot;
+ #define DRIVER_DESC            &quot;USB Video Class driver&quot;
++#define DRIVER_NAME            &quot;uvcvideo&quot;
+ #ifndef DRIVER_VERSION
+ #define DRIVER_VERSION         &quot;v0.1.0&quot;
+ #endif
+@@ -1970,6 +1972,37 @@ struct uvc_driver uvc_driver = {
+        },
+ };
+
++static struct ctl_table uvc_sysctl_entries[] =
++{
++       {
++               .procname       = &quot;trace&quot;,
++               .data           = &amp;uvc_trace_param,
++               .maxlen         = sizeof( int ),
++               .mode           = 0644,
++               .proc_handler   = &amp;proc_dointvec,
++       },
++       {
++               .procname       = &quot;quirks&quot;,
++               .data           = &amp;uvc_quirks_param,
++               .maxlen         = sizeof( int ),
++               .mode           = 0644,
++               .proc_handler   = &amp;proc_dointvec,
++       },
++       {       .ctl_name       = 0 }
++};
++
++static struct ctl_table uvc_sysctl_root[] =
++{
++       {
++               .procname       = &quot;uvc_video&quot;,
++               .mode           = 0555,
++               .child          = uvc_sysctl_entries,
++       },
++       {       .ctl_name       = 0 }
++};
++
++static struct ctl_table_header  *uvc_sysctl_header;
++
+ static int __init uvc_init(void)
+ {
+        int result;
+@@ -1981,14 +2014,22 @@ static int __init uvc_init(void)
+
+        uvc_ctrl_init();
+
++       uvc_sysctl_header = register_sysctl_table(uvc_sysctl_root);
++
+        result = usb_register(&amp;uvc_driver.driver);
++
+        if (result == 0)
+-               printk(KERN_INFO DRIVER_DESC &quot; (&quot; DRIVER_VERSION 
+&quot;)\n&quot;);
++               printk(KERN_INFO DRIVER_NAME &quot;: &quot; DRIVER_DESC &quot; (&quot; 
+DRIVER_VERSION &quot;)\n&quot;);
++
++       if (uvc_sysctl_header == 0)
++               printk(KERN_ERR DRIVER_NAME &quot;: unable to register 
+sysctl table\n&quot;);
++
+        return result;
+ }
+
+ static void __exit uvc_cleanup(void)
+ {
++       unregister_sysctl_table(uvc_sysctl_header);
+        usb_deregister(&amp;uvc_driver.driver);
+ }
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007001.html">[Linux-uvc-devel] Chicony web cam not working
+</A></li>
+	<LI>Next message: <A HREF="007019.html">[Linux-uvc-devel] Working with Logitech B990: Issues.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7006">[ date ]</a>
+              <a href="thread.html#7006">[ thread ]</a>
+              <a href="subject.html#7006">[ subject ]</a>
+              <a href="author.html#7006">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

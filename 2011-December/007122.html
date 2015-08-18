@@ -1,0 +1,304 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] 174f:1420 Syntek malfunctions
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20174f%3A1420%20Syntek%20malfunctions&In-Reply-To=%3CCAH%3DdYrGgtNuHS8w0ULTjuT4i_nk%2BqULejZde7viPTmcLS2g2ZA%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007120.html">
+   <LINK REL="Next"  HREF="007123.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] 174f:1420 Syntek malfunctions</H1>
+    <B>Andres Cimmarusti</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20174f%3A1420%20Syntek%20malfunctions&In-Reply-To=%3CCAH%3DdYrGgtNuHS8w0ULTjuT4i_nk%2BqULejZde7viPTmcLS2g2ZA%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] 174f:1420 Syntek malfunctions">acimmarusti at gmail.com
+       </A><BR>
+    <I>Mon Dec 12 05:51:37 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007120.html">[Linux-uvc-devel] Exposure control for 1e4e:0100
+</A></li>
+        <LI>Next message: <A HREF="007123.html">[Linux-uvc-devel] 174f:1420 Syntek malfunctions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7122">[ date ]</a>
+              <a href="thread.html#7122">[ thread ]</a>
+              <a href="subject.html#7122">[ subject ]</a>
+              <a href="author.html#7122">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi again
+
+&gt;<i> It sounds plausibly. But in this case i would expect error -28 (no
+</I>&gt;<i> space), rather then -110 (time out).
+</I>&gt;<i> Any way, currently only you can test if it's true. If you use debian you
+</I>&gt;<i> can probably use precompiled ubuntu kernels:
+</I>&gt;<i> <A HREF="http://kernel.ubuntu.com/~kernel-ppa/mainline/">http://kernel.ubuntu.com/~kernel-ppa/mainline/</A>
+</I>
+I tested the latest 3 stable kernels: 2.6.39.4, 3.0.13 and 3.1.5 with
+no luck. I actually cannot use a kernel lower than 3.0.x (permanently)
+because it has no support for my realtek wireless card.
+
+&gt;<i> If still no results, then try other quirks:
+</I>&gt;<i> #define UVC_QUIRK_STATUS_INTERVAL &#160; &#160; &#160; 0x00000001
+</I>&gt;<i> #define UVC_QUIRK_PROBE_MINMAX &#160; &#160; &#160; &#160; &#160;0x00000002
+</I>&gt;<i> #define UVC_QUIRK_PROBE_EXTRAFIELDS &#160; &#160; 0x00000004
+</I>&gt;<i> #define UVC_QUIRK_BUILTIN_ISIGHT &#160; &#160; &#160; &#160;0x00000008
+</I>&gt;<i> #define UVC_QUIRK_STREAM_NO_FID &#160; &#160; &#160; &#160; 0x00000010
+</I>&gt;<i> #define UVC_QUIRK_IGNORE_SELECTOR_UNIT &#160;0x00000020
+</I>&gt;<i> #define UVC_QUIRK_FIX_BANDWIDTH &#160; &#160; &#160; &#160; 0x00000080
+</I>&gt;<i> #define UVC_QUIRK_PROBE_DEF &#160; &#160; &#160; &#160; &#160; &#160; 0x00000100
+</I>&gt;<i> #define UVC_QUIRK_RESTRICT_FRAME_RATE &#160; 0x00000200
+</I>
+Tried all the quirks one by one and nothing. The PROBE_DEF 0x100 quirk
+is the only one that doesn't complain in dmesg. The others always
+showed this:
+
+[ 5626.340681] uvcvideo: UVC non compliance - GET_DEF(PROBE) not
+supported. Enabling workaround.
+
+&gt;<i> then if no results, test if device works at all with some alternate OS :)
+</I>
+Well, unfortunately this isn't an option for me. I could try, but I'm
+not sure what that would accomplish, except getting the thing to work
+properly. If this would help in bringing support for the linux kernel
+then I would consider it.
+
+Lastly I just want to share a few more of diagnostics I've tried:
+
+1. Attached is the output from the CLI utility 'v4l2-compliance
+--device=/dev/video0'. It shows a failure in one of the tests: test
+VIDIOC_S_PRIORITY: FAIL (-1)
+
+2. Also attached is the log of the utility guvcview when I try to use
+with the webcam. It almost always fails...however it worked once
+without a problem... how does this make any sense? how is it possible
+that it works sporadically? Jitsi, ekiga and linphone fail right away,
+but cheese and luvcview also works sporadically...
+
+3. The webcam works flawlessly with the google talk plugin in
+conjunction with Firefox 8.0. I know that this plugin uses the 32-bit
+version of libv4l. While the other applications I've been trying are
+native 64-bit. Thoughts? comments?
+
+Thanks for your help, hopefully this new information will be helpful.
+I didn't attach the kernel logs, because they are pretty much
+identical.
+
+Regards,
+
+Andres
+-------------- next part --------------
+$ guvcview 1.4.1
+video device: /dev/video0 
+/dev/video0 - device 1
+Init. USB Camera Device (location: usb-0000:00:1d.0-1.5)
+{ pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+{ discrete: width = 640, height = 480 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 160, height = 120 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 176, height = 144 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 320, height = 240 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 352, height = 288 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 1280, height = 1024 }
+	Time interval between frame: 1/8, 
+{ pixelformat = 'RGB3', description = 'RGB3' }
+{ discrete: width = 640, height = 480 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 160, height = 120 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 176, height = 144 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 320, height = 240 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 352, height = 288 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 1280, height = 1024 }
+	Time interval between frame: 1/8, 
+{ pixelformat = 'BGR3', description = 'BGR3' }
+{ discrete: width = 640, height = 480 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 160, height = 120 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 176, height = 144 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 320, height = 240 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 352, height = 288 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 1280, height = 1024 }
+	Time interval between frame: 1/8, 
+{ pixelformat = 'YU12', description = 'YU12' }
+{ discrete: width = 640, height = 480 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 160, height = 120 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 176, height = 144 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 320, height = 240 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 352, height = 288 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 1280, height = 1024 }
+	Time interval between frame: 1/8, 
+{ pixelformat = 'YV12', description = 'YV12' }
+{ discrete: width = 640, height = 480 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 160, height = 120 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 176, height = 144 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 320, height = 240 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 352, height = 288 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 1280, height = 1024 }
+	Time interval between frame: 1/8, 
+vid:174f 
+pid:1420 
+driver:uvcvideo
+checking format: 1448695129
+VIDIOC_S_FORMAT - Unable to set format: Input/output error
+Init v4L2 failed !! 
+Init video returned -2
+trying minimum setup ...
+video device: /dev/video0 
+/dev/video0 - device 1
+Init. USB Camera Device (location: usb-0000:00:1d.0-1.5)
+{ pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+{ discrete: width = 640, height = 480 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 160, height = 120 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 176, height = 144 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 320, height = 240 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 352, height = 288 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 1280, height = 1024 }
+	Time interval between frame: 1/8, 
+{ pixelformat = 'RGB3', description = 'RGB3' }
+{ discrete: width = 640, height = 480 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 160, height = 120 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 176, height = 144 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 320, height = 240 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 352, height = 288 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 1280, height = 1024 }
+	Time interval between frame: 1/8, 
+{ pixelformat = 'BGR3', description = 'BGR3' }
+{ discrete: width = 640, height = 480 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 160, height = 120 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 176, height = 144 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 320, height = 240 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 352, height = 288 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 1280, height = 1024 }
+	Time interval between frame: 1/8, 
+{ pixelformat = 'YU12', description = 'YU12' }
+{ discrete: width = 640, height = 480 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 160, height = 120 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 176, height = 144 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 320, height = 240 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 352, height = 288 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 1280, height = 1024 }
+	Time interval between frame: 1/8, 
+{ pixelformat = 'YV12', description = 'YV12' }
+{ discrete: width = 640, height = 480 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 160, height = 120 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 176, height = 144 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 320, height = 240 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 352, height = 288 }
+	Time interval between frame: 1/30, 
+{ discrete: width = 1280, height = 1024 }
+	Time interval between frame: 1/8, 
+vid:174f 
+pid:1420 
+driver:uvcvideo
+checking format: 1448695129
+VIDIOC_S_FORMAT - Unable to set format: Input/output error
+Init v4L2 failed !! 
+ERROR: Minimum Setup Failed.
+ Exiting...
+VIDIOC_REQBUFS - Failed to delete buffers: Invalid argument (errno 22)
+cleaned allocations - 100%
+Closing portaudio ...OK
+Terminated.
+-------------- next part --------------
+$ v4l2-compliance --device=/dev/video0
+Driver Info:
+	Driver name   : uvcvideo
+	Card type     : USB Camera Device
+	Bus info      : usb-0000:00:1d.0-1.5
+	Driver version: 196869
+	Capabilities  : 0x04000001
+		Video Capture
+		Streaming
+
+Compliance test for device /dev/video0:
+
+Required ioctls:
+	test VIDIOC_QUERYCAP: OK
+Allow for multiple opens:
+	test second video open: OK
+	test VIDIOC_QUERYCAP: OK
+	test VIDIOC_S_PRIORITY: FAIL (-1)
+
+Debug ioctls:
+	test VIDIOC_DBG_G_CHIP_IDENT: Not Supported
+	test VIDIOC_DBG_G/S_REGISTER: OK
+	test VIDIOC_LOG_STATUS: Not Supported
+Total: 7 Succeeded: 6 Failed: 1
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007120.html">[Linux-uvc-devel] Exposure control for 1e4e:0100
+</A></li>
+	<LI>Next message: <A HREF="007123.html">[Linux-uvc-devel] 174f:1420 Syntek malfunctions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7122">[ date ]</a>
+              <a href="thread.html#7122">[ thread ]</a>
+              <a href="subject.html#7122">[ subject ]</a>
+              <a href="author.html#7122">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

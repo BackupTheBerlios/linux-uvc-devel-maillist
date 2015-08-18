@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH 2/5] drivers/media/video/uvc: Use	DIV_ROUND_CLOSEST
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%202/5%5D%20drivers/media/video/uvc%3A%20Use%0A%09DIV_ROUND_CLOSEST&In-Reply-To=%3C200908012223.52022.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="005031.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH 2/5] drivers/media/video/uvc: Use	DIV_ROUND_CLOSEST</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%202/5%5D%20drivers/media/video/uvc%3A%20Use%0A%09DIV_ROUND_CLOSEST&In-Reply-To=%3C200908012223.52022.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] [PATCH 2/5] drivers/media/video/uvc: Use	DIV_ROUND_CLOSEST">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sat Aug  1 22:23:51 CEST 2009</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="005031.html">[Linux-uvc-devel] Creative Live! Cam Optia AF
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5030">[ date ]</a>
+              <a href="thread.html#5030">[ thread ]</a>
+              <a href="subject.html#5030">[ subject ]</a>
+              <a href="author.html#5030">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Saturday 01 August 2009 21:49:04 Julia Lawall wrote:
+&gt;<i> From: Julia Lawall &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">julia at diku.dk</A>&gt;
+</I>&gt;<i>
+</I>&gt;<i> The kernel.h macro DIV_ROUND_CLOSEST performs the computation (x + d/2)/d
+</I>&gt;<i> but is perhaps more readable.
+</I>&gt;<i>
+</I>&gt;<i> The semantic patch that makes this change is as follows:
+</I>&gt;<i> (<A HREF="http://www.emn.fr/x-info/coccinelle/">http://www.emn.fr/x-info/coccinelle/</A>)
+</I>&gt;<i>
+</I>&gt;<i> // &lt;smpl&gt;
+</I>&gt;<i> @haskernel@
+</I>&gt;<i> @@
+</I>&gt;<i>
+</I>&gt;<i> #include &lt;linux/kernel.h&gt;
+</I>&gt;<i>
+</I>&gt;<i> @depends on haskernel@
+</I>&gt;<i> expression x,__divisor;
+</I>&gt;<i> @@
+</I>&gt;<i>
+</I>&gt;<i> - (((x) + ((__divisor) / 2)) / (__divisor))
+</I>&gt;<i> + DIV_ROUND_CLOSEST(x,__divisor)
+</I>&gt;<i> // &lt;/smpl&gt;
+</I>&gt;<i>
+</I>&gt;<i> Signed-off-by: Julia Lawall &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">julia at diku.dk</A>&gt;
+</I>&gt;<i>
+</I>&gt;<i> ---
+</I>&gt;<i>  drivers/media/video/uvc/uvc_v4l2.c  |    2 +-
+</I>&gt;<i>  1 files changed, 1 insertions(+), 1 deletions(-)
+</I>&gt;<i>
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvc_v4l2.c
+</I>&gt;<i> b/drivers/media/video/uvc/uvc_v4l2.c index 87cb9cc..6edaaf6 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_v4l2.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_v4l2.c
+</I>&gt;<i> @@ -95,7 +95,7 @@ static __u32 uvc_try_frame_interval(struct uvc_frame
+</I>&gt;<i> *frame, __u32 interval) const __u32 max = frame-&gt;dwFrameInterval[1];
+</I>&gt;<i>  		const __u32 step = frame-&gt;dwFrameInterval[2];
+</I>&gt;<i>
+</I>&gt;<i> -		interval = min + (interval - min + step/2) / step * step;
+</I>&gt;<i> +		interval = min + DIV_ROUND_CLOSEST(interval-min, step) * step;
+</I>&gt;<i>  		if (interval &gt; max)
+</I>&gt;<i>  			interval = max;
+</I>&gt;<i>  	}
+</I>
+The purpose of the above code is to clamp the interval value to the [min, max] 
+range at round it to the closest multiple of step. Other drivers might need 
+similar code. Do you think it might be useful to introduce a clamp_step macro 
+for this ?
+
+If not,
+
+Acked-by: Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt;
+
+Regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="005031.html">[Linux-uvc-devel] Creative Live! Cam Optia AF
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5030">[ date ]</a>
+              <a href="thread.html#5030">[ thread ]</a>
+              <a href="subject.html#5030">[ subject ]</a>
+              <a href="author.html#5030">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

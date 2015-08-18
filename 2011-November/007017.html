@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Sweex WC061 HD Webcam Sliver
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Sweex%20WC061%20HD%20Webcam%20Sliver&In-Reply-To=%3C201111031120.06914.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007016.html">
+   <LINK REL="Next"  HREF="007059.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Sweex WC061 HD Webcam Sliver</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Sweex%20WC061%20HD%20Webcam%20Sliver&In-Reply-To=%3C201111031120.06914.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Sweex WC061 HD Webcam Sliver">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu Nov  3 11:20:06 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007016.html">[Linux-uvc-devel] New unsupported UVC WebCam
+</A></li>
+        <LI>Next message: <A HREF="007059.html">[Linux-uvc-devel] Sweex WC061 HD Webcam Sliver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7017">[ date ]</a>
+              <a href="thread.html#7017">[ thread ]</a>
+              <a href="subject.html#7017">[ subject ]</a>
+              <a href="author.html#7017">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Wednesday 07 September 2011 08:11:48 Alexey Fisher wrote:
+&gt;<i> Am 06.09.2011 12:53, schrieb Michael Tandy:
+</I>&gt;<i> &gt; [99317.553237] uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMON)
+</I>&gt;<i> &gt; [99317.554747] uvcvideo: uvc_v4l2_poll
+</I>&gt;<i> &gt; [99333.472385] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> &gt; [99333.472389] uvcvideo: Frame complete (EOF found).
+</I>&gt;<i> &gt; [99333.472391] uvcvideo: EOF in empty payload.
+</I>&gt;<i> &gt; [99333.472429] uvcvideo: uvc_v4l2_poll
+</I>&gt;<i> &gt; [99333.472438] uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+</I>&gt;<i> &gt; [99333.472447] uvcvideo: Dequeuing buffer 0 (3, 2676 bytes).
+</I>&gt;<i> 
+</I>&gt;<i> hmm... the camera notify us about with error bit set, but current driver
+</I>&gt;<i> will just drop it and mark the buffer as faulty.
+</I>
+As the data can't be trusted, the uvcvideo driver decides to drop the packet.
+Alternatively the packet could be processed normally and the buffer market as
+bad. It would then be up to the application to decide what to do with such
+buffers (you will have to set the no_drop module parameter to 1, as the driver
+drops faulty buffers by default).
+
+The following patch should implement that behaviour, in case you want to test
+it.
+
+diff --git a/drivers/media/video/uvc/uvc_video.c b/drivers/media/video/uvc/uvc_video.c
+index ffd1158..baa5850 100644
+--- a/drivers/media/video/uvc/uvc_video.c
++++ b/drivers/media/video/uvc/uvc_video.c
+@@ -419,13 +419,6 @@ static int uvc_video_decode_start(struct uvc_streaming *stream,
+ 	if (len &lt; 2 || data[0] &lt; 2 || data[0] &gt; len)
+ 		return -EINVAL;
+ 
+-	/* Skip payloads marked with the error bit (&quot;error frames&quot;). */
+-	if (data[1] &amp; UVC_STREAM_ERR) {
+-		uvc_trace(UVC_TRACE_FRAME, &quot;Dropping payload (error bit &quot;
+-			  &quot;set).\n&quot;);
+-		return -ENODATA;
+-	}
+-
+ 	fid = data[1] &amp; UVC_STREAM_FID;
+ 
+ 	/* Increase the sequence number regardless of any buffer states, so
+@@ -442,6 +435,13 @@ static int uvc_video_decode_start(struct uvc_streaming *stream,
+ 		return -ENODATA;
+ 	}
+ 
++	/* Mark the buffer as bad if the error bit is set. */
++	if (data[1] &amp; UVC_STREAM_ERR) {
++		uvc_trace(UVC_TRACE_FRAME, &quot;Marking buffer as bad (error bit &quot;
++			  &quot;set).\n&quot;);
++		buf-&gt;error = 1;
++	}
++
+ 	/* Synchronize to the input stream by waiting for the FID bit to be
+ 	 * toggled when the the buffer state is not UVC_BUF_STATE_ACTIVE.
+ 	 * stream-&gt;last_fid is initialized to -1, so the first isochronous
+
+
+&gt;<i> According to uvc specification v1.1 in &quot;4.3.1.7 Stream Error Code
+</I>&gt;<i> Control&quot; we can/should check the error reason:
+</I>&gt;<i> -------------------------------------------------------------------
+</I>&gt;<i> The host software should send a GET_CUR request to this control to
+</I>&gt;<i> determine the error when one of the following events occurs:
+</I>&gt;<i> - The Error bit in the video or still image payload header is set by the
+</I>&gt;<i> device
+</I>&gt;<i> ....
+</I>&gt;<i> For scenarios where the host is transmitting video data to the device,
+</I>&gt;<i> the host can not use the Error bit in the payload header to detect a
+</I>&gt;<i> device error. Therefore, in order to determine when a streaming error
+</I>&gt;<i> occurs, the host must rely on either a Control Change interrupt from the
+</I>&gt;<i> device or a bulk endpoint stall.
+</I>&gt;<i> --------------------------------------------------------------------
+</I>&gt;<i> 
+</I>&gt;<i> I'm suddenly not so good to implement ne things without testing and
+</I>&gt;<i> probing. May be Laurent can do this? Or i need access to the webcam.
+</I>
+Retrieving the cause of the error requires sending a control request, which
+can't be done in interrupt context. This could be implemented, but won't be
+trivial, and I'm not sure it will give any useful information anyway. Knowing
+whether the error comes from a buffer underrun, a buffer overrun or something
+else won't let the driver fix the error.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007016.html">[Linux-uvc-devel] New unsupported UVC WebCam
+</A></li>
+	<LI>Next message: <A HREF="007059.html">[Linux-uvc-devel] Sweex WC061 HD Webcam Sliver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7017">[ date ]</a>
+              <a href="thread.html#7017">[ thread ]</a>
+              <a href="subject.html#7017">[ subject ]</a>
+              <a href="author.html#7017">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

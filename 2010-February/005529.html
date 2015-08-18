@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Unlisted partially-supported webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Unlisted%20partially-supported%20webcam&In-Reply-To=%3C1e0de1821002050530h4b5d3c19i1f22b7f3717d40dd%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005522.html">
+   <LINK REL="Next"  HREF="005530.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Unlisted partially-supported webcam</H1>
+    <B>Bram Senders</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Unlisted%20partially-supported%20webcam&In-Reply-To=%3C1e0de1821002050530h4b5d3c19i1f22b7f3717d40dd%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Unlisted partially-supported webcam">bram at luon.net
+       </A><BR>
+    <I>Fri Feb  5 14:30:32 CET 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005522.html">[Linux-uvc-devel] Unlisted partially-supported webcam
+</A></li>
+        <LI>Next message: <A HREF="005530.html">[Linux-uvc-devel] Unlisted partially-supported webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5529">[ date ]</a>
+              <a href="thread.html#5529">[ thread ]</a>
+              <a href="subject.html#5529">[ subject ]</a>
+              <a href="author.html#5529">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+Thanks for your help so far!
+
+On Wed, Feb 3, 2010 at 1:23 AM, Laurent Pinchart
+&lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at ideasonboard.com</A>&gt; wrote:
+&gt;<i> Hi Bram,
+</I>&gt;<i>
+</I>&gt;<i> On Tuesday 26 January 2010 16:12:02 Bram Senders wrote:
+</I>&gt;&gt;<i> Hi there,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I have here a partially working webcam which is unlisted on the list
+</I>&gt;&gt;<i> of known cameras; it's the built-in camera found in the Asus EeePC T91
+</I>&gt;&gt;<i> netbook.
+</I>&gt;<i>
+</I>&gt;<i> Thanks for the report.
+</I>&gt;<i>
+</I>&gt;&gt;<i> &quot;dmesg&quot; says:
+</I>&gt;&gt;<i> ===
+</I>&gt;&gt;<i> [ &#160; &#160;3.683885] uvcvideo: Found UVC 1.00 device USB 2.0 Camera (13d3:509b)
+</I>[snip]
+&gt;&gt;<i> but any way in which I could try to get this to work (either by patching
+</I>&gt;&gt;<i> the kernel driver, or possibly trying to patch the GStreamer v4l2src
+</I>&gt;&gt;<i> element to not query the relevant control?) or further debug this
+</I>&gt;&gt;<i> thing would be really really helpful.
+</I>&gt;<i>
+</I>&gt;<i> Could you please try the following patch and let me know if it helps ?
+</I>&gt;<i>
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvc_ctrl.c b/drivers/media/video/uvc/uvc_ctrl.c
+</I>&gt;<i> index f90319e..60f40d9 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_ctrl.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_ctrl.c
+</I>&gt;<i> @@ -1453,6 +1453,7 @@ uvc_ctrl_prune_entity(struct uvc_device *dev, struct uvc_entity *entity)
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;struct usb_device_id id;
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;u8 index;
+</I>&gt;<i> &#160; &#160; &#160; &#160;} blacklist[] = {
+</I>&gt;<i> + &#160; &#160; &#160; &#160; &#160; &#160; &#160; { { USB_DEVICE(0x13d3, 0x509b) }, 4 }, /* Gain */
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;{ { USB_DEVICE(0x1c4f, 0x3000) }, 6 }, /* WB Temperature */
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;{ { USB_DEVICE(0x5986, 0x0241) }, 2 }, /* Hue */
+</I>&gt;<i> &#160; &#160; &#160; &#160;};
+</I>
+Unfortunately this patch does not work for me; the errors I get from
+GStreamer and in dmesg are exactly the same as without this patch.  I
+see in the kernel source that some debug info should be printed using
+uvc_trace when performing the actual blacklisting; how can I get at
+this debug info?
+
+PS: I see you're doing a talk at FOSDEM -- I'll be there!
+
+Thanks,
+Bram
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005522.html">[Linux-uvc-devel] Unlisted partially-supported webcam
+</A></li>
+	<LI>Next message: <A HREF="005530.html">[Linux-uvc-devel] Unlisted partially-supported webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5529">[ date ]</a>
+              <a href="thread.html#5529">[ thread ]</a>
+              <a href="subject.html#5529">[ subject ]</a>
+              <a href="author.html#5529">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

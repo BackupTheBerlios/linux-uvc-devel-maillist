@@ -1,0 +1,313 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] USB2.0 UVC PC Camera
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20USB2.0%20UVC%20PC%20Camera&In-Reply-To=%3C4871FD72.2050409%40astronomicalresearchaustralia.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003758.html">
+   <LINK REL="Next"  HREF="003763.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] USB2.0 UVC PC Camera</H1>
+    <B>Brian</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20USB2.0%20UVC%20PC%20Camera&In-Reply-To=%3C4871FD72.2050409%40astronomicalresearchaustralia.org%3E"
+       TITLE="[Linux-uvc-devel] USB2.0 UVC PC Camera">bnc at astronomicalresearchaustralia.org
+       </A><BR>
+    <I>Mon Jul  7 13:26:42 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003758.html">[Linux-uvc-devel] USB2.0 UVC PC Camera
+</A></li>
+        <LI>Next message: <A HREF="003763.html">[Linux-uvc-devel]  Re: FYI: UVC in 2.6.26
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3764">[ date ]</a>
+              <a href="thread.html#3764">[ thread ]</a>
+              <a href="subject.html#3764">[ subject ]</a>
+              <a href="author.html#3764">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Erwin,
+a while back on this list I tried to use kopete and got a black screen.
+It turned out that kopete had to be patched to get the video.
+See below.
+
+In addition EKIGA requires the pwlib v4l2 plugin to find the camera.
+On my Suse system it is called pwlib-plugins-v4l2.
+Note luvcview works without the above plugin.
+
+Just tried ekiga 2.0.9 and 2.0.12 both work fine.
+When I changed from 2.0.9 to 2.0.12  I had to reinstall gconf2
+All of the above is on 2.6.22.17-0.1-default.
+
+Laurent mentioned that mplayer should work, I can get it to run but I 
+cannot find the command that points it at the /dev/video0
+
+YMMV
+
+Brian
+
+&quot;
+My patch to add support for uvc in Kopete SVN is ready. You can download it
+at:
+&lt;<A HREF="http://www.alexandredenis.net/software/kopete-uvc/kopete-uvc-patch-20060111.tgz">http://www.alexandredenis.net/software/kopete-uvc/kopete-uvc-patch-20060111.tgz</A>&gt;
+There is a README enclosed with instructions.
+
+This patch fixes the following:
+   -- improves YUYV decoding (colors corrected)
+   -- adds MJPEG support (decoder from luvcview)
+   -- fixes image size detection
+   -- fixes V4L version detection (if V4L2 support is detected from the 
+device,
+don't try V4L1!)
+
+What is not implemented yet:
+   -- most controls (brightness/contrast/saturation) are not implemented 
+for
+V4L2 in Kopete at all.
+
+Please report how it works. If it is ok, I will submit it for inclusion in
+Kopete SVN.
+&quot;
+
+
+Marco Argiolas wrote:
+&gt;<i> Well it sounds very strange....
+</I>&gt;<i> Have you already tried the following command?
+</I>&gt;<i> luvcview -f yuv
+</I>&gt;<i> It should show you the video streaming from your webcam!!
+</I>&gt;<i> 
+</I>&gt;<i> 2008/7/7 erwin &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">marconico at tiscali.it</A>&gt;:
+</I>&gt;<i> 
+</I>&gt;<i> Hi Marco, thank you very much for your response, i did what you suggest
+</I>&gt;&gt;<i> me and this is what i have:
+</I>&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$ sudo lsusb -d 174f:8a31 -v | grep &quot;14 Video&quot;
+</I>&gt;&gt;<i> [sudo] password for erwin:
+</I>&gt;&gt;<i>       bFunctionClass         14 Video
+</I>&gt;&gt;<i>      bInterfaceClass        14 Video
+</I>&gt;&gt;<i>      bInterfaceClass        14 Video
+</I>&gt;&gt;<i>      bInterfaceClass        14 Video
+</I>&gt;&gt;<i>      bInterfaceClass        14 Video
+</I>&gt;&gt;<i>      bInterfaceClass        14 Video
+</I>&gt;&gt;<i>      bInterfaceClass        14 Video
+</I>&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$ lsmod | grep uvcvideo
+</I>&gt;&gt;<i> uvcvideo               48644  0
+</I>&gt;&gt;<i> compat_ioctl32          2304  1 uvcvideo
+</I>&gt;&gt;<i> videodev               29312  1 uvcvideo
+</I>&gt;&gt;<i> v4l1_compat            15364  2 uvcvideo,videodev
+</I>&gt;&gt;<i> v4l2_common            18432  2 uvcvideo,videodev
+</I>&gt;&gt;<i> usbcore               138632  8
+</I>&gt;&gt;<i> uvcvideo,usbhid,hci_usb,usb_storage,libusual,uhci_hcd,ehci_hcd
+</I>&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$ luvcview -L
+</I>&gt;&gt;<i> luvcview version 0.2.1
+</I>&gt;&gt;<i> Video driver: x11
+</I>&gt;&gt;<i> A window manager is available
+</I>&gt;&gt;<i> video /dev/video0
+</I>&gt;&gt;<i> /dev/video0 does not support read i/o
+</I>&gt;&gt;<i> { pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+</I>&gt;&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;&gt;<i>        Time interval between frame: 1/20,
+</I>&gt;&gt;<i> { discrete: width = 160, height = 120 }
+</I>&gt;&gt;<i>        Time interval between frame: 1/24,
+</I>&gt;&gt;<i> { discrete: width = 176, height = 144 }
+</I>&gt;&gt;<i>        Time interval between frame: 1/24,
+</I>&gt;&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;&gt;<i>        Time interval between frame: 1/24,
+</I>&gt;&gt;<i> { discrete: width = 352, height = 288 }
+</I>&gt;&gt;<i>        Time interval between frame: 1/24,
+</I>&gt;&gt;<i> { discrete: width = 800, height = 600 }
+</I>&gt;&gt;<i>        Time interval between frame: 1/7,
+</I>&gt;&gt;<i> { discrete: width = 1024, height = 768 }
+</I>&gt;&gt;<i>        Time interval between frame: 1/7,
+</I>&gt;&gt;<i> { discrete: width = 1280, height = 800 }
+</I>&gt;&gt;<i>        Time interval between frame: 1/7,
+</I>&gt;&gt;<i> { discrete: width = 1280, height = 960 }
+</I>&gt;&gt;<i>        Time interval between frame: 1/7,
+</I>&gt;&gt;<i> { discrete: width = 1280, height = 1024 }
+</I>&gt;&gt;<i>        Time interval between frame: 1/7,
+</I>&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$
+</I>&gt;&gt;<i>  Actually i still have blank screen on Skype nekiga &amp; amsn. Any
+</I>&gt;&gt;<i> suggestions? Thanks again Marco.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> On Sun, 2008-07-06 at 23:06 +0200, Marco Argiolas wrote:
+</I>&gt;&gt;&gt;<i> Well, first of all you have to be sure your webcam is UVC compliant.
+</I>&gt;&gt;&gt;<i> Try to execute this command:
+</I>&gt;&gt;&gt;<i> sudo lsusb -d 174f:8a31 -v | grep &quot;14 Video&quot;
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> If your webcam is UVC compliant then you should get something like
+</I>&gt;&gt;&gt;<i> this:
+</I>&gt;&gt;&gt;<i>       bFunctionClass         14 Video
+</I>&gt;&gt;&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;&gt;&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;&gt;&gt;<i>       bInterfaceClass        14 Video
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> If your is a UVC-webcam, then maybe uvcvideo module is not loaded!
+</I>&gt;&gt;&gt;<i> lsmod | grep uvcvideo
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> If it is not loaded:
+</I>&gt;&gt;&gt;<i> sudo modprobe uvcvideo
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> If it is loaded, just verify if there is the corrispond node for your
+</I>&gt;&gt;&gt;<i> webcam:
+</I>&gt;&gt;&gt;<i> ls -l /dev/video*
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Now you can be sure your webcam is recognised!!
+</I>&gt;&gt;&gt;<i> Just for another test, install luvcview and then run:
+</I>&gt;&gt;&gt;<i> luvcview -L
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> If everything seems to be good, maybe it is a problem of software
+</I>&gt;&gt;&gt;<i> configuration:
+</I>&gt;&gt;&gt;<i> skype: from properties you have just to enable webcam capturing and
+</I>&gt;&gt;&gt;<i> select the webcam source (e.g. /dev/video0);
+</I>&gt;&gt;&gt;<i> ekiga: from Preference, select Device-&gt;Video Devices and set:
+</I>&gt;&gt;&gt;<i> -  Video Plugin = V4L2
+</I>&gt;&gt;&gt;<i> -  Format = PAL europe
+</I>&gt;&gt;&gt;<i> -  Channel = 0
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> amsn: from Prefernce select &quot;Others&quot; tab and then &quot;Audio &amp; Video
+</I>&gt;&gt;&gt;<i> Settings&quot; and follow the guide!!
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Good luck!!! ;)
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Marco Argiolas
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> 2008/7/6 erwin &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">marconico at tiscali.it</A>&gt;:
+</I>&gt;&gt;&gt;<i>         Hi, i have an notebook ASUS F9SG with on board cam as per
+</I>&gt;&gt;&gt;<i>         subject. I
+</I>&gt;&gt;&gt;<i>         have the problem that programs like skype ekiga amsn etc..
+</I>&gt;&gt;&gt;<i>         switch it on
+</I>&gt;&gt;&gt;<i>         but can't get image or they say &quot;no web cam detected. the
+</I>&gt;&gt;&gt;<i>         model is D-MAX
+</I>&gt;&gt;&gt;<i>         (stk-2135) i'm running ubuntu 7.10
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>         <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$ lsusb
+</I>&gt;&gt;&gt;<i>         Bus 004 Device 001: ID 0000:0000
+</I>&gt;&gt;&gt;<i>         Bus 002 Device 001: ID 0000:0000
+</I>&gt;&gt;&gt;<i>         Bus 005 Device 002: ID 046d:c016 Logitech, Inc. M-UV69a
+</I>&gt;&gt;&gt;<i>         Optical Wheel
+</I>&gt;&gt;&gt;<i>         Mouse
+</I>&gt;&gt;&gt;<i>         Bus 005 Device 001: ID 0000:0000
+</I>&gt;&gt;&gt;<i>         Bus 007 Device 002: ID 0b05:1712 ASUSTek Computer, Inc.
+</I>&gt;&gt;&gt;<i>         Bus 007 Device 001: ID 0000:0000
+</I>&gt;&gt;&gt;<i>         Bus 006 Device 002: ID 08ff:1600 AuthenTec, Inc.
+</I>&gt;&gt;&gt;<i>         Bus 006 Device 001: ID 0000:0000
+</I>&gt;&gt;&gt;<i>         Bus 003 Device 007: ID 0bda:0116 Realtek Semiconductor Corp.
+</I>&gt;&gt;&gt;<i>         Bus 003 Device 004: ID 174f:8a31
+</I>&gt;&gt;&gt;<i>         Bus 003 Device 003: ID 152d:2339
+</I>&gt;&gt;&gt;<i>         Bus 003 Device 001: ID 0000:0000
+</I>&gt;&gt;&gt;<i>         Bus 001 Device 001: ID 0000:0000
+</I>&gt;&gt;&gt;<i>         <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>         <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$ lspci
+</I>&gt;&gt;&gt;<i>         00:00.0 Host bridge: Intel Corporation Mobile
+</I>&gt;&gt;&gt;<i>         PM965/GM965/GL960 Memory
+</I>&gt;&gt;&gt;<i>         Controller Hub (rev 03)
+</I>&gt;&gt;&gt;<i>         00:01.0 PCI bridge: Intel Corporation Mobile PM965/GM965/GL960
+</I>&gt;&gt;&gt;<i>         PCI
+</I>&gt;&gt;&gt;<i>         Express Root Port (rev 03)
+</I>&gt;&gt;&gt;<i>         00:1a.0 USB Controller: Intel Corporation 82801H (ICH8 Family)
+</I>&gt;&gt;&gt;<i>         USB UHCI
+</I>&gt;&gt;&gt;<i>         Contoller #4 (rev 03)
+</I>&gt;&gt;&gt;<i>         00:1a.1 USB Controller: Intel Corporation 82801H (ICH8 Family)
+</I>&gt;&gt;&gt;<i>         USB UHCI
+</I>&gt;&gt;&gt;<i>         Controller #5 (rev 03)
+</I>&gt;&gt;&gt;<i>         00:1a.7 USB Controller: Intel Corporation 82801H (ICH8 Family)
+</I>&gt;&gt;&gt;<i>         USB2 EHCI
+</I>&gt;&gt;&gt;<i>         Controller #2 (rev 03)
+</I>&gt;&gt;&gt;<i>         00:1b.0 Audio device: Intel Corporation 82801H (ICH8 Family)
+</I>&gt;&gt;&gt;<i>         HD Audio
+</I>&gt;&gt;&gt;<i>         Controller (rev 03)
+</I>&gt;&gt;&gt;<i>         00:1c.0 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI
+</I>&gt;&gt;&gt;<i>         Express
+</I>&gt;&gt;&gt;<i>         Port 1 (rev 03)
+</I>&gt;&gt;&gt;<i>         00:1c.1 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI
+</I>&gt;&gt;&gt;<i>         Express
+</I>&gt;&gt;&gt;<i>         Port 2 (rev 03)
+</I>&gt;&gt;&gt;<i>         00:1c.2 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI
+</I>&gt;&gt;&gt;<i>         Express
+</I>&gt;&gt;&gt;<i>         Port 3 (rev 03)
+</I>&gt;&gt;&gt;<i>         00:1d.0 USB Controller: Intel Corporation 82801H (ICH8 Family)
+</I>&gt;&gt;&gt;<i>         USB UHCI
+</I>&gt;&gt;&gt;<i>         Controller #1 (rev 03)
+</I>&gt;&gt;&gt;<i>         00:1d.1 USB Controller: Intel Corporation 82801H (ICH8 Family)
+</I>&gt;&gt;&gt;<i>         USB UHCI
+</I>&gt;&gt;&gt;<i>         Controller #2 (rev 03)
+</I>&gt;&gt;&gt;<i>         00:1d.2 USB Controller: Intel Corporation 82801H (ICH8 Family)
+</I>&gt;&gt;&gt;<i>         USB UHCI
+</I>&gt;&gt;&gt;<i>         Controller #3 (rev 03)
+</I>&gt;&gt;&gt;<i>         00:1d.7 USB Controller: Intel Corporation 82801H (ICH8 Family)
+</I>&gt;&gt;&gt;<i>         USB2 EHCI
+</I>&gt;&gt;&gt;<i>         Controller #1 (rev 03)
+</I>&gt;&gt;&gt;<i>         00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge
+</I>&gt;&gt;&gt;<i>         (rev f3)
+</I>&gt;&gt;&gt;<i>         00:1f.0 ISA bridge: Intel Corporation 82801HEM (ICH8M) LPC
+</I>&gt;&gt;&gt;<i>         Interface
+</I>&gt;&gt;&gt;<i>         Controller (rev 03)
+</I>&gt;&gt;&gt;<i>         00:1f.1 IDE interface: Intel Corporation 82801HBM/HEM
+</I>&gt;&gt;&gt;<i>         (ICH8M/ICH8M-E)
+</I>&gt;&gt;&gt;<i>         IDE Controller (rev 03)
+</I>&gt;&gt;&gt;<i>         00:1f.2 SATA controller: Intel Corporation 82801HBM/HEM
+</I>&gt;&gt;&gt;<i>         (ICH8M/ICH8M-E)
+</I>&gt;&gt;&gt;<i>         SATA AHCI Controller (rev 03)
+</I>&gt;&gt;&gt;<i>         01:00.0 VGA compatible controller: nVidia Corporation Unknown
+</I>&gt;&gt;&gt;<i>         device
+</I>&gt;&gt;&gt;<i>         042e (rev a1)
+</I>&gt;&gt;&gt;<i>         02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
+</I>&gt;&gt;&gt;<i>         RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 01)
+</I>&gt;&gt;&gt;<i>         05:00.0 Network controller: Intel Corporation PRO/Wireless
+</I>&gt;&gt;&gt;<i>         4965 AG or
+</I>&gt;&gt;&gt;<i>         AGN Network Connection (rev 61)
+</I>&gt;&gt;&gt;<i>         <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>         I really hope you'll find soon a solution for this issue.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>         Thanks in advance.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>         erwin
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>         _______________________________________________
+</I>&gt;&gt;&gt;<i>         Linux-uvc-devel mailing list
+</I>&gt;&gt;&gt;<i>         <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;&gt;&gt;<i>         <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> ------------------------------------------------------------------------
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003758.html">[Linux-uvc-devel] USB2.0 UVC PC Camera
+</A></li>
+	<LI>Next message: <A HREF="003763.html">[Linux-uvc-devel]  Re: FYI: UVC in 2.6.26
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3764">[ date ]</a>
+              <a href="thread.html#3764">[ thread ]</a>
+              <a href="subject.html#3764">[ subject ]</a>
+              <a href="author.html#3764">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

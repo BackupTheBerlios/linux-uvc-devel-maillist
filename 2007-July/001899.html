@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Patch: Read support
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Patch%3A%20Read%20support&In-Reply-To=%3C200707192030.46531.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001901.html">
+   <LINK REL="Next"  HREF="001907.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Patch: Read support</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Patch%3A%20Read%20support&In-Reply-To=%3C200707192030.46531.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Patch: Read support">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Thu Jul 19 20:30:46 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001901.html">[Linux-uvc-devel] driver 5986:0100 linux works
+</A></li>
+        <LI>Next message: <A HREF="001907.html">[Linux-uvc-devel] Patch: Read support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1899">[ date ]</a>
+              <a href="thread.html#1899">[ thread ]</a>
+              <a href="subject.html#1899">[ subject ]</a>
+              <a href="author.html#1899">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Chris,
+
+please keep the list CC'ed.
+
+On Wednesday 18 July 2007, Christopher HORLER wrote:
+&gt;<i> Hi Laurent,
+</I>&gt;<i>
+</I>&gt;<i> I've cut a lot of it out because I only had three things to say, as I
+</I>&gt;<i> mostly agree.  I was learning as a did it... and it was a first attempt, so
+</I>&gt;<i> I actually expected quite a few issues.
+</I>
+No worries. My first tries aren't perfect either (I doubt any of my code could 
+be considered perfect).
+
+&gt;<i> Sorry about the spaces - my xemacs was set up without c-basic-offset=8 to
+</I>&gt;<i> begin with. I'm now setting this when editing.
+</I>
+I don't mind whitespace cleanup patches, but please try to split them from the 
+rest.
+
+&gt;<i> Quick question on overlays - I assume these aren't planned as I don't see
+</I>&gt;<i> the copy providing a performance benefit.  I've done some reading and
+</I>&gt;<i> searching and I'm assuming it would be CPU driven for a USB device?  Are
+</I>&gt;<i> you able to confirm this, or tell me I'm wrong?
+</I>
+If by overlay you mean writing to the graphic memory, you're right, this isn't 
+planned. There is no way a USB device could write to the GPU, so this doesn't 
+make sense.
+
+&gt;<i> The Flash Player is a particularly awkward application in this regard -
+</I>&gt;<i> I've started to look at providing a kind of software driven overlay at the
+</I>&gt;<i> kernel level setup via the X V4L extension because flash seems to rely on
+</I>&gt;<i> the overlay for aspects of it's operation.
+</I>
+Really ? Should flash be added to the list of &quot;broken by design&quot; 
+software ? :-)
+
+&gt;<i> Although now I'm beginning to 
+</I>&gt;<i> think a more logical approach might be to try and patch the flash support
+</I>&gt;<i> library to work with the UVC driver and no overlay (but I'm not certain
+</I>&gt;<i> that this is supported - even though there's example code available).
+</I>
+I'm not familiar with flash. Do they provide an open-source user library to 
+access video devices ?
+
+&gt;<i> The 
+</I>&gt;<i> other advantage to this is that the xv_id comparisons in the v4l module for
+</I>&gt;<i> xorg appear to get confused when they start by matching a YUYV against a
+</I>&gt;<i> YUY2 but then compare the id's to find their not equal (my understanding is
+</I>&gt;<i> that although not equal they are compatible?)
+</I>
+I don't think it makes sense to implement a &quot;software overlay&quot; in the kernel. 
+It should definitely not be at the UVC driver level.
+
+&gt;<i> On Wednesday 18 July 2007 20:52, you wrote:
+</I>&gt;<i> &gt; Start streaming the first time read() is called, not when the device is
+</I>&gt;<i> &gt; opened. The queue should be allocated at the first read() call as well.
+</I>&gt;<i> &gt; Don't hardcode the buffer count to 4, use the value set by VIDIOC_S_PARM
+</I>&gt;<i> &gt; (with sensible limits).
+</I>&gt;<i>
+</I>&gt;<i> As long as poll returns the correct results in this case it seems
+</I>&gt;<i> reasonable. I was hoping you'd offer a better way to set the buffer count -
+</I>&gt;<i> as I was struggling to know what to do.
+</I>
+The V4L2 specification isn't very clear about the number of buffers that 
+should be allocated. Drivers are free to do as they want, VIDIOC_S_PARM is 
+just a hint. You can either pre-allocate the number of buffers requested by 
+VIDIOC_S_PARM, or allocate a single buffer when read() is called.
+
+&gt;<i> &gt; This has nothing to do with read() support. VIDIOC_G_STD has been
+</I>&gt;<i> &gt; discussed a lot in the v4l mailing list in the past, and I still believe
+</I>&gt;<i> &gt; it makes no sense for webcams.
+</I>&gt;<i>
+</I>&gt;<i> I didn't do this for read() - it was triggering what I couldn't decide if
+</I>&gt;<i> was an application bug or a driver bug.  The V4L compat layer seems to rely
+</I>&gt;<i> on this call returning a value other than -EINVAL.  Kopete (v4l app, but
+</I>&gt;<i> v4l2 support looks like it's being added) was relying on the V4L compat
+</I>&gt;<i> layer.  I didn't think it did any harm so I added it.
+</I>
+Again, I'd appreciate if you could split different features into separate 
+patches :-)
+
+The V4L2 specification doesn't make VIDIOC_G_STD mandatory, so I personally 
+think the V4L compat layer, as well as applications, should be fixed to 
+handle a lack of VIDIOC_G_STD.
+
+&gt;<i> &gt; This won't work. read() can be called with data buffers smaller than a
+</I>&gt;<i> &gt; video frame. You should not assume that a read() call will read a whole
+</I>&gt;<i> &gt; buffer at once.
+</I>&gt;<i>
+</I>&gt;<i> A few of the other drivers do this, and I had made the assumption it was
+</I>&gt;<i> correct from a statement made in the V4L spec.  Generally I agree with you
+</I>&gt;<i> though - it should be possible to read parts of the buffer, and not the
+</I>&gt;<i> whole buffer (and the V4L2 spec is not the V4L spec!)
+</I>
+Then I think those drivers are buggy. If I'm not mistaken, video-buf handles 
+read() calls with buffer sizes smaller than the frame size. What made you 
+assume that read() calls has to read a complete frame ?
+
+Cheers,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001901.html">[Linux-uvc-devel] driver 5986:0100 linux works
+</A></li>
+	<LI>Next message: <A HREF="001907.html">[Linux-uvc-devel] Patch: Read support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1899">[ date ]</a>
+              <a href="thread.html#1899">[ thread ]</a>
+              <a href="subject.html#1899">[ subject ]</a>
+              <a href="author.html#1899">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

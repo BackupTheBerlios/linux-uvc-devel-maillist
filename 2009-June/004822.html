@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20VIDIOC_%5BGS%5D_JPEGCOMP%20support&In-Reply-To=%3C59cf47a80906020835u5c1b8f04v9a35f8baff97408f%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004821.html">
+   <LINK REL="Next"  HREF="004823.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support</H1>
+    <B>Paulo Assis</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20VIDIOC_%5BGS%5D_JPEGCOMP%20support&In-Reply-To=%3C59cf47a80906020835u5c1b8f04v9a35f8baff97408f%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support">pj.assis at gmail.com
+       </A><BR>
+    <I>Tue Jun  2 17:35:17 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004821.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+        <LI>Next message: <A HREF="004823.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4822">[ date ]</a>
+              <a href="thread.html#4822">[ thread ]</a>
+              <a href="subject.html#4822">[ subject ]</a>
+              <a href="author.html#4822">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+I think I can add this to guvcview and run some tests, but I would like some
+info on the v4l2_jpegcompression struct, especially on the **jpeg_markers
+flag, I believe for mjpeg I should set all flags, except
+V4l2_JPEG_MARKER_DHT, since huffman tables are not included in the video
+stream, is this correct, or it just doesn't make any difference?
+Also is the correct aproach a call to VIDIOC_G_JPEGCOMP for filling the
+struct and then just change the quality entry and call  VIDIOC_S_JPEGCOMP?
+
+Best regards,
+Paulo
+
+2009/6/2 Jon Fairbairn &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">jon.fairbairn at cl.cam.ac.uk</A>&gt;
+
+&gt;<i> Hi Laurent,
+</I>&gt;<i> Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; writes:
+</I>&gt;<i> &gt; Here's a patch that implements VIDIOC_[GS]_JPEGCOMP. It seems to work
+</I>&gt;<i> with a
+</I>&gt;<i> &gt; Logitech QuickCam Pro for Notebooks. Could you please test it with your
+</I>&gt;<i> &gt; camera(s) and report the results ?
+</I>&gt;<i>
+</I>&gt;<i> Thanks. I downloaded the source for the kernel I'm running,
+</I>&gt;<i> applied the patch (it applied cleanly), so I built it and
+</I>&gt;<i> insmodded it, and ran motion -- this message
+</I>&gt;<i>
+</I>&gt;<i>   motion: [1] VIDIOC_G_JPEGCOMP not supported but it should
+</I>&gt;<i>   be (does your webcam driver support this ioctl?)
+</I>&gt;<i>
+</I>&gt;<i> no longer appears, but I still get
+</I>&gt;<i>
+</I>&gt;<i>   motion: [1] Video device fatal error - Closing video
+</I>&gt;<i>   device
+</I>&gt;<i>
+</I>&gt;<i> That might be bug in motion, but I'm not sure what else to
+</I>&gt;<i> use to test it. mplayer with -tv mjpeg says (inter alia)
+</I>&gt;<i>
+</I>&gt;<i> Selected driver: v4l2
+</I>&gt;<i>  name: Video 4 Linux 2 input
+</I>&gt;<i>  author: Martin Olschewski &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">olschewski at zpr.uni-koeln.de</A>&gt;
+</I>&gt;<i>  comment: first try, more to come ;-)
+</I>&gt;<i> v4l2: video fd: /dev/video0: 3
+</I>&gt;<i> v4l2: your device driver does not support VIDIOC_G_STD ioctl, VIDIOC_G_PARM
+</I>&gt;<i> was used instead.
+</I>&gt;<i> Selected device: Live! Cam Optia
+</I>&gt;<i>  Capabilites:  video capture  streaming
+</I>&gt;<i>  supported norms:
+</I>&gt;<i>  inputs: 0 = Camera 1;
+</I>&gt;<i>  Current input: 0
+</I>&gt;<i>  Format MJPEG  ( 0 bits, MJPEG): Unknown 0x47504a4d
+</I>&gt;<i>  Format YUYV   (16 bits, YUV 4:2:2 (YUYV)): Packed YUY2
+</I>&gt;<i>  Current format: YUYV
+</I>&gt;<i> v4l2: set format: YVU420
+</I>&gt;<i> v4l2: ioctl set format failed: Invalid argument
+</I>&gt;<i> v4l2: set format: YUV420
+</I>&gt;<i> v4l2: ioctl set format failed: Invalid argument
+</I>&gt;<i> v4l2: set format: UYVY
+</I>&gt;<i> v4l2: ioctl set format failed: Invalid argument
+</I>&gt;<i> v4l2: set format: YUYV
+</I>&gt;<i> v4l2: set input: 0
+</I>&gt;<i>
+</I>&gt;<i> which doesn't look right -- it doesn't say &quot;set format:
+</I>&gt;<i> MJPEG&quot;. xawtv just gives me a black window on my vncsession.
+</I>&gt;<i> luvcview and mjpeg-streamer work in MJPEG mode, but they did
+</I>&gt;<i> before the patch, so that's no test either.
+</I>&gt;<i>
+</I>&gt;<i> What would be the right way to test this?
+</I>&gt;<i>
+</I>&gt;<i> Kernel is 2.6.27.24-78.2.53.fc9.x86_64
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> J&#243;n Fairbairn                                 <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Jon.Fairbairn at cl.cam.ac.uk</A>
+</I>&gt;<i> <A HREF="http://www.chaos.org.uk/~jf/Stuff-I-dont-want.html&lt;http://www.chaos.org.uk/%7Ejf/Stuff-I-dont-want.html">http://www.chaos.org.uk/~jf/Stuff-I-dont-want.html&lt;http://www.chaos.org.uk/%7Ejf/Stuff-I-dont-want.html</A>&gt; (updated 2009-01-31)
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090602/e013563c/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090602/e013563c/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004821.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+	<LI>Next message: <A HREF="004823.html">[Linux-uvc-devel] [PATCH] VIDIOC_[GS]_JPEGCOMP support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4822">[ date ]</a>
+              <a href="thread.html#4822">[ thread ]</a>
+              <a href="subject.html#4822">[ subject ]</a>
+              <a href="author.html#4822">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

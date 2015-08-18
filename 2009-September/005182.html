@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Why can't set format after	VIDIOC_STREAMINGOFF?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Why%20can%27t%20set%20format%20after%0A%09VIDIOC_STREAMINGOFF%3F&In-Reply-To=%3C4AC3BB7F.8080000%40redhat.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005181.html">
+   <LINK REL="Next"  HREF="005150.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Why can't set format after	VIDIOC_STREAMINGOFF?</H1>
+    <B>Hans de Goede</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Why%20can%27t%20set%20format%20after%0A%09VIDIOC_STREAMINGOFF%3F&In-Reply-To=%3C4AC3BB7F.8080000%40redhat.com%3E"
+       TITLE="[Linux-uvc-devel] Why can't set format after	VIDIOC_STREAMINGOFF?">hdegoede at redhat.com
+       </A><BR>
+    <I>Wed Sep 30 22:11:43 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005181.html">[Linux-uvc-devel] Why can't set format after	VIDIOC_STREAMINGOFF?
+</A></li>
+        <LI>Next message: <A HREF="005150.html">[Linux-uvc-devel] hp elite 6x607aa / ubuntu
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5182">[ date ]</a>
+              <a href="thread.html#5182">[ thread ]</a>
+              <a href="subject.html#5182">[ subject ]</a>
+              <a href="author.html#5182">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On 09/30/2009 05:59 PM, Laurent Pinchart wrote:
+&gt;<i> Hi Hans,
+</I>&gt;<i>
+</I>&gt;<i> On Tuesday 29 September 2009 09:04:04 Hans de Goede wrote:
+</I>&gt;&gt;<i> On 09/29/2009 12:55 AM, Laurent Pinchart wrote:
+</I>&gt;<i> [snip]
+</I>&gt;&gt;&gt;<i> That's the right way to do it, and it should work.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> ioctl(VIDIOC_S_FMT)
+</I>&gt;&gt;&gt;<i> ioctl(VIDIOC_REQBUFS - n buffers)
+</I>&gt;&gt;&gt;<i> mmap()
+</I>&gt;&gt;&gt;<i> ioctl(VIDIOC_QBUF)
+</I>&gt;&gt;&gt;<i> ioctl(VIDIOC_STREAMON)
+</I>&gt;&gt;&gt;<i> ioctl(VIDIOC_DQBUF)
+</I>&gt;&gt;&gt;<i> ioctl(VIDIOC_QBUF)
+</I>&gt;&gt;&gt;<i> ...
+</I>&gt;&gt;&gt;<i> ioctl(VIDIOC_STREAMOFF)
+</I>&gt;&gt;&gt;<i> munmap()
+</I>&gt;&gt;&gt;<i> ioctl(VIDIOC_REQBUFS - 0 buffers)
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Note that the need for this last call (VIDIOC_REQBUFS - 0 buffers), also
+</I>&gt;&gt;<i> known as unrequesting the buffers, is a bit ambiguous. Not all drivers
+</I>&gt;&gt;<i> need this, and some even return an EINVAL if the number of requested
+</I>&gt;&gt;<i> buffers&lt;  0.
+</I>&gt;<i>
+</I>&gt;<i> The number of buffers can't be&lt;  0 as it's a __u32. Drivers will see a huge
+</I>&gt;<i> integer, and should lower the number of requested buffers instead of returning
+</I>&gt;<i> -EINVAL.
+</I>&gt;<i>
+</I>&gt;<i> Or did you mean they return EINVAL when the number of buffers is == 0 ? In
+</I>&gt;<i> that case they should really be fixed to free the buffers.
+</I>&gt;<i>
+</I>
+Yes I meant &lt; 1, so == 0, sorry.
+
+&gt;&gt;<i> I think we need to clarify the V4L2 API specification on this point.
+</I>&gt;<i>
+</I>&gt;<i> I agree. v4l2_requestbuffers::count is documented as being used for
+</I>&gt;<i> V4L2_MEMORY_MMAP only, and drivers use it for V4L2_MEMORY_USERPTR as well.
+</I>&gt;<i> This needs to be fixed in the spec too.
+</I>&gt;<i>
+</I>&gt;&gt;<i> libv4l currently does do the unrequest the buffers thingie (when it is
+</I>&gt;&gt;<i>   managing the buffers itself), but ignores the return value.
+</I>&gt;<i>
+</I>&gt;<i> Do you know which drivers fail to free the buffers when the requested value is
+</I>&gt;<i> equal to zero ?
+</I>&gt;<i>
+</I>
+I wanted to answer atleast gspca, but that seems to have been fixed :)
+So maybe I'm wrong and now a days most drivers do support the unrequest.
+
+Regards,
+
+Hans
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005181.html">[Linux-uvc-devel] Why can't set format after	VIDIOC_STREAMINGOFF?
+</A></li>
+	<LI>Next message: <A HREF="005150.html">[Linux-uvc-devel] hp elite 6x607aa / ubuntu
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5182">[ date ]</a>
+              <a href="thread.html#5182">[ thread ]</a>
+              <a href="subject.html#5182">[ subject ]</a>
+              <a href="author.html#5182">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

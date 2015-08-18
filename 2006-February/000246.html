@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [SVN] Added preliminary pan/tilt support for Quickcam Orbit MP
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BSVN%5D%20Added%20preliminary%20pan/tilt%20support%20for%20Quickcam%20Orbit%20MP&In-Reply-To=%3C200602071325.24087.mxhaard%40magic.fr%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000245.html">
+   <LINK REL="Next"  HREF="000247.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [SVN] Added preliminary pan/tilt support for Quickcam Orbit MP</H1>
+    <B>michel Xhaard</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BSVN%5D%20Added%20preliminary%20pan/tilt%20support%20for%20Quickcam%20Orbit%20MP&In-Reply-To=%3C200602071325.24087.mxhaard%40magic.fr%3E"
+       TITLE="[Linux-uvc-devel] [SVN] Added preliminary pan/tilt support for Quickcam Orbit MP">mxhaard at magic.fr
+       </A><BR>
+    <I>Tue Feb  7 13:25:23 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000245.html">[Linux-uvc-devel] [SVN] Added preliminary pan/tilt support for Quickcam Orbit MP
+</A></li>
+        <LI>Next message: <A HREF="000247.html">[Linux-uvc-devel] [SVN] Added preliminary pan/tilt support for Quickcam Orbit MP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#246">[ date ]</a>
+              <a href="thread.html#246">[ thread ]</a>
+              <a href="subject.html#246">[ subject ]</a>
+              <a href="author.html#246">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Le Mardi 7 F&#233;vrier 2006 13:09, Laurent Pinchart a &#233;crit&#160;:
+&gt;<i> &gt; &gt; &gt; Well another question I use :
+</I>&gt;<i> &gt; &gt; &gt; int err =0;
+</I>&gt;<i> &gt; &gt; &gt;     queryctrl-&gt;id = control;
+</I>&gt;<i> &gt; &gt; &gt;     if ((err= ioctl(vd-&gt;fd, VIDIOC_QUERYCTRL, queryctrl)) &lt; 0) {
+</I>&gt;<i> &gt; &gt; &gt; 	printf(&quot;ioctl querycontrol error %d \n&quot;,err);
+</I>&gt;<i> &gt; &gt; &gt; to verify the control V4L2_CID_PANTILT_RESET  exist
+</I>&gt;<i> &gt; &gt; &gt;  for some strange reason the ioctl return -EPERM ?
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Print errno instead of err. ioctl() returns -1 (== -EPERM) in case of
+</I>&gt;<i> &gt; &gt; failure. The error code is stored in errno.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; errno is set with  EIO
+</I>&gt;<i>
+</I>&gt;<i> Could you apply this patch and tell me what you get in the kernel log ?
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i>
+</I>&gt;<i> Index: uvcvideo.c
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvcvideo.c  (revision 18)
+</I>&gt;<i> +++ uvcvideo.c  (working copy)
+</I>&gt;<i> @@ -1362,8 +1362,8 @@
+</I>&gt;<i>                         unit &lt;&lt; 8 | intfnum, data, size, UVC_CTRL_TIMEOUT);
+</I>&gt;<i>
+</I>&gt;<i>         if (ret != size) {
+</I>&gt;<i> -               uvc_printk(KERN_ERR, &quot;Failed to query UVC control %u &quot;
+</I>&gt;<i> -                       &quot;(unit %u) : %d.\n&quot;, cs, unit, ret);
+</I>&gt;<i> +               uvc_printk(KERN_ERR, &quot;Failed to query (%u) UVC control %u &quot;
+</I>&gt;<i> +                       &quot;(unit %u) : %d.\n&quot;, query, cs, unit, ret);
+</I>&gt;<i>                 return -EIO;
+</I>&gt;<i>         }
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="http://lists.berlios.de/mailman/listinfo/linux-uvc-devel">http://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>
+Feb  7 13:16:26 linux kernel: usbcore: deregistering driver usbvideo
+Feb  7 13:16:33 linux kernel: uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; 
+(046d:08c2)
+Feb  7 13:16:33 linux kernel: usbcore: registered new driver usbvideo
+Feb  7 13:16:33 linux kernel: USB Video Class driver (v0.1.0)
+Feb  7 13:16:57 linux kernel: uvcvideo: Failed to query (132) UVC control 1 
+(unit 9) : 1.
+Feb  7 13:16:57 linux syslog-ng[3019]: STATS: dropped 0
+Feb  7 13:17:00 linux kernel: uvcvideo: Failed to query (132) UVC control 1 
+(unit 9) : 1.
+
+-- 
+Michel Xhaard
+<A HREF="http://mxhaard.free.fr">http://mxhaard.free.fr</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000245.html">[Linux-uvc-devel] [SVN] Added preliminary pan/tilt support for Quickcam Orbit MP
+</A></li>
+	<LI>Next message: <A HREF="000247.html">[Linux-uvc-devel] [SVN] Added preliminary pan/tilt support for Quickcam Orbit MP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#246">[ date ]</a>
+              <a href="thread.html#246">[ thread ]</a>
+              <a href="subject.html#246">[ subject ]</a>
+              <a href="author.html#246">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

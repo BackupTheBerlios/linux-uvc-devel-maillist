@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Built-in iSight Firmware Tools
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Built-in%20iSight%20Firmware%20Tools&In-Reply-To=%3C1197130591.6842.32.camel%40thilivren%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002547.html">
+   <LINK REL="Next"  HREF="002555.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Built-in iSight Firmware Tools</H1>
+    <B>&#201;tienne Bersac</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Built-in%20iSight%20Firmware%20Tools&In-Reply-To=%3C1197130591.6842.32.camel%40thilivren%3E"
+       TITLE="[Linux-uvc-devel] Built-in iSight Firmware Tools">bersace03 at gmail.com
+       </A><BR>
+    <I>Sat Dec  8 17:16:31 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002547.html">[Linux-uvc-devel] Problem with Fujitsu Webcam 046d:09b2
+</A></li>
+        <LI>Next message: <A HREF="002555.html">[Linux-uvc-devel] Built-in iSight Firmware Tools
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2550">[ date ]</a>
+              <a href="thread.html#2550">[ thread ]</a>
+              <a href="subject.html#2550">[ subject ]</a>
+              <a href="author.html#2550">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+Investigating iSight support for my iMac G5 iSight
+( <A HREF="http://www.apple.com/support/imac/g5/">http://www.apple.com/support/imac/g5/</A> ), i forked the previous work of
+Ronald S. Bultje named &quot;extract.c&quot;. I didn't read the news about iSight
+driver with built-in firmware extrator and loader.
+
+It could have been enough just to add powerpc AppleUSBVideoSupport SHA1
+sum + offset, but since Ronald switched to Mac OS X, i though i had to
+take the project. This is why i forked.
+
+Once i got firmware loading, i search to get the driver set up. I
+contacted Laurent and then i found the work done by Ivan. I reworked the
+patch to fulfill several needs :
+
+For userspace tools :
+
+      * Create a proper project named isight-firmware-tools, using
+        autotools.
+      * Added support for PowerPC64 boxes (iMac G5 iSight 17&quot; and 20&quot;).
+      * Splitted extract into ift-extract and ift-load
+      * Reworked ift-extract to patch the firmware
+      * By default, output firmware to /lib/firmware/isight.fw
+      * Added a udev rules to call ift-load on 0x05ac:0x8300 isight
+      * Reworked ift-load to use USB bus and device ID from udev env
+        vars (USB_BUS and USB_DEV)
+      * Misc : use GOptions, i18n, website, etc.
+
+For the patch :
+
+      * Drop firmware extraction and loading
+      * Apply to r148
+      * Ported to Linux 2.6.24
+      * Ported to PowerPC64 (endianness issue)
+      * Drop 0x8300 device id
+      * Renamed isight.[hc] as uvc_isight.[hc]
+
+What can be done :
+
+      * export firmware to intel hex format, drop ift-load in favor to
+        fxload (not sure if that's doable)
+      * debianize
+      * drop is_isight() and implement a proper way to workaround UVC
+        variant.
+
+You'll find more info at the tiny website i build for this project :
+<A HREF="http://bersace03.free.fr/ift/">http://bersace03.free.fr/ift/</A> .
+
+I would like to work closer to linux-uvc toward proper integration in
+trunk. Sorry for not contacting linux-uvc-devel earlier !
+
+Regards,
+&#201;tienne.
+-- 
+E Ultre&#239;a !
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002547.html">[Linux-uvc-devel] Problem with Fujitsu Webcam 046d:09b2
+</A></li>
+	<LI>Next message: <A HREF="002555.html">[Linux-uvc-devel] Built-in iSight Firmware Tools
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2550">[ date ]</a>
+              <a href="thread.html#2550">[ thread ]</a>
+              <a href="subject.html#2550">[ subject ]</a>
+              <a href="author.html#2550">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

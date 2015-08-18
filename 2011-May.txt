@@ -1,0 +1,930 @@
+From pj.assis at gmail.com  Mon May  2 10:24:05 2011
+From: pj.assis at gmail.com (Paulo Assis)
+Date: Mon, 2 May 2011 09:24:05 +0100
+Subject: [Linux-uvc-devel] Footage of objects in motion recorded from
+ webcam is blurry
+In-Reply-To: <4DBB0EB3.1090207@open-t.co.uk>
+References: <4DB7D0CD.6070909@open-t.co.uk>
+	<BANLkTinX0BDsTg9__bQoLQMhXXzV44uizw@mail.gmail.com>
+	<201104291056.57844.laurent.pinchart@ideasonboard.com>
+	<4DBB0EB3.1090207@open-t.co.uk>
+Message-ID: <BANLkTi=vhVohPBoaQ0d9=w+bcq2PODadEA@mail.gmail.com>
+
+Hi,
+
+
+>
+> I've had a look and it indeed there is a focus control. Considering that by
+> default it is set on 0 (and it was set on 0 during operation), does this
+> mean that it is on auto?
+>
+
+This should be "focus absolute", if set on 0 then focal length should
+be set near infinite, that is good enough for most cases.
+
+Regards,
+Paulo
+
+
+From laurent.pinchart at ideasonboard.com  Fri May  6 10:22:06 2011
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Fri, 6 May 2011 10:22:06 +0200
+Subject: [Linux-uvc-devel] [PATCH 1/2] V4L/DVB: v4l2-dev: revert commit
+	c29fcff3daafbf46d64a543c1950bbd206ad8c1c
+In-Reply-To: <1304071895-27898-1-git-send-email-lliubbo@gmail.com>
+References: <1304071895-27898-1-git-send-email-lliubbo@gmail.com>
+Message-ID: <201105061022.06994.laurent.pinchart@ideasonboard.com>
+
+Hi Bob,
+
+On Friday 29 April 2011 12:11:34 Bob Liu wrote:
+> Revert commit:
+> V4L/DVB: v4l2-dev: remove get_unmapped_area(c29fcff3daafbf46d64a543c1950bb)
+> to restore NOMMU arch supporting.
+> 
+> Signed-off-by: Bob Liu <lliubbo at gmail.com>
+
+git provides a 'git revert' command to revert patches. It formats the commit 
+message in a standard way. I'll use it instead of applying this patch to my 
+tree and I'll keep your SoB line (unless you object to that).
+
+> ---
+>  drivers/media/video/v4l2-dev.c |   18 ++++++++++++++++++
+>  include/media/v4l2-dev.h       |    2 ++
+>  2 files changed, 20 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/media/video/v4l2-dev.c
+> b/drivers/media/video/v4l2-dev.c index 6dc7196..19d5ae2 100644
+> --- a/drivers/media/video/v4l2-dev.c
+> +++ b/drivers/media/video/v4l2-dev.c
+> @@ -352,6 +352,23 @@ static long v4l2_ioctl(struct file *filp, unsigned int
+> cmd, unsigned long arg) return ret;
+>  }
+> 
+> +#ifdef CONFIG_MMU
+> +#define v4l2_get_unmapped_area NULL
+> +#else
+> +static unsigned long v4l2_get_unmapped_area(struct file *filp,
+> +		unsigned long addr, unsigned long len, unsigned long pgoff,
+> +		unsigned long flags)
+> +{
+> +	struct video_device *vdev = video_devdata(filp);
+> +
+> +	if (!vdev->fops->get_unmapped_area)
+> +		return -ENOSYS;
+> +	if (!video_is_registered(vdev))
+> +		return -ENODEV;
+> +	return vdev->fops->get_unmapped_area(filp, addr, len, pgoff, flags);
+> +}
+> +#endif
+> +
+>  static int v4l2_mmap(struct file *filp, struct vm_area_struct *vm)
+>  {
+>  	struct video_device *vdev = video_devdata(filp);
+> @@ -454,6 +471,7 @@ static const struct file_operations v4l2_fops = {
+>  	.read = v4l2_read,
+>  	.write = v4l2_write,
+>  	.open = v4l2_open,
+> +	.get_unmapped_area = v4l2_get_unmapped_area,
+>  	.mmap = v4l2_mmap,
+>  	.unlocked_ioctl = v4l2_ioctl,
+>  #ifdef CONFIG_COMPAT
+> diff --git a/include/media/v4l2-dev.h b/include/media/v4l2-dev.h
+> index 8266d5a..93e96fb 100644
+> --- a/include/media/v4l2-dev.h
+> +++ b/include/media/v4l2-dev.h
+> @@ -62,6 +62,8 @@ struct v4l2_file_operations {
+>  	unsigned int (*poll) (struct file *, struct poll_table_struct *);
+>  	long (*ioctl) (struct file *, unsigned int, unsigned long);
+>  	long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
+> +	unsigned long (*get_unmapped_area) (struct file *, unsigned long,
+> +				unsigned long, unsigned long, unsigned long);
+>  	int (*mmap) (struct file *, struct vm_area_struct *);
+>  	int (*open) (struct file *);
+>  	int (*release) (struct file *);
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From lliubbo at gmail.com  Fri May  6 10:26:36 2011
+From: lliubbo at gmail.com (Bob Liu)
+Date: Fri, 6 May 2011 16:26:36 +0800
+Subject: [Linux-uvc-devel] [PATCH 1/2] V4L/DVB: v4l2-dev: revert commit
+	c29fcff3daafbf46d64a543c1950bbd206ad8c1c
+In-Reply-To: <201105061022.06994.laurent.pinchart@ideasonboard.com>
+References: <1304071895-27898-1-git-send-email-lliubbo@gmail.com>
+	<201105061022.06994.laurent.pinchart@ideasonboard.com>
+Message-ID: <BANLkTikfa=g5aGC4bq7HWTuKSe4P7P1qDg@mail.gmail.com>
+
+On Fri, May 6, 2011 at 4:22 PM, Laurent Pinchart
+<laurent.pinchart at ideasonboard.com> wrote:
+> Hi Bob,
+>
+> On Friday 29 April 2011 12:11:34 Bob Liu wrote:
+>> Revert commit:
+>> V4L/DVB: v4l2-dev: remove get_unmapped_area(c29fcff3daafbf46d64a543c1950bb)
+>> to restore NOMMU arch supporting.
+>>
+>> Signed-off-by: Bob Liu <lliubbo at gmail.com>
+>
+> git provides a 'git revert' command to revert patches. It formats the commit
+
+Sorry, I haven't use 'git revert' before.
+
+> message in a standard way. I'll use it instead of applying this patch to my
+> tree and I'll keep your SoB line (unless you object to that).
+>
+
+Okay, Thanks a lot.
+
+>> ---
+>> ?drivers/media/video/v4l2-dev.c | ? 18 ++++++++++++++++++
+>> ?include/media/v4l2-dev.h ? ? ? | ? ?2 ++
+>> ?2 files changed, 20 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/media/video/v4l2-dev.c
+>> b/drivers/media/video/v4l2-dev.c index 6dc7196..19d5ae2 100644
+>> --- a/drivers/media/video/v4l2-dev.c
+>> +++ b/drivers/media/video/v4l2-dev.c
+>> @@ -352,6 +352,23 @@ static long v4l2_ioctl(struct file *filp, unsigned int
+>> cmd, unsigned long arg) return ret;
+>> ?}
+>>
+>> +#ifdef CONFIG_MMU
+>> +#define v4l2_get_unmapped_area NULL
+>> +#else
+>> +static unsigned long v4l2_get_unmapped_area(struct file *filp,
+>> + ? ? ? ? ? ? unsigned long addr, unsigned long len, unsigned long pgoff,
+>> + ? ? ? ? ? ? unsigned long flags)
+>> +{
+>> + ? ? struct video_device *vdev = video_devdata(filp);
+>> +
+>> + ? ? if (!vdev->fops->get_unmapped_area)
+>> + ? ? ? ? ? ? return -ENOSYS;
+>> + ? ? if (!video_is_registered(vdev))
+>> + ? ? ? ? ? ? return -ENODEV;
+>> + ? ? return vdev->fops->get_unmapped_area(filp, addr, len, pgoff, flags);
+>> +}
+>> +#endif
+>> +
+>> ?static int v4l2_mmap(struct file *filp, struct vm_area_struct *vm)
+>> ?{
+>> ? ? ? struct video_device *vdev = video_devdata(filp);
+>> @@ -454,6 +471,7 @@ static const struct file_operations v4l2_fops = {
+>> ? ? ? .read = v4l2_read,
+>> ? ? ? .write = v4l2_write,
+>> ? ? ? .open = v4l2_open,
+>> + ? ? .get_unmapped_area = v4l2_get_unmapped_area,
+>> ? ? ? .mmap = v4l2_mmap,
+>> ? ? ? .unlocked_ioctl = v4l2_ioctl,
+>> ?#ifdef CONFIG_COMPAT
+>> diff --git a/include/media/v4l2-dev.h b/include/media/v4l2-dev.h
+>> index 8266d5a..93e96fb 100644
+>> --- a/include/media/v4l2-dev.h
+>> +++ b/include/media/v4l2-dev.h
+>> @@ -62,6 +62,8 @@ struct v4l2_file_operations {
+>> ? ? ? unsigned int (*poll) (struct file *, struct poll_table_struct *);
+>> ? ? ? long (*ioctl) (struct file *, unsigned int, unsigned long);
+>> ? ? ? long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
+>> + ? ? unsigned long (*get_unmapped_area) (struct file *, unsigned long,
+>> + ? ? ? ? ? ? ? ? ? ? ? ? ? ? unsigned long, unsigned long, unsigned long);
+>> ? ? ? int (*mmap) (struct file *, struct vm_area_struct *);
+>> ? ? ? int (*open) (struct file *);
+>> ? ? ? int (*release) (struct file *);
+>
+> --
+> Regards,
+>
+> Laurent Pinchart
+>
+
+-- 
+Regards,
+--Bob
+
+
+From marco.gulino at gmail.com  Sun May  8 12:45:58 2011
+From: marco.gulino at gmail.com (Marco Gulino)
+Date: Sun, 8 May 2011 12:45:58 +0200
+Subject: [Linux-uvc-devel] Microsoft Lifecam HD 3000 (exposure + led issues)
+Message-ID: <BANLkTi=+7gHg1ZSL8HpqE2_f7VviTsgfTQ@mail.gmail.com>
+
+Hi everybody!
+My new Microsoft Lifecam HD 3000 webcam works quite fine in linux, but i
+can't get the exposure controls to work.
+Is there a way to improve the driver?
+I can provide usb snoops if needed.
+
+I'm also wondering if it's possible to disable the LED which is quite
+annoying (i'm using the cam for astronomical images, i need to get it dark
+and cold).
+Thanks!
+Marco
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110508/7c229b57/attachment.html>
+
+From leandro_ong at yahoo.com  Tue May 10 10:59:26 2011
+From: leandro_ong at yahoo.com (LEANDRO ONG)
+Date: Tue, 10 May 2011 01:59:26 -0700 (PDT)
+Subject: [Linux-uvc-devel] Pls add webcam driver support for INTEX IT-305WC
+Message-ID: <882540.28759.qm@web112013.mail.gq1.yahoo.com>
+
+Pls add webcam driver support for INTEX IT-305WC. I have cd driver for windows, if this can help, let me know. 
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110510/cace7790/attachment.html>
+
+From mspencer at tallships.ca  Fri May 13 06:29:00 2011
+From: mspencer at tallships.ca (Mike Spencer)
+Date: Fri, 13 May 2011 01:29:00 -0300
+Subject: [Linux-uvc-devel] New cam: Celestron Model #44421 is supported
+Message-ID: <201105130429.p4D4T0012994@nudel.nodomain.nowhere>
+
+
+The list of supported devices at http://www.ideasonboard.org/uvc/
+invites reporting to linux-uvc-devel of uvc devices not listed there.
+This one isn't there:
+
+Celestron Digital Microscope Imager  Model #44421
+
+
+Displays video and takes snapshots with mplayer using:
+
+    mplayer -v tv:// -tv device=/dev/video0:driver=v4l2:outfmt=yuy2    \
+            -vf screenshot -vc rawyuy2 -fps 15 -vo x11
+
+I haven't yet explored other configurations or features.
+
+Below are details of the system I'm using, should they be useful.
+
+Thanks all for connecting my microscope to my computer.
+
+
+
+- Mike
+------
+
+UVCVIDEO kernel module
+========
+
+   filename:       /lib/modules/2.6.24.5-smp/kernel/drivers/media/video/
+                    usbvideo/uvcvideo.ko
+   version:        SVN r212
+   license:        GPL
+   description:    USB Video Class driver
+   author:         Laurent Pinchart <laurent.pinchart at skynet.be>
+   srcversion:     E36F40372B5BD21A92C2D76
+   depends:        videodev,v4l2-common,v4l1-compat,compat_ioctl32
+   vermagic:       2.6.24.5-smp SMP mod_unload 686 
+   parm:           quirks:Forced device quirks (uint)
+   parm:           trace:Trace level bitmask (uint)
+
+Kernel
+======
+
+   Kernel image : linux
+   OS Release   : Linux 2.6.24.5-smp
+      Version   : #2 SMP Wed Apr 30 13:41:38 CDT 2008
+      built by  : root at midas
+      built with: gcc version 4.2.3
+
+mplayer
+=======
+
+   MPlayer 1.0rc2-4.2.3 (C) 2000-2007 MPlayer Team
+   CPU: Intel(R) Pentium(R) 4 CPU 2.40GHz (Family: 15, Model: 2, Stepping: 9)
+   CPUflags:  MMX: 1 MMX2: 1 3DNow: 0 3DNow2: 0 SSE: 1 SSE2: 1
+   Compiled for x86 CPU with extensions: MMX MMX2 SSE SSE2
+
+
+Distro
+======
+
+   Slackware 12.1
+
+-- 
+Michael Spencer                  Nova Scotia, Canada       .~. 
+                                                           /V\ 
+mspencer at tallships.ca                                     /( )\
+http://home.tallships.ca/mspencer/                        ^^-^^
+
+
+From belegdol at gmail.com  Mon May 16 02:13:35 2011
+From: belegdol at gmail.com (Julian Sikorski)
+Date: Mon, 16 May 2011 02:13:35 +0200
+Subject: [Linux-uvc-devel] 5986:0343 support
+Message-ID: <4DD06C2F.8030305@gmail.com>
+
+Hi,
+
+I would like to report that the said device seems to work on Fedora 15.
+I am attaching lsusb -v output. lsusb reports it as Acer for some reason.
+
+Julian
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: lsusb.txt.xz
+Type: application/x-xz
+Size: 1984 bytes
+Desc: not available
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110516/ca28c663/attachment.bin>
+
+From brentweatherall at gmail.com  Wed May 18 22:36:25 2011
+From: brentweatherall at gmail.com (Brent Weatherall)
+Date: Wed, 18 May 2011 13:36:25 -0700
+Subject: [Linux-uvc-devel] Obtaining driver from git
+Message-ID: <BANLkTikvnLLcs=5BD6i2r3QpG_f=7Xsdcw@mail.gmail.com>
+
+I cloned the repository and added the uvcvideo.git per the
+instructions on 'http://git.linuxtv.org/pinchartl/uvcvideo.git'.  I am
+new to git and having a horrible time obtaining the revision I want.
+Using a qtgit I see a branch of uvcvideo.h which has the 'struct
+uvc_xu_control_query' defined.  Even though the GUI client can show
+this to me, there does not seem to be a straightforward way to load
+this version of the repository so I can build it and use use the
+updated version of the uvcvideo.ko module on my development machine.
+If I am reading the GUI client information correctly, I want to get
+SHA1 - cdd0bc822e118946c1ce2b78ea7332dbd967ebcf, with short log entry
+'uvcvideo: Rename UVC_CONTROL_* flags to UVC_CTRL_FLAG_*' and ID '52'.
+ After reading the man pages for git it seems to me I should simply do
+either:
+
+1. git pull git://linuxtv.org/pinchartl/uvcvideo.git
+cdd0bc822e118946c1ce2b78ea7332dbd967ebcf
+
+or
+
+2. git pull git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+cdd0bc822e118946c1ce2b78ea7332dbd967ebcf
+
+However, these fail with 'fatal: Couldn't find remote ref
+cdd0bc822e118946c1ce2b78ea7332dbd967ebcf' and I am at a loss as to how
+I am supposed to retrieve the revision I would like to try out.  Can
+anyone offer some insights into what I am missing?  The revision I am
+interested in is a branch from the main line.  I also tried pulling in
+the main line where the branch occurred with the intent of patching in
+the changes, but I receive the same error message.
+
+Thanks.
+
+
+From shop at open-t.co.uk  Fri May 20 13:46:38 2011
+From: shop at open-t.co.uk (Sebastian Arcus)
+Date: Fri, 20 May 2011 12:46:38 +0100
+Subject: [Linux-uvc-devel] Microsoft LifeCam Studio and multiple webcam
+	setups?
+Message-ID: <4DD6549E.8090301@open-t.co.uk>
+
+I really liked the Microsoft LifeCam Cinema webcam - but it had a bug 
+(feature?) which requested all usb bandwidth so no other webcam could be 
+used alongside it on the same usb root hub.
+
+Could someone here who has the new Microsoft LifeCam Studio please test 
+and confirm if this new model also suffers from the same "feature". Just 
+plug another webcam alongside the LifeCam studio, and if you come up 
+with various messages alongside "no space left on device" on Linux, or 
+similar in Windows - and you can't use both at the same time - it means 
+it has the same problem as the LifeCam Cinema.
+
+Also - any general impressions of this webcam would be welcome.
+
+Thank you in advance,
+
+Sebastian
+
+
+From stefano.mazzoni90 at gmail.com  Sun May 22 12:33:08 2011
+From: stefano.mazzoni90 at gmail.com (stefano)
+Date: Sun, 22 May 2011 12:33:08 +0200
+Subject: [Linux-uvc-devel]  Looking for upside down uvc cams
+Message-ID: <1306060388.2916.0.camel@stefano-K52F>
+
+Can you help me? Thanks! :)
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: dmi.log
+Type: text/x-log
+Size: 19744 bytes
+Desc: not available
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110522/a9a96948/attachment.bin>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: lsusb.log
+Type: text/x-log
+Size: 378 bytes
+Desc: not available
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110522/a9a96948/attachment-0001.bin>
+
+From barsnick at gmx.net  Sun May 22 15:33:42 2011
+From: barsnick at gmx.net (Moritz Barsnick)
+Date: Sun, 22 May 2011 15:33:42 +0200
+Subject: [Linux-uvc-devel] Looking for upside down uvc cams
+In-Reply-To: <1306060388.2916.0.camel@stefano-K52F>
+References: <1306060388.2916.0.camel@stefano-K52F>
+Message-ID: <20110522133342.282400@gmx.net>
+
+> Can you help me? Thanks! :)
+
+It's in lib/libv4lconvert/control/libv4lcontrol.c of v4l-utils.
+
+This is the current version in git:
+
+http://git.linuxtv.org/v4l-utils.git?a=blob;f=lib/libv4lconvert/control/libv4lcontrol.c;h=b10e13814e63fdb67a2984b1855c153c407fb9ee;hb=855e847fce54de1c868a4ca6c8600e3f68c028de#l42
+
+Is that what you wanted to know? What for?
+
+M.
+-- 
+Empfehlen Sie GMX DSL Ihren Freunden und Bekannten und wir
+belohnen Sie mit bis zu 50,- Euro! https://freundschaftswerbung.gmx.de
+
+
+From barsnick at gmx.net  Mon May 23 19:44:10 2011
+From: barsnick at gmx.net (Moritz Barsnick)
+Date: Mon, 23 May 2011 19:44:10 +0200
+Subject: [Linux-uvc-devel] Looking for upside down uvc cams
+In-Reply-To: <20110522133342.282400@gmx.net>
+References: <1306060388.2916.0.camel@stefano-K52F>
+	<20110522133342.282400@gmx.net>
+Message-ID: <20110523174410.GA3772@sunshine.barsnick.net>
+
+> > Can you help me? Thanks! :)
+> It's in lib/libv4lconvert/control/libv4lcontrol.c of v4l-utils.
+
+D'uh, sorry, you had an attachment. :-)
+
+Still, what do you want to know? Is your image upside-down when it
+shouldn't be?
+
+Moritz
+
+
+From chandrashekharla at gmail.com  Thu May 26 10:11:24 2011
+From: chandrashekharla at gmail.com (Chandrashekhar Lavania)
+Date: Thu, 26 May 2011 13:41:24 +0530
+Subject: [Linux-uvc-devel] adding max ISO packet size and high bandwidth
+	support
+Message-ID: <BANLkTi=RLJxZ5AJuvt=fPRC-knmWHDGztA@mail.gmail.com>
+
+Hi,
+
+I am using linux kernel 2.6.34. I needed to capture VGA frames in YUV format
+with my Logitech E3500 camera. When I try to do that then I get the
+following error::
+
+uvcvideo: Failed to submit URB 0 (-90).
+VIDIOC_STREAMON: Message too long
+
+This is apparently because the musb does not support high bandwith transfer.
+
+
+Hence I was trying to reduce the max packet size for ISO transfer. Any idea
+how this can be done.
+
+I tried to limit the wMaxPacketSize in the uvc_parse_control of
+uvc_deriver.c file, but it did not work.
+
+Also I am not using gadgets, so is there an initialization for uvc as is
+there in the gadget of the form:
+*
+
+
+static struct usb_endpoint_descriptor
+<http://lxr.free-electrons.com/ident?i=usb_endpoint_descriptor>
+uvc_control_ep __initdata
+<http://lxr.free-electrons.com/ident?i=__initdata> = {
+
+*
+*
+
+
+ 87 <http://lxr.free-electrons.com/source/drivers/usb/gadget/f_uvc.c#L87>
+        .bLength                = USB_DT_ENDPOINT_SIZE
+<http://lxr.free-electrons.com/ident?i=USB_DT_ENDPOINT_SIZE>,
+ 88 <http://lxr.free-electrons.com/source/drivers/usb/gadget/f_uvc.c#L88>
+        .bDescriptorType        = USB_DT_ENDPOINT
+<http://lxr.free-electrons.com/ident?i=USB_DT_ENDPOINT>,
+ 89 <http://lxr.free-electrons.com/source/drivers/usb/gadget/f_uvc.c#L89>
+        .bEndpointAddress       = USB_DIR_IN
+<http://lxr.free-electrons.com/ident?i=USB_DIR_IN>,
+ 90 <http://lxr.free-electrons.com/source/drivers/usb/gadget/f_uvc.c#L90>
+        .bmAttributes           = USB_ENDPOINT_XFER_INT
+<http://lxr.free-electrons.com/ident?i=USB_ENDPOINT_XFER_INT>,
+ 91 <http://lxr.free-electrons.com/source/drivers/usb/gadget/f_uvc.c#L91>
+        .wMaxPacketSize         = cpu_to_le16
+<http://lxr.free-electrons.com/ident?i=cpu_to_le16>(16),
+ 92 <http://lxr.free-electrons.com/source/drivers/usb/gadget/f_uvc.c#L92>
+        .bInterval              = 8,
+ 93 <http://lxr.free-electrons.com/source/drivers/usb/gadget/f_uvc.c#L93> };
+
+
+
+found at http://lxr.free-electrons.com/source/drivers/usb/gadget/f_uvc.c
+
+*
+
+Regards,
+Shekhar
+
+*
+
+
+
+*
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110526/d20ce838/attachment.html>
+
+From coronasensei at gmail.com  Fri May 27 02:47:14 2011
+From: coronasensei at gmail.com (Andrew Leech)
+Date: Fri, 27 May 2011 10:47:14 +1000
+Subject: [Linux-uvc-devel] adding max ISO packet size and high bandwidth
+ support
+In-Reply-To: <BANLkTi=RLJxZ5AJuvt=fPRC-knmWHDGztA@mail.gmail.com>
+References: <BANLkTi=RLJxZ5AJuvt=fPRC-knmWHDGztA@mail.gmail.com>
+Message-ID: <4DDEF492.2050406@gmail.com>
+
+On 26/05/2011 6:11 PM, Chandrashekhar Lavania wrote:
+> Hi,
+>
+> I am using linux kernel 2.6.34. I needed to capture VGA frames in YUV 
+> format with my Logitech E3500 camera. When I try to do that then I get 
+> the following error::
+>
+> uvcvideo: Failed to submit URB 0 (-90).
+> VIDIOC_STREAMON: Message too long
+>
+> This is apparently because the musb does not support high bandwith 
+> transfer.
+>
+>
+> Hence I was trying to reduce the max packet size for ISO transfer. Any 
+> idea how this can be done.
+>
+> I tried to limit the wMaxPacketSize in the uvc_parse_control of 
+> uvc_deriver.c file, but it did not work.
+>
+>
+
+The host does not have any control over packet size with uvc, this is 
+decided entirely by the device, this is why gadget has these settings, 
+gadget is a device driver, not a host driver.
+
+The only control a host can have is it can request/limit total 
+bandwidth, but this is only if the device is set up to allow this, for 
+example some devices will have different bandwidth configurations that 
+it can switch between if the host gives a bandwidth limit.
+For YUV (uncompressed) however the bandwidth is tied directly to the 
+frame size & rate, so there's no way to change bandwidth without 
+compromising on frame rate or size, and again these can only be set to 
+settings that the camera explicitly supports. Even then, for each 
+setting, the packet size is still up to the camera, there's a good 
+chance at lower bandwidths it'll still send the same size packets, just 
+doing it less often.
+
+What hardware are you using for the host? I would look at why it's not 
+supporting the high bandwidth transfer?
+
+Andrew
+
+
+From chandrashekharla at gmail.com  Fri May 27 07:57:30 2011
+From: chandrashekharla at gmail.com (Chandrashekhar Lavania)
+Date: Fri, 27 May 2011 11:27:30 +0530
+Subject: [Linux-uvc-devel] adding max ISO packet size and high bandwidth
+	support
+In-Reply-To: <4DDEF492.2050406@gmail.com>
+References: <BANLkTi=RLJxZ5AJuvt=fPRC-knmWHDGztA@mail.gmail.com>
+	<4DDEF492.2050406@gmail.com>
+Message-ID: <BANLkTikE=zhpmCfZ8=XEYH_mRkQ=SH_g6Q@mail.gmail.com>
+
+Hi Andrew,
+
+I am using custom board which uses Analog Device's Blackfin Processor BF527.
+The OS running is the uClinux provided by the blackfin guys :
+
+http://blackfin.uclinux.org/gf/
+
+<http://blackfin.uclinux.org/gf/>The musb controller driver with the
+distribution does not support high bandwidth transfer.
+
+So, now I tried to modify the ISOC_PACKET_SIZE in the logitech quickcam
+messenger driver, and brought it down to 64.
+
+VGA still didn't work with YUV. Also, I tried to capture a still image at 1
+frame per second ( VGA + YUV) . Still no success.
+
+Regards,
+Shekhar
+
+On Fri, May 27, 2011 at 6:17 AM, Andrew Leech <coronasensei at gmail.com>wrote:
+
+> On 26/05/2011 6:11 PM, Chandrashekhar Lavania wrote:
+>
+>> Hi,
+>>
+>> I am using linux kernel 2.6.34. I needed to capture VGA frames in YUV
+>> format with my Logitech E3500 camera. When I try to do that then I get the
+>> following error::
+>>
+>> uvcvideo: Failed to submit URB 0 (-90).
+>> VIDIOC_STREAMON: Message too long
+>>
+>> This is apparently because the musb does not support high bandwith
+>> transfer.
+>>
+>>
+>> Hence I was trying to reduce the max packet size for ISO transfer. Any
+>> idea how this can be done.
+>>
+>> I tried to limit the wMaxPacketSize in the uvc_parse_control of
+>> uvc_deriver.c file, but it did not work.
+>>
+>>
+>>
+> The host does not have any control over packet size with uvc, this is
+> decided entirely by the device, this is why gadget has these settings,
+> gadget is a device driver, not a host driver.
+>
+> The only control a host can have is it can request/limit total bandwidth,
+> but this is only if the device is set up to allow this, for example some
+> devices will have different bandwidth configurations that it can switch
+> between if the host gives a bandwidth limit.
+> For YUV (uncompressed) however the bandwidth is tied directly to the frame
+> size & rate, so there's no way to change bandwidth without compromising on
+> frame rate or size, and again these can only be set to settings that the
+> camera explicitly supports. Even then, for each setting, the packet size is
+> still up to the camera, there's a good chance at lower bandwidths it'll
+> still send the same size packets, just doing it less often.
+>
+> What hardware are you using for the host? I would look at why it's not
+> supporting the high bandwidth transfer?
+>
+> Andrew
+> _______________________________________________
+> Linux-uvc-devel mailing list
+> Linux-uvc-devel at lists.berlios.de
+> https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110527/256fbe1d/attachment.html>
+
+From sjoerd.simons at collabora.co.uk  Mon May 30 20:19:41 2011
+From: sjoerd.simons at collabora.co.uk (Sjoerd Simons)
+Date: Mon, 30 May 2011 11:19:41 -0700
+Subject: [Linux-uvc-devel] Fix potential oops & rollback after camera fails
+	to start
+Message-ID: <1306779581.30912.5.camel@night>
+
+Hey all,
+
+Two small patches attached of the UVC driver. The first one avoid a
+kernel oops that's reasonably easy to trigger, the second makes the
+driver rollback properly if starting the camera fails (which seems to
+happen a bit too often with my logitech :/). More info in the patches
+themselves.
+
+If i should use a different format/list/whatever for these patches let
+me know :) And ofcourse any other comments are appreciated
+
+-- 
+Sjoerd Simons <sjoerd.simons at collabora.co.uk>
+Collabora Ltd.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: 0001-media-uvcvideo-Remove-buffers-from-the-queues-when-f.patch
+Type: text/x-patch
+Size: 1178 bytes
+Desc: not available
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110530/9d54e1ba/attachment.bin>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: 0002-media-uvcvideo-Disable-the-queue-when-failing-to-sta.patch
+Type: text/x-patch
+Size: 1063 bytes
+Desc: not available
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110530/9d54e1ba/attachment-0001.bin>
+
+From laurent.pinchart at ideasonboard.com  Tue May 31 23:13:05 2011
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Tue, 31 May 2011 23:13:05 +0200
+Subject: [Linux-uvc-devel] Input/Output error setting
+	V4L2_CID_EXPOSURE_AUTO values
+In-Reply-To: <825511.42773.qm@web161315.mail.bf1.yahoo.com>
+References: <920349.12053.qm@web161304.mail.bf1.yahoo.com>
+	<201104291036.41730.laurent.pinchart@ideasonboard.com>
+	<825511.42773.qm@web161315.mail.bf1.yahoo.com>
+Message-ID: <201105312313.05789.laurent.pinchart@ideasonboard.com>
+
+Hi Ben,
+
+On Friday 29 April 2011 18:07:03 Ben Mesander wrote:
+> Hi Laurent,
+> 
+>   Thank you for explaining the history behind some of the #define confusion
+> I've seen between different versions of V4L2 and uvcvideo.
+> 
+>   I eventually determined the following experimentally - the uvcvideo
+> driver, at least for my camera (a logitech, USB id 046d:0809) supports two
+> of the four possible exposure modes. The others return I/O error - which I
+> don't understand, if the camera doesn't support them, shouldn't it be
+> EINVAL instead?
+
+It should actually be -ERANGE. That will be fixed in 3.0.
+
+> enum  v4l2_exposure_auto_type {
+>       V4L2_EXPOSURE_MANUAL = 0, /* Gives I/O error */
+>       V4L2_EXPOSURE_AUTO = 1, /* works */
+>       V4L2_EXPOSURE_SHUTTER_PRIORITY = 2, /* Gives I/O error */
+>       V4L2_EXPOSURE_APERTURE_PRIORITY = 3 /* works */
+> };
+> 
+> Fortunately, the mode I wanted, aperture priority, works.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at ideasonboard.com  Tue May 31 23:28:20 2011
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Tue, 31 May 2011 23:28:20 +0200
+Subject: [Linux-uvc-devel] Acer Orbicam ID 0402:5602 ALi Corp. M5602
+	Video Camera Controller
+In-Reply-To: <DUB105-w241151273CEB7E0F94D0C7DB9D0@phx.gbl>
+References: <DUB105-w241151273CEB7E0F94D0C7DB9D0@phx.gbl>
+Message-ID: <201105312328.21198.laurent.pinchart@ideasonboard.com>
+
+Hi Marco,
+
+On Saturday 30 April 2011 12:26:26 Marco Favetta wrote:
+> Hi,
+> I have Acer Orbicam ID 0402:5602 ALi Corp. M5602 Video Camera Controller in
+> my Acer Aspire 5100 and I don't find the drive for it on OS Linux.
+
+First of all, is your camera a UVC device ? See 
+http://www.ideasonboard.org/uvc/faq/
+
+If it is, could you please send me the output of
+
+lsusb -v -d 0402:5602
+
+running as root if possible ?
+
+> Now I trying from live CD Ubuntu 11.04 and finally the Cheese program run
+> (with before distribution, nothing run with this camera), but the image
+> isn't good. It is too dark, is there anyone that can help me?
+
+Most cameras have exposure and brightness controls. Have you tried modifying 
+them ? If Cheese doesn't offer those options, try qv4l2 or v4l2-ctl.
+
+> And another question why i can see the image only with Cheese, and not with
+> Skype? With Skype the camera not run because the led is off, Skype search
+> the camera in this path /dev/video0.
+
+Possibly because Cheese uses libv4l to convert the format returned by the 
+camera to a more usable format. You can try forcing Skype to use libv4l by 
+preloading it. In a nutshell, run
+
+LD_PRELOAD=/usr/lib32/libv4l/v4l1compat.so /usr/bin/skype
+
+Search 'libv4l skype' on Google for additional information.
+
+> P.S. I'm a novice at Linux
+> 
+> thank you in advance and good day to you
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at ideasonboard.com  Tue May 31 23:32:58 2011
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Tue, 31 May 2011 23:32:58 +0200
+Subject: [Linux-uvc-devel] Footage of objects in motion recorded from
+	webcam is blurry
+In-Reply-To: <4DBB0EB3.1090207@open-t.co.uk>
+References: <4DB7D0CD.6070909@open-t.co.uk>
+	<201104291056.57844.laurent.pinchart@ideasonboard.com>
+	<4DBB0EB3.1090207@open-t.co.uk>
+Message-ID: <201105312332.58605.laurent.pinchart@ideasonboard.com>
+
+Hi Sebastian,
+
+On Friday 29 April 2011 21:17:07 Sebastian Arcus wrote:
+> On 04/29/2011 09:56 AM, Laurent Pinchart wrote:
+> > On Wednesday 27 April 2011 10:42:14 Paulo Assis wrote:
+> >>> 1. Would this be fairly specific to the Logitech QuickCam 9000, or is a
+> >>> more generic issue with webcam sensors?
+> >> 
+> >> Neither, you just need to lower exposure time.
+> >> 
+> >>> 2. Are other webcams better in this respect?
+> >> 
+> >> I don't think so, you can control exposure quite easily with this cam.
+> >> 
+> >>> 3. Can I use any of the UVC features to tweak the driver parameters in
+> >>> order to force sharper images of objects on the move?
+> >> 
+> >> Yes, just set exposure mode to manual, and tweak exposure absolute,
+> >> also remember to disable "exposure, auto priority".
+> >> You should also use the highest fps possible (30 fps I think)
+> >> 
+> >>> 4. Is this to do with the auto-focus of the camera, and can I turn it
+> >>> off or peg it in software at a certain value, to improve things?
+> >> 
+> >> Yes, use uvcdynctrl (command line) or guvcview (gtk) (guvcview
+> >> --control_only will let you use your program along side it)
+> > 
+> > As far as I know, auto-focus for the Logitech QuickCam Pro 9000 is
+> > implemented in software in the Windows driver. The camera has a manual
+> > focus control only. You can tune it with any V4L2 application that
+> > supports controls, such as uvcdynctrl, guvcview, v4l2-ctl, yavta, ...
+> 
+> I've had a look and it indeed there is a focus control. Considering that
+> by default it is set on 0 (and it was set on 0 during operation), does
+> this mean that it is on auto?
+
+No, the camera doesn't implement auto-focus. Which focus control does your 
+camera report, absolute or relative focus ?
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at ideasonboard.com  Tue May 31 23:35:29 2011
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Tue, 31 May 2011 23:35:29 +0200
+Subject: [Linux-uvc-devel] Microsoft Lifecam HD 3000 (exposure + led
+	issues)
+In-Reply-To: <BANLkTi=+7gHg1ZSL8HpqE2_f7VviTsgfTQ@mail.gmail.com>
+References: <BANLkTi=+7gHg1ZSL8HpqE2_f7VviTsgfTQ@mail.gmail.com>
+Message-ID: <201105312335.29526.laurent.pinchart@ideasonboard.com>
+
+Hi Marco,
+
+On Sunday 08 May 2011 12:45:58 Marco Gulino wrote:
+> Hi everybody!
+> My new Microsoft Lifecam HD 3000 webcam works quite fine in linux, but i
+> can't get the exposure controls to work.
+> Is there a way to improve the driver?
+> I can provide usb snoops if needed.
+
+Could you please send me the output of lsusb -v (running as root if possible) 
+for your webcam ?
+
+> I'm also wondering if it's possible to disable the LED which is quite
+> annoying (i'm using the cam for astronomical images, i need to get it dark
+> and cold).
+
+UVC doesn't provide a standard control for this. Some cameras support 
+controlling the LED manually, and implements that using UVC extension units. 
+Without manufacturer documentation it might be difficult to find out how to 
+control the LED, but trial/error is possible (be warned that this could in 
+theory brick the camera).
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at ideasonboard.com  Tue May 31 23:36:32 2011
+From: laurent.pinchart at ideasonboard.com (Laurent Pinchart)
+Date: Tue, 31 May 2011 23:36:32 +0200
+Subject: [Linux-uvc-devel] Pls add webcam driver support for INTEX
+	IT-305WC
+In-Reply-To: <882540.28759.qm@web112013.mail.gq1.yahoo.com>
+References: <882540.28759.qm@web112013.mail.gq1.yahoo.com>
+Message-ID: <201105312336.32950.laurent.pinchart@ideasonboard.com>
+
+Hi Leandro,
+
+On Tuesday 10 May 2011 10:59:26 LEANDRO ONG wrote:
+> Pls add webcam driver support for INTEX IT-305WC. I have cd driver for
+> windows, if this can help, let me know.
+
+Is your camera a UVC device ? See http://www.ideasonboard.org/uvc/faq/ to find 
+out.
+
+If it is, please send me the lsusb -v output (running as root if possible) for 
+your webcam. If it isn't, the uvcvideo driver won't be able to support it. 
+Other drivers might, you should then ask for help on the linux-media mailing 
+list.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+

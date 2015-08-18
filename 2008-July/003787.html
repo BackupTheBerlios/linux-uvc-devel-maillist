@@ -1,0 +1,427 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] asus f9sg webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20asus%20f9sg%20webcam&In-Reply-To=%3C879e1f2b0807081534g4598b261xfc9dd0116ad59c55%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003784.html">
+   <LINK REL="Next"  HREF="003771.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] asus f9sg webcam</H1>
+    <B>Marco Argiolas</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20asus%20f9sg%20webcam&In-Reply-To=%3C879e1f2b0807081534g4598b261xfc9dd0116ad59c55%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] asus f9sg webcam">arjos85 at gmail.com
+       </A><BR>
+    <I>Wed Jul  9 00:34:57 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003784.html">[Linux-uvc-devel] asus f9sg webcam
+</A></li>
+        <LI>Next message: <A HREF="003771.html">[Linux-uvc-devel] Medion akoya mini
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3787">[ date ]</a>
+              <a href="thread.html#3787">[ thread ]</a>
+              <a href="subject.html#3787">[ subject ]</a>
+              <a href="author.html#3787">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey erwin,
+please don't use the old uvcvideo driver I gave you.
+1) Donwload again the last version:
+
+svn checkout <A HREF="svn://svn.berlios.de/linux-uvc/linux-uvc/trunk">svn://svn.berlios.de/linux-uvc/linux-uvc/trunk</A>
+
+2) Change the Makefile as I suggested you (only for Ubuntu distros):
+change this line
+INSTALL_MOD_DIR := usb/media
+with
+
+INSTALL_MOD_DIR := ubuntu/media/usbvideo
+
+3) Unload uvcvdieo and reload it with quirks parameter
+sudo modprobe -r uvcvideo
+sudo modprobe -v uvcvideo quirks=16
+
+
+4) Then try again both:
+luvcview -f yuv
+mplayer <A HREF="tv://">tv://</A> -tv
+driver=v4l2:device=/dev/video0:outfmt=yuy2:width=640:height=480:fps=50 -vo
+x11 -v -v -v
+
+2008/7/9 erwin &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">marconico at tiscali.it</A>&gt;:
+
+&gt;<i> i did it now i got this
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$ mplayer <A HREF="tv://">tv://</A> -tv
+</I>&gt;<i> driver=v4l2:device=/dev/video0:outfmt=yuy2:width=640:height=480:fps=50
+</I>&gt;<i> -vo x11 -v -v -v
+</I>&gt;<i> MPlayer 2:1.0~rc1-0ubuntu13.2+medibuntu1 (C) 2000-2006 MPlayer Team
+</I>&gt;<i> CPU: Intel(R) Core(TM)2 Duo CPU     T8300  @ 2.40GHz (Family: 6, Model:
+</I>&gt;<i> 23, Stepping: 6)
+</I>&gt;<i> CPUflags:  MMX: 1 MMX2: 1 3DNow: 0 3DNow2: 0 SSE: 1 SSE2: 1
+</I>&gt;<i> Compiled with runtime CPU detection.
+</I>&gt;<i> this_opt = option: v
+</I>&gt;<i> Setting v=(null)
+</I>&gt;<i> Config pushed level is now 2
+</I>&gt;<i> Config pushed level is now 3
+</I>&gt;<i> Setting
+</I>&gt;<i> tv=driver=v4l2:device=/dev/video0:outfmt=yuy2:width=640:height=480:fps=50
+</I>&gt;<i> Setting vo=x11
+</I>&gt;<i> get_path('codecs.conf') -&gt; '/home/erwin/.mplayer/codecs.conf'
+</I>&gt;<i> Reading /home/erwin/.mplayer/codecs.conf: Can't open
+</I>&gt;<i> '/home/erwin/.mplayer/codecs.conf': No such file or directory
+</I>&gt;<i> Reading /etc/mplayer/codecs.conf: Can't open '/etc/mplayer/codecs.conf':
+</I>&gt;<i> No such file or directory
+</I>&gt;<i> Using built-in default codecs.conf.
+</I>&gt;<i> CommandLine: '<A HREF="tv://">tv://</A>' '-tv'
+</I>&gt;<i> 'driver=v4l2:device=/dev/video0:outfmt=yuy2:width=640:height=480:fps=50'
+</I>&gt;<i> '-vo' 'x11' '-v' '-v' '-v'
+</I>&gt;<i> init_freetype
+</I>&gt;<i> get_path('font/font.desc') -&gt; '/home/erwin/.mplayer/font/font.desc'
+</I>&gt;<i> font: can't open file: /home/erwin/.mplayer/font/font.desc
+</I>&gt;<i> font: can't open file: /usr/share/mplayer/font/font.desc
+</I>&gt;<i> Using MMX (with tiny bit MMX2) Optimized OnScreenDisplay
+</I>&gt;<i> Using nanosleep() timing
+</I>&gt;<i> get_path('input.conf') -&gt; '/home/erwin/.mplayer/input.conf'
+</I>&gt;<i> Can't open input config file /home/erwin/.mplayer/input.conf: No such
+</I>&gt;<i> file or directory
+</I>&gt;<i> Parsing input config file /etc/mplayer/input.conf
+</I>&gt;<i> Input config file /etc/mplayer/input.conf parsed: 67 binds
+</I>&gt;<i> Opening joystick device /dev/input/js0
+</I>&gt;<i> Can't open joystick device /dev/input/js0: No such file or directory
+</I>&gt;<i> Can't init input joystick
+</I>&gt;<i> Setting up LIRC support...
+</I>&gt;<i> mplayer: could not connect to socket
+</I>&gt;<i> mplayer: No such file or directory
+</I>&gt;<i> Failed to open LIRC support. You will not be able to use your remote
+</I>&gt;<i> control.
+</I>&gt;<i> get_path('.conf') -&gt; '/home/erwin/.mplayer/.conf'
+</I>&gt;<i>
+</I>&gt;<i> [[[init getch2]]]
+</I>&gt;<i>
+</I>&gt;<i> Playing <A HREF="tv://.">tv://.</A>
+</I>&gt;<i> get_path('sub/') -&gt; '/home/erwin/.mplayer/sub/'
+</I>&gt;<i> STREAM: [tv] <A HREF="tv://">tv://</A>
+</I>&gt;<i> STREAM: Description: TV Input
+</I>&gt;<i> STREAM: Author: Benjamin Zores, Albeu
+</I>&gt;<i> STREAM: Comment:
+</I>&gt;<i> s-&gt;pos=0  newpos=0  new_bufpos=0  buflen=0
+</I>&gt;<i> TV file format detected.
+</I>&gt;<i> Selected driver: v4l2
+</I>&gt;<i>  name: Video 4 Linux 2 input
+</I>&gt;<i>  author: Martin Olschewski &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">olschewski at zpr.uni-koeln.de</A>&gt;
+</I>&gt;<i>  comment: first try, more to come ;-)
+</I>&gt;<i> v4l2: video fd: /dev/video0: 3
+</I>&gt;<i> v4l2: ioctl get standard failed: Invalid argument
+</I>&gt;<i> Selected device: USB2.0 UVC PC Camera
+</I>&gt;<i>  Capabilites:  video capture  streaming
+</I>&gt;<i>  supported norms:
+</I>&gt;<i>  inputs: 0 = Camera 1;
+</I>&gt;<i>  Current input: 0
+</I>&gt;<i>  Format YUYV   (16 bits, YUV 4:2:2 (YUYV)): Packed YUY2
+</I>&gt;<i>  Current format: YUYV
+</I>&gt;<i> v4l2: set format: YUYV
+</I>&gt;<i> v4l2: ioctl set format failed: Input/output error
+</I>&gt;<i> v4l2: set input: 0
+</I>&gt;<i> Selected norm: pal
+</I>&gt;<i> v4l2: ioctl enum norm failed: Invalid argument
+</I>&gt;<i> Error: Cannot set norm!
+</I>&gt;<i> v4l2: set width: 640
+</I>&gt;<i> v4l2: ioctl set width failed: Input/output error
+</I>&gt;<i> v4l2: set height: 480
+</I>&gt;<i> Selected input hasn't got a tuner!
+</I>&gt;<i> ==&gt; Found video stream: 0
+</I>&gt;<i> v4l2: get format: YUYV
+</I>&gt;<i> v4l2: get fps: nan
+</I>&gt;<i> v4l2: get width: 640
+</I>&gt;<i> v4l2: get height: 480
+</I>&gt;<i> Using a ring buffer for maximum 2 frames, 1 MB total size.
+</I>&gt;<i> v4l2: ioctl set mute failed: Invalid argument
+</I>&gt;<i> v4l2: set Brightness: 25 [0, 128]
+</I>&gt;<i> v4l2: set Hue: 0 [0, 5]
+</I>&gt;<i> v4l2: set Saturation: 7 [0, 9]
+</I>&gt;<i> v4l2: set Contrast: 10 [0, 10]
+</I>&gt;<i> [V] filefmt:9  fourcc:0x32595559  size:640x480  fps:50.00  ftime:=0.0200
+</I>&gt;<i> get_path('sub/') -&gt; '/home/erwin/.mplayer/sub/'
+</I>&gt;<i> X11 opening display: :0.0
+</I>&gt;<i> vo: X11 color mask:  FFFFFF  (R:FF0000 G:FF00 B:FF)
+</I>&gt;<i> vo: X11 running at 1280x800 with depth 24 and 32 bpp (&quot;:0.0&quot; =&gt; local
+</I>&gt;<i> display)
+</I>&gt;<i> [x11] Detected wm supports NetWM.
+</I>&gt;<i> [x11] Detected wm supports FULLSCREEN state.
+</I>&gt;<i> [x11] Detected wm supports ABOVE state.
+</I>&gt;<i> [x11] Detected wm supports BELOW state.
+</I>&gt;<i> [x11] Current fstype setting honours FULLSCREEN ABOVE BELOW X atoms
+</I>&gt;<i> Disabling DPMS
+</I>&gt;<i> DPMSDisable stat: 1
+</I>&gt;<i> xscreensaver_disable()
+</I>&gt;<i> xscreensaver_disable: Could not find XScreenSaver window.
+</I>&gt;<i> GNOME screensaver disabled
+</I>&gt;<i> ==========================================================================
+</I>&gt;<i> Opening video decoder: [raw] RAW Uncompressed Video
+</I>&gt;<i> VDec: vo config request - 640 x 480 (preferred colorspace: Packed YUY2)
+</I>&gt;<i> Trying filter chain: vo
+</I>&gt;<i> vo_x11: query_format was called: 32595559 (Packed YUY2)
+</I>&gt;<i> vo_debug: query(Packed YUY2) returned 0x0 (i=0)
+</I>&gt;<i> Could not find matching colorspace - retrying with -vf scale...
+</I>&gt;<i> Opening video filter: [scale]
+</I>&gt;<i> SwScale params: -1 x -1 (-1=no scaling)
+</I>&gt;<i> Trying filter chain: scale vo
+</I>&gt;<i> vo_x11: query_format was called: 50343434 (Planar 444P)
+</I>&gt;<i> scale: query(Planar 444P) -&gt; 0
+</I>&gt;<i> vo_x11: query_format was called: 50323234 (Planar 422P)
+</I>&gt;<i> scale: query(Planar 422P) -&gt; 0
+</I>&gt;<i> vo_x11: query_format was called: 32315659 (Planar YV12)
+</I>&gt;<i> scale: query(Planar YV12) -&gt; 1
+</I>&gt;<i> vo_x11: query_format was called: 30323449 (Planar I420)
+</I>&gt;<i> scale: query(Planar I420) -&gt; 1
+</I>&gt;<i> vo_x11: query_format was called: 56555949 (Planar IYUV)
+</I>&gt;<i> scale: query(Planar IYUV) -&gt; 1
+</I>&gt;<i> vo_x11: query_format was called: 39555659 (Planar YVU9)
+</I>&gt;<i> scale: query(Planar YVU9) -&gt; 0
+</I>&gt;<i> vo_x11: query_format was called: 39304649 (Planar IF09)
+</I>&gt;<i> scale: query(Planar IF09) -&gt; 0
+</I>&gt;<i> vo_x11: query_format was called: 50313134 (Planar 411P)
+</I>&gt;<i> scale: query(Planar 411P) -&gt; 0
+</I>&gt;<i> vo_x11: query_format was called: 3231564e (Planar NV12)
+</I>&gt;<i> scale: query(Planar NV12) -&gt; 0
+</I>&gt;<i> vo_x11: query_format was called: 3132564e (Planar NV21)
+</I>&gt;<i> scale: query(Planar NV21) -&gt; 0
+</I>&gt;<i> vo_x11: query_format was called: 32595559 (Packed YUY2)
+</I>&gt;<i> scale: query(Packed YUY2) -&gt; 0
+</I>&gt;<i> vo_x11: query_format was called: 59565955 (Packed UYVY)
+</I>&gt;<i> scale: query(Packed UYVY) -&gt; 0
+</I>&gt;<i> vo_x11: query_format was called: 42475220 (BGRA)
+</I>&gt;<i> scale: query(BGRA) -&gt; 3
+</I>&gt;<i> vo_x11: query_format was called: 42475220 (BGRA)
+</I>&gt;<i> vo_debug: query(Packed YUY2) returned 0x4C5 (i=0)
+</I>&gt;<i> VDec: using Packed YUY2 as output csp (no 0)
+</I>&gt;<i> Movie-Aspect is undefined - no prescaling applied.
+</I>&gt;<i> VO Config (640x480-&gt;640x480,flags=0,'MPlayer',0x32595559)
+</I>&gt;<i> scale: query(Planar 444P) -&gt; 0
+</I>&gt;<i> scale: query(Planar 422P) -&gt; 0
+</I>&gt;<i> scale: query(Planar YV12) -&gt; 1
+</I>&gt;<i> scale: query(Planar I420) -&gt; 1
+</I>&gt;<i> scale: query(Planar IYUV) -&gt; 1
+</I>&gt;<i> scale: query(Planar YVU9) -&gt; 0
+</I>&gt;<i> scale: query(Planar IF09) -&gt; 0
+</I>&gt;<i> scale: query(Planar 411P) -&gt; 0
+</I>&gt;<i> scale: query(Planar NV12) -&gt; 0
+</I>&gt;<i> scale: query(Planar NV21) -&gt; 0
+</I>&gt;<i> scale: query(Packed YUY2) -&gt; 0
+</I>&gt;<i> scale: query(Packed UYVY) -&gt; 0
+</I>&gt;<i> scale: query(BGRA) -&gt; 3
+</I>&gt;<i> vo_x11: query_format was called: 42475220 (BGRA)
+</I>&gt;<i> SwScale: scaling 640x480 Packed YUY2 to 640x480 BGRA
+</I>&gt;<i> SwScaler: reducing / aligning filtersize 1 -&gt; 4
+</I>&gt;<i> SwScaler: reducing / aligning filtersize 1 -&gt; 4
+</I>&gt;<i> SwScaler: reducing / aligning filtersize 1 -&gt; 1
+</I>&gt;<i> SwScaler: reducing / aligning filtersize 1 -&gt; 1
+</I>&gt;<i>
+</I>&gt;<i> SwScaler: BICUBIC scaler, from yuyv422 to rgb32 using MMX2
+</I>&gt;<i> SwScaler: using 4-tap MMX scaler for horizontal luminance scaling
+</I>&gt;<i> SwScaler: using 4-tap MMX scaler for horizontal chrominance scaling
+</I>&gt;<i> SwScaler: using n-tap MMX scaler for vertical scaling (BGR)
+</I>&gt;<i> SwScaler: using MMX YV12-&gt;BGR32 Converter
+</I>&gt;<i> SwScaler: 640x480 -&gt; 640x480
+</I>&gt;<i> vo_x11: query_format was called: 42475220 (BGRA)
+</I>&gt;<i> REQ: flags=0x4C7  req=0x0
+</I>&gt;<i> VO: [x11] 640x480 =&gt; 640x480 BGRA
+</I>&gt;<i> VO: Description: X11 ( XImage/Shm )
+</I>&gt;<i> VO: Author: Aaron Holtzman &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">aholtzma at ess.engr.uvic.ca</A>&gt;
+</I>&gt;<i> vo_x11: query_format was called: 42475220 (BGRA)
+</I>&gt;<i> Sharing memory.
+</I>&gt;<i> SwScaler: using unscaled rgb32 -&gt; rgb32 special converter
+</I>&gt;<i> Selected video codec: [rawyuy2] vfm: raw (RAW YUY2)
+</I>&gt;<i> ==========================================================================
+</I>&gt;<i> Audio: no sound
+</I>&gt;<i> Freeing 0 unused audio chunks.
+</I>&gt;<i> Starting playback...
+</I>&gt;<i> v4l2: going to capture
+</I>&gt;<i> v4l2: select timeout
+</I>&gt;<i> *** [scale] Exporting mp_image_t, 640x480x16bpp YUV packed, 614400 bytes
+</I>&gt;<i> (imgfmt: 32595559, planes: (nil),(nil),(nil) strides: 0,0,0, chroma:
+</I>&gt;<i> 0x0, shift: h:0,v:0)
+</I>&gt;<i> *** [vo] Allocating mp_image_t, 640x480x32bpp BGR packed, 1228800 bytes
+</I>&gt;<i> (imgfmt: 42475220, planes: 0xb4eb8040,(nil),(nil) strides: 2560,0,0,
+</I>&gt;<i> chroma: 0x0, shift: h:0,v:0)
+</I>&gt;<i> get_path('subfont.ttf') -&gt; '/home/erwin/.mplayer/subfont.ttf'
+</I>&gt;<i> Unicode font: 255 glyphs.
+</I>&gt;<i> OSD chg: 3  V: no  pb:-1
+</I>&gt;<i> OSD chg: 2  V: no  pb:-1
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> No bind found for key 'MOUSE_BTN0'.
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> v4l2: select timeout ??% ??,?% 0 0
+</I>&gt;<i> V:   0.0  39/ 39 ??% ??% ??,?% 0 0
+</I>&gt;<i> *** uninit(0xAC9)
+</I>&gt;<i> Uninit video: raw
+</I>&gt;<i> DEMUXER: freeing demuxer at 0x8a46a08
+</I>&gt;<i> v4l2: select timeout
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> MPlayer interrupted by signal 8 in module: free_demuxer
+</I>&gt;<i> - MPlayer crashed by bad usage of CPU/FPU/RAM.
+</I>&gt;<i>  Recompile MPlayer with --enable-debug and make a 'gdb' backtrace and
+</I>&gt;<i>  disassembly. Details in
+</I>&gt;<i> DOCS/HTML/en/bugreports_what.html#bugreports_crash.
+</I>&gt;<i> - MPlayer crashed. This shouldn't happen.
+</I>&gt;<i>  It can be a bug in the MPlayer code _or_ in your drivers _or_ in your
+</I>&gt;<i>  gcc version. If you think it's MPlayer's fault, please read
+</I>&gt;<i>  DOCS/HTML/en/bugreports.html and follow the instructions there. We
+</I>&gt;<i> can't and
+</I>&gt;<i>  won't help unless you provide this information when reporting a
+</I>&gt;<i> possible bug.
+</I>&gt;<i>
+</I>&gt;<i> *** uninit(0xC9)
+</I>&gt;<i> Successfully enabled DPMS
+</I>&gt;<i> gnome_screensaver_control()
+</I>&gt;<i> [[[uninit getch2]]]
+</I>&gt;<i> vo: uninit ...
+</I>&gt;<i> max framesize was 614400 bytes
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> On Tue, 2008-07-08 at 23:38 +0200, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; Hi Erwin,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Tuesday 08 July 2008, erwin wrote:
+</I>&gt;<i> &gt; &gt; Ok folks these are all the things i tried:
+</I>&gt;<i> &gt; &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">rwin at erwin-laptop</A>:~$ sudo lsusb -d 174f:8a31 -v | grep &quot;14 Video&quot;
+</I>&gt;<i> &gt; &gt; [sudo] password for erwin:
+</I>&gt;<i> &gt; &gt;       bFunctionClass         14 Video
+</I>&gt;<i> &gt; &gt;       bInterfaceClass        14 Video
+</I>&gt;<i> &gt; &gt;       bInterfaceClass        14 Video
+</I>&gt;<i> &gt; &gt;       bInterfaceClass        14 Video
+</I>&gt;<i> &gt; &gt;       bInterfaceClass        14 Video
+</I>&gt;<i> &gt; &gt;       bInterfaceClass        14 Video
+</I>&gt;<i> &gt; &gt;       bInterfaceClass        14 Video
+</I>&gt;<i> &gt; &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$ lsmod | grep uvcvideo
+</I>&gt;<i> &gt; &gt; uvcvideo               48644  0
+</I>&gt;<i> &gt; &gt; compat_ioctl32          2304  1 uvcvideo
+</I>&gt;<i> &gt; &gt; videodev               29312  1 uvcvideo
+</I>&gt;<i> &gt; &gt; v4l1_compat            15364  2 uvcvideo,videodev
+</I>&gt;<i> &gt; &gt; v4l2_common            18432  2 uvcvideo,videodev
+</I>&gt;<i> &gt; &gt; usbcore               138632  8
+</I>&gt;<i> &gt; &gt; uvcvideo,usbhid,hci_usb,usb_storage,libusual,uhci_hcd,ehci_hcd
+</I>&gt;<i> &gt; &gt; <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">erwin at erwin-laptop</A>:~$ luvcview -L
+</I>&gt;<i> &gt; &gt; luvcview version 0.2.1
+</I>&gt;<i> &gt; &gt; Video driver: x11
+</I>&gt;<i> &gt; &gt; A window manager is available
+</I>&gt;<i> &gt; &gt; video /dev/video0
+</I>&gt;<i> &gt; &gt; /dev/video0 does not support read i/o
+</I>&gt;<i> &gt; &gt; { pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+</I>&gt;<i> &gt; &gt; { discrete: width = 640, height = 480 }
+</I>&gt;<i> &gt; &gt;         Time interval between frame: 1/20,
+</I>&gt;<i> &gt; &gt; { discrete: width = 160, height = 120 }
+</I>&gt;<i> &gt; &gt;         Time interval between frame: 1/24,
+</I>&gt;<i> &gt; &gt; { discrete: width = 176, height = 144 }
+</I>&gt;<i> &gt; &gt;         Time interval between frame: 1/24,
+</I>&gt;<i> &gt; &gt; { discrete: width = 320, height = 240 }
+</I>&gt;<i> &gt; &gt;         Time interval between frame: 1/24,
+</I>&gt;<i> &gt; &gt; { discrete: width = 352, height = 288 }
+</I>&gt;<i> &gt; &gt;         Time interval between frame: 1/24,
+</I>&gt;<i> &gt; &gt; { discrete: width = 800, height = 600 }
+</I>&gt;<i> &gt; &gt;         Time interval between frame: 1/7,
+</I>&gt;<i> &gt; &gt; { discrete: width = 1024, height = 768 }
+</I>&gt;<i> &gt; &gt;         Time interval between frame: 1/7,
+</I>&gt;<i> &gt; &gt; { discrete: width = 1280, height = 800 }
+</I>&gt;<i> &gt; &gt;         Time interval between frame: 1/7,
+</I>&gt;<i> &gt; &gt; { discrete: width = 1280, height = 960 }
+</I>&gt;<i> &gt; &gt;         Time interval between frame: 1/7,
+</I>&gt;<i> &gt; &gt; { discrete: width = 1280, height = 1024 }
+</I>&gt;<i> &gt; &gt;         Time interval between frame: 1/7,
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; then i tried
+</I>&gt;<i> &gt; &gt; luvcview -f yuv -s 640x480blank
+</I>&gt;<i> &gt; &gt; luvcview -f yuv -s 160x120
+</I>&gt;<i> &gt; &gt; luvcview -f yuv -s 176x144blank
+</I>&gt;<i> &gt; &gt; luvcview -f yuv -s 320x240no
+</I>&gt;<i> &gt; &gt; luvcview -f yuv -s 352x288error 5
+</I>&gt;<i> &gt; &gt; luvcview -f yuv -s 800x600too big
+</I>&gt;<i> &gt; &gt; luvcview -f yuv -s 1024x768too big
+</I>&gt;<i> &gt; &gt; luvcview -f yuv -s 1280x800too big
+</I>&gt;<i> &gt; &gt; luvcview -f yuv -s 1280x960too big
+</I>&gt;<i> &gt; &gt; luvcview -f yuv -s 1280x1024too big
+</I>&gt;<i> &gt; &gt; but i had only snapshot or green screen, but no streaming.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Could you please try to set the quirks parameter to 16 when loading the
+</I>&gt;<i> &gt; driver ? 'modprobe uvcvideo quirks=16' or 'insmod uvcvideo.ko quirks=16'
+</I>&gt;<i> &gt; should do the job.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; If this works better I'll fix the driver to support your camera out of
+</I>&gt;<i> the
+</I>&gt;<i> &gt; box.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Best regards,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Laurent Pinchart
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>
+
+
+-- 
+Marco Argiolas
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">marco.argiolas at studenti.polito.it</A>
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">arjos85 at gmail.com</A>
+skype: arjos85
+msn: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">sarace2003 at libero.it</A>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080709/88a4e768/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080709/88a4e768/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003784.html">[Linux-uvc-devel] asus f9sg webcam
+</A></li>
+	<LI>Next message: <A HREF="003771.html">[Linux-uvc-devel] Medion akoya mini
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3787">[ date ]</a>
+              <a href="thread.html#3787">[ thread ]</a>
+              <a href="subject.html#3787">[ subject ]</a>
+              <a href="author.html#3787">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [patch] jpeg compression hacks. Tester are	welcome!!!
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5Bpatch%5D%20jpeg%20compression%20hacks.%20Tester%20are%0A%09welcome%21%21%21&In-Reply-To=%3C1302889186.12477.18.camel%40zwerg%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006500.html">
+   <LINK REL="Next"  HREF="006497.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [patch] jpeg compression hacks. Tester are	welcome!!!</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5Bpatch%5D%20jpeg%20compression%20hacks.%20Tester%20are%0A%09welcome%21%21%21&In-Reply-To=%3C1302889186.12477.18.camel%40zwerg%3E"
+       TITLE="[Linux-uvc-devel] [patch] jpeg compression hacks. Tester are	welcome!!!">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Fri Apr 15 19:39:46 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006500.html">[Linux-uvc-devel] Motorola ROKR E6 'webcam' and resolution	issues
+</A></li>
+        <LI>Next message: <A HREF="006497.html">[Linux-uvc-devel] [patch] jpeg compression hacks. Tester are welcome!!!
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6472">[ date ]</a>
+              <a href="thread.html#6472">[ thread ]</a>
+              <a href="subject.html#6472">[ subject ]</a>
+              <a href="author.html#6472">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hallo all,
+
+here is patch (against current master git) to add two new quirks and
+some more debug string to see what happening :D 
+
+The quirks are:
+UVC_QUIRK_FIX_JPEG_BANDWIDTH   0x00000040
+/* to recalculate bandwidth needed for jpeg compressed stream */
+UVC_QUIRK_DISABLE_URB_1024     0x00000400
+/* by default we use safe bandwith restriction, to less than 1024 *
+ * this quirk disables this restriction. So if you need URB less than 
+ * 1024, use this quirk. It will work only with FIX*BANDWIDTH quirk. */
+
+Also i added module option &quot;jpeg_comp&quot; to change calculation for
+bandwith. Default is 4bpp, 1 is maximal compression, 16bpp is no
+compression, just normal raw stream.
+
+This patch also gather statistic about used buffers. It will report
+biggest used buffer. You will need it to calculate best value for
+jpeg_comp option.
+
+Usage. Recalculate bandwidth for jpeg and disable 1024 restriction:
+sudo rmmod uvcvideo &amp;&amp; sudo modprobe quirks=0x440
+
+reduce calculated bandwith to minimum:
+sudo rmmod uvcvideo &amp;&amp; sudo modprobe quirks=0x440 jpeg_comp=1
+
+for more info enable trace=0xffff and seek for messages like:
+...
+[25495.869580] uvcvideo: Device requested 703 B/frame bandwidth.
+[25495.869583] uvcvideo: Selecting alternate setting 5 (800 B/frame
+bandwidth).
+[25495.869758] uvcvideo: Allocated 5 URB buffers of 32x800 bytes each.
+...
+[25501.959475] uvcvideo: Biggest used buffer: 1382400/106438. Format:
+MJPEG <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">960x720 at 15.</A>
+
+-- 
+Regards,
+        Alexey
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: uvc_stat_jpeg_v4.diff
+Type: text/x-patch
+Size: 7245 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110415/02d2a058/attachment.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110415/02d2a058/attachment.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006500.html">[Linux-uvc-devel] Motorola ROKR E6 'webcam' and resolution	issues
+</A></li>
+	<LI>Next message: <A HREF="006497.html">[Linux-uvc-devel] [patch] jpeg compression hacks. Tester are welcome!!!
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6472">[ date ]</a>
+              <a href="thread.html#6472">[ thread ]</a>
+              <a href="subject.html#6472">[ subject ]</a>
+              <a href="author.html#6472">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] linux uvc and kernel 2.6.18
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20linux%20uvc%20and%20kernel%202.6.18&In-Reply-To=%3C1158498402.15120.184.camel%40praia%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000810.html">
+   <LINK REL="Next"  HREF="000815.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] linux uvc and kernel 2.6.18</H1>
+    <B>Mauro Carvalho Chehab</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20linux%20uvc%20and%20kernel%202.6.18&In-Reply-To=%3C1158498402.15120.184.camel%40praia%3E"
+       TITLE="[Linux-uvc-devel] linux uvc and kernel 2.6.18">mchehab at infradead.org
+       </A><BR>
+    <I>Sun Sep 17 15:06:41 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000810.html">[Linux-uvc-devel] linux uvc and kernel 2.6.18
+</A></li>
+        <LI>Next message: <A HREF="000815.html">[Linux-uvc-devel] linux uvc and kernel 2.6.18
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#814">[ date ]</a>
+              <a href="thread.html#814">[ thread ]</a>
+              <a href="subject.html#814">[ subject ]</a>
+              <a href="author.html#814">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi, Laurent,
+
+Em S&#225;b, 2006-09-16 &#224;s 23:27 +0200, Laurent Pinchart escreveu:
+&gt;<i> Hi Stefan,
+</I>&gt;<i> 
+</I>&gt;<i> &gt; I am trying out linux-uvc with version 2.6.18-rc6-git3 and it reports
+</I>&gt;<i> &gt; unknown symbols for video_get_drvdata and video_set_drvdata. Based on
+</I>&gt;<i> &gt; another patch for this problem [1] I have fixed this for uvc. The fix works
+</I>&gt;<i> &gt; for me but please bear in mind that I have little kernel programming
+</I>&gt;<i> &gt; experience and thus it could be wrong.
+</I>&gt;<i> 
+</I>&gt;<i> Thanks for the patch. It looks overly complicated to me, and it seems that 
+</I>&gt;<i> video_get_drvdata/video_set_drvdata should not have been removed, but 
+</I>&gt;<i> modified to use dev_get_drvdata/dev_set_drvdata instead.
+</I>&gt;<i> 
+</I>&gt;<i> Mauro, could you have a look at that ?
+</I>Sure! Can you email it to me? I'm not subscribed on linux-uvc-devel.
+&gt;<i> Why have those been removed ? I know 
+</I>&gt;<i> they were marked with OBSOLETE_OWNER, but that's becaused they accessed the 
+</I>&gt;<i> video_device structure's priv field, marked for removal.
+</I>&gt;<i> 
+</I>&gt;<i>         /* dev-&gt;driver_data will be used instead some day.
+</I>&gt;<i>          * Use the video_{get|set}_drvdata() helper functions,
+</I>&gt;<i>          * so the switch over will be transparent for you.
+</I>&gt;<i>          * Or use {pci|usb}_{get|set}_drvdata() directly. */
+</I>&gt;<i>         void *priv;
+</I>&gt;<i> 
+</I>&gt;<i> Shouldn't video_{get|set}_drvdata() have been kept ?
+</I>This stuff just add more complexity and makes the code more opaque, and
+adds this additional pointer...
+
+For most cases, it will just turn on something like this (from
+cx88-video.c):
+
+static ssize_t
+video_read(struct file *file, char __user *data, size_t count, loff_t
+*ppos)
+{
+        struct cx8800_fh *fh = file-&gt;private_data;
+
+
+&gt;<i> Laurent Pinchart
+</I>Cheers, 
+Mauro.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000810.html">[Linux-uvc-devel] linux uvc and kernel 2.6.18
+</A></li>
+	<LI>Next message: <A HREF="000815.html">[Linux-uvc-devel] linux uvc and kernel 2.6.18
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#814">[ date ]</a>
+              <a href="thread.html#814">[ thread ]</a>
+              <a href="subject.html#814">[ subject ]</a>
+              <a href="author.html#814">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

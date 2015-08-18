@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Driver improvement suggestion: Use quirks parameter to mask unsafe	code , reset patch
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%0A%09%3D%3Futf-8%3Fq%3FDriver_improvement_suggestion%3D3A_Use_%3F%3D%0A%09%3D%3Futf-8%3Fq%3Fquirks_parameter_to_mask_unsafe%3D09code_%3D2C_reset_patch%3F%3D&In-Reply-To=%3C200803252313.17310.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003268.html">
+   <LINK REL="Next"  HREF="003303.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Driver improvement suggestion: Use quirks parameter to mask unsafe	code , reset patch</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%0A%09%3D%3Futf-8%3Fq%3FDriver_improvement_suggestion%3D3A_Use_%3F%3D%0A%09%3D%3Futf-8%3Fq%3Fquirks_parameter_to_mask_unsafe%3D09code_%3D2C_reset_patch%3F%3D&In-Reply-To=%3C200803252313.17310.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Driver improvement suggestion: Use quirks parameter to mask unsafe	code , reset patch">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Mar 25 23:13:17 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003268.html">[Linux-uvc-devel] Driver improvement suggestion: Use quirks	parameter to mask unsafe	code, reset patch
+</A></li>
+        <LI>Next message: <A HREF="003303.html">[Linux-uvc-devel] Driver improvement suggestion: Use	quirks	parameter to mask unsafe code, reset patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3300">[ date ]</a>
+              <a href="thread.html#3300">[ thread ]</a>
+              <a href="subject.html#3300">[ subject ]</a>
+              <a href="author.html#3300">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Moritz,
+
+On Monday 24 March 2008, Moritz Barsnick wrote:
+&gt;<i> Hi Laurent, UVCers,
+</I>&gt;<i>
+</I>&gt;<i> the quirks parameter was recently introduced to the linux-uvc module,
+</I>&gt;<i> and is very practical to knowingly force certain behavior.
+</I>&gt;<i>
+</I>&gt;<i> While I was and am fighting with the &#167;%&amp;#! behavior of the SPCA525 ASIC
+</I>&gt;<i> in my Logitech QuickCam Fusion 046d:08c1, I luckily came across the
+</I>&gt;<i> &quot;reset&quot; patches, kindly linked from the QC Team site[*]. And the
+</I>&gt;<i> patches seem to have helped me, but I'll follow up with more info once
+</I>&gt;<i> I'm sure whether it works.
+</I>&gt;<i>
+</I>&gt;<i> I understand why you don't want to make the hacked fixes default in the
+</I>&gt;<i> code (it has been stressed many times on the list), but while Logitech
+</I>&gt;<i> try to come up with a solution, perhaps a quirks based integration
+</I>&gt;<i> would allow many users not to have to patch the driver. The code would
+</I>&gt;<i> only become active if explicitly selected with a module parameter. I
+</I>&gt;<i> believe that this is what the quirks parameter is perfectly made for,
+</I>&gt;<i> and I consider it non-intrusive for the unknowing user.
+</I>&gt;<i>
+</I>&gt;<i> I have ported the two relevant patches:
+</I>&gt;<i> a) the reset patch as found in
+</I>&gt;<i>    <A HREF="../2007-March/001476.html">http://lists.berlios.de/pipermail/linux-uvc-devel/2007-March/001476.html</A>
+</I>&gt;<i>
+</I>&gt;<i> b) the reset + resubmit urb patch, probably by Evgeny, found in
+</I>&gt;<i>   
+</I>&gt;<i> <A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/002830.html">https://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/002830.html</A>
+</I>&gt;<i> which adds a second mechanism to the first patch.
+</I>
+Resubmitting URBs should hopefully not be necessary anymore (and it didn't 
+work most of the time anyway). Alan Stern wrote a patch for the EHCI 
+scheduler that I posted to the list a bit earlier. Please test it if you run 
+into -EN2LSYNC (-45) issues.
+
+&gt;<i> Instead of making the code changes &quot;absolute&quot;/&quot;final&quot; or #ifdef'd, I
+</I>&gt;<i> made the sections depend on a corresponding quirks mask setting. (Note:
+</I>&gt;<i> these are new quirks only defined by module parameter, not the kind
+</I>&gt;<i> defined by default by the device model.)
+</I>&gt;<i>
+</I>&gt;<i> The patch is attached. It introduces two new quirks UVC_QUIRK_RESET
+</I>&gt;<i> (0x20, I would write it (1&lt;&lt;5)), and UVC_QUIRK_RESUBMIT_URB (0x40,
+</I>&gt;<i> better (1&lt;&lt;6)). The functionality is separated.
+</I>&gt;<i>
+</I>&gt;<i> The parameter quirks=32 has consistantly helped the initialization of
+</I>&gt;<i> my Logitech QuickCam (incl. safe behavior through plug/unplug,
+</I>&gt;<i> load/unload, start/stop of apps) on both my machines, and quirks=96 has
+</I>&gt;<i> helped on my laptop through consistent failures (to be confirmed). I'm
+</I>&gt;<i> not sure the reset urb section is needed on my desktop, I think that
+</I>&gt;<i> machine has always behaved fine once the UVC device could init itself.
+</I>&gt;<i> But activating the reset urb code via the quirk has not hurt either, as
+</I>&gt;<i> far as I can tell. Sorry, I don't want to sound like I want this code
+</I>&gt;<i> as default behavior - the opposite is the case! :-)
+</I>&gt;<i>
+</I>&gt;<i> Your opinion is welcomed.
+</I>&gt;<i>
+</I>&gt;<i> Patch is against SVN r195.
+</I>&gt;<i> I've tested with Logitech QuickCam Fusion on two machines, both USB 1.1
+</I>&gt;<i> and USB 2.0.
+</I>&gt;<i>
+</I>&gt;<i> Kind regards,
+</I>&gt;<i> and many thanks, especially to Laurent, Evgeny, and Michel,
+</I>&gt;<i> Moritz
+</I>&gt;<i>
+</I>&gt;<i> [*]
+</I>&gt;<i> <A HREF="http://www.quickcamteam.net/documentation/faq/logitech-webcam-linux-usb-inc">http://www.quickcamteam.net/documentation/faq/logitech-webcam-linux-usb-inc</A>
+</I>&gt;<i>ompatibilities
+</I>
+Harold Wheaton posted a patch similar to yours to the mailing list on March 
+the 19th. Search the archives for a thread named &quot;UVC patch update and 
+results&quot;.
+
+Could you please have a look at Harold's patch and at his latest message in 
+the thread ? He proposed a simpler approach that seems to work for him. Could 
+you test it on your systems ?
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003268.html">[Linux-uvc-devel] Driver improvement suggestion: Use quirks	parameter to mask unsafe	code, reset patch
+</A></li>
+	<LI>Next message: <A HREF="003303.html">[Linux-uvc-devel] Driver improvement suggestion: Use	quirks	parameter to mask unsafe code, reset patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3300">[ date ]</a>
+              <a href="thread.html#3300">[ thread ]</a>
+              <a href="subject.html#3300">[ subject ]</a>
+              <a href="author.html#3300">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

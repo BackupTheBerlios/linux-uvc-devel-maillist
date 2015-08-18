@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] Re: uvcvideo: Finally fix Logitech	Quickcam for Notebooks Pro
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Re%3A%20uvcvideo%3A%20Finally%20fix%20Logitech%0A%09Quickcam%20for%20Notebooks%20Pro&In-Reply-To=%3C200910071534.55687.linux%40rainbow-software.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005200.html">
+   <LINK REL="Next"  HREF="005207.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] Re: uvcvideo: Finally fix Logitech	Quickcam for Notebooks Pro</H1>
+    <B>Ondrej Zary</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Re%3A%20uvcvideo%3A%20Finally%20fix%20Logitech%0A%09Quickcam%20for%20Notebooks%20Pro&In-Reply-To=%3C200910071534.55687.linux%40rainbow-software.org%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] Re: uvcvideo: Finally fix Logitech	Quickcam for Notebooks Pro">linux at rainbow-software.org
+       </A><BR>
+    <I>Wed Oct  7 15:34:54 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005200.html">[Linux-uvc-devel] [PATCH] Re: uvcvideo: Finally fix Logitech	Quickcam for Notebooks Pro
+</A></li>
+        <LI>Next message: <A HREF="005207.html">[Linux-uvc-devel] [PATCH] Re: uvcvideo: Finally fix Logitech	Quickcam for Notebooks Pro
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5201">[ date ]</a>
+              <a href="thread.html#5201">[ thread ]</a>
+              <a href="subject.html#5201">[ subject ]</a>
+              <a href="author.html#5201">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wednesday 07 October 2009, Gianluca Cecchi wrote:
+&gt;<i> On Wed, Oct 7, 2009 at 2:59 PM, Ondrej Zary 
+</I>&lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux at rainbow-software.org</A>&gt;wrote:
+&gt;<i> &gt; [snip]
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; What was the change that supposedly broke this in 2.6.22?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I discovered that it's not related to usb audio at all. Doing &quot;rmmod
+</I>&gt;<i> &gt; uvcvideo&quot;
+</I>&gt;<i> &gt; and &quot;modprobe uvcvideo&quot; repeatedly succeeded after a couple of tries.
+</I>&gt;<i> &gt; Increasing
+</I>&gt;<i> &gt; UVC_CTRL_STREAMING_TIMEOUT to 3000 helped (2000 was not enough).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Increase UVC_CTRL_STREAMING_TIMEOUT to fix initialization of
+</I>&gt;<i> &gt; Logitech Quickcam for Notebooks Pro.
+</I>&gt;<i> &gt; This fixes following error messages:
+</I>&gt;<i> &gt; uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling
+</I>&gt;<i> &gt; workaround.
+</I>&gt;<i> &gt; uvcvideo: Failed to query (129) UVC probe control : -110 (exp. 26).
+</I>&gt;<i> &gt; uvcvideo: Failed to initialize the device (-5).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Signed-off-by: Ondrej Zary &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux at rainbow-software.org</A>&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; --- linux-2.6.31-orig/drivers/media/video/uvc/uvcvideo.h       
+</I>&gt;<i> &gt; 2009-09-10 00:13:59.000000000 +0200
+</I>&gt;<i> &gt; +++ linux-2.6.31/drivers/media/video/uvc/uvcvideo.h     2009-10-07
+</I>&gt;<i> &gt; 13:47:27.000000000 +0200
+</I>&gt;<i> &gt; @@ -304,7 +304,7 @@
+</I>&gt;<i> &gt;  #define UVC_MAX_STATUS_SIZE    16
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;  #define UVC_CTRL_CONTROL_TIMEOUT       300
+</I>&gt;<i> &gt; -#define UVC_CTRL_STREAMING_TIMEOUT     1000
+</I>&gt;<i> &gt; +#define UVC_CTRL_STREAMING_TIMEOUT     3000
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;  /* Devices quirks */
+</I>&gt;<i> &gt;  #define UVC_QUIRK_STATUS_INTERVAL      0x00000001
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; --
+</I>&gt;<i> &gt; Ondrej Zary
+</I>&gt;<i>
+</I>&gt;<i> Could this kind of fix also be useful in my case with Omnivision oem in
+</I>&gt;<i> Dell sp2208wfp monitor, in your opinion?
+</I>&gt;<i> See thread
+</I>&gt;<i> <A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/2008-February/003076.html">https://lists.berlios.de/pipermail/linux-uvc-devel/2008-February/003076.html</A>
+</I>&gt;<i>
+</I>&gt;<i> incidentally at that time I was using Fedora 8 32bit with kernel
+</I>&gt;<i> 2.6.23.15-137.fc8 that indeed is post 2.6.22....
+</I>
+I don't know - try it. My patch is not related to 2.6.22 and usb-audio at all.
+
+-- 
+Ondrej Zary
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005200.html">[Linux-uvc-devel] [PATCH] Re: uvcvideo: Finally fix Logitech	Quickcam for Notebooks Pro
+</A></li>
+	<LI>Next message: <A HREF="005207.html">[Linux-uvc-devel] [PATCH] Re: uvcvideo: Finally fix Logitech	Quickcam for Notebooks Pro
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5201">[ date ]</a>
+              <a href="thread.html#5201">[ thread ]</a>
+              <a href="subject.html#5201">[ subject ]</a>
+              <a href="author.html#5201">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

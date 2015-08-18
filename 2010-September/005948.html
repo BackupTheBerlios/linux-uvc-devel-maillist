@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] 046d:08c2 Logitech Quickcam Orbit/Sphere MP	Controls Incompatibility
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20046d%3A08c2%20Logitech%20Quickcam%20Orbit/Sphere%20MP%0A%09Controls%20Incompatibility&In-Reply-To=%3C201009121441.55884.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005922.html">
+   <LINK REL="Next"  HREF="005923.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] 046d:08c2 Logitech Quickcam Orbit/Sphere MP	Controls Incompatibility</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20046d%3A08c2%20Logitech%20Quickcam%20Orbit/Sphere%20MP%0A%09Controls%20Incompatibility&In-Reply-To=%3C201009121441.55884.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] 046d:08c2 Logitech Quickcam Orbit/Sphere MP	Controls Incompatibility">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Sun Sep 12 14:41:55 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005922.html">[Linux-uvc-devel] 046d:08c2 Logitech Quickcam Orbit/Sphere MP	Controls Incompatibility
+</A></li>
+        <LI>Next message: <A HREF="005923.html">[Linux-uvc-devel] No driver for Omnivision test kit + Lifecam Cinema HD driver nowhere to be found
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5948">[ date ]</a>
+              <a href="thread.html#5948">[ thread ]</a>
+              <a href="subject.html#5948">[ subject ]</a>
+              <a href="author.html#5948">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Logan,
+
+On Wednesday 01 September 2010 16:48:20 Logan Stonebraker wrote:
+&gt;<i> Greetings,
+</I>&gt;<i> 
+</I>&gt;<i> I have been working with Paulo Assis on the quickcamteam forums.
+</I>&gt;<i> 
+</I>&gt;<i> We have been trying to determine why a Logitech Orbit MP 046d:08c2 is not
+</I>&gt;<i> responding to Pan (relative) or Tilt (relative) controls.  Pan/Tilt reset
+</I>&gt;<i> and all other Logitech specific controls work splendidly despite this.
+</I>&gt;<i> 
+</I>&gt;<i> The thread with the details is here:
+</I>&gt;<i> <A HREF="http://forums.quickcamteam.net/showthread.php?tid=685">http://forums.quickcamteam.net/showthread.php?tid=685</A>
+</I>&gt;<i> 
+</I>&gt;<i> I noticed on the uvc driver home page <A HREF="http://www.ideasonboard.org/uvc">http://www.ideasonboard.org/uvc</A> that
+</I>&gt;<i> the 046d:08c2 is listed as being compatible with no mention of these
+</I>&gt;<i> controls being unusable (albeit potentially unreliable with the footnotes).
+</I>&gt;<i> 
+</I>&gt;<i> We are unable to get past the camera reporting that it failed to query the
+</I>&gt;<i> control.
+</I>&gt;<i> 
+</I>&gt;<i> Interestingly enough pan and tilt functions work fine on any supported
+</I>&gt;<i> Windows OS using available pan/tilt control software.  We are thinking that
+</I>&gt;<i> perhaps the reason for this is that the uvcvideo driver expects to query
+</I>&gt;<i> these controls prior to setting their values (and fails to read), as
+</I>&gt;<i> opposed to the working windows drivers which (perhaps aware of this
+</I>&gt;<i> firmware issue) do not query the controls, rather just attempt to set
+</I>&gt;<i> their values.
+</I>
+The uvcvideo driver indeed tries to query the controls first. The Windows 
+driver, being Logitech-specific, might skip that step.
+
+&gt;<i> dmesg uvcvideo trace=15 on module insertion
+</I>&gt;<i> 
+</I>&gt;<i>  -snip-
+</I>&gt;<i> 
+</I>&gt;<i>  [ 1449.492454] USB Video Class driver (v0.1.0)
+</I>&gt;<i>  [ 1449.732361] uvcvideo: Control f70c9e90/2 is already defined.
+</I>&gt;<i>  [ 1449.741717] uvcvideo: Added control f70c9d90/1 to device 2 entity 9
+</I>&gt;<i>  [ 1449.752219] uvcvideo: Added control f70c9e50/2 to device 2 entity 9
+</I>&gt;<i>  [ 1449.752259] uvcvideo: Adding mapping Pan (relative) to control
+</I>&gt;<i> f70c9d90/1.
+</I>&gt;<i>  [ 1449.752278] uvcvideo: Adding mapping Tilt (relative) to control
+</I>&gt;<i> f70c9d90/1.
+</I>&gt;<i>  [ 1449.752294] uvcvideo: Adding mapping Pan Reset to control f70c9e50/2.
+</I>&gt;<i>  [ 1449.752309] uvcvideo: Adding mapping Tilt Reset to control f70c9e50/2.
+</I>&gt;<i>  [ 1449.752324] uvcvideo: Adding mapping Pan/tilt Reset to control
+</I>&gt;<i> f70c9e50/2.
+</I>&gt;<i>  [ 1449.752340] uvcvideo: Adding mapping Focus to control f70c9dd0/3.
+</I>&gt;<i>  [ 1449.752355] uvcvideo: Adding mapping LED1 Mode to control f70c9d10/1.
+</I>&gt;<i>  [ 1449.752371] uvcvideo: Adding mapping LED1 Frequency to control
+</I>&gt;<i> f70c9d10/1.
+</I>&gt;<i>  [ 1449.752387] uvcvideo: Adding mapping Disable video processing to
+</I>&gt;<i> control f70c9e90/5.
+</I>&gt;<i>  [ 1449.752402] uvcvideo: Adding mapping Raw bits per pixel to control
+</I>&gt;<i> f70c9fd0/8.
+</I>&gt;<i> 
+</I>&gt;<i> -snip-
+</I>&gt;<i> 
+</I>&gt;<i> sudo ./pan /dev/video0 128
+</I>&gt;<i>  control(0x009a0904) failed to set (error -1)
+</I>&gt;<i> 
+</I>&gt;<i> dmesg on attempting to set pan or tilt control (via either usb 1.1 or usb
+</I>&gt;<i> 2.0)
+</I>&gt;<i>  [3035.732371] uvcvideo: Failed to query (131) UVC control 1 (unit 9) : -32
+</I>&gt;<i> (exp. 4).
+</I>
+-32 is -EPIPE, which basically means that your camera failed to answer the 
+GET_MAX (131) request on the pan/tilt control (control 1, unit 9). This is 
+caused by a timing-related bug in the camera firmware described in footnote 1 
+on the website. There's not much I can do about it. According to the messages 
+you've posted on the forum, at least one of your test runs showed a different 
+behaviour:
+
+ [ 855.955995] uvcvideo: Control 0x009a0900 not found.
+ [ 856.003477] uvcvideo: Failed to query (132) UVC control 1 (unit 9) : 1 
+(exp. 4).
+ [ 856.024605] uvcvideo: Failed to query (132) UVC control 1 (unit 9) : 1 
+(exp. 4).
+ [ 856.066239] uvcvideo: Control 0x009a0908 not found.
+
+That's also what I get on my computer when I test the pan/tilt controls with 
+the same camera. In this case the camera goes past the GET_MAX request, but 
+answers the next GET_RES request with only 1 byte of data when the driver 
+expect 4. I'll try to get information about that problem from Logitech.
+
+[snip]
+
+&gt;<i> Thank you in advance if you are able to assist in debugging this &lt;or&gt; at
+</I>&gt;<i> the very least making mention in a footnote that these specific pan and
+</I>&gt;<i> tilt controls could be totally unusable to warn potential 046d:08c2 Orbit
+</I>&gt;<i> owners about this issue.
+</I>
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005922.html">[Linux-uvc-devel] 046d:08c2 Logitech Quickcam Orbit/Sphere MP	Controls Incompatibility
+</A></li>
+	<LI>Next message: <A HREF="005923.html">[Linux-uvc-devel] No driver for Omnivision test kit + Lifecam Cinema HD driver nowhere to be found
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5948">[ date ]</a>
+              <a href="thread.html#5948">[ thread ]</a>
+              <a href="subject.html#5948">[ subject ]</a>
+              <a href="author.html#5948">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

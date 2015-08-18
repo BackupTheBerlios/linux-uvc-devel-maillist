@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Accessing XU controls in an UVC webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Accessing%20XU%20controls%20in%20an%20UVC%20webcam&In-Reply-To=%3C201111021831.17745.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007000.html">
+   <LINK REL="Next"  HREF="006999.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Accessing XU controls in an UVC webcam</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Accessing%20XU%20controls%20in%20an%20UVC%20webcam&In-Reply-To=%3C201111021831.17745.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Accessing XU controls in an UVC webcam">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Wed Nov  2 18:31:17 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007000.html">[Linux-uvc-devel] Flipped video on (13d3:5126)
+</A></li>
+        <LI>Next message: <A HREF="006999.html">[Linux-uvc-devel] MS LifeCam Cinema and Studio have no usb	bandwidth issue under Windows
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6998">[ date ]</a>
+              <a href="thread.html#6998">[ thread ]</a>
+              <a href="subject.html#6998">[ subject ]</a>
+              <a href="author.html#6998">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Peter,
+
+On Friday 07 October 2011 06:54:48 Peter Zotov wrote:
+&gt;<i> Hello.
+</I>&gt;<i> 
+</I>&gt;<i> I have an h.264 encoding webcam, and I am trying to make it
+</I>&gt;<i> work. Currently, it outputs a valid h.264 stream, but each frame
+</I>&gt;<i> is compressed to ~12K of data, resulting in a very distorted, but
+</I>&gt;<i> still barely recognizable image. I suppose that some of the XU controls
+</I>&gt;<i> are responsible for the encoding quality, and they're in some extreme
+</I>&gt;<i> position by default.
+</I>&gt;<i> 
+</I>&gt;<i> The webcam is &quot;046d:0828 Logitech, Inc. HD Webcam B990&quot;.
+</I>&gt;<i> 
+</I>&gt;<i> Here are the XU descriptors (whole `lsusb -v' is 52K long, and I'm not
+</I>&gt;<i> sure if I really should post it to the list):
+</I>
+Messages are currently limited to 75kB. You can also post the descriptors 
+compressed, or send them privately to me.
+
+[snip]
+
+&gt;<i> I've googled all the GUIDs, and it turned out that first four of them
+</I>&gt;<i> also appear in lsusb listings for non-encoding webcams as well. So, I
+</I>&gt;<i> decided that some of the other three contain the quality control. (It
+</I>&gt;<i> may not be true, of course, but that's what I will start with.) They
+</I>&gt;<i> have 19 different controls, apparently.
+</I>&gt;<i> 
+</I>&gt;<i> Now, I am trying to tune some of these with UVC, with no success. Here
+</I>&gt;<i> is the relevant code:
+</I>&gt;<i> 
+</I>&gt;<i> ----%&lt;----%&lt;----%&lt;----%&lt;----%&lt;----%&lt;----
+</I>&gt;<i> void init_controls()
+</I>&gt;<i> {
+</I>&gt;<i> 	struct uvc_xu_control_mapping mapping = {
+</I>&gt;<i> 		.id   = XU_START,
+</I>&gt;<i> 		.name = &quot;XU control&quot;,
+</I>&gt;<i> 		.selector = 1,
+</I>&gt;<i> 		.size = 1,
+</I>&gt;<i> 		.offset = 0,
+</I>&gt;<i> 		.v4l2_type = V4L2_CTRL_TYPE_INTEGER,
+</I>&gt;<i> 		.data_type = UVC_CTRL_DATA_TYPE_SIGNED,
+</I>&gt;<i> 	};
+</I>&gt;<i> 
+</I>&gt;<i> 	guid_to_byte_array(&quot;{a032c549-154f-fc4c-908a-5bce154b1cea}&quot;,
+</I>&gt;<i> mapping.entity);
+</I>&gt;<i> 
+</I>&gt;<i> 	if(ioctl(fd, UVCIOC_CTRL_MAP, &amp;mapping) &lt; 0) {
+</I>&gt;<i> 		fprintf(stderr, &quot;Cannot add control: %d, %s\n&quot;,
+</I>&gt;<i>                           errno, strerror(errno));
+</I>&gt;<i>                  exit(EXIT_FAILURE);
+</I>&gt;<i> 	}
+</I>&gt;<i> }
+</I>&gt;<i> ----%&lt;----%&lt;----%&lt;----%&lt;----%&lt;----%&lt;----
+</I>&gt;<i> 
+</I>&gt;<i> (The `guid_to_byte_array' function was taken from libwebcam
+</I>&gt;<i> sources. Handcrafting the GUID with proper endianness gives
+</I>&gt;<i> the same result).
+</I>&gt;<i> 
+</I>&gt;<i> It outputs: Cannot add control: 2, No such file or directory
+</I>&gt;<i> 
+</I>&gt;<i> I've examined USB bus transactions. They include a control `request'
+</I>&gt;<i> and an interrupt `reply'.
+</I>&gt;<i> 
+</I>&gt;<i> The control frame is here:
+</I>&gt;<i>    bmRequestType: 0x21
+</I>&gt;<i>    bRequest: 1
+</I>&gt;<i>    wValue: 0x0200
+</I>&gt;<i>    wIndex: 1
+</I>&gt;<i>    wLength: 26
+</I>&gt;<i>
+</I>&gt;<i> This is somewhat strange. Per sect. 4.2.2.4 of UVC1.1 spec,
+</I>&gt;<i> bmRequestType=0x21 and bRequest=1 indicate a SET_CUR transfer.
+</I>&gt;<i> wValue of 0x0200 addresses selects control 2 instead of 1 (through
+</I>&gt;<i> this is still in range), and wIndex selects XU 1 (while my one
+</I>&gt;<i> has bUnitID of 8).
+</I>
+wIndex selects the interface, and wValue the control. This request is a 
+SET_CUR request on the UVC video commit control. It got sent by a 
+uvc_commit_video() call, either from uvc_video_resume() if the camera got 
+resumed or from uvc_video_enable() if the driver received a VIDIOC_STREAMON 
+call.
+
+&gt;<i> Also, I do not understand at all what does the
+</I>&gt;<i> data transmitted means:
+</I>&gt;<i> 
+</I>&gt;<i>      00:00:01:01:00:00:00:00
+</I>&gt;<i>      00:00:00:00:00:00:00:00
+</I>&gt;<i>      32:00:00:60:09:00:00:0c
+</I>&gt;<i>      00:00
+</I>&gt;<i> 
+</I>&gt;<i> The reply contains a -ENOENT (-2) code, as shown by Wireshark.
+</I>&gt;<i> 
+</I>&gt;<i> Using different GUID's or different selectors does not change
+</I>&gt;<i> anything.
+</I>&gt;<i> 
+</I>&gt;<i> What am I doing wrong here?
+</I>
+I'm not sure exactly what you're doing wrong. Setting the uvcvideo trace 
+parameter to 0xffff might give you more information.
+
+On a side note, if you're using a recent kernel, you should use 
+UVCIOC_CTRL_QUERY. This will let you query a UVC control directly without 
+going through mappings. That's much easier when experimenting with XU 
+controls.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007000.html">[Linux-uvc-devel] Flipped video on (13d3:5126)
+</A></li>
+	<LI>Next message: <A HREF="006999.html">[Linux-uvc-devel] MS LifeCam Cinema and Studio have no usb	bandwidth issue under Windows
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6998">[ date ]</a>
+              <a href="thread.html#6998">[ thread ]</a>
+              <a href="subject.html#6998">[ subject ]</a>
+              <a href="author.html#6998">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

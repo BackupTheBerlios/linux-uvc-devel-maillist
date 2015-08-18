@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [linux-uvc-devel] driver doesn't return from	vidioc_dqbuf ioctl (Dan McGee)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5Blinux-uvc-devel%5D%20driver%20doesn%27t%20return%20from%0A%09vidioc_dqbuf%20ioctl%20%28Dan%20McGee%29&In-Reply-To=%3C200805292258.01568.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003562.html">
+   <LINK REL="Next"  HREF="003558.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [linux-uvc-devel] driver doesn't return from	vidioc_dqbuf ioctl (Dan McGee)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5Blinux-uvc-devel%5D%20driver%20doesn%27t%20return%20from%0A%09vidioc_dqbuf%20ioctl%20%28Dan%20McGee%29&In-Reply-To=%3C200805292258.01568.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] [linux-uvc-devel] driver doesn't return from	vidioc_dqbuf ioctl (Dan McGee)">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Thu May 29 22:58:01 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003562.html">[Linux-uvc-devel] New Webcam
+</A></li>
+        <LI>Next message: <A HREF="003558.html">[Linux-uvc-devel] [PATCH] uvc: release streaming interface to fix	suspend to RAM
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3555">[ date ]</a>
+              <a href="thread.html#3555">[ thread ]</a>
+              <a href="subject.html#3555">[ subject ]</a>
+              <a href="author.html#3555">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Les,
+
+On Tuesday 20 May 2008, Les Smithson wrote:
+&gt;<i> On Tue, 2008-05-20 at 17:54 +0200, Laurent Pinchart wrote:
+</I>&gt;<i> &gt; Hi Les,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Friday 16 May 2008, Les Smithson wrote:
+</I>&gt;<i> &gt; &gt;  &gt; Here you are. I'm going to be on vacation for a bit so I probably
+</I>&gt;<i> &gt; &gt;  &gt; won't be able to help you debug this for the next week and a half.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Can I help with this? I have the same eMPIA/eeepc setup and I'd be
+</I>&gt;<i> &gt; &gt; willing to pitch in.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Could you please try the patch I've just sent to the list ?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Best regards,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Laurent Pinchart
+</I>&gt;<i>
+</I>&gt;<i> I think I spoke too soon. I pointed the eeepc out of my window and I get
+</I>&gt;<i> lots of bad frames (see attached). They seem to be associated with these
+</I>&gt;<i> messages:
+</I>&gt;<i>
+</I>&gt;<i> [ 7815.340000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.350000] uvcvideo: uvc_v4l2_ioctl
+</I>&gt;<i> [ 7815.350000] v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+</I>&gt;<i> [ 7815.350000] uvcvideo: Queuing buffer 1.
+</I>&gt;<i> [ 7815.350000] uvcvideo: uvc_v4l2_ioctl
+</I>&gt;<i> [ 7815.350000] v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0445611)
+</I>&gt;<i> [ 7815.350000] uvcvideo: Dequeuing buffer 2 (3, 153600 bytes).
+</I>&gt;<i> [ 7815.350000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.400000] uvcvideo: Frame complete (EOF found).
+</I>&gt;<i> [ 7815.400000] uvcvideo: EOF in empty payload.
+</I>&gt;<i> [ 7815.420000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.430000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.440000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.450000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.470000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.470000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.480000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.500000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.520000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.530000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.540000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.550000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.570000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.580000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.600000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.600000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.620000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.630000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.640000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.650000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.670000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.670000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.680000] uvcvideo: Dropping payload (error bit set).
+</I>&gt;<i> [ 7815.700000] uvcvideo: Dropping payload (error bit set).
+</I>
+I'm not sure what to do here. The camera sets the error bit in the payload. 
+The data packet is dropped, and the image buffer should be dropped as well. I 
+don't know why corrupted images are received by the userspace application. If 
+the camera silently sends erroneous data there's not much I can do.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003562.html">[Linux-uvc-devel] New Webcam
+</A></li>
+	<LI>Next message: <A HREF="003558.html">[Linux-uvc-devel] [PATCH] uvc: release streaming interface to fix	suspend to RAM
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3555">[ date ]</a>
+              <a href="thread.html#3555">[ thread ]</a>
+              <a href="subject.html#3555">[ subject ]</a>
+              <a href="author.html#3555">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

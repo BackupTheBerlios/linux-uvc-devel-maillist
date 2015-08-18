@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Problems with Hercules  Dualpix
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problems%20with%20Hercules%20%20Dualpix&In-Reply-To=%3C200808012224.40871.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003948.html">
+   <LINK REL="Next"  HREF="003952.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Problems with Hercules  Dualpix</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Problems%20with%20Hercules%20%20Dualpix&In-Reply-To=%3C200808012224.40871.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Problems with Hercules  Dualpix">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Fri Aug  1 22:24:40 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003948.html">[Linux-uvc-devel] Problems with Hercules  Dualpix
+</A></li>
+        <LI>Next message: <A HREF="003952.html">[Linux-uvc-devel] Problems with Hercules  Dualpix
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3951">[ date ]</a>
+              <a href="thread.html#3951">[ thread ]</a>
+              <a href="subject.html#3951">[ subject ]</a>
+              <a href="author.html#3951">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Carmelo,
+
+On Friday 01 August 2008, Carmelo Iannello wrote:
+&gt;<i> Hi all,
+</I>&gt;<i>
+</I>&gt;<i> I recently bought a &quot;Hercules Dualpix Chat and Show&quot; webcam, after
+</I>&gt;<i> seeing it in the HCL of uvcvideo module.
+</I>&gt;<i> I hoped for it to work without any tweaking, but no luck.
+</I>&gt;<i> So I tried googling and trying to apply the suggested fixes but
+</I>&gt;<i> it didn't help.
+</I>&gt;<i> On Debian I installed the module with: module-assistant a-i linux-uvc
+</I>&gt;<i> revision 238, but I also tried with rv 239 from svn.
+</I>&gt;<i>
+</I>&gt;<i> At first, it complained giving this output in dmesg:
+</I>&gt;<i>
+</I>&gt;<i>   Linux video capture interface: v2.00
+</I>&gt;<i>   usbcore: registered new interface driver uvcvideo
+</I>&gt;<i>   USB Video Class driver (v0.1.0)
+</I>&gt;<i>   usb 4-5: new high speed USB device using ehci_hcd and address 5
+</I>&gt;<i>   usb 4-5: configuration #1 chosen from 1 choice
+</I>&gt;<i>   uvcvideo: Found UVC 1.00 device Hercules Dualpix Chat and Show Webcam
+</I>&gt;<i> (06f8:3007)
+</I>&gt;<i>   uvcvideo: Failed to query (135) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>&gt;<i>   uvcvideo: Failed to query (129) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>&gt;<i>   uvcvideo: Failed to initialize the device (-5).
+</I>&gt;<i>   5:3:1: cannot get freq at ep 0x84
+</I>&gt;<i>   usb 4-5: New USB device found, idVendor=06f8, idProduct=3007
+</I>&gt;<i>   usb 4-5: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+</I>&gt;<i>   usb 4-5: Product: Hercules Dualpix Chat and Show Webcam
+</I>&gt;<i>   usb 4-5: Manufacturer: Guillemot Corporation
+</I>&gt;<i>
+</I>&gt;<i> Then I put in /etc/modprobe.d/uvcvideo:
+</I>&gt;<i> install uvcvideo /sbin/modprobe snd_usb_audio; /sbin/modprobe
+</I>&gt;<i> --ignore-install uvcvideo
+</I>&gt;<i>
+</I>&gt;<i> to postpone uvcvideo's loading to the usb audio's one,
+</I>&gt;<i> and also tried do to the same thing by hand, using insmod.
+</I>&gt;<i>
+</I>&gt;<i> The result is that the error msg about query 129 disappeared,
+</I>&gt;<i> the one about query 135 is still there, the module creates the
+</I>&gt;<i> /dev/video0 device, but the webcam doesn't work.
+</I>&gt;<i> Strangely, the webcam is not listed in lsusb's output.
+</I>&gt;<i>
+</I>&gt;<i> Any suggestion?
+</I>&gt;<i>
+</I>&gt;<i> Thanks,
+</I>&gt;<i> Carmelo
+</I>&gt;<i>
+</I>&gt;<i> PS
+</I>&gt;<i> Current dmesg output when I unplug and plug the camera:
+</I>&gt;<i>
+</I>&gt;<i>   usb 4-5: USB disconnect, address 6
+</I>&gt;<i>   usb 4-5: new high speed USB device using ehci_hcd and address 8
+</I>&gt;<i>   usb 4-5: configuration #1 chosen from 1 choice
+</I>&gt;<i>   uvcvideo: Found UVC 1.00 device Hercules Dualpix Chat and Show Webcam
+</I>&gt;<i> (06f8:3007)
+</I>&gt;<i>   uvcvideo: Failed to query (135) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>&gt;<i>   input: Hercules Dualpix Chat and Show W as /class/input/input12
+</I>&gt;<i>   8:3:1: cannot get freq at ep 0x84
+</I>&gt;<i>   usb 4-5: New USB device found, idVendor=06f8, idProduct=3007
+</I>&gt;<i>   usb 4-5: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+</I>&gt;<i>   usb 4-5: Product: Hercules Dualpix Chat and Show Webcam
+</I>&gt;<i>   usb 4-5: Manufacturer: Guillemot Corporation
+</I>
+I'm not sure what goes wrong. Like many webcams, the Hercules Dualpix doesn't 
+implement the mandatory GET_DEF request on the video probe control, which 
+results in the 'Failed to query' error message. This should not be fatal as 
+the driver works around it, but it might confuse the webcam. Edit uvc_video.c 
+and replace the following code
+
+        if ((ret = uvc_get_video_ctrl(video, probe, 1, GET_DEF)) &lt; 0 &amp;&amp;
+            (ret = uvc_get_video_ctrl(video, probe, 1, GET_CUR)) &lt; 0)
+                return ret;
+
+by
+
+        if ((ret = uvc_get_video_ctrl(video, probe, 1, GET_CUR) &lt; 0)
+               return ret;
+
+If this doesn't help, I'm not sure what else I can do. The 'cannot get freq' 
+message is printed by the usbaudio driver, so the problem seems to come from 
+the webcam. lsusb failing to list the camera is another hint that something 
+goes wrong at a low level. It could be a timing issue caused by subtle USB 
+timing differences between the platform the product is tested with (Windows) 
+and the platform you it them with. Nasty timing related bugs can surface when 
+the webcam is plugged into a Linux box even if it runs flawlessly under 
+Windows. Worse, your camera could work perfectly well on another Linux 
+computer. Those kind of issues tend to come quite often with UVC webcams. 
+Maybe the Hercules Dualpix uses a faulty USB chip (I would be interested in 
+knowing the chip brand and model if you can manage to open the case without 
+breaking anything).
+
+You could also try not to load the usbaudio driver at all. Timing-related 
+issues that lead to a camera crash can be caused by many things, and 
+audio-related requests could crash a perfectly working video device.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003948.html">[Linux-uvc-devel] Problems with Hercules  Dualpix
+</A></li>
+	<LI>Next message: <A HREF="003952.html">[Linux-uvc-devel] Problems with Hercules  Dualpix
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3951">[ date ]</a>
+              <a href="thread.html#3951">[ thread ]</a>
+              <a href="subject.html#3951">[ subject ]</a>
+              <a href="author.html#3951">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

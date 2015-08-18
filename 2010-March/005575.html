@@ -1,0 +1,273 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] can't find /dev/videoX on 18ec:3299 ARKMICRO
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20can%27t%20find%20/dev/videoX%20on%2018ec%3A3299%20ARKMICRO&In-Reply-To=%3Ce137e8261003060420s632994c1n118e00e69a04edfd%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005578.html">
+   <LINK REL="Next"  HREF="005577.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] can't find /dev/videoX on 18ec:3299 ARKMICRO</H1>
+    <B>Teguh Iskanto</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20can%27t%20find%20/dev/videoX%20on%2018ec%3A3299%20ARKMICRO&In-Reply-To=%3Ce137e8261003060420s632994c1n118e00e69a04edfd%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] can't find /dev/videoX on 18ec:3299 ARKMICRO">tiskanto at gmail.com
+       </A><BR>
+    <I>Sat Mar  6 13:20:27 CET 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005578.html">[Linux-uvc-devel] problems with uvc cameras and gstreamer on	gentoo
+</A></li>
+        <LI>Next message: <A HREF="005577.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5575">[ date ]</a>
+              <a href="thread.html#5575">[ thread ]</a>
+              <a href="subject.html#5575">[ subject ]</a>
+              <a href="author.html#5575">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi List,
+
+I've got a problem with my webcam on UVC driver, seemed like whatever I try
+I still couldn't get it working.
+The one thing that I know is /dev/videoX is not being created (not quite
+sure why). really appreciate if anyone on this list could shed me a light on
+how to fix this problem.
+
+BTW:
+I've compiled the source with the latest UVC driver from the tree
+with : hg clone <A HREF="http://linuxtv.org/hg/~pinchartl/uvcvideo/">http://linuxtv.org/hg/~pinchartl/uvcvideo/</A>
+
+Thanks
+
+Followings are the configs:
+
+Md5 sums:
+6271c7189d71cbbec3df21dba73fbabe  ./uvcvideo/v4l/videodev.ko
+6271c7189d71cbbec3df21dba73fbabe
+ /lib/modules/2.6.24-16-generic/kernel/drivers/media/video/videodev.ko
+
+Kernel:
+------------
+ 2.6.24-16-generic (Ubuntu 8.04)
+
+lsmod | grep uvc
+uvcvideo               65228  0
+videodev               43040  1 uvcvideo
+v4l1_compat            14724  2 uvcvideo,videodev
+usbcore               146028  5 snd_usb_audio,snd_usb_lib,uvcvideo,uhci_hcd
+
+Modules Conf:
+---------------------
+cat /etc/modprobe.d/uvcvideo.conf
+options uvcvideo nodrop=1 trace=15
+
+lsusb -v -d 18ec:3299 output:
+--------------------------------------------
+Bus 001 Device 002: ID 18ec:3299
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               2.00
+  bDeviceClass          239 Miscellaneous Device
+  bDeviceSubClass         2 ?
+  bDeviceProtocol         1 Interface Association
+  bMaxPacketSize0        64
+  idVendor           0x18ec
+  idProduct          0x3299
+  bcdDevice            1.00
+  iManufacturer           1 ARKMICRO
+  iProduct                2 USB2.0 PC CAMERA
+  iSerial                 0
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength          498
+    bNumInterfaces          4
+    bConfigurationValue     1
+    iConfiguration          0
+    bmAttributes         0x80
+      (Bus Powered)
+    MaxPower              320mA
+    Interface Association:
+      bLength                 8
+      bDescriptorType        11
+      bFirstInterface         0
+      bInterfaceCount         2
+      bFunctionClass         14 Video
+      bFunctionSubClass       3 Video Interface Collection
+      bFunctionProtocol       0
+      iFunction               0
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      1 Video Control
+      bInterfaceProtocol      0
+      iInterface              0
+      VideoControl Interface Descriptor:
+        bLength                13
+        bDescriptorType        36
+        bDescriptorSubtype      1 (HEADER)
+        bcdUVC               1.00
+        wTotalLength           51
+        dwClockFrequency       24.000000MHz
+        bInCollection           1
+        baInterfaceNr( 0)       1
+      VideoControl Interface Descriptor:
+        bLength                18
+        bDescriptorType        36
+        bDescriptorSubtype      2 (INPUT_TERMINAL)
+        bTerminalID             1
+        wTerminalType      0x0201 Camera Sensor
+        bAssocTerminal          0
+        iTerminal               0
+        wObjectiveFocalLengthMin      0
+        wObjectiveFocalLengthMax      0
+        wOcularFocalLength            0
+        bControlSize                  3
+        bmControls           0x0000200a
+          Auto-Exposure Mode
+          Exposure Time (Absolute)
+          Roll (Absolute)
+      VideoControl Interface Descriptor:
+        bLength                11
+        bDescriptorType        36
+        bDescriptorSubtype      5 (PROCESSING_UNIT)
+      Warning: Descriptor too short
+        bUnitID                 2
+        bSourceID               1
+        wMaxMultiplier          0
+        bControlSize            2
+        bmControls     0x0000073f
+
+Dmesg output:
+----------------------
+[ 3796.010233] Linux video capture interface: v2.00
+[ 3796.060510] uvcvideo: Adding mapping Brightness to control
+00000000-0000-0000-0000-000000000101/2.
+[ 3796.060582] uvcvideo: Adding mapping Contrast to control
+00000000-0000-0000-0000-000000000101/3.
+[ 3796.060620] uvcvideo: Adding mapping Hue to control
+00000000-0000-0000-0000-000000000101/6.
+[ 3796.060647] uvcvideo: Adding mapping Saturation to control
+00000000-0000-0000-0000-000000000101/7.
+[ 3796.060675] uvcvideo: Adding mapping Sharpness to control
+00000000-0000-0000-0000-000000000101/8.
+[ 3796.060703] uvcvideo: Adding mapping Gamma to control
+00000000-0000-0000-0000-000000000101/9.
+[ 3796.060731] uvcvideo: Adding mapping Backlight Compensation to control
+00000000-0000-0000-0000-000000000101/1.
+[ 3796.060762] uvcvideo: Adding mapping Gain to control
+00000000-0000-0000-0000-000000000101/4.
+[ 3796.060790] uvcvideo: Adding mapping Power Line Frequency to control
+00000000-0000-0000-0000-000000000101/5.
+[ 3796.060821] uvcvideo: Adding mapping Hue, Auto to control
+00000000-0000-0000-0000-000000000101/16.
+[ 3796.060853] uvcvideo: Adding mapping Exposure, Auto to control
+00000000-0000-0000-0000-000000000001/2.
+[ 3796.060884] uvcvideo: Adding mapping Exposure, Auto Priority to control
+00000000-0000-0000-0000-000000000001/3.
+[ 3796.060916] uvcvideo: Adding mapping Exposure (Absolute) to control
+00000000-0000-0000-0000-000000000001/4.
+[ 3796.060951] uvcvideo: Adding mapping White Balance Temperature, Auto to
+control 00000000-0000-0000-0000-000000000101/11.
+[ 3796.060984] uvcvideo: Adding mapping White Balance Temperature to control
+00000000-0000-0000-0000-000000000101/10.
+[ 3796.061017] uvcvideo: Adding mapping White Balance Component, Auto to
+control 00000000-0000-0000-0000-000000000101/13.
+[ 3796.061050] uvcvideo: Adding mapping White Balance Blue Component to
+control 00000000-0000-0000-0000-000000000101/12.
+[ 3796.061101] uvcvideo: Adding mapping White Balance Red Component to
+control 00000000-0000-0000-0000-000000000101/12.
+[ 3796.061136] uvcvideo: Adding mapping Focus (absolute) to control
+00000000-0000-0000-0000-000000000001/6.
+[ 3796.061168] uvcvideo: Adding mapping Focus, Auto to control
+00000000-0000-0000-0000-000000000001/8.
+[ 3796.061198] uvcvideo: Adding mapping Zoom, Absolute to control
+00000000-0000-0000-0000-000000000001/11.
+[ 3796.061235] uvcvideo: Adding mapping Zoom, Continuous to control
+00000000-0000-0000-0000-000000000001/12.
+[ 3796.061267] uvcvideo: Adding mapping Privacy to control
+00000000-0000-0000-0000-000000000001/17.
+[ 3796.061904] uvcvideo: Probing generic UVC device 1
+[ 3796.062436] uvcvideo: Found format YUV 4:2:2 (YUYV).
+[ 3796.062565] uvcvideo: - 640x480 (30.0 fps)
+[ 3796.062595] uvcvideo: - 352x288 (30.0 fps)
+[ 3796.062609] uvcvideo: - 320x240 (30.0 fps)
+[ 3796.062623] uvcvideo: - 176x144 (30.0 fps)
+[ 3796.062637] uvcvideo: - 160x120 (30.0 fps)
+[ 3796.062992] uvcvideo: Found a Status endpoint (addr 81).
+[ 3796.063039] uvcvideo: Found UVC 1.00 device USB2.0 PC CAMERA (18ec:3299)
+[ 3796.063353] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/2 to device 1 entity 2
+[ 3796.063403] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/3 to device 1 entity 2
+[ 3796.063436] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/6 to device 1 entity 2
+[ 3796.063464] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/7 to device 1 entity 2
+[ 3796.063492] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/8 to device 1 entity 2
+[ 3796.063519] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/9 to device 1 entity 2
+[ 3796.063560] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/1 to device 1 entity 2
+[ 3796.063588] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/4 to device 1 entity 2
+[ 3796.063615] uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/5 to device 1 entity 2
+[ 3796.063644] uvcvideo: Added control
+00000000-0000-0000-0000-000000000001/2 to device 1 entity 1
+[ 3796.063672] uvcvideo: Added control
+00000000-0000-0000-0000-000000000001/4 to device 1 entity 1
+[ 3796.063701] uvcvideo: Added control
+00000000-0000-0000-0000-000000000001/15 to device 1 entity 1
+[ 3796.063808] uvcvideo: Scanning UVC chain: OT 3 &lt;- PU 2 &lt;- IT 1
+[ 3796.064187] uvcvideo: Found a valid video chain (1 -&gt; 3).
+[ 3796.073807] uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported.
+Enabling workaround.
+[ 3801.068514] uvcvideo: Failed to query (129) UVC probe control : -110
+(exp. 26).
+[ 3801.069552] uvcvideo: Failed to initialize the device (-5).
+[ 3801.073780] usbcore: registered new interface driver uvcvideo
+[ 3801.073848] USB Video Class driver (v0.1.0)
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100306/32088822/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100306/32088822/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005578.html">[Linux-uvc-devel] problems with uvc cameras and gstreamer on	gentoo
+</A></li>
+	<LI>Next message: <A HREF="005577.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5575">[ date ]</a>
+              <a href="thread.html#5575">[ thread ]</a>
+              <a href="subject.html#5575">[ subject ]</a>
+              <a href="author.html#5575">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

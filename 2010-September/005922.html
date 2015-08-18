@@ -1,0 +1,188 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] 046d:08c2 Logitech Quickcam Orbit/Sphere MP	Controls Incompatibility
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20046d%3A08c2%20Logitech%20Quickcam%20Orbit/Sphere%20MP%0A%09Controls%20Incompatibility&In-Reply-To=%3C000301cb49e4%24b8a281a0%2429e784e0%24%40com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="005948.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] 046d:08c2 Logitech Quickcam Orbit/Sphere MP	Controls Incompatibility</H1>
+    <B>Logan Stonebraker</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20046d%3A08c2%20Logitech%20Quickcam%20Orbit/Sphere%20MP%0A%09Controls%20Incompatibility&In-Reply-To=%3C000301cb49e4%24b8a281a0%2429e784e0%24%40com%3E"
+       TITLE="[Linux-uvc-devel] 046d:08c2 Logitech Quickcam Orbit/Sphere MP	Controls Incompatibility">lstonebr at yahoo.com
+       </A><BR>
+    <I>Wed Sep  1 16:48:20 CEST 2010</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="005948.html">[Linux-uvc-devel] 046d:08c2 Logitech Quickcam Orbit/Sphere MP	Controls Incompatibility
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5922">[ date ]</a>
+              <a href="thread.html#5922">[ thread ]</a>
+              <a href="subject.html#5922">[ subject ]</a>
+              <a href="author.html#5922">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Greetings,
+
+ 
+
+I have been working with Paulo Assis on the quickcamteam forums.
+
+ 
+
+We have been trying to determine why a Logitech Orbit MP 046d:08c2 is not
+responding to Pan (relative) or Tilt (relative) controls.  Pan/Tilt reset
+and all other Logitech specific controls work splendidly despite this.
+
+ 
+
+The thread with the details is here:
+<A HREF="http://forums.quickcamteam.net/showthread.php?tid=685">http://forums.quickcamteam.net/showthread.php?tid=685</A>
+
+ 
+
+I noticed on the uvc driver home page <A HREF="http://www.ideasonboard.org/uvc">http://www.ideasonboard.org/uvc</A> that
+the 046d:08c2 is listed as being compatible with no mention of these
+controls being unusable (albeit potentially unreliable with the footnotes).
+
+ 
+
+We are unable to get past the camera reporting that it failed to query the
+control.
+
+ 
+
+Interestingly enough pan and tilt functions work fine on any supported
+Windows OS using available pan/tilt control software.  We are thinking that
+perhaps the reason for this is that the uvcvideo driver expects to query
+these controls prior to setting their values (and fails to read), as opposed
+to the working windows drivers which (perhaps aware of this firmware issue)
+do not query the controls, rather just attempt to set their values.
+
+ 
+
+dmesg uvcvideo trace=15 on module insertion
+
+ -snip-
+
+ [ 1449.492454] USB Video Class driver (v0.1.0)
+
+ [ 1449.732361] uvcvideo: Control f70c9e90/2 is already defined.
+
+ [ 1449.741717] uvcvideo: Added control f70c9d90/1 to device 2 entity 9
+
+ [ 1449.752219] uvcvideo: Added control f70c9e50/2 to device 2 entity 9
+
+ [ 1449.752259] uvcvideo: Adding mapping Pan (relative) to control
+f70c9d90/1.
+
+ [ 1449.752278] uvcvideo: Adding mapping Tilt (relative) to control
+f70c9d90/1.
+
+ [ 1449.752294] uvcvideo: Adding mapping Pan Reset to control f70c9e50/2.
+
+ [ 1449.752309] uvcvideo: Adding mapping Tilt Reset to control f70c9e50/2.
+
+ [ 1449.752324] uvcvideo: Adding mapping Pan/tilt Reset to control
+f70c9e50/2.
+
+ [ 1449.752340] uvcvideo: Adding mapping Focus to control f70c9dd0/3.
+
+ [ 1449.752355] uvcvideo: Adding mapping LED1 Mode to control f70c9d10/1.
+
+ [ 1449.752371] uvcvideo: Adding mapping LED1 Frequency to control
+f70c9d10/1.
+
+ [ 1449.752387] uvcvideo: Adding mapping Disable video processing to control
+f70c9e90/5.
+
+ [ 1449.752402] uvcvideo: Adding mapping Raw bits per pixel to control
+f70c9fd0/8.
+
+-snip-
+
+ 
+
+sudo ./pan /dev/video0 128
+ control(0x009a0904) failed to set (error -1)
+
+dmesg on attempting to set pan or tilt control (via either usb 1.1 or usb
+2.0)
+ [3035.732371] uvcvideo: Failed to query (131) UVC control 1 (unit 9) : -32
+(exp. 4).
+
+ 
+
+modinfo uvcvideo on Ubuntu 10.04
+
+ filename:
+/lib/modules/2.6.32-24-generic/kernel/drivers/media/video/uvc/uvcvideo.ko
+
+ version:        v0.1.0
+
+ -snip-
+
+ srcversion:     DAAA10E136867F1C47E5652
+
+ -snip-
+
+ 
+
+lsusb | grep PTZ
+
+ Bus 001 Device 003: ID 046d:08c2 Logitech, Inc. QuickCam PTZ
+
+ 
+
+Thank you in advance if you are able to assist in debugging this &lt;or&gt; at the
+very least making mention in a footnote that these specific pan and tilt
+controls could be totally unusable to warn potential 046d:08c2 Orbit owners
+about this issue.
+
+ 
+
+Regards,
+
+ 
+
+-Logan
+
+ 
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100901/86184d47/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20100901/86184d47/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="005948.html">[Linux-uvc-devel] 046d:08c2 Logitech Quickcam Orbit/Sphere MP	Controls Incompatibility
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5922">[ date ]</a>
+              <a href="thread.html#5922">[ thread ]</a>
+              <a href="subject.html#5922">[ subject ]</a>
+              <a href="author.html#5922">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

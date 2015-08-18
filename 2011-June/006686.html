@@ -1,0 +1,347 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Quanta integrated webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quanta%20integrated%20webcam&In-Reply-To=%3Calpine.LNX.2.00.1106252306060.26811%40tristan%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006683.html">
+   <LINK REL="Next"  HREF="006676.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Quanta integrated webcam</H1>
+    <B>Carl Michal</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quanta%20integrated%20webcam&In-Reply-To=%3Calpine.LNX.2.00.1106252306060.26811%40tristan%3E"
+       TITLE="[Linux-uvc-devel] Quanta integrated webcam">michal at physics.ubc.ca
+       </A><BR>
+    <I>Sun Jun 26 08:09:04 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006683.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+        <LI>Next message: <A HREF="006676.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6686">[ date ]</a>
+              <a href="thread.html#6686">[ thread ]</a>
+              <a href="subject.html#6686">[ subject ]</a>
+              <a href="author.html#6686">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Fri, 24 Jun 2011, Carl Michal wrote:
+
+&gt;<i> Dear Laurent and Alexey,
+</I>
+[snip]
+
+&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> So, I have changes that:
+</I>&gt;<i> a) ignore FID (completely) when in MJPG, but pay attention to it in YUV.
+</I>&gt;<i> b) include a check for the length of the frame when uncompressed and the
+</I>&gt;<i> frame is ended by an FID toggle (this was already in there, but only when
+</I>&gt;<i> the frame was ended by an EOF).
+</I>&gt;<i> c) reassemble packets that are delivered in chunks
+</I>&gt;<i>
+</I>&gt;<i> the now camera works - all resolutions in both MJPG and YUV work, no bad
+</I>&gt;<i> frames are delivered by the driver.  There are very infrequent frames
+</I>&gt;<i> dropped due to the urb-&gt;status showing an error.  The biggest outstanding
+</I>&gt;<i> issue is that in the four high resolution modes in YUV output, the frames
+</I>&gt;<i> the camera gives up on occasionally cause noticeable stutters.  It is
+</I>&gt;<i> intermittent though - it will be fine for 5 minutes, maybe dropping one
+</I>&gt;<i> frame here, one there, and then it will drop several in rapid succession.
+</I>&gt;<i>
+</I>
+I've attached a patch with the code I've implemented as described
+yesterday.  This includes/modifies Alexey's patch to fully ignore FID with
+the NO_FID quirk, and introduces a new quirk for this camera, and a 
+subroutine to filter the incoming stream to reassemble fragmented packets.
+
+I realize there are some issues with the way this has been implemented
+(I'm not much of a coder...) but shows what I've done to solve the
+immediate problem.
+
+Carl
+
+-------------- next part --------------
+Only in drivers/media/video/uvc/: built-in.o
+Only in drivers/media/video/uvc/: .built-in.o.cmd
+Only in drivers/media/video/uvc/: modules.order
+Only in drivers/media/video/uvc/: uvc_ctrl.o
+Only in drivers/media/video/uvc/: .uvc_ctrl.o.cmd
+diff -u /tmp/linux-2.6.39/drivers/media/video/uvc/uvc_driver.c drivers/media/video/uvc//uvc_driver.c
+--- /tmp/linux-2.6.39/drivers/media/video/uvc/uvc_driver.c	2011-06-25 22:58:39.448334128 -0700
++++ drivers/media/video/uvc//uvc_driver.c	2011-06-24 22:45:47.644324039 -0700
+@@ -489,7 +489,17 @@
+ 			frame-&gt;dwFrameInterval[0] =
+ 				frame-&gt;dwDefaultFrameInterval;
+ 		}
+-
++		/*
++		// CM hack
++		if (frame-&gt;wWidth == 1280 &amp;&amp; frame-&gt;wHeight == 720)
++		  if ( ftype == UVC_VS_FRAME_UNCOMPRESSED){
++		    pr_info(&quot;found 1280x720 uncompressed\n&quot;);
++		    frame-&gt;dwFrameInterval[0] = 1000000;
++		    frame-&gt;dwDefaultFrameInterval = 1000000;
++		    frame-&gt;dwMinBitRate = 147456000;
++		    frame-&gt;dwMaxBitRate = 147456000;
++		  }
++		*/
+ 		uvc_trace(UVC_TRACE_DESCR, &quot;- %ux%u (%u.%u fps)\n&quot;,
+ 			frame-&gt;wWidth, frame-&gt;wHeight,
+ 			10000000/frame-&gt;dwDefaultFrameInterval,
+@@ -2271,6 +2281,14 @@
+ 	  .bInterfaceProtocol	= 0,
+ 	  .driver_info		= UVC_QUIRK_PROBE_MINMAX
+ 				| UVC_QUIRK_IGNORE_SELECTOR_UNIT },
++	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE
++				| USB_DEVICE_ID_MATCH_INT_INFO,
++	  .idVendor		= 0x0408,
++	  .idProduct		= 0x2fb1,
++	  .bInterfaceClass	= USB_CLASS_VIDEO,
++	  .bInterfaceSubClass	= 1,
++	  .bInterfaceProtocol	= 0,
++	  .driver_info		= UVC_QUIRK_QUANTA },
+ 	/* Generic USB Video Class */
+ 	{ USB_INTERFACE_INFO(USB_CLASS_VIDEO, 1, 0) },
+ 	{}
+Only in /tmp/linux-2.6.39/drivers/media/video/uvc: uvc_driver.c.orig
+Only in drivers/media/video/uvc/: uvc_driver.o
+Only in drivers/media/video/uvc/: .uvc_driver.o.cmd
+Only in drivers/media/video/uvc/: uvc_isight.o
+Only in drivers/media/video/uvc/: .uvc_isight.o.cmd
+Only in drivers/media/video/uvc/: uvc_queue.o
+Only in drivers/media/video/uvc/: .uvc_queue.o.cmd
+Only in drivers/media/video/uvc/: uvc_status.o
+Only in drivers/media/video/uvc/: .uvc_status.o.cmd
+Only in drivers/media/video/uvc/: uvc_v4l2.o
+Only in drivers/media/video/uvc/: .uvc_v4l2.o.cmd
+diff -u /tmp/linux-2.6.39/drivers/media/video/uvc/uvc_video.c drivers/media/video/uvc//uvc_video.c
+--- /tmp/linux-2.6.39/drivers/media/video/uvc/uvc_video.c	2011-06-25 22:58:39.452334128 -0700
++++ drivers/media/video/uvc//uvc_video.c	2011-06-25 22:59:55.400334079 -0700
+@@ -426,7 +426,14 @@
+ 		return -ENODATA;
+ 	}
+ 
+-	fid = data[1] &amp; UVC_STREAM_FID;
++	/* Make sure, if we use NO_FID quirk, we really use no FID bit.
++	 */
++	if (stream-&gt;dev-&gt;quirks &amp; UVC_QUIRK_STREAM_NO_FID ||
++	    ((stream-&gt;dev-&gt;quirks &amp; UVC_QUIRK_QUANTA) &amp;&amp; 
++	     (stream-&gt;cur_format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) ))
++		fid = 0;
++	else
++		fid = data[1] &amp; UVC_STREAM_FID;
+ 
+ 	/* Increase the sequence number regardless of any buffer states, so
+ 	 * that discontinuous sequence numbers always indicate lost frames.
+@@ -456,9 +463,11 @@
+ 		if (fid == stream-&gt;last_fid) {
+ 			uvc_trace(UVC_TRACE_FRAME, &quot;Dropping payload (out of &quot;
+ 				&quot;sync).\n&quot;);
+-			if ((stream-&gt;dev-&gt;quirks &amp; UVC_QUIRK_STREAM_NO_FID) &amp;&amp;
+-			    (data[1] &amp; UVC_STREAM_EOF))
+-				stream-&gt;last_fid ^= UVC_STREAM_FID;
++			if  (data[1] &amp; UVC_STREAM_EOF)
++			     if (stream-&gt;dev-&gt;quirks &amp; UVC_QUIRK_STREAM_NO_FID ||
++				 ((stream-&gt;dev-&gt;quirks &amp; UVC_QUIRK_QUANTA) &amp;&amp; 
++				  (stream-&gt;cur_format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) ))
++			          stream-&gt;last_fid ^= UVC_STREAM_FID;
+ 			return -ENODATA;
+ 		}
+ 
+@@ -535,8 +544,11 @@
+ 		if (data[0] == len)
+ 			uvc_trace(UVC_TRACE_FRAME, &quot;EOF in empty payload.\n&quot;);
+ 		buf-&gt;state = UVC_BUF_STATE_READY;
+-		if (stream-&gt;dev-&gt;quirks &amp; UVC_QUIRK_STREAM_NO_FID)
+-			stream-&gt;last_fid ^= UVC_STREAM_FID;
++
++		if (stream-&gt;dev-&gt;quirks &amp; UVC_QUIRK_STREAM_NO_FID ||
++		    ((stream-&gt;dev-&gt;quirks &amp; UVC_QUIRK_QUANTA) &amp;&amp; 
++		     (stream-&gt;cur_format-&gt;flags &amp; UVC_FMT_FLAG_COMPRESSED) ))
++		     stream-&gt;last_fid ^= UVC_STREAM_FID;
+ 	}
+ }
+ 
+@@ -583,6 +595,92 @@
+  * URB handling
+  */
+ 
++/* filtering to repair fragmented packets from Quanta webcam */
++
++static void repair_quanta_stream(struct urb *urb, 
++				 struct uvc_streaming *stream, int fno)
++{
++  int psize;
++  static int qbytes=0;
++  static u8 qbuf[3072]; 
++
++  /* qbytes and qbuf should be per-stream - included in 
++   * uvc_streaming structure ?
++   */
++
++  psize = stream-&gt;urb_size / urb-&gt;number_of_packets;
++  /* repair only needed if the packet should be assembled from
++     three transfers */
++  if (psize != 3*760 &amp;&amp; psize != 3*1024) return;
++
++  /* If the packet is unfull but exactly 1/3 or 2/3 the full length, 
++   * assume it is fragmented.  If it turns out not to be, it gets
++   *  fixed later 
++   */
++
++  if ((urb-&gt;iso_frame_desc[fno].actual_length == psize/3 || 
++       urb-&gt;iso_frame_desc[fno].actual_length == 2*psize/3) &amp;&amp; qbytes == 0 ){
++       uvc_trace(UVC_TRACE_FRAME,&quot;starting fix\n&quot;);
++       memcpy(qbuf,urb-&gt;transfer_buffer+urb-&gt;iso_frame_desc[fno].offset,
++	      urb-&gt;iso_frame_desc[fno].actual_length);
++       qbytes = urb-&gt;iso_frame_desc[fno].actual_length;
++       urb-&gt;iso_frame_desc[fno].actual_length = 0;
++  }
++  /* if we started filling our buffer, keep filling it. 
++   */
++  else if ( qbytes &gt; 0 ){
++       if (urb-&gt;iso_frame_desc[fno].actual_length + qbytes &lt;= psize ){
++	 /* But, if the next packet it a header, we shouldn't have done this.  This can happen
++	  * if the video frame ends with exactly 1/3 or 2/3 full packet.
++	  * 
++	  * The Quanta camera always send empty payload packets with EOF.  This packet has
++	  * a length of 12. So test for empty packet, length of 12 and EOF set.
++	  *  
++	  * If the camera were to ever send a header that was not 12 bytes this would fail
++	  * looks like headers could in principle be 12, 8, 6, or 2 bytes. 
++	  */
++
++	    if (urb-&gt;iso_frame_desc[fno].actual_length == 12 &amp;&amp; 
++	        ((u8 *) (urb-&gt;transfer_buffer+urb-&gt;iso_frame_desc[fno].offset))[0] == 12 &amp;&amp;
++		((u8 *) (urb-&gt;transfer_buffer+urb-&gt;iso_frame_desc[fno].offset))[1] &amp; 
++		UVC_STREAM_EOF ){
++	      /* throw away the packet, but mark the previous with EOF 
++	       */
++	         urb-&gt;iso_frame_desc[fno].actual_length = 0;
++		 qbuf[1] |= UVC_STREAM_EOF;
++	    }
++	    else{ 
++	      /*  continue filling our buffer  */
++	         memcpy(&amp;qbuf[qbytes],urb-&gt;transfer_buffer+urb-&gt;iso_frame_desc[fno].offset,
++			urb-&gt;iso_frame_desc[fno].actual_length);
++		 qbytes += urb-&gt;iso_frame_desc[fno].actual_length;
++		 urb-&gt;iso_frame_desc[fno].actual_length = 0;
++	    }
++       }
++       else{ 
++	 /* We're here if adding the next packet would overfill our buffer.
++	  * This only seems to happen if the camera gives up on a frame 
++	  * and toggles fid. So we'll throw away what we've been 
++	  * assembling, because it's a broken frame anyway. 
++	  */
++	    uvc_trace(UVC_TRACE_FRAME,&quot;repair_quanta: abandoned frame during repair? &quot; 
++		      &quot;buffer would overfill\n&quot;);
++	    qbytes = 0;
++       }
++  }
++  /* copy the buffer back into the stream if it's time */
++  if ((qbytes != 0 &amp;&amp; qbytes != psize/3 &amp;&amp; qbytes != 2*psize/3) || 
++      (qbuf[1] &amp; UVC_STREAM_EOF &amp;&amp; qbytes != 0)){
++       memcpy(urb-&gt;transfer_buffer+urb-&gt;iso_frame_desc[fno].offset,qbuf,qbytes);
++       uvc_trace(UVC_TRACE_FRAME,&quot;fixing packet, frame: %i\n&quot;,stream-&gt;sequence);
++       urb-&gt;iso_frame_desc[fno].actual_length = qbytes;
++       qbuf[1] = 0;
++       qbytes =0;
++  }
++
++
++}
++
+ /*
+  * Completion handler for video URBs.
+  */
+@@ -602,14 +700,25 @@
+ 			continue;
+ 		}
+ 
++		/* Filter to repair fragmented packets for Quanta */
++		if (stream-&gt;dev-&gt;quirks &amp; UVC_QUIRK_QUANTA)
++		  repair_quanta_stream(urb, stream, i);
++		    
++
+ 		/* Decode the payload header. */
+ 		mem = urb-&gt;transfer_buffer + urb-&gt;iso_frame_desc[i].offset;
+ 		do {
+ 			ret = uvc_video_decode_start(stream, buf, mem,
+ 				urb-&gt;iso_frame_desc[i].actual_length);
+-			if (ret == -EAGAIN)
+-				buf = uvc_queue_next_buffer(&amp;stream-&gt;queue,
+-							    buf);
++			if (ret == -EAGAIN){
++			    if (buf-&gt;buf.length != buf-&gt;buf.bytesused &amp;&amp;
++				  !(stream-&gt;cur_format-&gt;flags &amp;
++				      UVC_FMT_FLAG_COMPRESSED))
++			        buf-&gt;error = 1;
++
++			    buf = uvc_queue_next_buffer(&amp;stream-&gt;queue,
++							buf);
++			}
+ 		} while (ret == -EAGAIN);
+ 
+ 		if (ret &lt; 0)
+Only in /tmp/linux-2.6.39/drivers/media/video/uvc: uvc_video.c.orig
+diff -u /tmp/linux-2.6.39/drivers/media/video/uvc/uvcvideo.h drivers/media/video/uvc//uvcvideo.h
+--- /tmp/linux-2.6.39/drivers/media/video/uvc/uvcvideo.h	2011-06-25 22:58:39.452334128 -0700
++++ drivers/media/video/uvc//uvcvideo.h	2011-06-25 22:50:03.732334446 -0700
+@@ -1,3 +1,4 @@
++
+ #ifndef _USB_VIDEO_H_
+ #define _USB_VIDEO_H_
+ 
+@@ -185,6 +186,7 @@
+ #define UVC_QUIRK_FIX_BANDWIDTH		0x00000080
+ #define UVC_QUIRK_PROBE_DEF		0x00000100
+ #define UVC_QUIRK_RESTRICT_FRAME_RATE	0x00000200
++#define UVC_QUIRK_QUANTA               0x00000400
+ 
+ /* Format flags */
+ #define UVC_FMT_FLAG_COMPRESSED		0x00000001
+Only in drivers/media/video/uvc/: uvcvideo.ko
+Only in drivers/media/video/uvc/: .uvcvideo.ko.cmd
+Only in drivers/media/video/uvc/: uvcvideo.mod.c
+Only in drivers/media/video/uvc/: uvcvideo.mod.o
+Only in drivers/media/video/uvc/: .uvcvideo.mod.o.cmd
+Only in drivers/media/video/uvc/: uvc_video.o
+Only in drivers/media/video/uvc/: uvcvideo.o
+Only in drivers/media/video/uvc/: .uvc_video.o.cmd
+Only in drivers/media/video/uvc/: .uvcvideo.o.cmd
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006683.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+	<LI>Next message: <A HREF="006676.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6686">[ date ]</a>
+              <a href="thread.html#6686">[ thread ]</a>
+              <a href="subject.html#6686">[ subject ]</a>
+              <a href="author.html#6686">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

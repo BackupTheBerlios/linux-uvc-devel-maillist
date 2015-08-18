@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] OmniVision / I've screwed my system
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20OmniVision%20/%20I%27ve%20screwed%20my%20system&In-Reply-To=%3C4BB22124.6030000%40lordbah.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005619.html">
+   <LINK REL="Next"  HREF="005622.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] OmniVision / I've screwed my system</H1>
+    <B>Jeff Van Epps</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20OmniVision%20/%20I%27ve%20screwed%20my%20system&In-Reply-To=%3C4BB22124.6030000%40lordbah.com%3E"
+       TITLE="[Linux-uvc-devel] OmniVision / I've screwed my system">lordbah at lordbah.com
+       </A><BR>
+    <I>Tue Mar 30 18:04:52 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005619.html">[Linux-uvc-devel] OmniVision / I've screwed my system
+</A></li>
+        <LI>Next message: <A HREF="005622.html">[Linux-uvc-devel] OmniVision / I've screwed my system
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5620">[ date ]</a>
+              <a href="thread.html#5620">[ thread ]</a>
+              <a href="subject.html#5620">[ subject ]</a>
+              <a href="author.html#5620">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks. Just what I needed. That gets me back to where I was before.
+
+BTW, I wrote a poor request for help. I omitted these items:
+     my kernel is 2.6.31-21-generic
+    the original problem was that using Cheese 2.28.1 and all other
+programs I've tried, I got &quot;I/O error&quot;
+    before I tried to &quot;fix&quot; anything, the uvcvideo driver version was 256
+
+$ luvcview -L
+luvcview 0.2.4
+
+SDL information:
+  Video driver: x11
+  A window manager is available
+Device information:
+  Device path:  /dev/video0
+/dev/video0 does not support read i/o
+{ pixelformat = 'MJPG', description = 'MJPEG' }
+{ discrete: width = 352, height = 288 }
+    Time interval between frame: 2/15,
+{ discrete: width = 160, height = 120 }
+    Time interval between frame: 1/15,
+{ discrete: width = 176, height = 144 }
+    Time interval between frame: 1/15,
+{ discrete: width = 320, height = 240 }
+    Time interval between frame: 1/15,
+{ discrete: width = 640, height = 480 }
+    Time interval between frame: 2/15,
+
+$ luvcview -f mjpg
+luvcview 0.2.4
+
+SDL information:
+  Video driver: x11
+  A window manager is available
+Device information:
+  Device path:  /dev/video0
+Stream settings:
+  Frame format: MJPG
+  Frame size:   640x480
+  Frame rate:   15/2 fps (requested frame rate 30 fps is not supported
+by device)
+Unable to start capture: Input/output error
+Error grabbing
+Cleanup done. Exiting ...
+
+$ luvcview -f mjpg -i 7.5
+luvcview 0.2.4
+
+Invalid frame rate '7.5' specified with -i. Only integers are supported.
+Aborting.
+
+Okay, guess I have to step down the resolution.
+
+$ luvcview -f mjpg -s 320x240 -i 15
+luvcview 0.2.4
+
+SDL information:
+  Video driver: x11
+  A window manager is available
+Device information:
+  Device path:  /dev/video0
+Stream settings:
+  Frame format: MJPG
+  Frame size:   320x240
+  Frame rate:   15 fps
+Unable to start capture: Input/output error
+Error grabbing
+Cleanup done. Exiting ...
+
+Bah.
+
+$ cheese -v
+Cheese 2.28.1
+Probing devices with HAL...
+Found device 05a9:2649, getting capabilities...
+Detected v4l2 device: Monitor Webcam
+Driver: uvcvideo, version: 256
+Capabilities: 0x04000001
+
+Probing supported video formats...
+libv4l2: error turning on stream: Input/output error
+
+Okay, I don't know why this still saves uvcvideo version 256, same as it
+did before. Where is that coming from?
+
+Most significantly, why the I/O error?
+
+(Wow. menuconfig isn't at all daunting, is it? Yikes. Finally found
+FireDTV under Multimedia Support / DVB/ATSC adapters and excluded it.)
+
+Paulo Assis wrote:
+&gt;<i> Jeff Hi,
+</I>&gt;<i>
+</I>&gt;<i> You should have followed the v4l-dvb wiki:
+</I>&gt;<i> <A HREF="http://www.linuxtv.org/wiki/index.php/How_to_Obtain,_Build_and_Install_V4L-DVB_Device_Drivers">http://www.linuxtv.org/wiki/index.php/How_to_Obtain,_Build_and_Install_V4L-DVB_Device_Drivers</A>
+</I>&gt;<i>
+</I>&gt;<i> you now have mixed modules (new and old) and this is causing the errors.
+</I>&gt;<i>
+</I>&gt;<i> get mercurial, the kernel headers and the full v4l tree from linuxtv.
+</I>&gt;<i>
+</I>&gt;<i> from the top of the hg tree:
+</I>&gt;<i>
+</I>&gt;<i> make rminstall
+</I>&gt;<i> make distclean
+</I>&gt;<i> sudo make menuconfig       &lt;--- disable fireDTV or you will end up
+</I>&gt;<i> with errors when building
+</I>&gt;<i> make
+</I>&gt;<i> sudo make install
+</I>&gt;<i> sudo make unload
+</I>&gt;<i> sudo modprobe uvcvideo
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005619.html">[Linux-uvc-devel] OmniVision / I've screwed my system
+</A></li>
+	<LI>Next message: <A HREF="005622.html">[Linux-uvc-devel] OmniVision / I've screwed my system
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5620">[ date ]</a>
+              <a href="thread.html#5620">[ thread ]</a>
+              <a href="subject.html#5620">[ subject ]</a>
+              <a href="author.html#5620">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

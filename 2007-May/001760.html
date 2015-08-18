@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech Quickcam Pro 5000 (again)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20Quickcam%20Pro%205000%20%28again%29&In-Reply-To=%3C200705271939.39202.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001755.html">
+   <LINK REL="Next"  HREF="001756.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech Quickcam Pro 5000 (again)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20Quickcam%20Pro%205000%20%28again%29&In-Reply-To=%3C200705271939.39202.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Logitech Quickcam Pro 5000 (again)">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sun May 27 19:39:39 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001755.html">[Linux-uvc-devel] Logitech Quickcam Pro 5000 (again)
+</A></li>
+        <LI>Next message: <A HREF="001756.html">[Linux-uvc-devel] UVC driver with Sony Camcorders
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1760">[ date ]</a>
+              <a href="thread.html#1760">[ thread ]</a>
+              <a href="subject.html#1760">[ subject ]</a>
+              <a href="author.html#1760">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Stefan,
+
+&gt;<i> I am struggling to get my Logitech QuickCam Pro 5000 (046d:08ce) to
+</I>&gt;<i> work properly.
+</I>&gt;<i> I tried several versions of uvcvideo, for example revision 108. I
+</I>&gt;<i> tried with and without the 'reset patch', no change there. I am using
+</I>&gt;<i> Ubuntu Feisty Fawn with kernel 2.6.20-15-generic.
+</I>&gt;<i>
+</I>&gt;<i> Using Ekiga shows a moving image, however the software I really want
+</I>&gt;<i> to use (zoneminder) does not. Xawtv doesn't work either. I presume
+</I>&gt;<i> Ekiga and Xawtv use different modes to get the picture (streaming vs.
+</I>&gt;<i> capture?), hence the different results.
+</I>
+Xawtv has a little bug which makes the application not compatible with the 
+Linux UVC driver. There's a patch available in the SVN repository at 
+<A HREF="svn://svn.berlios.de/linux-uvc/patches/xawtv.">svn://svn.berlios.de/linux-uvc/patches/xawtv.</A>
+
+&gt;<i> The error messages dmesg is showing look like that:
+</I>&gt;<i>
+</I>&gt;<i> uvcvideo: Failed to query (1) UVC control 2 (unit 0) : -32 (exp. 26).
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 2 (unit 2) : -32 (exp. 2).
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 3 (unit 2) : -110 (exp. 2).
+</I>&gt;<i> uvcvideo: Failed to query (135) UVC control 7 (unit 2) : -75 (exp. 2).
+</I>&gt;<i> uvcvideo: Failed to query (130) UVC control 7 (unit 2) : -32 (exp. 2).
+</I>&gt;<i>
+</I>&gt;<i> Basically my results look similar to those of other people:
+</I>&gt;<i> <A HREF="http://article.gmane.org/gmane.linux.drivers.uvc.devel/834">http://article.gmane.org/gmane.linux.drivers.uvc.devel/834</A>
+</I>&gt;<i> <A HREF="http://developer.berlios.de/bugs/?func=detailbug&amp;bug_id=7605&amp;group_id=5681">http://developer.berlios.de/bugs/?func=detailbug&amp;bug_id=7605&amp;group_id=5681</A>
+</I>&gt;<i>
+</I>&gt;<i> Using Xawtv, the webcam's LED lights up briefly 3 times. Format
+</I>&gt;<i> negotiation seems to work, but the following ioctl calls fail with
+</I>&gt;<i> Invalid argument:
+</I>&gt;<i>
+</I>&gt;<i> ioctl: VIDIOC_REQBUFS(count=2;type=VIDEO_CAPTURE;memory=MMAP)
+</I>&gt;<i>
+</I>&gt;<i> ioctl: VIDIOC_DQBUF(index=0;type=VIDEO_CAPTURE;bytesused=0;flags=0x0
+</I>&gt;<i> [];field=ANY;;timecode.type=0;timecode.flags=0;timecode.frames=0;timecode.s
+</I>&gt;<i>econds=0;timecode.minutes=0;timecode.hours=0;timecode.userbits=&quot;&quot;;sequence=0
+</I>&gt;<i>;memory=unknown):
+</I>&gt;<i>
+</I>&gt;<i> Can anyone suggest a way to debug that problem?
+</I>
+Try to apply the abovementioned patch, it should fix your problem.
+
+&gt;<i> How do i find out what 
+</I>&gt;<i> the return values -32, and -110 mean? Where can i find the source code
+</I>&gt;<i> for usb_control_msg (the function that returns these values from
+</I>&gt;<i> within uvc_query_ctrl)?
+</I>
+-32 is -EPIPE, and -110 is -ETIMEDOUT. Error codes are defined in errno.h. 
+Those errors should not be fatal, but they certainly indicate that you suffer 
+from the Logitech hardware bug.
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001755.html">[Linux-uvc-devel] Logitech Quickcam Pro 5000 (again)
+</A></li>
+	<LI>Next message: <A HREF="001756.html">[Linux-uvc-devel] UVC driver with Sony Camcorders
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1760">[ date ]</a>
+              <a href="thread.html#1760">[ thread ]</a>
+              <a href="subject.html#1760">[ subject ]</a>
+              <a href="author.html#1760">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,234 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech C910 camera problems
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20C910%20camera%20problems&In-Reply-To=%3CCAPueXH4%3D_grRfBE5tU%2BQQiqwDK%3DfuXjNOxS1trB7PR4Th6D49w%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006794.html">
+   <LINK REL="Next"  HREF="006789.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech C910 camera problems</H1>
+    <B>Paulo Assis</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20C910%20camera%20problems&In-Reply-To=%3CCAPueXH4%3D_grRfBE5tU%2BQQiqwDK%3DfuXjNOxS1trB7PR4Th6D49w%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Logitech C910 camera problems">pj.assis at gmail.com
+       </A><BR>
+    <I>Sat Aug 13 00:03:34 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006794.html">[Linux-uvc-devel] Logitech C910 camera problems
+</A></li>
+        <LI>Next message: <A HREF="006789.html">[Linux-uvc-devel] MJPEG camera
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6796">[ date ]</a>
+              <a href="thread.html#6796">[ thread ]</a>
+              <a href="subject.html#6796">[ subject ]</a>
+              <a href="author.html#6796">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+The flag is think is UVC_CONTROL_AUTO_UPDATE
+
+and in the case of extension controls you really need to set it to
+disable control caching, this is specially evident for control like
+pan/tilt, that behave badly if this flag is not set.
+
+see:
+<A HREF="http://www.spinics.net/lists/vfl/msg38717.html">http://www.spinics.net/lists/vfl/msg38717.html</A>
+
+in the case of exposure however this was never a problem.
+in kernel 3.0 the auto exposure menu only reports the valid menu
+values (2) instead of all 4, this was a problem for tools like
+guvcview that didn't expect this. I've now fix it (1.5.0) and it is
+working fine, you also may want to test some other control tool like
+yavta instead.
+
+Regards,
+Paulo
+
+2011/8/12 Philip Gladstone &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">philip at gladstonefamily.net</A>&gt;:
+&gt;<i> In doing some digging, it also appears that the settings that I am
+</I>&gt;<i> interested in are also being cached by the driver, so I am not really
+</I>&gt;<i> getting the right values.
+</I>&gt;<i>
+</I>&gt;<i> I suspect that for UVC_CT_EXPOSURE_TIME_ABSOLUTE_CONTROL,
+</I>&gt;<i> UVC_PU_GAIN_CONTROL (at least), I want the UVC_CTRL_FLAG_AUTO_UPDATE set.
+</I>&gt;<i> This won't (I doubt) improve the exposure of the image, but it will improve
+</I>&gt;<i> the reporting.
+</I>&gt;<i>
+</I>&gt;<i> The output from v4l-ctl -l is
+</I>&gt;<i>
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; brightness (int) &#160;: min=0 max=255 step=1 default=128
+</I>&gt;<i> value=128
+</I>&gt;<i>
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; contrast (int) &#160;: min=0 max=255 step=1 default=32
+</I>&gt;<i> value=32
+</I>&gt;<i>
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; saturation (int) &#160;: min=0 max=255 step=1 default=32
+</I>&gt;<i> value=32
+</I>&gt;<i>
+</I>&gt;<i> &#160;white_balance_temperature_auto (bool) : default=1 value=1
+</I>&gt;<i>
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; gain (int) &#160;: min=0 max=255 step=1 default=64
+</I>&gt;<i> value=64
+</I>&gt;<i>
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; power_line_frequency (menu) : min=0 max=2 default=2 value=2
+</I>&gt;<i>
+</I>&gt;<i> &#160; &#160; &#160;white_balance_temperature (int) &#160;: min=2800 max=6500 step=1
+</I>&gt;<i> default=4000 value=4000
+</I>&gt;<i>
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;sharpness (int) &#160;: min=0 max=255 step=1 default=72
+</I>&gt;<i> value=72
+</I>&gt;<i>
+</I>&gt;<i> &#160; &#160; &#160; &#160; backlight_compensation (int) &#160;: min=0 max=1 step=1 default=0 value=0
+</I>&gt;<i>
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;exposure_auto (menu) : min=0 max=3 default=3 value=3
+</I>&gt;<i>
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160;exposure_absolute (int) &#160;: min=3 max=2047 step=1 default=166
+</I>&gt;<i> value=166
+</I>&gt;<i>
+</I>&gt;<i> &#160; &#160; &#160; &#160; exposure_auto_priority (bool) : default=0 value=1
+</I>&gt;<i>
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; pan_absolute (int) &#160;: min=-36000 max=36000 step=3600
+</I>&gt;<i> default=0 value=0
+</I>&gt;<i>
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;tilt_absolute (int) &#160;: min=-36000 max=36000 step=3600
+</I>&gt;<i> default=0 value=0
+</I>&gt;<i>
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; focus_absolute (int) &#160;: min=0 max=255 step=17 default=68
+</I>&gt;<i> value=68
+</I>&gt;<i>
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; focus_auto (bool) : default=1 value=1
+</I>&gt;<i>
+</I>&gt;<i> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;zoom_absolute (int) &#160;: min=1 max=5 step=1 default=1 value=1
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Philip
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> On 12-Aug-11 12:35 AM, Carl Michal wrote:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Hi Philip,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Laurent can correct me if I've got this wrong - but in the latest uvc
+</I>&gt;&gt;<i> driver there are some changes in how the exposure settings are reported.
+</I>&gt;&gt;<i> Before the driver would report settings that the camera wouldn't support.
+</I>&gt;&gt;<i> That is now fixed, but unfortunately the way it works now seems to confuse a
+</I>&gt;&gt;<i> lot of software. Both guvcview and luvcview are confused by the new driver
+</I>&gt;&gt;<i> as well and won't let you properly turn on or off the auto exposure as well.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> In luvcview the fix is trivial, and apparently guvcview has been fixed
+</I>&gt;&gt;<i> upstream. &#160;There is some disscussion of this in the list archives a few
+</I>&gt;&gt;<i> weeks ago.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Carl
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> On Thu, 11 Aug 2011, Philip Gladstone wrote:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> I'm running the latest UVC driver and I find that the auto-exposure
+</I>&gt;&gt;&gt;<i> doesn't work when I use the UVC driver on linux. The controls (as reported
+</I>&gt;&gt;&gt;<i> by fswebcam) are:
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Available Controls &#160; &#160; &#160; &#160;Current Value &#160; Range
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> ------------------ &#160; &#160; &#160; &#160;------------- &#160; -----
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Brightness &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;128 (50%) &#160; &#160; &#160; 0 - 255
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Contrast &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;32 (12%) &#160; &#160; &#160; &#160;0 - 255
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Saturation &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;32 (12%) &#160; &#160; &#160; &#160;0 - 255
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> White Balance Temperature, Auto True &#160; &#160; &#160; &#160; &#160; &#160;True | False
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Gain &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;64 (25%) &#160; &#160; &#160; &#160;0 - 255
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Power Line Frequency &#160; &#160; &#160;60 Hz &#160; &#160; &#160; &#160; &#160; Disabled | 50 Hz | 60 Hz
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> White Balance Temperature 4000 (32%) &#160; &#160; &#160;2800 - 6500
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Sharpness &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; 72 (28%) &#160; &#160; &#160; &#160;0 - 255
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Backlight Compensation &#160; &#160;0 &#160; &#160; &#160; &#160; &#160; &#160; &#160; 0 - 1
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Exposure, Auto &#160; &#160; &#160; &#160; &#160; &#160;Aperture Priority Mode Manual Mode | Aperture
+</I>&gt;&gt;&gt;<i> Priority Mode
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Exposure (Absolute) &#160; &#160; &#160; 166 (7%) &#160; &#160; &#160; &#160;3 - 2047
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Exposure, Auto Priority &#160; True &#160; &#160; &#160; &#160; &#160; &#160;True | False
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Pan (Absolute) &#160; &#160; &#160; &#160; &#160; &#160;0 (50%) &#160; &#160; &#160; &#160; -36000 - 36000
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Tilt (Absolute) &#160; &#160; &#160; &#160; &#160; 0 (50%) &#160; &#160; &#160; &#160; -36000 - 36000
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Focus (absolute) &#160; &#160; &#160; &#160; &#160;68 (26%) &#160; &#160; &#160; &#160;0 - 255
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Focus, Auto &#160; &#160; &#160; &#160; &#160; &#160; &#160; True &#160; &#160; &#160; &#160; &#160; &#160;True | False
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Zoom, Absolute &#160; &#160; &#160; &#160; &#160; &#160;1 &#160; &#160; &#160; &#160; &#160; &#160; &#160; 1 - 5
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> I'm grabbing images in MJPG format and I wonder if that fact is confusing
+</I>&gt;&gt;&gt;<i> the camera. Under windows you can watch it adjust exposure and gain until
+</I>&gt;&gt;&gt;<i> the image looks good (when in auto mode).
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> The values above appear to be the default values after a power cycle of
+</I>&gt;&gt;&gt;<i> the camera (plug and unplug the USB).
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Does anyone have any idea what is going on? I'd rather not have to put
+</I>&gt;&gt;&gt;<i> the camera in the manual exposure mode and then control it in software.....
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Philip
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;&gt;&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006794.html">[Linux-uvc-devel] Logitech C910 camera problems
+</A></li>
+	<LI>Next message: <A HREF="006789.html">[Linux-uvc-devel] MJPEG camera
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6796">[ date ]</a>
+              <a href="thread.html#6796">[ thread ]</a>
+              <a href="subject.html#6796">[ subject ]</a>
+              <a href="author.html#6796">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,425 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Driver improvement suggestion: Use quirks	parameter to mask unsafe	code, reset patch
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Driver%20improvement%20suggestion%3A%20Use%20quirks%0A%09parameter%20to%20mask%20unsafe%09code%2C%20reset%20patch&In-Reply-To=%3C20080324001338.GD8394%40sunshine.barsnick.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003302.html">
+   <LINK REL="Next"  HREF="003300.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Driver improvement suggestion: Use quirks	parameter to mask unsafe	code, reset patch</H1>
+    <B>Moritz Barsnick</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Driver%20improvement%20suggestion%3A%20Use%20quirks%0A%09parameter%20to%20mask%20unsafe%09code%2C%20reset%20patch&In-Reply-To=%3C20080324001338.GD8394%40sunshine.barsnick.net%3E"
+       TITLE="[Linux-uvc-devel] Driver improvement suggestion: Use quirks	parameter to mask unsafe	code, reset patch">barsnick at gmx.net
+       </A><BR>
+    <I>Mon Mar 24 01:13:38 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003302.html">[Linux-uvc-devel] Driver improvement suggestion: Prefer	device	node, and more?consistant messaging
+</A></li>
+        <LI>Next message: <A HREF="003300.html">[Linux-uvc-devel] Driver improvement suggestion: Use quirks parameter to mask unsafe	code , reset patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3268">[ date ]</a>
+              <a href="thread.html#3268">[ thread ]</a>
+              <a href="subject.html#3268">[ subject ]</a>
+              <a href="author.html#3268">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent, UVCers,
+
+the quirks parameter was recently introduced to the linux-uvc module,
+and is very practical to knowingly force certain behavior.
+
+While I was and am fighting with the &#167;%&amp;#! behavior of the SPCA525 ASIC
+in my Logitech QuickCam Fusion 046d:08c1, I luckily came across the
+&quot;reset&quot; patches, kindly linked from the QC Team site[*]. And the
+patches seem to have helped me, but I'll follow up with more info once
+I'm sure whether it works.
+
+I understand why you don't want to make the hacked fixes default in the
+code (it has been stressed many times on the list), but while Logitech
+try to come up with a solution, perhaps a quirks based integration
+would allow many users not to have to patch the driver. The code would
+only become active if explicitly selected with a module parameter. I
+believe that this is what the quirks parameter is perfectly made for,
+and I consider it non-intrusive for the unknowing user.
+
+I have ported the two relevant patches:
+a) the reset patch as found in
+   <A HREF="../2007-March/001476.html">http://lists.berlios.de/pipermail/linux-uvc-devel/2007-March/001476.html</A>
+b) the reset + resubmit urb patch, probably by Evgeny, found in
+   <A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/002830.html">https://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/002830.html</A>
+   which adds a second mechanism to the first patch.
+Instead of making the code changes &quot;absolute&quot;/&quot;final&quot; or #ifdef'd, I
+made the sections depend on a corresponding quirks mask setting. (Note:
+these are new quirks only defined by module parameter, not the kind
+defined by default by the device model.)
+
+The patch is attached. It introduces two new quirks UVC_QUIRK_RESET
+(0x20, I would write it (1&lt;&lt;5)), and UVC_QUIRK_RESUBMIT_URB (0x40,
+better (1&lt;&lt;6)). The functionality is separated.
+
+The parameter quirks=32 has consistantly helped the initialization of
+my Logitech QuickCam (incl. safe behavior through plug/unplug,
+load/unload, start/stop of apps) on both my machines, and quirks=96 has
+helped on my laptop through consistent failures (to be confirmed). I'm
+not sure the reset urb section is needed on my desktop, I think that
+machine has always behaved fine once the UVC device could init itself.
+But activating the reset urb code via the quirk has not hurt either, as
+far as I can tell. Sorry, I don't want to sound like I want this code
+as default behavior - the opposite is the case! :-)
+
+Your opinion is welcomed.
+
+Patch is against SVN r195.
+I've tested with Logitech QuickCam Fusion on two machines, both USB 1.1
+and USB 2.0.
+
+Kind regards,
+and many thanks, especially to Laurent, Evgeny, and Michel,
+Moritz
+
+[*]
+<A HREF="http://www.quickcamteam.net/documentation/faq/logitech-webcam-linux-usb-incompatibilities">http://www.quickcamteam.net/documentation/faq/logitech-webcam-linux-usb-incompatibilities</A>
+-------------- next part --------------
+diff -ur linux-uvc-trunk-r195/uvc_driver.c linux-uvc-trunk-r195-reset_quirk_resubmit_urb/uvc_driver.c
+--- linux-uvc-trunk-r195/uvc_driver.c	2008-03-20 10:59:20.000000000 +0100
++++ linux-uvc-trunk-r195-reset_quirk_resubmit_urb/uvc_driver.c	2008-03-20 14:49:03.000000000 +0100
+@@ -1431,9 +1431,26 @@
+ 	 * parameters.
+ 	 */
+ 	if ((ret = uvc_video_init(&amp;dev-&gt;video)) &lt; 0) {
+-		uvc_printk(KERN_ERR, &quot;Failed to initialize the device &quot;
+-			&quot;(%d).\n&quot;, ret);
+-		return ret;
++		if (dev-&gt;quirks &amp; UVC_QUIRK_RESET) {
++			uvc_printk(KERN_ERR, &quot;Failed to initialize the device &quot;
++				   &quot;(%d), trying to reset ...\n&quot;, ret);
++
++			if ((ret = uvc_usb_reset(dev)))
++				return ret;
++
++			if ((ret = uvc_video_init(&amp;dev-&gt;video)) &lt; 0) {
++				uvc_printk(KERN_ERR, &quot;Failed to initialize the device &quot;
++					   &quot;(%d).\n&quot;, ret);
++				return ret;
++			}
++		}
++		else {
++			uvc_printk(KERN_ERR, &quot;Failed to initialize the device &quot;
++				&quot;(%d).\n&quot;, ret);
++			return ret;
++
++		}
++		
+ 	}
+ 
+ 	/* Register the device with V4L. */
+@@ -1552,6 +1569,7 @@
+ 	dev-&gt;udev = usb_get_dev(udev);
+ 	dev-&gt;intf = usb_get_intf(intf);
+ 	dev-&gt;intfnum = intf-&gt;cur_altsetting-&gt;desc.bInterfaceNumber;
++	dev-&gt;last_urb = 0;
+ 	dev-&gt;quirks = id-&gt;driver_info | uvc_quirks_param;
+ 
+ 	/* Parse the Video Class control descriptor */
+diff -ur linux-uvc-trunk-r195/uvc_status.c linux-uvc-trunk-r195-reset_quirk_resubmit_urb/uvc_status.c
+--- linux-uvc-trunk-r195/uvc_status.c	2008-02-10 22:53:53.000000000 +0100
++++ linux-uvc-trunk-r195-reset_quirk_resubmit_urb/uvc_status.c	2008-03-20 15:08:02.000000000 +0100
+@@ -96,9 +96,20 @@
+ 	/* Resubmit the URB. */
+ 	urb-&gt;interval = dev-&gt;int_ep-&gt;desc.bInterval;
+ 	if ((ret = usb_submit_urb(urb, GFP_ATOMIC)) &lt; 0) {
+-		uvc_printk(KERN_ERR, &quot;Failed to resubmit status URB (%d).\n&quot;,
+-			ret);
++		if (dev-&gt;quirks &amp; UVC_QUIRK_RESUBMIT_URB) {
++			if (ret == -EL2NSYNC) {
++				if ((ret = usb_submit_urb(urb, GFP_ATOMIC)) &lt; 0) {
++					uvc_printk(KERN_ERR, &quot;Failed to resubmit status URB (%d).\n&quot;,
++						ret);
++				}
++			}
++			else {
++				uvc_printk(KERN_ERR, &quot;Failed to resubmit status URB (%d).\n&quot;,
++					ret);
++			}
++		}
+ 	}
++	dev-&gt;last_urb = jiffies;
+ }
+ 
+ int uvc_status_init(struct uvc_device *dev)
+@@ -106,6 +117,7 @@
+ 	struct usb_host_endpoint *ep = dev-&gt;int_ep;
+ 	unsigned int pipe;
+ 	int interval;
++	int ret = 0;
+ 
+ 	if (ep == NULL)
+ 		return 0;
+@@ -128,7 +140,21 @@
+ 		dev-&gt;status, sizeof dev-&gt;status, uvc_status_complete,
+ 		dev, interval);
+ 
+-	return usb_submit_urb(dev-&gt;int_urb, GFP_KERNEL);
++	if (dev-&gt;quirks &amp; UVC_QUIRK_RESUBMIT_URB) {
++		if ((ret = usb_submit_urb(dev-&gt;int_urb, GFP_KERNEL)) &lt; 0) {
++			if (ret == -EL2NSYNC) {
++				if ((ret = usb_submit_urb(dev-&gt;int_urb, GFP_KERNEL)) &lt; 0) {
++					uvc_printk(KERN_ERR, &quot;Failed to resubmit status URB (%d).\n&quot;,
++						ret);
++				}
++			}
++		}
++		dev-&gt;last_urb = jiffies;
++		return ret;
++	}
++	else {
++		return usb_submit_urb(dev-&gt;int_urb, GFP_KERNEL);
++	}
+ }
+ 
+ void uvc_status_cleanup(struct uvc_device *dev)
+@@ -145,9 +171,24 @@
+ 
+ int uvc_status_resume(struct uvc_device *dev)
+ {
++	int ret = 0;
+ 	if (dev-&gt;int_urb == NULL)
+ 		return 0;
+ 
+-	return usb_submit_urb(dev-&gt;int_urb, GFP_KERNEL);
++	if (dev-&gt;quirks &amp; UVC_QUIRK_RESUBMIT_URB) {
++		if ((ret = usb_submit_urb(dev-&gt;int_urb, GFP_KERNEL)) &lt; 0) {
++			if (ret == -EL2NSYNC) {
++				if ((ret = usb_submit_urb(dev-&gt;int_urb, GFP_KERNEL)) &lt; 0) {
++					uvc_printk(KERN_ERR, &quot;Failed to resubmit status URB (%d).\n&quot;,
++						ret);
++				}
++			}
++		}
++		dev-&gt;last_urb = jiffies;
++		return ret;
++	}
++	else {
++		return usb_submit_urb(dev-&gt;int_urb, GFP_KERNEL);
++	}
+ }
+ 
+diff -ur linux-uvc-trunk-r195/uvc_v4l2.c linux-uvc-trunk-r195-reset_quirk_resubmit_urb/uvc_v4l2.c
+--- linux-uvc-trunk-r195/uvc_v4l2.c	2008-03-20 10:59:20.000000000 +0100
++++ linux-uvc-trunk-r195-reset_quirk_resubmit_urb/uvc_v4l2.c	2008-03-20 11:04:04.000000000 +0100
+@@ -456,6 +456,12 @@
+ 		mutex_unlock(&amp;video-&gt;queue.mutex);
+ 	}
+ 
++	if (video-&gt;dev-&gt;quirks &amp; UVC_QUIRK_RESET) {
++		/* leave usb device in a clean state */
++		if (video-&gt;dev-&gt;state &amp; UVC_DEV_IOERROR)
++			uvc_video_reinit(video);
++	}
++
+ 	/* Release the file handle. */
+ 	uvc_dismiss_privileges(handle);
+ 	kfree(handle);
+diff -ur linux-uvc-trunk-r195/uvc_video.c linux-uvc-trunk-r195-reset_quirk_resubmit_urb/uvc_video.c
+--- linux-uvc-trunk-r195/uvc_video.c	2008-03-20 10:59:20.000000000 +0100
++++ linux-uvc-trunk-r195-reset_quirk_resubmit_urb/uvc_video.c	2008-03-20 14:41:40.000000000 +0100
+@@ -39,24 +39,69 @@
+ 	__u8 type = USB_TYPE_CLASS | USB_RECIP_INTERFACE;
+ 	unsigned int pipe;
+ 	int ret;
++	int delayed = 0;
+ 
+ 	pipe = (query &amp; 0x80) ? usb_rcvctrlpipe(dev-&gt;udev, 0)
+ 			      : usb_sndctrlpipe(dev-&gt;udev, 0);
+ 	type |= (query &amp; 0x80) ? USB_DIR_IN : USB_DIR_OUT;
+ 
++	if (dev-&gt;quirks &amp; UVC_QUIRK_RESUBMIT_URB) {
++		if (dev-&gt;last_urb) {
++			while (time_before(jiffies, dev-&gt;last_urb + 2)) {
++				schedule();		
++				delayed = 1;
++			}
++		}
++	}
++
+ 	ret = usb_control_msg(dev-&gt;udev, pipe, query, type, cs &lt;&lt; 8,
+ 			unit &lt;&lt; 8 | intfnum, data, size, timeout);
++	dev-&gt;last_urb = jiffies;
+ 
+ 	if (ret != size) {
+ 		uvc_printk(KERN_ERR, &quot;Failed to query (%u) UVC control %u &quot;
+ 			&quot;(unit %u) : %d (exp. %u).\n&quot;, query, cs, unit, ret,
+ 			size);
++		if (dev-&gt;quirks &amp; UVC_QUIRK_RESUBMIT_URB) {
++			if (delayed) {
++				uvc_printk(KERN_ERR,&quot;usb_control_msg was delayed\n&quot;);
++			} else {
++				uvc_printk(KERN_ERR,&quot;usb_control_msg was NOT delayed\n&quot;);
++			}
++		}
++		if (ret == -ETIMEDOUT) // reset the device in case of -110 error
++			dev-&gt;state |= UVC_DEV_IOERROR;
++
++		dev-&gt;state |= UVC_DEV_IOERROR;
+ 		return -EIO;
+ 	}
+ 
+ 	return 0;
+ }
+ 
++int uvc_usb_reset(struct uvc_device *dev)
++{
++	int l, ret;
++
++	l = usb_lock_device_for_reset(dev-&gt;udev, dev-&gt;intf);
++
++	if (l &gt;= 0) {
++		ret = usb_reset_device(dev-&gt;udev);
++		if (l)
++			usb_unlock_device(dev-&gt;udev);
++	}
++	else
++		ret = -EBUSY;
++
++	if (ret)
++		uvc_printk(KERN_DEBUG, &quot;uvc_usb_reset: Unable to reset usb device&quot;
++			   &quot;(%d).\n&quot;, ret);
++	else
++		dev-&gt;state &amp;= ~UVC_DEV_IOERROR;
++
++	return ret;
++}
++
+ int uvc_query_ctrl(struct uvc_device *dev, __u8 query, __u8 unit,
+ 			__u8 intfnum, __u8 cs, void *data, __u16 size)
+ {
+@@ -535,9 +580,20 @@
+ 	video-&gt;decode(urb, video, buf);
+ 
+ 	if ((ret = usb_submit_urb(urb, GFP_ATOMIC)) &lt; 0) {
+-		uvc_printk(KERN_ERR, &quot;Failed to resubmit video URB (%d).\n&quot;,
+-			ret);
+-        }
++		if (video-&gt;dev-&gt;quirks &amp; UVC_QUIRK_RESUBMIT_URB) {
++			if (ret == -EL2NSYNC) {
++				if ((ret = usb_submit_urb(urb, GFP_ATOMIC)) &lt; 0) {
++					uvc_printk(KERN_ERR, &quot;Failed to resubmit video URB (%d).\n&quot;,
++						ret);
++				}
++			}
++		}
++		else {
++			uvc_printk(KERN_ERR, &quot;Failed to resubmit video URB (%d).\n&quot;,
++				ret);
++		}
++	}
++	video-&gt;dev-&gt;last_urb = jiffies;
+ }
+ 
+ /*
+@@ -684,6 +740,25 @@
+ 	return 0;
+ }
+ 
++/* 
++ * Reset and Re-Initialize video device
++ */
++int uvc_video_reinit(struct uvc_video_device *video)
++{
++	int ret;
++
++	if ((ret = uvc_usb_reset(video-&gt;dev)) &lt; 0)
++		return ret;
++
++	if ((ret = uvc_set_video_ctrl(video, &amp;video-&gt;streaming-&gt;ctrl, 0)) &lt; 0) {
++		uvc_printk(KERN_DEBUG, &quot;uvc_video_reinit: Unable to commit format &quot;
++			   &quot;(%d).\n&quot;, ret);
++		return ret;
++	}
++
++	return 0;
++}
++
+ /*
+  * Initialize isochronous/bulk URBs and allocate transfer buffers.
+  */
+@@ -755,6 +830,7 @@
+ 			return ret;
+ 		}
+ 	}
++	video-&gt;dev-&gt;last_urb = jiffies;
+ 
+ 	return 0;
+ }
+diff -ur linux-uvc-trunk-r195/uvcvideo.h linux-uvc-trunk-r195-reset_quirk_resubmit_urb/uvcvideo.h
+--- linux-uvc-trunk-r195/uvcvideo.h	2008-03-20 10:59:20.000000000 +0100
++++ linux-uvc-trunk-r195-reset_quirk_resubmit_urb/uvcvideo.h	2008-03-20 14:33:51.000000000 +0100
+@@ -299,6 +299,8 @@
+ #define UVC_QUIRK_PROBE_EXTRAFIELDS	0x00000004
+ #define UVC_QUIRK_BUILTIN_ISIGHT	0x00000008
+ #define UVC_QUIRK_STREAM_NO_FID		0x00000010
++#define UVC_QUIRK_RESET			0x00000020
++#define UVC_QUIRK_RESUBMIT_URB		0x00000040
+ 
+ /* Format flags */
+ #define UVC_FMT_FLAG_COMPRESSED		0x00000001
+@@ -588,6 +590,7 @@
+ 
+ enum uvc_device_state {
+ 	UVC_DEV_DISCONNECTED = 1,
++	UVC_DEV_IOERROR = 2,
+ };
+ 
+ struct uvc_device {
+@@ -597,6 +600,7 @@
+ 	int intfnum;
+ 
+ 	enum uvc_device_state state;
++	unsigned long last_urb;
+ 	struct kref kref;
+ 	struct list_head list;
+ 
+@@ -702,6 +706,8 @@
+ extern struct file_operations uvc_fops;
+ 
+ /* Video */
++extern int uvc_usb_reset(struct uvc_device *dev);
++extern int uvc_video_reinit(struct uvc_video_device *video);
+ extern int uvc_video_init(struct uvc_video_device *video);
+ extern int uvc_video_suspend(struct uvc_video_device *video);
+ extern int uvc_video_resume(struct uvc_video_device *video);
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003302.html">[Linux-uvc-devel] Driver improvement suggestion: Prefer	device	node, and more?consistant messaging
+</A></li>
+	<LI>Next message: <A HREF="003300.html">[Linux-uvc-devel] Driver improvement suggestion: Use quirks parameter to mask unsafe	code , reset patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3268">[ date ]</a>
+              <a href="thread.html#3268">[ thread ]</a>
+              <a href="subject.html#3268">[ subject ]</a>
+              <a href="author.html#3268">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

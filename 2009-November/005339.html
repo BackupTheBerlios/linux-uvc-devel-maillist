@@ -1,0 +1,1003 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] BisonCam 5986:0203 kills USB
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20BisonCam%205986%3A0203%20kills%20USB&In-Reply-To=%3C200911252322.27164.stephan.diestelhorst%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005327.html">
+   <LINK REL="Next"  HREF="005347.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] BisonCam 5986:0203 kills USB</H1>
+    <B>Stephan Diestelhorst</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20BisonCam%205986%3A0203%20kills%20USB&In-Reply-To=%3C200911252322.27164.stephan.diestelhorst%40gmail.com%3E"
+       TITLE="[Linux-uvc-devel] BisonCam 5986:0203 kills USB">stephan.diestelhorst at gmail.com
+       </A><BR>
+    <I>Wed Nov 25 23:22:26 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005327.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+        <LI>Next message: <A HREF="005347.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5339">[ date ]</a>
+              <a href="thread.html#5339">[ thread ]</a>
+              <a href="subject.html#5339">[ subject ]</a>
+              <a href="author.html#5339">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Am Montag 23 November 2009 10:20:46 schrieb Oliver Neukum:
+&gt;<i> Am Samstag, 21. November 2009 17:56:30 schrieb Alan Stern:
+</I>&gt;<i> &gt; A possible optimization would be to delay for (500 us - elapsed time) 
+</I>&gt;<i> &gt; instead of the full 500 us.  Or the whole thing could be simplified by 
+</I>&gt;<i> &gt; doing the full delay always, without any regard to the elapsed time -- 
+</I>&gt;<i> &gt; but this would be less efficient.
+</I>&gt;<i>
+</I>&gt;<i> this version should be efficient.
+</I>&gt;<i> Stephan, please test.
+</I>
+Thanks Oliver for the patch! Sorry for not testing any earlier. In
+order to save on re-compilation time, I &quot;backported&quot; the patch to
+2.6.31.4 which I had used for previous experiments. Please find my
+port attached, for reference.
+
+The patch seemed to work initially, however, after booting several
+times and enabling / disabling the cam (through hotkey) and additional
+rmmod uvcvideo, I managed to trigger the bug again, see the dmesg
+with successful and errorneous attempts attached.
+
+It might well be the case that the delay is too small. I will change
+to a higher value (this and the device ID should eventually be
+converted into symbolic constants). Does anybody have a clue how to
+properly determine the neccessary delay, either with a stress test or
+by someone (Intel) telling us the hardware delay?
+
+Cheers,
+  Stephan
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: bison_ehci_lockup_fix_backport.patch
+Type: text/x-patch
+Size: 3025 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091125/2e3d2518/attachment.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20091125/2e3d2518/attachment.bin</A>&gt;
+-------------- next part --------------
+[    0.000000] Initializing cgroup subsys cpuset
+[    0.000000] Initializing cgroup subsys cpu
+[    0.000000] Linux version 2.6.31.4-bison-u2000 (<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">syon at m-twain</A>) (gcc version 4.4.1 (Ubuntu 4.4.1-4ubuntu8) ) #12 SMP Wed Nov 25 22:35:57 CET 2009 (Ubuntu 2.6.31-14.48-generic)
+[    0.000000] KERNEL supported cpus:
+[    0.000000]   Intel GenuineIntel
+[    0.000000]   AMD AuthenticAMD
+[    0.000000]   NSC Geode by NSC
+[    0.000000]   Cyrix CyrixInstead
+[    0.000000]   Centaur CentaurHauls
+[    0.000000]   Transmeta GenuineTMx86
+[    0.000000]   Transmeta TransmetaCPU
+[    0.000000]   UMC UMC UMC UMC
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009ec00 (usable)
+[    0.000000]  BIOS-e820: 000000000009ec00 - 00000000000a0000 (reserved)
+[    0.000000]  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+[    0.000000]  BIOS-e820: 0000000000100000 - 000000003f5b2000 (usable)
+[    0.000000]  BIOS-e820: 000000003f5b2000 - 000000003f5d5000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 000000003f5d5000 - 000000003f5e6000 (reserved)
+[    0.000000]  BIOS-e820: 000000003f5e6000 - 000000003f5e9000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 000000003f5e9000 - 000000003f605000 (reserved)
+[    0.000000]  BIOS-e820: 000000003f605000 - 000000003f606000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 000000003f606000 - 000000003f608000 (reserved)
+[    0.000000]  BIOS-e820: 000000003f608000 - 000000003f611000 (ACPI data)
+[    0.000000]  BIOS-e820: 000000003f611000 - 000000003f617000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 000000003f617000 - 000000003f700000 (reserved)
+[    0.000000]  BIOS-e820: 00000000ffb00000 - 00000000ffc00000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
+[    0.000000] DMI 2.4 present.
+[    0.000000] AMI BIOS detected: BIOS may corrupt low RAM, working around it.
+[    0.000000] e820 update range: 0000000000000000 - 0000000000010000 (usable) ==&gt; (reserved)
+[    0.000000] last_pfn = 0x3f5b2 max_arch_pfn = 0x100000
+[    0.000000] MTRR default type: uncachable
+[    0.000000] MTRR fixed ranges enabled:
+[    0.000000]   00000-9FFFF write-back
+[    0.000000]   A0000-BFFFF uncachable
+[    0.000000]   C0000-DBFFF write-protect
+[    0.000000]   DC000-E7FFF write-through
+[    0.000000]   E8000-FFFFF write-protect
+[    0.000000] MTRR variable ranges enabled:
+[    0.000000]   0 base 000000000 mask 0C0000000 write-back
+[    0.000000]   1 base 03F700000 mask 0FFF00000 uncachable
+[    0.000000]   2 base 03F800000 mask 0FF800000 uncachable
+[    0.000000]   3 disabled
+[    0.000000]   4 disabled
+[    0.000000]   5 disabled
+[    0.000000]   6 disabled
+[    0.000000]   7 disabled
+[    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+[    0.000000] Scanning 0 areas for low memory corruption
+[    0.000000] modified physical RAM map:
+[    0.000000]  modified: 0000000000000000 - 0000000000010000 (reserved)
+[    0.000000]  modified: 0000000000010000 - 000000000009ec00 (usable)
+[    0.000000]  modified: 000000000009ec00 - 00000000000a0000 (reserved)
+[    0.000000]  modified: 00000000000e0000 - 0000000000100000 (reserved)
+[    0.000000]  modified: 0000000000100000 - 000000003f5b2000 (usable)
+[    0.000000]  modified: 000000003f5b2000 - 000000003f5d5000 (ACPI NVS)
+[    0.000000]  modified: 000000003f5d5000 - 000000003f5e6000 (reserved)
+[    0.000000]  modified: 000000003f5e6000 - 000000003f5e9000 (ACPI NVS)
+[    0.000000]  modified: 000000003f5e9000 - 000000003f605000 (reserved)
+[    0.000000]  modified: 000000003f605000 - 000000003f606000 (ACPI NVS)
+[    0.000000]  modified: 000000003f606000 - 000000003f608000 (reserved)
+[    0.000000]  modified: 000000003f608000 - 000000003f611000 (ACPI data)
+[    0.000000]  modified: 000000003f611000 - 000000003f617000 (ACPI NVS)
+[    0.000000]  modified: 000000003f617000 - 000000003f700000 (reserved)
+[    0.000000]  modified: 00000000ffb00000 - 00000000ffc00000 (reserved)
+[    0.000000]  modified: 00000000fff00000 - 0000000100000000 (reserved)
+[    0.000000] initial memory mapped : 0 - 00c00000
+[    0.000000] init_memory_mapping: 0000000000000000-00000000377fe000
+[    0.000000] Using x86 segment limits to approximate NX protection
+[    0.000000]  0000000000 - 0000400000 page 4k
+[    0.000000]  0000400000 - 0037400000 page 2M
+[    0.000000]  0037400000 - 00377fe000 page 4k
+[    0.000000] kernel direct mapping tables up to 377fe000 @ 10000-15000
+[    0.000000] RAMDISK: 33d0d000 - 37feffb7
+[    0.000000] Allocated new RAMDISK: 00898000 - 04b7afb7
+[    0.000000] Move RAMDISK from 0000000033d0d000 - 0000000037feffb6 to 00898000 - 04b7afb6
+[    0.000000] ACPI: RSDP 000f03c0 00024 (v02 MSI_NB)
+[    0.000000] ACPI: XSDT 3f60ff10 0005C (v01 MSI_NB MEGABOOK 06222004 MSFT 00010013)
+[    0.000000] ACPI: FACP 3f5e6c10 000F4 (v04 MSI_NB MEGABOOK 06222004 MSFT 00010013)
+[    0.000000] ACPI Warning: 32/64 FACS address mismatch in FADT - two FACS tables! 20090521 tbfadt-370
+[    0.000000] ACPI Warning: 32/64X FACS address mismatch in FADT - 3F611E40/000000003F611D40, using 32 20090521 tbfadt-487
+[    0.000000] ACPI: DSDT 3f608010 053DD (v01 MSI_NB MEGABOOK 00000000 INTL 20051117)
+[    0.000000] ACPI: FACS 3f611e40 00040
+[    0.000000] ACPI: APIC 3f610e90 0005C (v02 MSI_NB MEGABOOK 06222004 MSFT 00010013)
+[    0.000000] ACPI: MCFG 3f615c90 0003C (v01 MSI_NB MEGABOOK 06222004 MSFT 00000097)
+[    0.000000] ACPI: SLIC 3f612c10 00176 (v01 MSI_NB MEGABOOK 06222004 MSFT 00000097)
+[    0.000000] ACPI: SSDT 3f605510 004CE (v02  PmRef    CpuPm 00003000 INTL 20051117)
+[    0.000000] ACPI: SSDT 3f5e8a10 00232 (v02  PmRef  Cpu0Tst 00003000 INTL 20051117)
+[    0.000000] ACPI: SSDT 3f611a10 000A0 (v02  PmRef  Cpu1Tst 00003000 INTL 20051117)
+[    0.000000] ACPI: Local APIC address 0xfee00000
+[    0.000000] 125MB HIGHMEM available.
+[    0.000000] 887MB LOWMEM available.
+[    0.000000]   mapped low ram: 0 - 377fe000
+[    0.000000]   low ram: 0 - 377fe000
+[    0.000000]   node 0 low ram: 00000000 - 377fe000
+[    0.000000]   node 0 bootmap 00011000 - 00017f00
+[    0.000000] (9 early reservations) ==&gt; bootmem [0000000000 - 00377fe000]
+[    0.000000]   #0 [0000000000 - 0000001000]   BIOS data page ==&gt; [0000000000 - 0000001000]
+[    0.000000]   #1 [0000001000 - 0000002000]    EX TRAMPOLINE ==&gt; [0000001000 - 0000002000]
+[    0.000000]   #2 [0000006000 - 0000007000]       TRAMPOLINE ==&gt; [0000006000 - 0000007000]
+[    0.000000]   #3 [0000100000 - 00008930a0]    TEXT DATA BSS ==&gt; [0000100000 - 00008930a0]
+[    0.000000]   #4 [000009ec00 - 0000100000]    BIOS reserved ==&gt; [000009ec00 - 0000100000]
+[    0.000000]   #5 [0000894000 - 00008971d4]              BRK ==&gt; [0000894000 - 00008971d4]
+[    0.000000]   #6 [0000010000 - 0000011000]          PGTABLE ==&gt; [0000010000 - 0000011000]
+[    0.000000]   #7 [0000898000 - 0004b7afb7]      NEW RAMDISK ==&gt; [0000898000 - 0004b7afb7]
+[    0.000000]   #8 [0000011000 - 0000018000]          BOOTMAP ==&gt; [0000011000 - 0000018000]
+[    0.000000] Zone PFN ranges:
+[    0.000000]   DMA      0x00000010 -&gt; 0x00001000
+[    0.000000]   Normal   0x00001000 -&gt; 0x000377fe
+[    0.000000]   HighMem  0x000377fe -&gt; 0x0003f5b2
+[    0.000000] Movable zone start PFN for each node
+[    0.000000] early_node_map[2] active PFN ranges
+[    0.000000]     0: 0x00000010 -&gt; 0x0000009e
+[    0.000000]     0: 0x00000100 -&gt; 0x0003f5b2
+[    0.000000] On node 0 totalpages: 259392
+[    0.000000] free_area_init_node: node 0, pgdat c076e900, node_mem_map c4b7b200
+[    0.000000]   DMA zone: 32 pages used for memmap
+[    0.000000]   DMA zone: 0 pages reserved
+[    0.000000]   DMA zone: 3950 pages, LIFO batch:0
+[    0.000000]   Normal zone: 1744 pages used for memmap
+[    0.000000]   Normal zone: 221486 pages, LIFO batch:31
+[    0.000000]   HighMem zone: 252 pages used for memmap
+[    0.000000]   HighMem zone: 31928 pages, LIFO batch:7
+[    0.000000] Using APIC driver default
+[    0.000000] ACPI: PM-Timer IO Port: 0x408
+[    0.000000] ACPI: Local APIC address 0xfee00000
+[    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
+[    0.000000] ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
+[    0.000000] IOAPIC[0]: apic_id 2, version 32, address 0xfec00000, GSI 0-23
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+[    0.000000] ACPI: IRQ0 used by override.
+[    0.000000] ACPI: IRQ2 used by override.
+[    0.000000] ACPI: IRQ9 used by override.
+[    0.000000] Enabling APIC mode:  Flat.  Using 1 I/O APICs
+[    0.000000] Using ACPI (MADT) for SMP configuration information
+[    0.000000] SMP: Allowing 2 CPUs, 0 hotplug CPUs
+[    0.000000] nr_irqs_gsi: 24
+[    0.000000] PM: Registered nosave memory: 000000000009e000 - 000000000009f000
+[    0.000000] PM: Registered nosave memory: 000000000009f000 - 00000000000a0000
+[    0.000000] PM: Registered nosave memory: 00000000000a0000 - 00000000000e0000
+[    0.000000] PM: Registered nosave memory: 00000000000e0000 - 0000000000100000
+[    0.000000] Allocating PCI resources starting at 3f700000 (gap: 3f700000:c0400000)
+[    0.000000] NR_CPUS:8 nr_cpumask_bits:8 nr_cpu_ids:2 nr_node_ids:1
+[    0.000000] PERCPU: Embedded 14 pages at c536f000, static data 35612 bytes
+[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 257364
+[    0.000000] Kernel command line: root=/dev/mapper/vg_hdd-root ro quiet splash 
+[    0.000000] PID hash table entries: 4096 (order: 12, 16384 bytes)
+[    0.000000] Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+[    0.000000] Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+[    0.000000] Enabling fast FPU save and restore... done.
+[    0.000000] Enabling unmasked SIMD FPU exception support... done.
+[    0.000000] Initializing CPU#0
+[    0.000000] allocated 5189800 bytes of page_cgroup
+[    0.000000] please try 'cgroup_disable=memory' option if you don't want memory cgroups
+[    0.000000] Initializing HighMem for node 0 (000377fe:0003f5b2)
+[    0.000000] Memory: 946784k/1038024k available (4523k kernel code, 90408k reserved, 2097k data, 544k init, 128720k highmem)
+[    0.000000] virtual kernel memory layout:
+[    0.000000]     fixmap  : 0xfff1d000 - 0xfffff000   ( 904 kB)
+[    0.000000]     pkmap   : 0xff800000 - 0xffc00000   (4096 kB)
+[    0.000000]     vmalloc : 0xf7ffe000 - 0xff7fe000   ( 120 MB)
+[    0.000000]     lowmem  : 0xc0000000 - 0xf77fe000   ( 887 MB)
+[    0.000000]       .init : 0xc0778000 - 0xc0800000   ( 544 kB)
+[    0.000000]       .data : 0xc056ad00 - 0xc0777308   (2097 kB)
+[    0.000000]       .text : 0xc0100000 - 0xc056ad00   (4523 kB)
+[    0.000000] Checking if this processor honours the WP bit even in supervisor mode...Ok.
+[    0.000000] SLUB: Genslabs=13, HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
+[    0.000000] NR_IRQS:2304 nr_irqs:424
+[    0.000000] Extended CMOS year: 2000
+[    0.000000] Fast TSC calibration using PIT
+[    0.000000] Detected 1600.114 MHz processor.
+[    0.001874] Console: colour VGA+ 80x25
+[    0.001880] console [tty0] enabled
+[    0.004015] spurious 8259A interrupt: IRQ7.
+[    0.004027] Calibrating delay loop (skipped), value calculated using timer frequency.. 3200.22 BogoMIPS (lpj=6400456)
+[    0.004072] Security Framework initialized
+[    0.004106] AppArmor: AppArmor initialized
+[    0.004122] Mount-cache hash table entries: 512
+[    0.004346] Initializing cgroup subsys ns
+[    0.004357] Initializing cgroup subsys cpuacct
+[    0.004366] Initializing cgroup subsys memory
+[    0.004377] Initializing cgroup subsys freezer
+[    0.004382] Initializing cgroup subsys net_cls
+[    0.004406] CPU: L1 I cache: 32K, L1 D cache: 24K
+[    0.004412] CPU: L2 cache: 512K
+[    0.004417] CPU: Physical Processor ID: 0
+[    0.004421] CPU: Processor Core ID: 0
+[    0.004428] mce: CPU supports 5 MCE banks
+[    0.004442] CPU0: Thermal monitoring enabled (TM2)
+[    0.004450] using mwait in idle threads.
+[    0.004461] Performance Counters: Atom events, Intel PMU driver.
+[    0.004476] ... version:                 3
+[    0.004480] ... bit width:               40
+[    0.004484] ... generic counters:        2
+[    0.004488] ... value mask:              000000ffffffffff
+[    0.004493] ... max period:              000000007fffffff
+[    0.004497] ... fixed-purpose counters:  3
+[    0.004502] ... counter mask:            0000000700000003
+[    0.004510] Checking 'hlt' instruction... OK.
+[    0.023982] ACPI: Core revision 20090521
+[    0.037886] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=0 pin2=0
+[    0.077584] CPU0: Intel(R) Atom(TM) CPU N270   @ 1.60GHz stepping 02
+[    0.080001] Booting processor 1 APIC 0x1 ip 0x6000
+[    0.004000] Initializing CPU#1
+[    0.004000] Calibrating delay using timer specific routine.. 3200.19 BogoMIPS (lpj=6400386)
+[    0.004000] CPU: L1 I cache: 32K, L1 D cache: 24K
+[    0.004000] CPU: L2 cache: 512K
+[    0.004000] CPU: Physical Processor ID: 0
+[    0.004000] CPU: Processor Core ID: 0
+[    0.004000] mce: CPU supports 5 MCE banks
+[    0.004000] CPU1: Thermal monitoring enabled (TM2)
+[    0.004000] x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
+[    0.164998] CPU1: Intel(R) Atom(TM) CPU N270   @ 1.60GHz stepping 02
+[    0.165034] checking TSC synchronization [CPU#0 -&gt; CPU#1]: passed.
+[    0.168050] Brought up 2 CPUs
+[    0.168057] Total of 2 processors activated (6400.42 BogoMIPS).
+[    0.168118] CPU0 attaching sched-domain:
+[    0.168125]  domain 0: span 0-1 level SIBLING
+[    0.168131]   groups: 0 1
+[    0.168142] CPU1 attaching sched-domain:
+[    0.168147]  domain 0: span 0-1 level SIBLING
+[    0.168153]   groups: 1 0
+[    0.168306] Booting paravirtualized kernel on bare hardware
+[    0.168478] regulator: core version 0.5
+[    0.168478] Time: 23:03:14  Date: 11/25/09
+[    0.168478] NET: Registered protocol family 16
+[    0.168478] EISA bus registered
+[    0.168478] ACPI: bus type pci registered
+[    0.168576] PCI: MCFG configuration 0: base e0000000 segment 0 buses 0 - 255
+[    0.168585] PCI: Not using MMCONFIG.
+[    0.255249] PCI: Using configuration type 1 for base access
+[    0.257502] bio: create slab &lt;bio-0&gt; at 0
+[    0.257502] ACPI: EC: Look up EC in DSDT
+[    0.265178] ACPI: BIOS _OSI(Linux) query ignored
+[    0.269336] ACPI: Interpreter enabled
+[    0.269352] ACPI: (supports S0 S1 S3 S4 S5)
+[    0.269404] ACPI: Using IOAPIC for interrupt routing
+[    0.269491] PCI: MCFG configuration 0: base e0000000 segment 0 buses 0 - 255
+[    0.269808] PCI: MCFG area at e0000000 reserved in ACPI motherboard resources
+[    0.269815] PCI: Using MMCONFIG for extended config space
+[    0.276622] ACPI: EC: non-query interrupt received, switching to interrupt mode
+[    0.284044] ACPI: EC: GPE storm detected, transactions will use polling mode
+[    0.361537] ACPI: EC: GPE = 0x17, I/O: command/status = 0x66, data = 0x62
+[    0.361544] ACPI: EC: driver started in poll mode
+[    0.361996] ACPI: No dock devices found.
+[    0.362548] ACPI: PCI Root Bridge [PCI0] (0000:00)
+[    0.362703] pci 0000:00:02.0: reg 10 32bit mmio: [0xdfe80000-0xdfefffff]
+[    0.362714] pci 0000:00:02.0: reg 14 io port: [0xe0f0-0xe0f7]
+[    0.362723] pci 0000:00:02.0: reg 18 32bit mmio: [0xc0000000-0xcfffffff]
+[    0.362733] pci 0000:00:02.0: reg 1c 32bit mmio: [0xdff00000-0xdff3ffff]
+[    0.362787] pci 0000:00:02.1: reg 10 32bit mmio: [0xdfe00000-0xdfe7ffff]
+[    0.362900] pci 0000:00:1b.0: reg 10 64bit mmio: [0xffe00000-0xffe03fff]
+[    0.362956] pci 0000:00:1b.0: PME# supported from D0 D3hot D3cold
+[    0.362964] pci 0000:00:1b.0: PME# disabled
+[    0.363041] pci 0000:00:1c.0: PME# supported from D0 D3hot D3cold
+[    0.363049] pci 0000:00:1c.0: PME# disabled
+[    0.363128] pci 0000:00:1c.1: PME# supported from D0 D3hot D3cold
+[    0.363135] pci 0000:00:1c.1: PME# disabled
+[    0.363201] pci 0000:00:1d.0: reg 20 io port: [0xe080-0xe09f]
+[    0.363265] pci 0000:00:1d.1: reg 20 io port: [0xe060-0xe07f]
+[    0.363330] pci 0000:00:1d.2: reg 20 io port: [0xe040-0xe05f]
+[    0.363394] pci 0000:00:1d.3: reg 20 io port: [0xe020-0xe03f]
+[    0.363464] pci 0000:00:1d.7: reg 10 32bit mmio: [0xdff40000-0xdff403ff]
+[    0.363527] pci 0000:00:1d.7: PME# supported from D0 D3hot D3cold
+[    0.363535] pci 0000:00:1d.7: PME# disabled
+[    0.363690] pci 0000:00:1f.0: Force enabled HPET at 0xfed03000
+[    0.363704] pci 0000:00:1f.0: quirk: region 0400-047f claimed by ICH6 ACPI/GPIO/TCO
+[    0.363712] pci 0000:00:1f.0: quirk: region 0500-053f claimed by ICH6 GPIO
+[    0.363720] pci 0000:00:1f.0: ICH7 LPC Generic IO decode 1 PIO at 004c (mask 0007)
+[    0.363793] pci 0000:00:1f.2: reg 10 io port: [0xe0e0-0xe0e7]
+[    0.363803] pci 0000:00:1f.2: reg 14 io port: [0xe0d0-0xe0d3]
+[    0.363814] pci 0000:00:1f.2: reg 18 io port: [0xe0c0-0xe0c7]
+[    0.363824] pci 0000:00:1f.2: reg 1c io port: [0xe0b0-0xe0b3]
+[    0.363835] pci 0000:00:1f.2: reg 20 io port: [0xe0a0-0xe0af]
+[    0.363868] pci 0000:00:1f.2: PME# supported from D3hot
+[    0.363875] pci 0000:00:1f.2: PME# disabled
+[    0.363932] pci 0000:00:1f.3: reg 20 io port: [0xe000-0xe01f]
+[    0.364042] pci 0000:01:00.0: reg 10 io port: [0xd000-0xd0ff]
+[    0.364069] pci 0000:01:00.0: reg 18 64bit mmio: [0xffd10000-0xffd10fff]
+[    0.364088] pci 0000:01:00.0: reg 20 64bit mmio: [0xffd00000-0xffd0ffff]
+[    0.364102] pci 0000:01:00.0: reg 30 32bit mmio: [0xdfd00000-0xdfd0ffff]
+[    0.364151] pci 0000:01:00.0: supports D1 D2
+[    0.364156] pci 0000:01:00.0: PME# supported from D0 D1 D2 D3hot D3cold
+[    0.364164] pci 0000:01:00.0: PME# disabled
+[    0.364236] pci 0000:00:1c.0: bridge io port: [0xd000-0xdfff]
+[    0.364244] pci 0000:00:1c.0: bridge 32bit mmio: [0xdfd00000-0xdfdfffff]
+[    0.364255] pci 0000:00:1c.0: bridge 64bit mmio pref: [0xffd00000-0xffdfffff]
+[    0.364317] pci 0000:02:00.0: reg 10 32bit mmio: [0xdfc00000-0xdfc0ffff]
+[    0.364399] pci 0000:02:00.0: PME# supported from D0 D3hot
+[    0.364407] pci 0000:02:00.0: PME# disabled
+[    0.364469] pci 0000:00:1c.1: bridge 32bit mmio: [0xdfc00000-0xdfcfffff]
+[    0.364539] pci 0000:00:1e.0: transparent bridge
+[    0.364570] pci_bus 0000:00: on NUMA node 0
+[    0.364587] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
+[    0.364933] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.P0P4._PRT]
+[    0.365066] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.P0P5._PRT]
+[    0.383281] ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 10 *11 12 14 15)
+[    0.383489] ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 *10 11 12 14 15)
+[    0.383691] ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 6 *7 10 11 12 14 15)
+[    0.383893] ACPI: PCI Interrupt Link [LNKD] (IRQs *3 4 5 6 7 10 11 12 14 15)
+[    0.384112] ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 5 6 7 10 11 12 14 15) *0, disabled.
+[    0.384317] ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 5 6 7 10 11 12 14 15) *0, disabled.
+[    0.384523] ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 5 6 7 10 11 12 14 15) *0, disabled.
+[    0.384727] ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 *5 6 7 10 11 12 14 15)
+[    0.385130] SCSI subsystem initialized
+[    0.385207] libata version 3.00 loaded.
+[    0.385207] usbcore: registered new interface driver usbfs
+[    0.385207] usbcore: registered new interface driver hub
+[    0.385207] usbcore: registered new device driver usb
+[    0.385207] ACPI: WMI: Mapper loaded
+[    0.385207] PCI: Using ACPI for IRQ routing
+[    0.396021] Bluetooth: Core ver 2.15
+[    0.396065] NET: Registered protocol family 31
+[    0.396065] Bluetooth: HCI device and connection manager initialized
+[    0.396065] Bluetooth: HCI socket layer initialized
+[    0.396065] NetLabel: Initializing
+[    0.396065] NetLabel:  domain hash size = 128
+[    0.396065] NetLabel:  protocols = UNLABELED CIPSOv4
+[    0.396077] NetLabel:  unlabeled traffic allowed by default
+[    0.396304] hpet clockevent registered
+[    0.396311] HPET: 3 timers in total, 0 timers will be used for per-cpu timer
+[    0.396321] hpet0: at MMIO 0xfed03000, IRQs 2, 8, 0
+[    0.396332] hpet0: 3 comparators, 64-bit 14.318180 MHz counter
+[    0.416028] pnp: PnP ACPI init
+[    0.416067] ACPI: bus type pnp registered
+[    0.473529] pnp: PnP ACPI: found 11 devices
+[    0.473536] ACPI: ACPI bus type pnp unregistered
+[    0.473545] PnPBIOS: Disabled by ACPI PNP
+[    0.473570] system 00:01: iomem range 0xfed14000-0xfed17fff has been reserved
+[    0.473578] system 00:01: iomem range 0xfed19000-0xfed19fff has been reserved
+[    0.473585] system 00:01: iomem range 0xfed18000-0xfed18fff has been reserved
+[    0.473593] system 00:01: iomem range 0xe0000000-0xefffffff has been reserved
+[    0.473609] system 00:05: ioport range 0x4d0-0x4d1 has been reserved
+[    0.473624] system 00:09: ioport range 0x400-0x47f has been reserved
+[    0.473631] system 00:09: ioport range 0x1180-0x119f has been reserved
+[    0.473638] system 00:09: ioport range 0x500-0x53f has been reserved
+[    0.473646] system 00:09: iomem range 0xfec00000-0xfec00fff could not be reserved
+[    0.473653] system 00:09: iomem range 0xfee00000-0xfee00fff has been reserved
+[    0.473661] system 00:09: iomem range 0xfed20000-0xfed23fff has been reserved
+[    0.473668] system 00:09: iomem range 0xffb00000-0xffbfffff has been reserved
+[    0.473675] system 00:09: iomem range 0xfc800400-0xfc800fff has been reserved
+[    0.508530] AppArmor: AppArmor Filesystem Enabled
+[    0.508591] pci 0000:00:1c.0: PCI bridge, secondary bus 0000:01
+[    0.508599] pci 0000:00:1c.0:   IO window: 0xd000-0xdfff
+[    0.508608] pci 0000:00:1c.0:   MEM window: 0xdfd00000-0xdfdfffff
+[    0.508617] pci 0000:00:1c.0:   PREFETCH window: 0x000000ffd00000-0x000000ffdfffff
+[    0.508628] pci 0000:00:1c.1: PCI bridge, secondary bus 0000:02
+[    0.508633] pci 0000:00:1c.1:   IO window: disabled
+[    0.508641] pci 0000:00:1c.1:   MEM window: 0xdfc00000-0xdfcfffff
+[    0.508648] pci 0000:00:1c.1:   PREFETCH window: disabled
+[    0.508656] pci 0000:00:1e.0: PCI bridge, secondary bus 0000:03
+[    0.508661] pci 0000:00:1e.0:   IO window: disabled
+[    0.508669] pci 0000:00:1e.0:   MEM window: disabled
+[    0.508675] pci 0000:00:1e.0:   PREFETCH window: disabled
+[    0.508697]   alloc irq_desc for 16 on node -1
+[    0.508702]   alloc kstat_irqs on node -1
+[    0.508714] pci 0000:00:1c.0: PCI INT A -&gt; GSI 16 (level, low) -&gt; IRQ 16
+[    0.508723] pci 0000:00:1c.0: setting latency timer to 64
+[    0.508736]   alloc irq_desc for 17 on node -1
+[    0.508740]   alloc kstat_irqs on node -1
+[    0.508749] pci 0000:00:1c.1: PCI INT B -&gt; GSI 17 (level, low) -&gt; IRQ 17
+[    0.508757] pci 0000:00:1c.1: setting latency timer to 64
+[    0.508768] pci 0000:00:1e.0: setting latency timer to 64
+[    0.508777] pci_bus 0000:00: resource 0 io:  [0x00-0xffff]
+[    0.508783] pci_bus 0000:00: resource 1 mem: [0x000000-0xffffffff]
+[    0.508790] pci_bus 0000:01: resource 0 io:  [0xd000-0xdfff]
+[    0.508796] pci_bus 0000:01: resource 1 mem: [0xdfd00000-0xdfdfffff]
+[    0.508802] pci_bus 0000:01: resource 2 pref mem [0xffd00000-0xffdfffff]
+[    0.508809] pci_bus 0000:02: resource 1 mem: [0xdfc00000-0xdfcfffff]
+[    0.508815] pci_bus 0000:03: resource 3 io:  [0x00-0xffff]
+[    0.508821] pci_bus 0000:03: resource 4 mem: [0x000000-0xffffffff]
+[    0.508896] NET: Registered protocol family 2
+[    0.509104] IP route cache hash table entries: 32768 (order: 5, 131072 bytes)
+[    0.509763] TCP established hash table entries: 131072 (order: 8, 1048576 bytes)
+[    0.510738] TCP bind hash table entries: 65536 (order: 7, 524288 bytes)
+[    0.511187] TCP: Hash tables configured (established 131072 bind 65536)
+[    0.511196] TCP reno registered
+[    0.511415] NET: Registered protocol family 1
+[    0.511548] Trying to unpack rootfs image as initramfs...
+[    0.897074] Switched to high resolution mode on CPU 1
+[    0.900012] Switched to high resolution mode on CPU 0
+[    3.639684] Freeing initrd memory: 68491k freed
+[    3.705099] cpufreq-nforce2: No nForce2 chipset.
+[    3.705159] Scanning for low memory corruption every 60 seconds
+[    3.705368] audit: initializing netlink socket (disabled)
+[    3.705396] type=2000 audit(1259190196.704:1): initialized
+[    3.722186] highmem bounce pool size: 64 pages
+[    3.722199] HugeTLB registered 4 MB page size, pre-allocated 0 pages
+[    3.725539] VFS: Disk quotas dquot_6.5.2
+[    3.725675] Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)
+[    3.726954] fuse init (API version 7.12)
+[    3.727148] msgmni has been set to 1732
+[    3.727633] alg: No test for stdrng (krng)
+[    3.727666] io scheduler noop registered
+[    3.727671] io scheduler anticipatory registered
+[    3.727676] io scheduler deadline registered
+[    3.727792] io scheduler cfq registered (default)
+[    3.727816] pci 0000:00:02.0: Boot video device
+[    3.728225]   alloc irq_desc for 24 on node -1
+[    3.728231]   alloc kstat_irqs on node -1
+[    3.728247] pcieport-driver 0000:00:1c.0: irq 24 for MSI/MSI-X
+[    3.728261] pcieport-driver 0000:00:1c.0: setting latency timer to 64
+[    3.728449]   alloc irq_desc for 25 on node -1
+[    3.728454]   alloc kstat_irqs on node -1
+[    3.728467] pcieport-driver 0000:00:1c.1: irq 25 for MSI/MSI-X
+[    3.728480] pcieport-driver 0000:00:1c.1: setting latency timer to 64
+[    3.728637] pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+[    3.728664] Firmware did not grant requested _OSC control
+[    3.728696] Firmware did not grant requested _OSC control
+[    3.728755] Firmware did not grant requested _OSC control
+[    3.728780] Firmware did not grant requested _OSC control
+[    3.728811] pciehp: PCI Express Hot Plug Controller Driver version: 0.4
+[    3.784141] ACPI: AC Adapter [ADP1] (on-line)
+[    3.784287] input: Power Button as /devices/LNXSYSTM:00/LNXPWRBN:00/input/input0
+[    3.784296] ACPI: Power Button [PWRF]
+[    3.784411] input: Lid Switch as /devices/LNXSYSTM:00/device:00/PNP0A08:00/device:11/PNP0C09:00/PNP0C0D:00/input/input1
+[    3.840075] ACPI: Lid Switch [LID0]
+[    3.840181] input: Power Button as /devices/LNXSYSTM:00/device:00/PNP0C0C:00/input/input2
+[    3.840188] ACPI: Power Button [PWRB]
+[    3.840285] input: Sleep Button as /devices/LNXSYSTM:00/device:00/PNP0C0E:00/input/input3
+[    3.840292] ACPI: Sleep Button [SLPB]
+[    3.841540] ACPI: SSDT 3f5e8c90 00253 (v02  PmRef  Cpu0Ist 00003000 INTL 20051117)
+[    3.842445] ACPI: SSDT 3f5e7690 00653 (v02  PmRef  Cpu0Cst 00003001 INTL 20051117)
+[    3.847248] Monitor-Mwait will be used to enter C-1 state
+[    3.847322] Monitor-Mwait will be used to enter C-2 state
+[    3.847380] Monitor-Mwait will be used to enter C-3 state
+[    3.847401] Marking TSC unstable due to TSC halts in idle
+[    3.847443] ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
+[    3.847503] processor LNXCPU:00: registered as cooling_device0
+[    3.847527] ACPI: Processor [CPU0] (supports 8 throttling states)
+[    3.848284] ACPI: SSDT 3f5e8f10 000D0 (v02  PmRef  Cpu1Ist 00003000 INTL 20051117)
+[    3.848865] ACPI: SSDT 3f611b10 00083 (v02  PmRef  Cpu1Cst 00003000 INTL 20051117)
+[    3.850613] ACPI: CPU1 (power states: C1[C1] C2[C2] C3[C3])
+[    3.850669] processor LNXCPU:01: registered as cooling_device1
+[    3.850679] ACPI: Processor [CPU1] (supports 8 throttling states)
+[    4.020151] thermal LNXTHERM:01: registered as thermal_zone0
+[    4.020169] ACPI: Thermal Zone [THRM] (53 C)
+[    4.020275] isapnp: Scanning for PnP cards...
+[    4.373409] isapnp: No Plug &amp; Play device found
+[    4.376106] Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
+[    4.378739] brd: module loaded
+[    4.379744] loop: module loaded
+[    4.379917] input: Macintosh mouse button emulation as /devices/virtual/input/input4
+[    4.380193] ata_piix 0000:00:1f.2: version 2.13
+[    4.380221]   alloc irq_desc for 19 on node -1
+[    4.380226]   alloc kstat_irqs on node -1
+[    4.380241] ata_piix 0000:00:1f.2: PCI INT B -&gt; GSI 19 (level, low) -&gt; IRQ 19
+[    4.380250] ata_piix 0000:00:1f.2: MAP [ P0 P2 IDE IDE ]
+[    4.532037] ata_piix 0000:00:1f.2: setting latency timer to 64
+[    4.532188] scsi0 : ata_piix
+[    4.532379] scsi1 : ata_piix
+[    4.532458] ata1: SATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma 0xe0a0 irq 14
+[    4.532465] ata2: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0xe0a8 irq 15
+[    4.534404] Fixed MDIO Bus: probed
+[    4.534490] PPP generic driver version 2.4.2
+[    4.534701] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[    4.534762]   alloc irq_desc for 23 on node -1
+[    4.534767]   alloc kstat_irqs on node -1
+[    4.534779] ehci_hcd 0000:00:1d.7: PCI INT A -&gt; GSI 23 (level, low) -&gt; IRQ 23
+[    4.534811] ehci_hcd 0000:00:1d.7: setting latency timer to 64
+[    4.534818] ehci_hcd 0000:00:1d.7: EHCI Host Controller
+[    4.534917] ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 1
+[    4.534949] ehci_hcd 0000:00:1d.7: using broken periodic workaround
+[    4.538834] ehci_hcd 0000:00:1d.7: debug port 1
+[    4.538844] ehci_hcd 0000:00:1d.7: cache line size of 32 is not supported
+[    4.538872] ehci_hcd 0000:00:1d.7: irq 23, io mem 0xdff40000
+[    4.552034] ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00
+[    4.552204] usb usb1: configuration #1 chosen from 1 choice
+[    4.552276] hub 1-0:1.0: USB hub found
+[    4.552300] hub 1-0:1.0: 8 ports detected
+[    4.552435] ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
+[    4.552480] uhci_hcd: USB Universal Host Controller Interface driver
+[    4.552551] uhci_hcd 0000:00:1d.0: PCI INT A -&gt; GSI 23 (level, low) -&gt; IRQ 23
+[    4.552565] uhci_hcd 0000:00:1d.0: setting latency timer to 64
+[    4.552572] uhci_hcd 0000:00:1d.0: UHCI Host Controller
+[    4.552646] uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 2
+[    4.552681] uhci_hcd 0000:00:1d.0: irq 23, io base 0x0000e080
+[    4.552856] usb usb2: configuration #1 chosen from 1 choice
+[    4.552929] hub 2-0:1.0: USB hub found
+[    4.552944] hub 2-0:1.0: 2 ports detected
+[    4.553060] uhci_hcd 0000:00:1d.1: PCI INT B -&gt; GSI 19 (level, low) -&gt; IRQ 19
+[    4.553072] uhci_hcd 0000:00:1d.1: setting latency timer to 64
+[    4.553079] uhci_hcd 0000:00:1d.1: UHCI Host Controller
+[    4.553155] uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 3
+[    4.553200] uhci_hcd 0000:00:1d.1: irq 19, io base 0x0000e060
+[    4.553364] usb usb3: configuration #1 chosen from 1 choice
+[    4.553425] hub 3-0:1.0: USB hub found
+[    4.553440] hub 3-0:1.0: 2 ports detected
+[    4.553531]   alloc irq_desc for 18 on node -1
+[    4.553537]   alloc kstat_irqs on node -1
+[    4.553550] uhci_hcd 0000:00:1d.2: PCI INT C -&gt; GSI 18 (level, low) -&gt; IRQ 18
+[    4.553561] uhci_hcd 0000:00:1d.2: setting latency timer to 64
+[    4.553567] uhci_hcd 0000:00:1d.2: UHCI Host Controller
+[    4.553636] uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number 4
+[    4.553678] uhci_hcd 0000:00:1d.2: irq 18, io base 0x0000e040
+[    4.553845] usb usb4: configuration #1 chosen from 1 choice
+[    4.553907] hub 4-0:1.0: USB hub found
+[    4.553922] hub 4-0:1.0: 2 ports detected
+[    4.554012] uhci_hcd 0000:00:1d.3: PCI INT D -&gt; GSI 16 (level, low) -&gt; IRQ 16
+[    4.554023] uhci_hcd 0000:00:1d.3: setting latency timer to 64
+[    4.554030] uhci_hcd 0000:00:1d.3: UHCI Host Controller
+[    4.554101] uhci_hcd 0000:00:1d.3: new USB bus registered, assigned bus number 5
+[    4.554145] uhci_hcd 0000:00:1d.3: irq 16, io base 0x0000e020
+[    4.554311] usb usb5: configuration #1 chosen from 1 choice
+[    4.554372] hub 5-0:1.0: USB hub found
+[    4.554387] hub 5-0:1.0: 2 ports detected
+[    4.554576] PNP: PS/2 Controller [PNP0303:PS2K,PNP0f03:PS2M] at 0x60,0x64 irq 1,12
+[    4.575150] serio: i8042 KBD port at 0x60,0x64 irq 1
+[    4.575164] serio: i8042 AUX port at 0x60,0x64 irq 12
+[    4.575331] mice: PS/2 mouse device common for all mice
+[    4.575614] rtc_cmos 00:04: RTC can wake from S4
+[    4.575704] rtc_cmos 00:04: rtc core: registered rtc_cmos as rtc0
+[    4.575743] rtc0: alarms up to one year, y3k, 114 bytes nvram, hpet irqs
+[    4.576087] device-mapper: uevent: version 1.0.3
+[    4.576332] device-mapper: ioctl: 4.15.0-ioctl (2009-04-01) initialised: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">dm-devel at redhat.com</A>
+[    4.576513] device-mapper: multipath: version 1.1.0 loaded
+[    4.576521] device-mapper: multipath round-robin: version 1.0.0 loaded
+[    4.576858] EISA: Probing bus 0 at eisa.0
+[    4.576895] EISA: Detected 0 cards.
+[    4.577275] cpuidle: using governor ladder
+[    4.577526] cpuidle: using governor menu
+[    4.578630] TCP cubic registered
+[    4.579004] NET: Registered protocol family 10
+[    4.579970] lo: Disabled Privacy Extensions
+[    4.580697] NET: Registered protocol family 17
+[    4.580745] Bluetooth: L2CAP ver 2.13
+[    4.580750] Bluetooth: L2CAP socket layer initialized
+[    4.580768] Bluetooth: SCO (Voice Link) ver 0.6
+[    4.580773] Bluetooth: SCO socket layer initialized
+[    4.580863] Bluetooth: RFCOMM TTY layer initialized
+[    4.580874] Bluetooth: RFCOMM socket layer initialized
+[    4.580881] Bluetooth: RFCOMM ver 1.11
+[    4.581986] Using IPI No-Shortcut mode
+[    4.582157] PM: Resume from disk failed.
+[    4.582182] registered taskstats version 1
+[    4.582430]   Magic number: 1:863:100
+[    4.582536] rtc_cmos 00:04: setting system clock to 2009-11-25 23:03:18 UTC (1259190198)
+[    4.582544] BIOS EDD facility v0.16 2004-Jun-25, 0 devices found
+[    4.582548] EDD information not available.
+[    4.589506] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input5
+[    4.705417] ata1.00: ATA-8: FUJITSU MHZ2160BH G2, 00000009, max UDMA/100
+[    4.705439] ata1.00: 312581808 sectors, multi 16: LBA48 NCQ (depth 0/32)
+[    4.721467] ata1.00: configured for UDMA/100
+[    4.865169] usb 1-6: new high speed USB device using ehci_hcd and address 2
+[    4.896044] Clocksource tsc unstable (delta = -255278161 ns)
+[    5.007453] usb 1-6: configuration #1 chosen from 1 choice
+[    5.040281] ACPI: Battery Slot [BAT1] (battery present)
+[    5.040648] scsi 0:0:0:0: Direct-Access     ATA      FUJITSU MHZ2160B 0000 PQ: 0 ANSI: 5
+[    5.040931] sd 0:0:0:0: [sda] 312581808 512-byte logical blocks: (160 GB/149 GiB)
+[    5.040956] sd 0:0:0:0: Attached scsi generic sg0 type 0
+[    5.041121] sd 0:0:0:0: [sda] Write Protect is off
+[    5.041128] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+[    5.041197] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+[    5.041539]  sda: sda1 sda2 sda3
+[    5.120673] sd 0:0:0:0: [sda] Attached SCSI disk
+[    5.644469] Freeing unused kernel memory: 544k freed
+[    5.644963] Write protecting the kernel text: 4524k
+[    5.645044] Write protecting the kernel read-only data: 1792k
+[    6.067146] Linux agpgart interface v0.103
+[    6.123286] agpgart-intel 0000:00:00.0: Intel 945GME Chipset
+[    6.123561] agpgart-intel 0000:00:00.0: detected 7932K stolen memory
+[    6.126486] agpgart-intel 0000:00:00.0: AGP aperture is 256M @ 0xc0000000
+[    6.192784] [drm] Initialized drm 1.1.0 20060810
+[    6.204131] r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+[    6.204177] r8169 0000:01:00.0: PCI INT A -&gt; GSI 16 (level, low) -&gt; IRQ 16
+[    6.204244] r8169 0000:01:00.0: setting latency timer to 64
+[    6.204307]   alloc irq_desc for 26 on node -1
+[    6.204316]   alloc kstat_irqs on node -1
+[    6.204343] r8169 0000:01:00.0: irq 26 for MSI/MSI-X
+[    6.206864] eth0: RTL8102e at 0xf8174000, 00:21:85:52:08:0b, XID 34a00000 IRQ 26
+[    6.222625] Initializing USB Mass Storage driver...
+[    6.245056] scsi2 : SCSI emulation for USB Mass Storage devices
+[    6.249040] usb-storage: device found at 2
+[    6.249047] usb-storage: waiting for device to settle before scanning
+[    6.249099] usbcore: registered new interface driver usb-storage
+[    6.249108] USB Mass Storage support registered.
+[    6.267266] atkbd.c: Unknown key pressed (translated set 2, code 0xf7 on isa0060/serio0).
+[    6.267283] atkbd.c: Use 'setkeycodes e077 &lt;keycode&gt;' to make it known.
+[    6.270999] atkbd.c: Unknown key released (translated set 2, code 0xf7 on isa0060/serio0).
+[    6.271012] atkbd.c: Use 'setkeycodes e077 &lt;keycode&gt;' to make it known.
+[    6.336092] atkbd.c: Unknown key pressed (translated set 2, code 0xf7 on isa0060/serio0).
+[    6.336108] atkbd.c: Use 'setkeycodes e077 &lt;keycode&gt;' to make it known.
+[    6.339790] atkbd.c: Unknown key released (translated set 2, code 0xf7 on isa0060/serio0).
+[    6.339803] atkbd.c: Use 'setkeycodes e077 &lt;keycode&gt;' to make it known.
+[    6.356373] acpi device:1c: registered as cooling_device2
+[    6.356685] input: Video Bus as /devices/LNXSYSTM:00/device:00/PNP0A08:00/device:1a/input/input6
+[    6.356800] ACPI: Video Device [IGD] (multi-head: yes  rom: no  post: no)
+[    6.372478] i915 0000:00:02.0: PCI INT A -&gt; GSI 16 (level, low) -&gt; IRQ 16
+[    6.372494] i915 0000:00:02.0: setting latency timer to 64
+[    6.483520] [drm:edid_is_valid] *ERROR* EDID checksum is invalid, remainder is 192
+[    6.483528] [drm:edid_is_valid] *ERROR* Raw EDID:
+[    6.483536] &lt;3&gt;00 ff ff ff ff ff ff 00 22 64 e9 03 07 b8 01 00  ........&quot;d......
+[    6.483542] &lt;3&gt;12 12 01 03 80 16 0d 78 0a 80 36 9a 5e 5d 91 28  .......x..6.^].(
+[    6.483548] &lt;3&gt;20 4f 54 00 00 00 01 01 01 01 01 01 01 01 01 01   OT.............
+[    6.483554] &lt;3&gt;01 01 01 01 01 01 94 11 00 b0 40 58 19 20 35 23  <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">.......... at X.</A> 5#
+[    6.483560] &lt;3&gt;45 00 dc 81 00 00 00 19 00 00 00 fd 00 37 41 22  E............7A&quot;
+[    6.483566] &lt;3&gt;29 05 00 0a 20 20 20 20 20 20 00 00 00 fc 00 48  )...      .....H
+[    6.483571] &lt;3&gt;53 44 31 30 30 49 46 57 31 0a 20 20 00 00 00 10  SD100IFW1.  ....
+[    6.483577] &lt;3&gt;00 0a 20 20 20 20 20 20 20 20 20 20 20 20 00 81  ..            ..
+[    6.483582] 
+[    6.483588] i915 0000:00:02.0: LVDS-1: EDID invalid.
+[    6.597797] [drm:edid_is_valid] *ERROR* EDID checksum is invalid, remainder is 192
+[    6.597803] [drm:edid_is_valid] *ERROR* Raw EDID:
+[    6.597812] &lt;3&gt;00 ff ff ff ff ff ff 00 22 64 e9 03 07 b8 01 00  ........&quot;d......
+[    6.597818] &lt;3&gt;12 12 01 03 80 16 0d 78 0a 80 36 9a 5e 5d 91 28  .......x..6.^].(
+[    6.597824] &lt;3&gt;20 4f 54 00 00 00 01 01 01 01 01 01 01 01 01 01   OT.............
+[    6.597830] &lt;3&gt;01 01 01 01 01 01 94 11 00 b0 40 58 19 20 35 23  <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">.......... at X.</A> 5#
+[    6.597836] &lt;3&gt;45 00 dc 81 00 00 00 19 00 00 00 fd 00 37 41 22  E............7A&quot;
+[    6.597841] &lt;3&gt;29 05 00 0a 20 20 20 20 20 20 00 00 00 fc 00 48  )...      .....H
+[    6.597847] &lt;3&gt;53 44 31 30 30 49 46 57 31 0a 20 20 00 00 00 10  SD100IFW1.  ....
+[    6.597853] &lt;3&gt;00 0a 20 20 20 20 20 20 20 20 20 20 20 20 00 81  ..            ..
+[    6.597857] 
+[    6.597864] i915 0000:00:02.0: LVDS-1: EDID invalid.
+[    6.602929] [drm] fb0: inteldrmfb frame buffer device
+[    6.602949] [drm] Initialized i915 1.6.0 20080730 for 0000:00:02.0 on minor 0
+[    6.930995] [drm] LVDS-8: set mode 1024x600 d
+[    7.323844] Console: switching to colour frame buffer device 128x37
+[    7.702911] md: linear personality registered for level -1
+[    7.709137] md: multipath personality registered for level -4
+[    7.714534] md: raid0 personality registered for level 0
+[    7.726311] md: raid1 personality registered for level 1
+[    7.731715] xor: automatically using best checksumming function: pIII_sse
+[    7.749025]    pIII_sse  :  3701.000 MB/sec
+[    7.749035] xor: using function: pIII_sse (3701.000 MB/sec)
+[    7.751057] async_tx: api initialized (async)
+[    7.825162] raid6: int32x1    151 MB/s
+[    7.893276] raid6: int32x2    208 MB/s
+[    7.961199] raid6: int32x4    227 MB/s
+[    8.029220] raid6: int32x8    237 MB/s
+[    8.097112] raid6: mmxx1      333 MB/s
+[    8.165024] raid6: mmxx2      630 MB/s
+[    8.233045] raid6: sse1x1     279 MB/s
+[    8.301046] raid6: sse1x2     510 MB/s
+[    8.369115] raid6: sse2x1     560 MB/s
+[    8.437056] raid6: sse2x2    1017 MB/s
+[    8.437062] raid6: using algorithm sse2x2 (1017 MB/s)
+[    8.445887] md: raid6 personality registered for level 6
+[    8.445895] md: raid5 personality registered for level 5
+[    8.445900] md: raid4 personality registered for level 4
+[    8.463499] md: raid10 personality registered for level 10
+[   11.248546] usb-storage: device scan complete
+[   11.250683] scsi 2:0:0:0: Direct-Access     Generic- Multi-Card       1.00 PQ: 0 ANSI: 0 CCS
+[   11.252052] sd 2:0:0:0: Attached scsi generic sg1 type 0
+[   11.258117] sd 2:0:0:0: [sdb] Attached SCSI removable disk
+[   46.443462] PM: Starting manual resume from disk
+[   46.443472] PM: Resume from partition 252:1
+[   46.443476] PM: Checking hibernation image.
+[   46.444329] PM: Resume from disk failed.
+[   46.469652] REISERFS (device dm-2): found reiserfs format &quot;3.6&quot; with standard journal
+[   46.469705] REISERFS (device dm-2): using ordered data mode
+[   46.492026] REISERFS (device dm-2): journal params: device dm-2, size 8192, journal first block 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
+[   46.492711] REISERFS (device dm-2): checking transaction log (dm-2)
+[   46.558740] REISERFS (device dm-2): Using r5 hash to sort names
+[   47.739333] type=1505 audit(1259190241.653:2): operation=&quot;profile_load&quot; pid=529 name=/sbin/dhclient3
+[   47.739924] type=1505 audit(1259190241.653:3): operation=&quot;profile_load&quot; pid=529 name=/usr/lib/NetworkManager/nm-dhcp-client.action
+[   47.740263] type=1505 audit(1259190241.653:4): operation=&quot;profile_load&quot; pid=529 name=/usr/lib/connman/scripts/dhclient-script
+[   47.775785] type=1505 audit(1259190241.690:5): operation=&quot;profile_load&quot; pid=531 name=/usr/lib/cups/backend/cups-pdf
+[   47.776548] type=1505 audit(1259190241.690:6): operation=&quot;profile_load&quot; pid=531 name=/usr/sbin/cupsd
+[   47.787097] type=1505 audit(1259190241.702:7): operation=&quot;profile_load&quot; pid=532 name=/usr/sbin/mysqld-akonadi
+[   47.802752] type=1505 audit(1259190241.718:8): operation=&quot;profile_load&quot; pid=533 name=/usr/sbin/tcpdump
+[   49.640769] Adding 1998840k swap on /dev/mapper/vg_hdd-swap.  Priority:-1 extents:1 across:1998840k 
+[   51.740346] udev: starting version 147
+[   58.116625] REISERFS (device dm-3): found reiserfs format &quot;3.6&quot; with standard journal
+[   58.116657] REISERFS (device dm-3): using ordered data mode
+[   58.432426] REISERFS (device dm-3): journal params: device dm-3, size 8192, journal first block 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
+[   58.433177] REISERFS (device dm-3): checking transaction log (dm-3)
+[   59.693106] REISERFS (device dm-3): Using r5 hash to sort names
+[   60.338331] rt2860sta: module is from the staging directory, the quality is unknown, you have been warned.
+[   60.346469] rt2860 0000:02:00.0: PCI INT A -&gt; GSI 17 (level, low) -&gt; IRQ 17
+[   60.347029] 
+[   60.347034] 
+[   60.347036] === pAd = f8316000, size = 580808 ===
+[   60.347039] 
+[   60.347047] &lt;-- RTMPAllocAdapterBlock, Status=0
+[   60.347128] rt2860 0000:02:00.0: setting latency timer to 64
+[   62.020511] psmouse serio1: ID: 10 00 64
+[   62.069547] intel_rng: FWH not detected
+[   62.078238] ip_tables: (C) 2000-2006 Netfilter Core Team
+[   62.287196] lp: driver loaded but no devices found
+[   62.713224] input: ImExPS/2 Generic Explorer Mouse as /devices/platform/i8042/serio1/input/input7
+[   69.284560] HDA Intel 0000:00:1b.0: PCI INT A -&gt; GSI 16 (level, low) -&gt; IRQ 16
+[   69.284624] HDA Intel 0000:00:1b.0: setting latency timer to 64
+[   69.372196] hda_codec: Unknown model for ALC1200, trying auto-probe from BIOS...
+[   69.372399] input: HDA Digital PCBeep as /devices/pci0000:00/0000:00:1b.0/input/input8
+[   70.744128] type=1505 audit(1259186664.661:9): operation=&quot;profile_replace&quot; pid=1141 name=/sbin/dhclient3
+[   70.744723] type=1505 audit(1259186664.661:10): operation=&quot;profile_replace&quot; pid=1141 name=/usr/lib/NetworkManager/nm-dhcp-client.action
+[   70.745205] type=1505 audit(1259186664.661:11): operation=&quot;profile_replace&quot; pid=1141 name=/usr/lib/connman/scripts/dhclient-script
+[   70.753726] type=1505 audit(1259186664.669:12): operation=&quot;profile_replace&quot; pid=1143 name=/usr/lib/cups/backend/cups-pdf
+[   70.754470] type=1505 audit(1259186664.669:13): operation=&quot;profile_replace&quot; pid=1143 name=/usr/sbin/cupsd
+[   70.759091] type=1505 audit(1259186664.673:14): operation=&quot;profile_replace&quot; pid=1144 name=/usr/sbin/mysqld-akonadi
+[   70.762615] type=1505 audit(1259186664.677:15): operation=&quot;profile_replace&quot; pid=1145 name=/usr/sbin/tcpdump
+[   76.347416] r8169: eth0: link down
+[   76.348089] ADDRCONF(NETDEV_UP): eth0: link is not ready
+[   76.376616] RX DESC f4b09000  size = 2048
+[   76.377088] &lt;-- RTMPAllocTxRxRingMemory, Status=0
+[   76.380471] --&gt; Error 2 opening /etc/Wireless/RT2860STA/RT2860STA.dat
+[   76.380481] 1. Phy Mode = 0
+[   76.380487] 2. Phy Mode = 0
+[   76.401786] 3. Phy Mode = 0
+[   76.405289] RTMPSetPhyMode: channel is out of range, use first channel=1 
+[   76.405299] MCS Set = 00 00 00 00 00
+[   76.406876] &lt;==== RTMPInitialize, Status=0
+[   76.406946] 0x1300 = 00073200
+[   82.815130] [drm:edid_is_valid] *ERROR* EDID checksum is invalid, remainder is 192
+[   82.815143] [drm:edid_is_valid] *ERROR* Raw EDID:
+[   82.815153] &lt;3&gt;00 ff ff ff ff ff ff 00 22 64 e9 03 07 b8 01 00  ........&quot;d......
+[   82.815162] &lt;3&gt;12 12 01 03 80 16 0d 78 0a 80 36 9a 5e 5d 91 28  .......x..6.^].(
+[   82.815170] &lt;3&gt;20 4f 54 00 00 00 01 01 01 01 01 01 01 01 01 01   OT.............
+[   82.815178] &lt;3&gt;01 01 01 01 01 01 94 11 00 b0 40 58 19 20 35 23  <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">.......... at X.</A> 5#
+[   82.815186] &lt;3&gt;45 00 dc 81 00 00 00 19 00 00 00 fd 00 37 41 22  E............7A&quot;
+[   82.815194] &lt;3&gt;29 05 00 0a 20 20 20 20 20 20 00 00 00 fc 00 48  )...      .....H
+[   82.815202] &lt;3&gt;53 44 31 30 30 49 46 57 31 0a 20 20 00 00 00 10  SD100IFW1.  ....
+[   82.815210] &lt;3&gt;00 0a 20 20 20 20 20 20 20 20 20 20 20 20 00 81  ..            ..
+[   82.815216] 
+[   82.815224] i915 0000:00:02.0: LVDS-1: EDID invalid.
+[   83.115641] [drm:edid_is_valid] *ERROR* EDID checksum is invalid, remainder is 192
+[   83.115652] [drm:edid_is_valid] *ERROR* Raw EDID:
+[   83.115662] &lt;3&gt;00 ff ff ff ff ff ff 00 22 64 e9 03 07 b8 01 00  ........&quot;d......
+[   83.115670] &lt;3&gt;12 12 01 03 80 16 0d 78 0a 80 36 9a 5e 5d 91 28  .......x..6.^].(
+[   83.115677] &lt;3&gt;20 4f 54 00 00 00 01 01 01 01 01 01 01 01 01 01   OT.............
+[   83.115685] &lt;3&gt;01 01 01 01 01 01 94 11 00 b0 40 58 19 20 35 23  <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">.......... at X.</A> 5#
+[   83.115692] &lt;3&gt;45 00 dc 81 00 00 00 19 00 00 00 fd 00 37 41 22  E............7A&quot;
+[   83.115699] &lt;3&gt;29 05 00 0a 20 20 20 20 20 20 00 00 00 fc 00 48  )...      .....H
+[   83.115707] &lt;3&gt;53 44 31 30 30 49 46 57 31 0a 20 20 00 00 00 10  SD100IFW1.  ....
+[   83.115714] &lt;3&gt;00 0a 20 20 20 20 20 20 20 20 20 20 20 20 00 81  ..            ..
+[   83.115720] 
+[   83.115727] i915 0000:00:02.0: LVDS-1: EDID invalid.
+[   83.476701] ===&gt;rt_ioctl_giwscan. 4(4) BSS returned, data-&gt;length = 420
+[   85.214608] QEMU Accelerator Module version 1.4.0, Copyright (c) 2005-2008 Fabrice Bellard
+[   85.214749] KQEMU installed, max_locked_mem=508096kB.
+[   85.894714] vboxdrv: Trying to deactivate the NMI watchdog permanently...
+[   85.894722] vboxdrv: Successfully done.
+[   85.894727] vboxdrv: Found 2 processor cores.
+[   85.894883] vboxdrv: fAsync=0 offMin=0x180 offMax=0x28f8
+[   85.894971] vboxdrv: TSC mode is 'synchronous', kernel timer mode is 'normal'.
+[   85.894976] vboxdrv: Successfully loaded version 3.0.12 (interface 0x00110000).
+[   87.388017] ra0: no IPv6 routers present
+[   95.623996] ppdev: user-space parallel port driver
+[  100.062260] CPU0 attaching NULL sched-domain.
+[  100.062273] CPU1 attaching NULL sched-domain.
+[  100.076229] CPU0 attaching sched-domain:
+[  100.076245]  domain 0: span 0-1 level SIBLING
+[  100.076258]   groups: 0 1
+[  100.076279] CPU1 attaching sched-domain:
+[  100.076289]  domain 0: span 0-1 level SIBLING
+[  100.076299]   groups: 1 0
+[  104.089116] ===&gt;rt_ioctl_giwscan. 4(4) BSS returned, data-&gt;length = 420
+[  110.195100] [drm:edid_is_valid] *ERROR* EDID checksum is invalid, remainder is 192
+[  110.195111] [drm:edid_is_valid] *ERROR* Raw EDID:
+[  110.195121] &lt;3&gt;00 ff ff ff ff ff ff 00 22 64 e9 03 07 b8 01 00  ........&quot;d......
+[  110.195129] &lt;3&gt;12 12 01 03 80 16 0d 78 0a 80 36 9a 5e 5d 91 28  .......x..6.^].(
+[  110.195137] &lt;3&gt;20 4f 54 00 00 00 01 01 01 01 01 01 01 01 01 01   OT.............
+[  110.195144] &lt;3&gt;01 01 01 01 01 01 94 11 00 b0 40 58 19 20 35 23  <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">.......... at X.</A> 5#
+[  110.195152] &lt;3&gt;45 00 dc 81 00 00 00 19 00 00 00 fd 00 37 41 22  E............7A&quot;
+[  110.195160] &lt;3&gt;29 05 00 0a 20 20 20 20 20 20 00 00 00 fc 00 48  )...      .....H
+[  110.195168] &lt;3&gt;53 44 31 30 30 49 46 57 31 0a 20 20 00 00 00 10  SD100IFW1.  ....
+[  110.195175] &lt;3&gt;00 0a 20 20 20 20 20 20 20 20 20 20 20 20 00 81  ..            ..
+[  110.195181] 
+[  110.195188] i915 0000:00:02.0: LVDS-1: EDID invalid.
+[  110.326007] [drm:edid_is_valid] *ERROR* EDID checksum is invalid, remainder is 192
+[  110.326018] [drm:edid_is_valid] *ERROR* Raw EDID:
+[  110.326028] &lt;3&gt;00 ff ff ff ff ff ff 00 22 64 e9 03 07 b8 01 00  ........&quot;d......
+[  110.326036] &lt;3&gt;12 12 01 03 80 16 0d 78 0a 80 36 9a 5e 5d 91 28  .......x..6.^].(
+[  110.326044] &lt;3&gt;20 4f 54 00 00 00 01 01 01 01 01 01 01 01 01 01   OT.............
+[  110.326052] &lt;3&gt;01 01 01 01 01 01 94 11 00 b0 40 58 19 20 35 23  <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">.......... at X.</A> 5#
+[  110.326060] &lt;3&gt;45 00 dc 81 00 00 00 19 00 00 00 fd 00 37 41 22  E............7A&quot;
+[  110.326067] &lt;3&gt;29 05 00 0a 20 20 20 20 20 20 00 00 00 fc 00 48  )...      .....H
+[  110.326075] &lt;3&gt;53 44 31 30 30 49 46 57 31 0a 20 20 00 00 00 10  SD100IFW1.  ....
+[  110.326083] &lt;3&gt;00 0a 20 20 20 20 20 20 20 20 20 20 20 20 00 81  ..            ..
+[  110.326089] 
+[  110.326096] i915 0000:00:02.0: LVDS-1: EDID invalid.
+[  134.089153] ===&gt;rt_ioctl_giwscan. 4(4) BSS returned, data-&gt;length = 420
+[  142.727466] CPU0 attaching NULL sched-domain.
+[  142.727479] CPU1 attaching NULL sched-domain.
+[  142.740278] CPU0 attaching sched-domain:
+[  142.740295]  domain 0: span 0-1 level SIBLING
+[  142.740309]   groups: 0 1
+[  142.740330] CPU1 attaching sched-domain:
+[  142.740340]  domain 0: span 0-1 level SIBLING
+[  142.740351]   groups: 1 0
+[  144.787044] [drm:edid_is_valid] *ERROR* EDID checksum is invalid, remainder is 192
+[  144.787061] [drm:edid_is_valid] *ERROR* Raw EDID:
+[  144.787076] &lt;3&gt;00 ff ff ff ff ff ff 00 22 64 e9 03 07 b8 01 00  ........&quot;d......
+[  144.787089] &lt;3&gt;12 12 01 03 80 16 0d 78 0a 80 36 9a 5e 5d 91 28  .......x..6.^].(
+[  144.787101] &lt;3&gt;20 4f 54 00 00 00 01 01 01 01 01 01 01 01 01 01   OT.............
+[  144.787113] &lt;3&gt;01 01 01 01 01 01 94 11 00 b0 40 58 19 20 35 23  <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">.......... at X.</A> 5#
+[  144.787125] &lt;3&gt;45 00 dc 81 00 00 00 19 00 00 00 fd 00 37 41 22  E............7A&quot;
+[  144.787137] &lt;3&gt;29 05 00 0a 20 20 20 20 20 20 00 00 00 fc 00 48  )...      .....H
+[  144.787148] &lt;3&gt;53 44 31 30 30 49 46 57 31 0a 20 20 00 00 00 10  SD100IFW1.  ....
+[  144.787160] &lt;3&gt;00 0a 20 20 20 20 20 20 20 20 20 20 20 20 00 81  ..            ..
+[  144.787169] 
+[  144.787179] i915 0000:00:02.0: LVDS-1: EDID invalid.
+[  145.444637] [drm:edid_is_valid] *ERROR* EDID checksum is invalid, remainder is 192
+[  145.444654] [drm:edid_is_valid] *ERROR* Raw EDID:
+[  145.444668] &lt;3&gt;00 ff ff ff ff ff ff 00 22 64 e9 03 07 b8 01 00  ........&quot;d......
+[  145.444681] &lt;3&gt;12 12 01 03 80 16 0d 78 0a 80 36 9a 5e 5d 91 28  .......x..6.^].(
+[  145.444693] &lt;3&gt;20 4f 54 00 00 00 01 01 01 01 01 01 01 01 01 01   OT.............
+[  145.444705] &lt;3&gt;01 01 01 01 01 01 94 11 00 b0 40 58 19 20 35 23  <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">.......... at X.</A> 5#
+[  145.444717] &lt;3&gt;45 00 dc 81 00 00 00 19 00 00 00 fd 00 37 41 22  E............7A&quot;
+[  145.444728] &lt;3&gt;29 05 00 0a 20 20 20 20 20 20 00 00 00 fc 00 48  )...      .....H
+[  145.444740] &lt;3&gt;53 44 31 30 30 49 46 57 31 0a 20 20 00 00 00 10  SD100IFW1.  ....
+[  145.444752] &lt;3&gt;00 0a 20 20 20 20 20 20 20 20 20 20 20 20 00 81  ..            ..
+[  145.444761] 
+[  145.444771] i915 0000:00:02.0: LVDS-1: EDID invalid.
+[  174.089650] ===&gt;rt_ioctl_giwscan. 4(4) BSS returned, data-&gt;length = 420
+[  177.496768] [drm:edid_is_valid] *ERROR* EDID checksum is invalid, remainder is 192
+[  177.496779] [drm:edid_is_valid] *ERROR* Raw EDID:
+[  177.496788] &lt;3&gt;00 ff ff ff ff ff ff 00 22 64 e9 03 07 b8 01 00  ........&quot;d......
+[  177.496796] &lt;3&gt;12 12 01 03 80 16 0d 78 0a 80 36 9a 5e 5d 91 28  .......x..6.^].(
+[  177.496803] &lt;3&gt;20 4f 54 00 00 00 01 01 01 01 01 01 01 01 01 01   OT.............
+[  177.496811] &lt;3&gt;01 01 01 01 01 01 94 11 00 b0 40 58 19 20 35 23  <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">.......... at X.</A> 5#
+[  177.496818] &lt;3&gt;45 00 dc 81 00 00 00 19 00 00 00 fd 00 37 41 22  E............7A&quot;
+[  177.496825] &lt;3&gt;29 05 00 0a 20 20 20 20 20 20 00 00 00 fc 00 48  )...      .....H
+[  177.496833] &lt;3&gt;53 44 31 30 30 49 46 57 31 0a 20 20 00 00 00 10  SD100IFW1.  ....
+[  177.496840] &lt;3&gt;00 0a 20 20 20 20 20 20 20 20 20 20 20 20 00 81  ..            ..
+[  177.496846] 
+[  177.496853] i915 0000:00:02.0: LVDS-1: EDID invalid.
+[  177.639806] [drm:edid_is_valid] *ERROR* EDID checksum is invalid, remainder is 192
+[  177.639825] [drm:edid_is_valid] *ERROR* Raw EDID:
+[  177.639842] &lt;3&gt;00 ff ff ff ff ff ff 00 22 64 e9 03 07 b8 01 00  ........&quot;d......
+[  177.639857] &lt;3&gt;12 12 01 03 80 16 0d 78 0a 80 36 9a 5e 5d 91 28  .......x..6.^].(
+[  177.639872] &lt;3&gt;20 4f 54 00 00 00 01 01 01 01 01 01 01 01 01 01   OT.............
+[  177.639887] &lt;3&gt;01 01 01 01 01 01 94 11 00 b0 40 58 19 20 35 23  <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">.......... at X.</A> 5#
+[  177.639902] &lt;3&gt;45 00 dc 81 00 00 00 19 00 00 00 fd 00 37 41 22  E............7A&quot;
+[  177.639917] &lt;3&gt;29 05 00 0a 20 20 20 20 20 20 00 00 00 fc 00 48  )...      .....H
+[  177.639931] &lt;3&gt;53 44 31 30 30 49 46 57 31 0a 20 20 00 00 00 10  SD100IFW1.  ....
+[  177.639946] &lt;3&gt;00 0a 20 20 20 20 20 20 20 20 20 20 20 20 00 81  ..            ..
+[  177.639957] 
+[  177.639971] i915 0000:00:02.0: LVDS-1: EDID invalid.
+[  224.091025] ===&gt;rt_ioctl_giwscan. 4(4) BSS returned, data-&gt;length = 420
+[  344.097127] ===&gt;rt_ioctl_giwscan. 4(4) BSS returned, data-&gt;length = 420
+[  404.101148] ===&gt;rt_ioctl_giwscan. 4(4) BSS returned, data-&gt;length = 420
+[  464.104218] ===&gt;rt_ioctl_giwscan. 4(4) BSS returned, data-&gt;length = 420
+[  496.321329] RX DESC f589b000  size = 2048
+[  496.321876] &lt;-- RTMPAllocTxRxRingMemory, Status=0
+[  496.325444] --&gt; Error 2 opening /etc/Wireless/RT2860STA/RT2860STA.dat
+[  496.325456] 1. Phy Mode = 0
+[  496.325461] 2. Phy Mode = 0
+[  496.347132] 3. Phy Mode = 0
+[  496.350524] MCS Set = 00 00 00 00 00
+[  496.352118] &lt;==== RTMPInitialize, Status=0
+[  496.352194] 0x1300 = 00073200
+[  506.949022] ra0: no IPv6 routers present
+[  534.959638] atkbd.c: Unknown key pressed (translated set 2, code 0xee on isa0060/serio0).
+[  534.959658] atkbd.c: Use 'setkeycodes e06e &lt;keycode&gt;' to make it known.
+[  534.963061] atkbd.c: Unknown key released (translated set 2, code 0xee on isa0060/serio0).
+[  534.963072] atkbd.c: Use 'setkeycodes e06e &lt;keycode&gt;' to make it known.
+[  536.077140] usb 1-5: new high speed USB device using ehci_hcd and address 3
+[  536.438278] usb 1-5: configuration #1 chosen from 1 choice
+[  536.615430] Linux video capture interface: v2.00
+[  536.639037] uvcvideo: Found UVC 1.00 device BisonCam, NB Pro (5986:0203)
+[  536.652589] input: BisonCam, NB Pro as /devices/pci0000:00/0000:00:1d.7/usb1/1-5/1-5:1.0/input/input9
+[  536.652740] usbcore: registered new interface driver uvcvideo
+[  536.652752] USB Video Class driver (v0.1.0)
+[  559.255264] usb 1-5: USB disconnect, address 3
+[  559.257516] atkbd.c: Unknown key pressed (translated set 2, code 0xee on isa0060/serio0).
+[  559.257535] atkbd.c: Use 'setkeycodes e06e &lt;keycode&gt;' to make it known.
+[  559.261296] atkbd.c: Unknown key released (translated set 2, code 0xee on isa0060/serio0).
+[  559.261318] atkbd.c: Use 'setkeycodes e06e &lt;keycode&gt;' to make it known.
+[  562.622038] usbcore: deregistering interface driver uvcvideo
+[  566.460092] atkbd.c: Unknown key pressed (translated set 2, code 0xee on isa0060/serio0).
+[  566.460109] atkbd.c: Use 'setkeycodes e06e &lt;keycode&gt;' to make it known.
+[  566.463644] atkbd.c: Unknown key released (translated set 2, code 0xee on isa0060/serio0).
+[  566.463657] atkbd.c: Use 'setkeycodes e06e &lt;keycode&gt;' to make it known.
+[  567.576158] usb 1-5: new high speed USB device using ehci_hcd and address 4
+[  567.925100] usb 1-5: configuration #1 chosen from 1 choice
+[  567.981373] uvcvideo: Found UVC 1.00 device BisonCam, NB Pro (5986:0203)
+[  567.989064] input: BisonCam, NB Pro as /devices/pci0000:00/0000:00:1d.7/usb1/1-5/1-5:1.0/input/input10
+[  567.989226] usbcore: registered new interface driver uvcvideo
+[  567.989237] USB Video Class driver (v0.1.0)
+[  568.030281] ehci_hcd 0000:00:1d.7: force halt; handhake f8042024 00004000 00000000 -&gt; -110
+[  568.086375] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086390] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086400] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086409] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086419] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086427] hub 1-0:1.0: Cannot enable port 6.  Maybe the USB cable is bad?
+[  568.086437] hub 1-0:1.0: cannot disable port 6 (err = -108)
+[  568.086449] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086459] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086468] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086478] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086487] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086494] hub 1-0:1.0: Cannot enable port 6.  Maybe the USB cable is bad?
+[  568.086505] hub 1-0:1.0: cannot disable port 6 (err = -108)
+[  568.086516] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086526] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086536] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086545] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086554] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086561] hub 1-0:1.0: Cannot enable port 6.  Maybe the USB cable is bad?
+[  568.086572] hub 1-0:1.0: cannot disable port 6 (err = -108)
+[  568.086583] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086593] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086602] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086611] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086621] hub 1-0:1.0: cannot reset port 6 (err = -108)
+[  568.086628] hub 1-0:1.0: Cannot enable port 6.  Maybe the USB cable is bad?
+[  568.086639] hub 1-0:1.0: cannot disable port 6 (err = -108)
+[  568.086650] hub 1-0:1.0: cannot disable port 6 (err = -108)
+[  568.087032] hub 1-0:1.0: hub_port_status failed (err = -108)
+[  591.921857] atkbd.c: Unknown key pressed (translated set 2, code 0xee on isa0060/serio0).
+[  591.921878] atkbd.c: Use 'setkeycodes e06e &lt;keycode&gt;' to make it known.
+[  591.925560] atkbd.c: Unknown key released (translated set 2, code 0xee on isa0060/serio0).
+[  591.925580] atkbd.c: Use 'setkeycodes e06e &lt;keycode&gt;' to make it known.
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005327.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+	<LI>Next message: <A HREF="005347.html">[Linux-uvc-devel] BisonCam 5986:0203 kills USB
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5339">[ date ]</a>
+              <a href="thread.html#5339">[ thread ]</a>
+              <a href="subject.html#5339">[ subject ]</a>
+              <a href="author.html#5339">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

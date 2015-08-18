@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] linux uvc and kernel 2.6.18
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20linux%20uvc%20and%20kernel%202.6.18&In-Reply-To=%3C200609181450.01070.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000814.html">
+   <LINK REL="Next"  HREF="000817.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] linux uvc and kernel 2.6.18</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20linux%20uvc%20and%20kernel%202.6.18&In-Reply-To=%3C200609181450.01070.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] linux uvc and kernel 2.6.18">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Sep 18 14:50:00 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000814.html">[Linux-uvc-devel] linux uvc and kernel 2.6.18
+</A></li>
+        <LI>Next message: <A HREF="000817.html">[Linux-uvc-devel] linux uvc and kernel 2.6.18
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#815">[ date ]</a>
+              <a href="thread.html#815">[ thread ]</a>
+              <a href="subject.html#815">[ subject ]</a>
+              <a href="author.html#815">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Mauro,
+
+&gt;<i> &gt; &gt; I am trying out linux-uvc with version 2.6.18-rc6-git3 and it reports
+</I>&gt;<i> &gt; &gt; unknown symbols for video_get_drvdata and video_set_drvdata. Based on
+</I>&gt;<i> &gt; &gt; another patch for this problem [1] I have fixed this for uvc. The fix
+</I>&gt;<i> &gt; &gt; works for me but please bear in mind that I have little kernel
+</I>&gt;<i> &gt; &gt; programming experience and thus it could be wrong.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thanks for the patch. It looks overly complicated to me, and it seems
+</I>&gt;<i> &gt; that video_get_drvdata/video_set_drvdata should not have been removed,
+</I>&gt;<i> &gt; but modified to use dev_get_drvdata/dev_set_drvdata instead.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Mauro, could you have a look at that ?
+</I>&gt;<i>
+</I>&gt;<i> Sure! Can you email it to me? I'm not subscribed on linux-uvc-devel.
+</I>
+You can find it at
+
+<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20060915/4e138fd2/attachment-0001.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20060915/4e138fd2/attachment-0001.bin</A>
+
+&gt;<i> &gt; Why have those been removed ? I know
+</I>&gt;<i> &gt; they were marked with OBSOLETE_OWNER, but that's becaused they accessed
+</I>&gt;<i> &gt; the video_device structure's priv field, marked for removal.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;         /* dev-&gt;driver_data will be used instead some day.
+</I>&gt;<i> &gt;          * Use the video_{get|set}_drvdata() helper functions,
+</I>&gt;<i> &gt;          * so the switch over will be transparent for you.
+</I>&gt;<i> &gt;          * Or use {pci|usb}_{get|set}_drvdata() directly. */
+</I>&gt;<i> &gt;         void *priv;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Shouldn't video_{get|set}_drvdata() have been kept ?
+</I>&gt;<i>
+</I>&gt;<i> This stuff just add more complexity and makes the code more opaque, and
+</I>&gt;<i> adds this additional pointer...
+</I>
+I agree that video_device-&gt;priv should go. But it should be replaced by 
+something else, namely dev-&gt;driver_data.
+
+&gt;<i> For most cases, it will just turn on something like this (from
+</I>&gt;<i> cx88-video.c):
+</I>&gt;<i>
+</I>&gt;<i> static ssize_t
+</I>&gt;<i> video_read(struct file *file, char __user *data, size_t count, loff_t
+</I>&gt;<i> *ppos)
+</I>&gt;<i> {
+</I>&gt;<i>         struct cx8800_fh *fh = file-&gt;private_data;
+</I>
+This is an entirely different thing. file-&gt;private_data contains a *per-open* 
+pointer to private data. video_{get|set}_drvdata was used to retrieve private 
+data global to the device.
+
+Have a look at the changes to em2820_v4l2_open in
+
+<A HREF="http://www.linuxtv.org/downloads/video4linux/patches/2.6.14/v4l_813_replaced_obsolete_video_get_drvdata_and_video_set_drvdata.patch">http://www.linuxtv.org/downloads/video4linux/patches/2.6.14/v4l_813_replaced_obsolete_video_get_drvdata_and_video_set_drvdata.patch</A>
+
+Do you really want to require *every* video driver to maintain a global list 
+of devices ? Think about overhead, locking issues, ...
+
+Drivers should use file-&gt;private_data to point to *per-open* private data, not 
+per-device data. per-device data should be stored in device-&gt;driver_data 
+instead of video_device-&gt;priv (device-&gt;driver_data was made for exactly that 
+purpose), and the helper functions video_{get|set}_drvdata should be kept, 
+calling dev_{get|set}_drvdata instead of accessing video_device-&gt;priv.
+
+Things are quite simple. Video devices are class devices, so per-device 
+driver-private data is stored in device-&gt;driver_data, and per-open 
+driver-private data is stored in file-&gt;file_private. That's how the driver 
+model has been designed since the beginning of Linux 2.6. I can't imagine 
+requiring *every* driver to maintain a global list of devices just to store 
+private data.
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000814.html">[Linux-uvc-devel] linux uvc and kernel 2.6.18
+</A></li>
+	<LI>Next message: <A HREF="000817.html">[Linux-uvc-devel] linux uvc and kernel 2.6.18
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#815">[ date ]</a>
+              <a href="thread.html#815">[ thread ]</a>
+              <a href="subject.html#815">[ subject ]</a>
+              <a href="author.html#815">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [linux-uvc-devel] driver doesn't return from	vidioc_dqbuf ioctl
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5Blinux-uvc-devel%5D%20driver%20doesn%27t%20return%20from%0A%09vidioc_dqbuf%20ioctl&In-Reply-To=%3C449c10960805110737o21f31a0fkcb4db962cb416298%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003498.html">
+   <LINK REL="Next"  HREF="003512.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [linux-uvc-devel] driver doesn't return from	vidioc_dqbuf ioctl</H1>
+    <B>Dan McGee</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5Blinux-uvc-devel%5D%20driver%20doesn%27t%20return%20from%0A%09vidioc_dqbuf%20ioctl&In-Reply-To=%3C449c10960805110737o21f31a0fkcb4db962cb416298%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] [linux-uvc-devel] driver doesn't return from	vidioc_dqbuf ioctl">dpmcgee at gmail.com
+       </A><BR>
+    <I>Sun May 11 16:37:00 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003498.html">[Linux-uvc-devel] [linux-uvc-devel] driver doesn't return from	vidioc_dqbuf ioctl
+</A></li>
+        <LI>Next message: <A HREF="003512.html">[Linux-uvc-devel] [linux-uvc-devel] driver doesn't return from	vidioc_dqbuf ioctl
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3502">[ date ]</a>
+              <a href="thread.html#3502">[ thread ]</a>
+              <a href="subject.html#3502">[ subject ]</a>
+              <a href="author.html#3502">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Sun, May 11, 2008 at 3:16 AM, Laurent Pinchart
+&lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+&gt;<i> Hi Dan,
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>  On Friday 09 May 2008, Dan McGee wrote:
+</I>&gt;<i>  &gt; I'm seeing this same problem on the Eee PC with the integrated webcam.
+</I>&gt;<i>  &gt; Running an strace on the luvcview process shows it coming to a halt on
+</I>&gt;<i>  &gt; the following:
+</I>&gt;<i>  &gt; ioctl(5, VIDIOC_STREAMON, 0x77eede58)   = 0
+</I>&gt;<i>  &gt; ioctl(5, VIDIOC_DQBUF
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt; and stays there.
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt; I attempted to track down when this problem started occurring and why,
+</I>&gt;<i>  &gt; but I couldn't figure out the why. I know I had a setup where
+</I>&gt;<i>  &gt; everything was working with a near-vanilla 2.6.25 kernel and
+</I>&gt;<i>  &gt; linux-uvc-svn version 205. The problem started when I compiled
+</I>&gt;<i>  &gt; 2.6.25.1 and bumped to SVN revision 207. I attempted to drop back down
+</I>&gt;<i>  &gt; to 205 and the problem was still occurring.
+</I>Doh! I thought I had been dropping down to 205, futher inspection
+tells me my build script was always pulling the head revision. Answers
+are below.
+
+&gt;<i> &gt;  Looking through the kernel
+</I>&gt;<i>  &gt; changelog from .25 to .25.1 didn't turn up anything obvious as to what
+</I>&gt;<i>  &gt; changed causing it to fail.
+</I>&gt;<i>
+</I>&gt;<i>  I'm pretty surprised that the upgrade from .25 to .25.1 alone caused the
+</I>&gt;<i>  problem.
+</I>&gt;<i>
+</I>&gt;<i>  Could you please retry with r206 and r207 and compare the results ? r207
+</I>&gt;<i>  introduces a patch to drop incomplete frames. Check the kernel log to make
+</I>&gt;<i>  sure the right driver gets loaded (it should print the SVN revision number
+</I>&gt;<i>  when loaded).
+</I>&gt;<i>
+</I>&gt;<i>  If reverting to r206 helps, I'll ask you to try a patch to get more
+</I>&gt;<i>  information about the issue.
+</I>
+The 206 -&gt; 207 transition is in fact what broke it. I'd be happy to
+test out any patches you want me to try to help debug this issue.
+Commenting out the changes from that revision in
+linux-uvc/trunk/uvc_v4l2.c and then compiling the current revision
+(209) also solves the problem, as drop_incomplete will never get set.
+
+For this camera, the only output format supported is yuv if that helps
+at all, or is a possible configuration that did not get tested.
+
+-Dan
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003498.html">[Linux-uvc-devel] [linux-uvc-devel] driver doesn't return from	vidioc_dqbuf ioctl
+</A></li>
+	<LI>Next message: <A HREF="003512.html">[Linux-uvc-devel] [linux-uvc-devel] driver doesn't return from	vidioc_dqbuf ioctl
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3502">[ date ]</a>
+              <a href="thread.html#3502">[ thread ]</a>
+              <a href="subject.html#3502">[ subject ]</a>
+              <a href="author.html#3502">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

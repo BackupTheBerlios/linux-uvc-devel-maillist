@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Quanta integrated webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quanta%20integrated%20webcam&In-Reply-To=%3C201106242031.14919.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006679.html">
+   <LINK REL="Next"  HREF="006682.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Quanta integrated webcam</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quanta%20integrated%20webcam&In-Reply-To=%3C201106242031.14919.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Quanta integrated webcam">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Fri Jun 24 20:31:14 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006679.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+        <LI>Next message: <A HREF="006682.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6681">[ date ]</a>
+              <a href="thread.html#6681">[ thread ]</a>
+              <a href="subject.html#6681">[ subject ]</a>
+              <a href="author.html#6681">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Alexey,
+
+On Friday 24 June 2011 20:25:03 Alexey Fisher wrote:
+&gt;<i> Am Freitag, den 24.06.2011, 20:08 +0200 schrieb Laurent Pinchart:
+</I>&gt;<i> &gt; On Tuesday 14 June 2011 09:39:47 Alexey Fisher wrote:
+</I>&gt;<i> &gt; &gt; Am Montag, den 13.06.2011, 22:48 -0700 schrieb Carl Michal:
+</I>&gt;<i> &gt; &gt; &gt; &gt; Hi,
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; I think you nailed it.  Every frame looks perfect now.  The trace
+</I>&gt;<i> &gt; &gt; &gt; &gt; shows a few of these:
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; Jun 13 09:24:24 uvcvideo: Dropping payload (error bit set)
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; but I don't see corrupt frames any more in either MJPG or YUYV (at
+</I>&gt;<i> &gt; &gt; &gt; &gt; 640x480 anyway) - in MJPG all the frames have the right size.
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; There is a some weirdness with frame rates depending on the
+</I>&gt;<i> &gt; &gt; &gt; &gt; exposure setting: 1) Exposure, auto gives 4 options: auto priority
+</I>&gt;<i> &gt; &gt; &gt; &gt; mode, manual mode, shutter priority mode, and aperture priority
+</I>&gt;<i> &gt; &gt; &gt; &gt; mode.  Auto and shutter don't seem to be settable (errors from
+</I>&gt;<i> &gt; &gt; &gt; &gt; guvcview when chosen). There is also an &quot;Exposure, auto priority&quot;
+</I>&gt;<i> &gt; &gt; &gt; &gt; checkbox.
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; Frame rates drop dramatically in manual mode (to 10-15fps from 30).
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; But I can't really complain at this point - the corrupt frames are
+</I>&gt;<i> &gt; &gt; &gt; &gt; gone. Will that quirk be added to the driver (usb id is:
+</I>&gt;<i> &gt; &gt; &gt; &gt; 0408:2fb1)?
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; Thanks,
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; Hi,
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; it seems like I am much better off by fully disabling FID (with your
+</I>&gt;<i> &gt; &gt; &gt; patch) than before.  With the patch, YUYV frames are _always_ the
+</I>&gt;<i> &gt; &gt; &gt; right size.  There are still some problems:
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; 1) corrupt frames - with part of the image missing or the image
+</I>&gt;<i> &gt; &gt; &gt; displaced. Sometimes (but definitely not always) these occur at the
+</I>&gt;<i> &gt; &gt; &gt; same time as a trace message saying the error bit is set.
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; 2) sometimes the camera just won't start.  when guvcview (or
+</I>&gt;<i> &gt; &gt; &gt; luvcview) is started, no frames come back from the camera.  There is
+</I>&gt;<i> &gt; &gt; &gt; a light next to the camera that comes on to indicate it should be
+</I>&gt;<i> &gt; &gt; &gt; active, but no frames arrive.  There seems to be a fairly strong
+</I>&gt;<i> &gt; &gt; &gt; correlation with using luvcview (which from the traces seems to use
+</I>&gt;<i> &gt; &gt; &gt; some different mechanism to get frames from the driver from
+</I>&gt;<i> &gt; &gt; &gt; guvcview.  guvcview polls, luvcview doesn't).  Sometimes just
+</I>&gt;<i> &gt; &gt; &gt; restarting guvcview several times will work and the camera
+</I>&gt;<i> &gt; &gt; &gt; eventually starts.  Sometimes just changing resolution or frame
+</I>&gt;<i> &gt; &gt; &gt; rates succeeds in starting the camera.  I haven't found anything
+</I>&gt;<i> &gt; &gt; &gt; reproducible.  I do not think this is related to your patch, as it
+</I>&gt;<i> &gt; &gt; &gt; did happen once before your patch was applied. Unloading and
+</I>&gt;<i> &gt; &gt; &gt; reloading the uvcvideo and ehci_hcd
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; modules does not consistently solve it. guvcview just lists:
+</I>&gt;<i> &gt; &gt; &gt;   Could not grab image (select timeout): Resource temporarily
+</I>&gt;<i> &gt; &gt; &gt;   unavailable
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; and the trace shows guvcview polling, but nothing else going on.
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; I have tried adding the other quirks to the FID quirk, but haven't
+</I>&gt;<i> &gt; &gt; &gt; seen any improvement with any others.
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; Thanks for you help -
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; Carl
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; Webcam returns error in the middle of some frame, theoretically we
+</I>&gt;<i> &gt; &gt; should drop complete frame. But current uvcvideo just gather data and
+</I>&gt;<i> &gt; &gt; assume the cam will resend previous parts to complete the frame.
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; Try attached patch additionally to my previous one.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; What about not ignoring the data in addition to setting buf-&gt;error to 1 ?
+</I>&gt;<i> &gt; This won't solve corruptiong, but would avoid the image effect for
+</I>&gt;<i> &gt; uncompressed formats.
+</I>&gt;<i> 
+</I>&gt;<i> My english (and c) are not my bet qualities. But currently i'm really
+</I>&gt;<i> not sure if i understand. Was it sarcasm?
+</I>
+Not at all :-)
+
+If the error bit is set, the packet will be dropped. For uncompressed formats, 
+dropping the data will shift part of the frame up/left and possibly mess the 
+color ups. Instead of doing that, we could handle packets with the error bit 
+set normally. The data will likely be corrupted, but that will &quot;just&quot; corrupt 
+a small part of the frame, and won't shift the rest of the frame up/left. We 
+should then also set buf-&gt;error to 1 as done in your patch, to tell 
+applications that the V4L2 buffer contains errors.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006679.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+	<LI>Next message: <A HREF="006682.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6681">[ date ]</a>
+              <a href="thread.html#6681">[ thread ]</a>
+              <a href="subject.html#6681">[ subject ]</a>
+              <a href="author.html#6681">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

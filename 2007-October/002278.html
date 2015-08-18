@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Page allocation failure
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Page%20allocation%20failure&In-Reply-To=%3C200710120109.07745.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002274.html">
+   <LINK REL="Next"  HREF="002283.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Page allocation failure</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Page%20allocation%20failure&In-Reply-To=%3C200710120109.07745.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Page allocation failure">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Fri Oct 12 01:09:07 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002274.html">[Linux-uvc-devel] Page allocation failure
+</A></li>
+        <LI>Next message: <A HREF="002283.html">[Linux-uvc-devel] Page allocation failure
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2278">[ date ]</a>
+              <a href="thread.html#2278">[ thread ]</a>
+              <a href="subject.html#2278">[ subject ]</a>
+              <a href="author.html#2278">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Hirofumi,
+
+On Wednesday 10 October 2007, Hirofumi Momose wrote:
+&gt;<i> Hello,
+</I>&gt;<i>
+</I>&gt;<i> I am making custom webcam app.
+</I>&gt;<i> It works good at first, but fails over time. It invoked by cron, so no
+</I>&gt;<i> user memory leakage.
+</I>&gt;<i> When fails, messages are :
+</I>&gt;<i>
+</I>&gt;<i> webcam: page allocation failure. order:5, mode:0x0
+</I>[snip]
+&gt;<i> Mem-info:
+</I>&gt;<i> DMA per-cpu:
+</I>&gt;<i> CPU    0: Hot: hi:   42, btch:   7 usd:   5   Cold: hi:   14, btch:   3
+</I>&gt;<i> usd:  13 Active:5931 inactive:22401 dirty:158 writeback:0 unstable:0
+</I>&gt;<i>  free:1021 slab:1351 mapped:1075 pagetables:70 bounce:0
+</I>&gt;<i> DMA free:4084kB min:1440kB low:1800kB high:2160kB active:23724kB
+</I>&gt;<i> inactive:89604kB present:13 able
+</I>&gt;<i>
+</I>&gt;<i> lowmem_reserve[]: 0 0
+</I>&gt;<i> DMA: 467*4kB 85*8kB 28*16kB 8*32kB 11*64kB 1*128kB 0*256kB 0*512kB 0*1024kB
+</I>&gt;<i> 0*2048kB 0*4096k = 4084kB
+</I>&gt;<i> Swap cache: add 0, delete 0, find 0/0, race 0+0
+</I>&gt;<i>
+</I>&gt;<i> I think this might be caused by page fragmentation.
+</I>
+Looks like it :-/ The problems you report on this mailing list have all been 
+interesting so far, but next time please try to report something trivial, 
+that will be less work for me :-)
+
+&gt;<i> Small number of large pages are separated into large number of small
+</I>&gt;<i> parts as time passed. And cause allocation failure.
+</I>&gt;<i>
+</I>&gt;<i> Does someone have any idea ?
+</I>
+For high-bandwidth isochronous streaming the driver allocates URB buffers that 
+can grow to 120kB. If this puts too much pressure on your system memory, try 
+to decrease UVC_MAX_ISO_PACKETS in uvcvideo.h.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002274.html">[Linux-uvc-devel] Page allocation failure
+</A></li>
+	<LI>Next message: <A HREF="002283.html">[Linux-uvc-devel] Page allocation failure
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2278">[ date ]</a>
+              <a href="thread.html#2278">[ thread ]</a>
+              <a href="subject.html#2278">[ subject ]</a>
+              <a href="author.html#2278">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

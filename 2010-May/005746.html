@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Stream from multimple cameras
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Stream%20from%20multimple%20cameras&In-Reply-To=%3C8DFAD57C3BF24C9099A26DCFE03BBCD5%40core2%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005744.html">
+   <LINK REL="Next"  HREF="005753.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Stream from multimple cameras</H1>
+    <B>Adrian Sergiu DARABANT</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Stream%20from%20multimple%20cameras&In-Reply-To=%3C8DFAD57C3BF24C9099A26DCFE03BBCD5%40core2%3E"
+       TITLE="[Linux-uvc-devel] Stream from multimple cameras">asergiu at yahoo.co.uk
+       </A><BR>
+    <I>Mon May 17 09:24:04 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005744.html">[Linux-uvc-devel] Stream from multimple cameras
+</A></li>
+        <LI>Next message: <A HREF="005753.html">[Linux-uvc-devel] Stream from multimple cameras
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5746">[ date ]</a>
+              <a href="thread.html#5746">[ thread ]</a>
+              <a href="subject.html#5746">[ subject ]</a>
+              <a href="author.html#5746">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello all,
+
+In my case I tested with the cameras plugged into 2 differens hubs (I have 2
+pairs on two sides of my netbook) and the result is the same. I have to open
+the laptop however to see if the hubs are really different as the port pairs
+are on adjacent sides of the notebook and not on opposite sides (far enough
+to ensure the hubs are really different). On windows I see listed one
+USB2(Enhanced) controller and 4 USB Universal controllers- so I guess is
+just one USB2
+
+Using 2 hubs is not a solution for me as it doesn't work right now although
+I have 4 external USB ports on one of the machines and 6 on another (plus
+some internal ports on both of them)
+
+As I am a developer, so in practice I could modify things inside the driver
+or somewhere in order to try to make things work.
+
+My question is - who does/requests the USB bandwidth allocation ? The uvc
+driver or the camera itself ?  Is this happening directly in hardware or is
+mediated by the uvc/ehci driver?
+
+In the second case can we force the driver on the allocation problem if it
+is in the driver ? 
+I don't know yet the answer to this - and having a few pointers/explanations
+from the UVC implementors might help here !
+
+I saw the other forums and their approach - and somebody proposed there 
+
+Thx,
+Adrian
+
+
+
+
+
+-----Original Message-----
+From: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bruno.viaris at free.fr</A> [mailto:<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bruno.viaris at free.fr</A>] 
+Sent: Sunday, May 16, 2010 11:25 PM
+To: Adrian Sergiu Darabant
+Cc: <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux-uvc-devel at lists.berlios.de</A>
+Subject: Re: [Linux-uvc-devel] Stream from multimple cameras
+
+
+----- &quot;Adrian Sergiu Darabant&quot; &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">asergiu at yahoo.co.uk</A>&gt; wrote :
+
+&gt;<i> My need is to stream from both cameras in the same time.  
+</I>(...) 
+&gt;<i> I tried to do that and I am succeeding up to query and map buffers but
+</I>&gt;<i> then when doing VIDIOC_STREAMON - the first camera starts and the
+</I>&gt;<i> second one always gets
+</I>&gt;<i> 
+</I>&gt;<i> kernel: uvcvideo: Failed to submit URB 0 (-28).
+</I>&gt;<i> 
+</I>&gt;<i> which seems to be linked with the usb bandwidth.
+</I>
+Hello Adrian, 
+This problem is mentioned in the &quot;Motion&quot; software FAQ: when streaming from
+multiple USB cams, each one must be plugged to its own USB controller, not
+on a hub, including motherboard hubs (typically the pair of connectors on
+top of each other).
+(cf <A HREF="http://www.lavrsen.dk/foswiki/bin/view/Motion/FrequentlyAskedQuestions">http://www.lavrsen.dk/foswiki/bin/view/Motion/FrequentlyAskedQuestions</A>
+first item)
+
+I experienced this problem on an eeepc 701 / linux: while streaming only
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">VGA at 1FPS</A> the two webcams (Vesta pro + SPC900) had to be plugged one on each
+side of the netbook. 
+But I could plug an external harddrive (recording both streams!) in the same
+hub as one of the cams! Go figure that...
+Same thing on a Dell desktop PC with Hercules cams under windows XP.
+
+&gt;<i> 
+</I>&gt;<i> I don't know all the details about the USB transfer protocol but my
+</I>&gt;<i> understanding is that - the driver should request a static bandwidth
+</I>&gt;<i> allocation before starting streaming. Would it be possible to force
+</I>&gt;<i> the streaming at a lower rate - maybe loosing some frames from the
+</I>&gt;<i> camera but still allow multiple camera streaming ?
+</I>
+Using distinct controllers is obviously just a workaround, but I have no
+idea if this bandwidth allocation problem can be dealt with at the driver
+level, I will leave this to competent people...
+
+Best regards
+
+-- Bruno Viaris
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005744.html">[Linux-uvc-devel] Stream from multimple cameras
+</A></li>
+	<LI>Next message: <A HREF="005753.html">[Linux-uvc-devel] Stream from multimple cameras
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5746">[ date ]</a>
+              <a href="thread.html#5746">[ thread ]</a>
+              <a href="subject.html#5746">[ subject ]</a>
+              <a href="author.html#5746">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

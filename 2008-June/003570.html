@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] uvc: release streaming interface	to	fix suspend to RAM
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvc%3A%20release%20streaming%20interface%0A%09to%09fix%20suspend%20to%20RAM&In-Reply-To=%3C20080604191048.GA5365%40plankton.ifup.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003569.html">
+   <LINK REL="Next"  HREF="003583.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] uvc: release streaming interface	to	fix suspend to RAM</H1>
+    <B>Brandon Philips</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20uvc%3A%20release%20streaming%20interface%0A%09to%09fix%20suspend%20to%20RAM&In-Reply-To=%3C20080604191048.GA5365%40plankton.ifup.org%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] uvc: release streaming interface	to	fix suspend to RAM">brandon at ifup.org
+       </A><BR>
+    <I>Wed Jun  4 21:10:48 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003569.html">[Linux-uvc-devel] [PATCH] uvc: release streaming interface	to	fix suspend to RAM
+</A></li>
+        <LI>Next message: <A HREF="003583.html">[Linux-uvc-devel] [PATCH] uvc: release streaming interface to	fix suspend to RAM
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3570">[ date ]</a>
+              <a href="thread.html#3570">[ thread ]</a>
+              <a href="subject.html#3570">[ subject ]</a>
+              <a href="author.html#3570">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey Laurent-
+
+I think the patch is incomplete.  Maybe I am missing something obvious?
+
+Thanks,
+
+	Brandon
+
+On 18:40 Sat 31 May 2008, Laurent Pinchart wrote:
+&gt;<i> @@ -561,7 +586,7 @@
+</I>&gt;<i>  	if (buflen &lt;= 2) {
+</I>&gt;<i>  		uvc_trace(UVC_TRACE_DESCR, &quot;no class-specific streaming &quot;
+</I>&gt;<i>  			&quot;interface descriptors found.\n&quot;);
+</I>&gt;<i> -		return -EINVAL;
+</I>
+		ret = -EINVAL
+
+&gt;<i> +		goto error;
+</I>&gt;<i>  	}
+</I>&gt;<i>  
+</I>&gt;<i>  	/* Parse the header descriptor. */
+</I>&gt;<i> @@ -569,7 +594,7 @@
+</I>&gt;<i>  		uvc_trace(UVC_TRACE_DESCR, &quot;device %d videostreaming interface &quot;
+</I>&gt;<i>  			&quot;%d OUTPUT HEADER descriptor is not supported.\n&quot;,
+</I>&gt;<i>  			dev-&gt;udev-&gt;devnum, alts-&gt;desc.bInterfaceNumber);
+</I>&gt;<i> -		return -EINVAL;
+</I>
+		ret = -EINVAL
+
+&gt;<i> +		goto error;
+</I>&gt;<i>  	} else if (buffer[2] == VS_INPUT_HEADER) {
+</I>&gt;<i>  		p = buflen &gt;= 5 ? buffer[3] : 0;
+</I>&gt;<i>  		n = buflen &gt;= 12 ? buffer[12] : 0;
+</I>&gt;<i> @@ -579,7 +604,7 @@
+</I>&gt;<i>  				&quot;interface %d INPUT HEADER descriptor is &quot;
+</I>&gt;<i>  				&quot;invalid.\n&quot;, dev-&gt;udev-&gt;devnum,
+</I>&gt;<i>  				alts-&gt;desc.bInterfaceNumber);
+</I>&gt;<i> -			return -EINVAL;
+</I>
+		ret = -EINVAL
+
+&gt;<i> +			goto error;
+</I>&gt;<i>  		}
+</I>&gt;<i>  
+</I>&gt;<i>  		streaming-&gt;header.bNumFormats = p;
+</I>&gt;<i> @@ -592,15 +617,17 @@
+</I>&gt;<i>  		streaming-&gt;header.bControlSize = n;
+</I>&gt;<i>  
+</I>&gt;<i>  		streaming-&gt;header.bmaControls = kmalloc(p*n, GFP_KERNEL);
+</I>&gt;<i> -		if (streaming-&gt;header.bmaControls == NULL)
+</I>&gt;<i> -			return -ENOMEM;
+</I>&gt;<i> +		if (streaming-&gt;header.bmaControls == NULL) {
+</I>&gt;<i> +			ret = -ENOMEM;
+</I>&gt;<i> +			goto error;
+</I>&gt;<i> +		}
+</I>&gt;<i>  
+</I>&gt;<i>  		memcpy(streaming-&gt;header.bmaControls, &amp;buffer[13], p*n);
+</I>&gt;<i>  	} else {
+</I>&gt;<i>  		uvc_trace(UVC_TRACE_DESCR, &quot;device %d videostreaming interface &quot;
+</I>&gt;<i>  			&quot;%d HEADER descriptor not found.\n&quot;, dev-&gt;udev-&gt;devnum,
+</I>&gt;<i>  			alts-&gt;desc.bInterfaceNumber);
+</I>&gt;<i> -		return -EINVAL;
+</I>
+		ret = -EINVAL
+
+&gt;<i> +		goto error;
+</I>&gt;<i>  	}
+</I>&gt;<i>  
+</I>&gt;<i>  	buflen -= buffer[0];
+</I>&gt;<i> @@ -657,14 +684,16 @@
+</I>&gt;<i>  		uvc_trace(UVC_TRACE_DESCR, &quot;device %d videostreaming interface &quot;
+</I>&gt;<i>  			&quot;%d has no supported formats defined.\n&quot;,
+</I>&gt;<i>  			dev-&gt;udev-&gt;devnum, alts-&gt;desc.bInterfaceNumber);
+</I>&gt;<i> -		return -EINVAL;
+</I>
+		ret = -EINVAL
+
+&gt;<i> +		goto error;
+</I>&gt;<i>  	}
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003569.html">[Linux-uvc-devel] [PATCH] uvc: release streaming interface	to	fix suspend to RAM
+</A></li>
+	<LI>Next message: <A HREF="003583.html">[Linux-uvc-devel] [PATCH] uvc: release streaming interface to	fix suspend to RAM
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3570">[ date ]</a>
+              <a href="thread.html#3570">[ thread ]</a>
+              <a href="subject.html#3570">[ subject ]</a>
+              <a href="author.html#3570">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

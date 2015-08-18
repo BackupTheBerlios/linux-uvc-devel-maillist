@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] URB size for Bulk transport
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20URB%20size%20for%20Bulk%20transport&In-Reply-To=%3C200901110005.28091.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004457.html">
+   <LINK REL="Next"  HREF="004481.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] URB size for Bulk transport</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20URB%20size%20for%20Bulk%20transport&In-Reply-To=%3C200901110005.28091.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] URB size for Bulk transport">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sun Jan 11 00:05:27 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004457.html">[Linux-uvc-devel] URB size for Bulk transport
+</A></li>
+        <LI>Next message: <A HREF="004481.html">[Linux-uvc-devel] URB size for Bulk transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4477">[ date ]</a>
+              <a href="thread.html#4477">[ thread ]</a>
+              <a href="subject.html#4477">[ subject ]</a>
+              <a href="author.html#4477">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Robert,
+
+sorry for the late reply.
+
+On Tuesday 06 January 2009, Robert Lukassen wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> I've noticed that the URB size in case of Bulk transport is set to the
+</I>&gt;<i> maximum payload size, or to a limit that is a multiple of the bulk
+</I>&gt;<i> packet size (psize * UVC_MAX_ISO_PACKETS). The rationale behind this is
+</I>&gt;<i> 'to be consistent with isochronous mode'.
+</I>
+To be honest, the real reason is that I had to set a limit and that value 
+wasn't really worse than another (at least at that time) :-)
+
+&gt;<i> We encounter some difficulties with this approach. These occur when
+</I>&gt;<i> operating Bulk transport over a full-speed link. In that case, the limit
+</I>&gt;<i> becomes 64 * 40 = 2560 bytes per URB. The device we use has 16KB
+</I>&gt;<i> payloads. The frames typically do not consist of an exact multiple of
+</I>&gt;<i> 16KB, so a frame is send as a sequence of 16KB USB bulk transfers,
+</I>&gt;<i> ending with a bulk transfer &lt; 16KB.
+</I>
+It's really unfortunate that the USB 2.0 and UVC 1.1 specifications use the 
+term &quot;payload&quot; for two different concepts.
+
+In USB 2.0, a payload is the data that is carried in the data field of a data 
+packet within a bus transaction. In UVC 1.1, a Payload Transfer is a unit of 
+data transfer common to bulk and isochronous endpoints.
+
+Your device has 16kB &quot;payloads&quot;. As bulk payloads can be 512 bytes long at 
+most (in high-speed) mode, I assume you mean UVC payloads (a UVC header 
+followed by frame data). Is that correct ?
+
+In that case, every 16kB UVC payload should be terminated by a short packet, 
+not only the last payload.
+
+&gt;<i> According to the USB 2.0 specification a bulk transfer is considered
+</I>&gt;<i> done when:
+</I>&gt;<i>
+</I>&gt;<i> 1) the expected amount of data has been transferred
+</I>&gt;<i> 2) a short packet (or zero-length packet) has been transferred
+</I>&gt;<i>
+</I>&gt;<i> For the device, each of the transfers used to sent full sized payloads
+</I>&gt;<i> fall in category 1. 16KB is to be expected by the host, as this is the
+</I>&gt;<i> MaxPayloadSize (signalled in the configuration descriptor).
+</I>
+You're mixing USB payloads and UVC payloads. A UVC payload is transferred in a 
+single bulk transfer, made of multiple bulk data transactions, each carrying 
+a USB payload. The last data packet of every bulk transfer should be a short 
+(or zero) packet.
+
+If your device sends 16kB UVC payloads, it should terminate each of them with 
+a short bulk data packet.
+
+&gt;<i> The device is unaware of the fact that hosts using the UVC driver split
+</I>&gt;<i> payload transfers over multiple bulk transfers. If the payload buffer
+</I>&gt;<i> size is not an exact multiple of the URB size determined by the UVC
+</I>&gt;<i> driver, the host will not be able to detect the end of a payload
+</I>&gt;<i> reliably.
+</I>
+The device is unaware of how the host splits a UVC payload across multiple 
+URBs, but it's aware of how a UVC payload is split across bulk payloads.
+
+&gt;<i> Example:
+</I>&gt;<i>
+</I>&gt;<i> Assume the frame to be transferred is 100KB. The maximum payload size is
+</I>&gt;<i> 16KB. The device will submit 6 16KB payloads and a 4KB final payload.
+</I>&gt;<i>
+</I>&gt;<i> Because the first 16 KB payload transfers are of category 1, the device
+</I>&gt;<i> will not insert a ZLP between the last packet of a payload and the first
+</I>&gt;<i> packet of the next payload. The final payload is 4KB, which is a
+</I>&gt;<i> multiple of a bulk packet (at either full or high speed), so the device
+</I>&gt;<i> will end this payload transfer with a ZLP.
+</I>&gt;<i>
+</I>&gt;<i> At high speed the UVC driver will issue URBs of 16KB as the limit set by
+</I>&gt;<i> psize * UVC_MAX_ISO_PACKETS in that case is 512*40 = 20KB. Each of the
+</I>&gt;<i> 16KB payloads is reliably detected because the USB buffer is completely
+</I>&gt;<i> full.
+</I>&gt;<i>
+</I>&gt;<i> The URB transfers reliably detects the bulk transfer end because of the
+</I>&gt;<i> ZLP.
+</I>&gt;<i>
+</I>&gt;<i> At full speed, the UVC driver will submit URBs of 2650 bytes. This means
+</I>&gt;<i> that the first 16 KB payload will result in 6 URBS completely filled,
+</I>&gt;<i> but the 7th URB will fail to detect the boundary between the two 16KB
+</I>&gt;<i> payloads. It will continue to fill the URB until the URB buffer is full
+</I>&gt;<i> resulting in an URB that has 1024 bytes of the first payload and 1536
+</I>&gt;<i> bytes of the next payload (including its payload header).
+</I>&gt;<i>
+</I>&gt;<i> This case is not handled in the bulk data decoder I think.
+</I>&gt;<i>
+</I>&gt;<i> It may seem that ensuring that the payload size is an multiple of the
+</I>&gt;<i> URB size might solve this issue. For full sized payloads that is indeed
+</I>&gt;<i> the case. Each full sized payload then results in a multiple URBs that
+</I>&gt;<i> only contain data for that payload. However, if the last payload
+</I>&gt;<i> contains less data than a full sized payload, the device inserts a ZLP
+</I>&gt;<i> if the last packet was not short. This because from the device point of
+</I>&gt;<i> view, it needs to signal that the host is going to get less data than it
+</I>&gt;<i> expects. However, it may happen that the bulk transfer ends at an exact
+</I>&gt;<i> multiple of the URB size.
+</I>&gt;<i>
+</I>&gt;<i> Again, example:
+</I>&gt;<i>
+</I>&gt;<i> 100 KB frame, 16KB max payload and 2K URB size. The first 6 payload
+</I>&gt;<i> transfers all work well. Each payload is transferred with 8 URBs, and
+</I>&gt;<i> payload boundaries are detected based on payload buffer being full.
+</I>&gt;<i>
+</I>&gt;<i> The 7th payload is 4 KB in size. An exact multiple of bulk packets
+</I>&gt;<i> completes this transfer, and because 4 KB &lt; 16KB, the device inserts a
+</I>&gt;<i> ZLP. The host receives 2 URBs, and then an URB of 0 bytes long (=ZLP).
+</I>&gt;<i> Normally, that ZLP would have been absorbed by the USB transport layer
+</I>&gt;<i> and caused the URB to end 'prematurely'. But because the UVC host now
+</I>&gt;<i> uses a smaller URB buffer lenghth, it needs to handle these ZLP as
+</I>&gt;<i> 0-length URBs.
+</I>&gt;<i>
+</I>&gt;<i> It seems that this is indeed the case, and that 0 length URB would mark
+</I>&gt;<i> the end of the payload. So this may be a fix:
+</I>&gt;<i>
+</I>&gt;<i> In static int uvc_init_video_bulk(struct uvc_video_device *video,
+</I>&gt;<i> 	struct usb_host_endpoint *ep, gfp_t gfp_flags) (uvc_video.c)
+</I>&gt;<i>
+</I>&gt;<i> 	psize = le16_to_cpu(ep-&gt;desc.wMaxPacketSize) &amp; 0x07ff;
+</I>&gt;<i> 	size = video-&gt;streaming-&gt;ctrl.dwMaxPayloadTransferSize;
+</I>&gt;<i> 	video-&gt;bulk.max_payload_size = size;
+</I>&gt;<i> -	if (size &gt; psize * UVC_MAX_ISO_PACKETS)
+</I>&gt;<i> -		size = psize * UVC_MAX_ISO_PACKETS;
+</I>&gt;<i> + 	if (size &gt; psize * UVC_MAX_ISO_PACKETS) {
+</I>&gt;<i> +		size = psize * UVC_MAX_ISO_PACKETS;
+</I>&gt;<i> +		size -= video-&gt;bulk.max_payload_size % size;
+</I>&gt;<i> +	}
+</I>&gt;<i> 	if (uvc_alloc_urb_buffers(video, size) &lt; 0)
+</I>&gt;<i>
+</I>&gt;<i> I welcome a discussion about this, and a more detailed rationale behind
+</I>&gt;<i> the use of UVC_MAX_ISO_PACKETS in this context. Especially since for
+</I>&gt;<i> full speed, the packet size difference between bulk and iso transport
+</I>&gt;<i> can differ significantly - 64 versus max. 1023. This results in bulk URB
+</I>&gt;<i> sizes that are up to 16 times smaller than the ones used for isochronous
+</I>&gt;<i> transfer.
+</I>
+Let's first discuss the above confusion between USB and UVC payloads. If it 
+turns our I was wrong, I'll analyse your patch :-)
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004457.html">[Linux-uvc-devel] URB size for Bulk transport
+</A></li>
+	<LI>Next message: <A HREF="004481.html">[Linux-uvc-devel] URB size for Bulk transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4477">[ date ]</a>
+              <a href="thread.html#4477">[ thread ]</a>
+              <a href="subject.html#4477">[ subject ]</a>
+              <a href="author.html#4477">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

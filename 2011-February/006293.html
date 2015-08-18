@@ -1,0 +1,174 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH RFC] uvcvideo: Add support for MPEG-2	TS payload
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%20RFC%5D%20uvcvideo%3A%20Add%20support%20for%20MPEG-2%0A%09TS%20payload&In-Reply-To=%3C201102171703.17164.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006298.html">
+   <LINK REL="Next"  HREF="006294.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH RFC] uvcvideo: Add support for MPEG-2	TS payload</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%20RFC%5D%20uvcvideo%3A%20Add%20support%20for%20MPEG-2%0A%09TS%20payload&In-Reply-To=%3C201102171703.17164.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] [PATCH RFC] uvcvideo: Add support for MPEG-2	TS payload">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Thu Feb 17 17:03:16 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006298.html">[Linux-uvc-devel] [PATCH RFC] uvcvideo: Add a mapping for H.264	payloads
+</A></li>
+        <LI>Next message: <A HREF="006294.html">[Linux-uvc-devel] [PATCH RFC] uvcvideo: Add support for MPEG-2	TS payload
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6293">[ date ]</a>
+              <a href="thread.html#6293">[ thread ]</a>
+              <a href="subject.html#6293">[ subject ]</a>
+              <a href="author.html#6293">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Stephan,
+
+On Friday 28 January 2011 20:35:05 Stephan Lachowsky wrote:
+&gt;<i> Parse the UVC 1.0 and UVC 1.1 VS_FORMAT_MPEG2TS descriptors.
+</I>&gt;<i> This a stream based format, so we generate a dummy frame descriptor
+</I>&gt;<i> with a dummy frame interval range.
+</I>
+Thanks for the patch, and sorry for the late reply.
+
+Don't you also need to implement support for the V4L2 MPEG CIDs ? I would 
+expect the driver to support at least the controls used to select the MPEG 
+format (MPEG2, TS), even if they're hardcoded to MPEG2-TS.
+
+&gt;<i> ---
+</I>&gt;<i>  drivers/media/video/uvc/uvc_driver.c |   41
+</I>&gt;<i> ++++++++++++++++++++++++++++++++++ drivers/media/video/uvc/uvcvideo.h   | 
+</I>&gt;<i>   3 ++
+</I>&gt;<i>  2 files changed, 44 insertions(+), 0 deletions(-)
+</I>&gt;<i> 
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> b/drivers/media/video/uvc/uvc_driver.c index a1e9dfb..6bcb9e1 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvc_driver.c
+</I>&gt;<i> @@ -103,6 +103,11 @@ static struct uvc_format_desc uvc_fmts[] = {
+</I>&gt;<i>  		.guid		= UVC_GUID_FORMAT_BY8,
+</I>&gt;<i>  		.fcc		= V4L2_PIX_FMT_SBGGR8,
+</I>&gt;<i>  	},
+</I>&gt;<i> +	{
+</I>&gt;<i> +		.name		= &quot;MPEG2 TS&quot;,
+</I>&gt;<i> +		.guid		= UVC_GUID_FORMAT_MPEG,
+</I>&gt;<i> +		.fcc		= V4L2_PIX_FMT_MPEG,
+</I>&gt;<i> +	},
+</I>&gt;<i>  };
+</I>&gt;<i> 
+</I>&gt;<i>  /*
+</I>&gt;<i> ------------------------------------------------------------------------
+</I>&gt;<i> @@ -398,6 +403,33 @@ static int uvc_parse_format(struct uvc_device *dev,
+</I>&gt;<i> break;
+</I>&gt;<i> 
+</I>&gt;<i>  	case UVC_VS_FORMAT_MPEG2TS:
+</I>&gt;<i> +		n = dev-&gt;uvc_version &gt;= 0x0110 ? 23 : 7;
+</I>&gt;<i> +		if (buflen &lt; n) {
+</I>&gt;<i> +			uvc_trace(UVC_TRACE_DESCR, &quot;device %d videostreaming &quot;
+</I>&gt;<i> +			       &quot;interface %d FORMAT error\n&quot;,
+</I>&gt;<i> +			       dev-&gt;udev-&gt;devnum,
+</I>&gt;<i> +			       alts-&gt;desc.bInterfaceNumber);
+</I>&gt;<i> +			return -EINVAL;
+</I>&gt;<i> +		}
+</I>&gt;<i> +
+</I>&gt;<i> +		strlcpy(format-&gt;name, &quot;MPEG2 TS&quot;, sizeof format-&gt;name);
+</I>&gt;<i> +		format-&gt;fcc = V4L2_PIX_FMT_MPEG;
+</I>&gt;<i> +		format-&gt;flags = UVC_FMT_FLAG_COMPRESSED | UVC_FMT_FLAG_STREAM;
+</I>&gt;<i> +		format-&gt;bpp = 0;
+</I>&gt;<i> +		ftype = 0;
+</I>&gt;<i> +
+</I>&gt;<i> +		/* Create a dummy frame descriptor. */
+</I>&gt;<i> +		frame = &amp;format-&gt;frame[0];
+</I>&gt;<i> +		memset(&amp;format-&gt;frame[0], 0, sizeof format-&gt;frame[0]);
+</I>&gt;<i> +		frame-&gt;bFrameIntervalType = 0;
+</I>&gt;<i> +		frame-&gt;dwDefaultFrameInterval = 1;
+</I>&gt;<i> +		frame-&gt;dwFrameInterval = *intervals;
+</I>&gt;<i> +		*(*intervals)++ = 1;
+</I>&gt;<i> +		*(*intervals)++ = 10000000;
+</I>&gt;<i> +		*(*intervals)++ = 1;
+</I>&gt;<i> +		format-&gt;nframes = 1;
+</I>&gt;<i> +		break;
+</I>&gt;<i> +
+</I>&gt;<i>  	case UVC_VS_FORMAT_STREAM_BASED:
+</I>&gt;<i>  		/* Not supported yet. */
+</I>&gt;<i>  	default:
+</I>&gt;<i> @@ -673,6 +705,14 @@ static int uvc_parse_streaming(struct uvc_device *dev,
+</I>&gt;<i>  			break;
+</I>&gt;<i> 
+</I>&gt;<i>  		case UVC_VS_FORMAT_MPEG2TS:
+</I>&gt;<i> +			/* MPEG2TS format has no frame descriptor. We will create a
+</I>&gt;<i> +			 * dummy frame descriptor with a dummy frame interval range.
+</I>&gt;<i> +			 */
+</I>&gt;<i> +			nformats++;
+</I>&gt;<i> +			nframes++;
+</I>&gt;<i> +			nintervals += 3;
+</I>&gt;<i> +			break;
+</I>&gt;<i> +
+</I>&gt;<i>  		case UVC_VS_FORMAT_STREAM_BASED:
+</I>&gt;<i>  			uvc_trace(UVC_TRACE_DESCR, &quot;device %d videostreaming &quot;
+</I>&gt;<i>  				&quot;interface %d FORMAT %u is not supported.\n&quot;,
+</I>&gt;<i> @@ -724,6 +764,7 @@ static int uvc_parse_streaming(struct uvc_device *dev,
+</I>&gt;<i>  		switch (buffer[2]) {
+</I>&gt;<i>  		case UVC_VS_FORMAT_UNCOMPRESSED:
+</I>&gt;<i>  		case UVC_VS_FORMAT_MJPEG:
+</I>&gt;<i> +		case UVC_VS_FORMAT_MPEG2TS:
+</I>&gt;<i>  		case UVC_VS_FORMAT_DV:
+</I>&gt;<i>  		case UVC_VS_FORMAT_FRAME_BASED:
+</I>&gt;<i>  			format-&gt;frame = frame;
+</I>&gt;<i> diff --git a/drivers/media/video/uvc/uvcvideo.h
+</I>&gt;<i> b/drivers/media/video/uvc/uvcvideo.h index 45f01e7..e522f99 100644
+</I>&gt;<i> --- a/drivers/media/video/uvc/uvcvideo.h
+</I>&gt;<i> +++ b/drivers/media/video/uvc/uvcvideo.h
+</I>&gt;<i> @@ -152,6 +152,9 @@ struct uvc_xu_control {
+</I>&gt;<i>  #define UVC_GUID_FORMAT_BY8 \
+</I>&gt;<i>  	{ 'B',  'Y',  '8',  ' ', 0x00, 0x00, 0x10, 0x00, \
+</I>&gt;<i>  	 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}
+</I>&gt;<i> +#define UVC_GUID_FORMAT_MPEG \
+</I>&gt;<i> +	{ 'M',  'P',  'E',  'G', 0x00, 0x00, 0x10, 0x00, \
+</I>&gt;<i> +	 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}
+</I>&gt;<i> 
+</I>&gt;<i>  /*
+</I>&gt;<i> ------------------------------------------------------------------------ *
+</I>&gt;<i> Driver specific constants.
+</I>
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006298.html">[Linux-uvc-devel] [PATCH RFC] uvcvideo: Add a mapping for H.264	payloads
+</A></li>
+	<LI>Next message: <A HREF="006294.html">[Linux-uvc-devel] [PATCH RFC] uvcvideo: Add support for MPEG-2	TS payload
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6293">[ date ]</a>
+              <a href="thread.html#6293">[ thread ]</a>
+              <a href="subject.html#6293">[ subject ]</a>
+              <a href="author.html#6293">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

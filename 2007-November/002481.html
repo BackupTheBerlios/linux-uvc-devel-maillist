@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] RFC: suspend/resume and randomly stopping	stream, latest mplayer
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20RFC%3A%20suspend/resume%20and%20randomly%20stopping%0A%09stream%2C%20latest%20mplayer&In-Reply-To=%3C200711212117.13558.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002480.html">
+   <LINK REL="Next"  HREF="002482.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] RFC: suspend/resume and randomly stopping	stream, latest mplayer</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20RFC%3A%20suspend/resume%20and%20randomly%20stopping%0A%09stream%2C%20latest%20mplayer&In-Reply-To=%3C200711212117.13558.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] RFC: suspend/resume and randomly stopping	stream, latest mplayer">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Nov 21 21:17:13 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002480.html">[Linux-uvc-devel] RFC: suspend/resume and randomly stopping	stream, latest mplayer
+</A></li>
+        <LI>Next message: <A HREF="002482.html">[Linux-uvc-devel] RFC: suspend/resume and randomly stopping	stream, latest mplayer
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2481">[ date ]</a>
+              <a href="thread.html#2481">[ thread ]</a>
+              <a href="subject.html#2481">[ subject ]</a>
+              <a href="author.html#2481">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Markus,
+
+On Wednesday 21 November 2007, Markus Rechberger wrote:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> 1.)
+</I>&gt;<i> I had a closer look at susend/resuming and the uvcdriver on my notebook.
+</I>&gt;<i> After resuming the driver is unable to read some registers, the
+</I>&gt;<i> usbsubsystem always returns -EPROTO (-71).
+</I>&gt;<i> Adding a softreset to the resume handler fixes this issue.
+</I>&gt;<i> The system still doesn't resume if a videoapplication is open (I'll do
+</I>&gt;<i> some further work on that).
+</I>&gt;<i> (the msleep isn't required)
+</I>
+This is a hack to solve a problem you ran into with specific hardware. Before 
+applying it I'd like to know which hardware requires this hack (I suspect 
+you're using the EM2760 chipset in an EeePC) and why the USB subsystem 
+returns -EPROTO. Either the hardware is buggy and don't implement suspend, in 
+which case we need a quirk, or the USB subsystem has some issue, in which 
+case it should be fixed.
+
+&gt;<i> 2.)
+</I>&gt;<i> mplayer requires an ENUMSTD ioctl, afterwards mplayer <A HREF="tv://">tv://</A> -tv
+</I>&gt;<i> driver=v4l2 just works fine.
+</I>
+mplayer <A HREF="tv://">tv://</A> -tv driver=v4l2:fps=25
+
+should already work. As mentioned numerous times, VIDIOC_ENUMSTD don't make 
+sense for webcams.
+
+&gt;<i> 3.)
+</I>&gt;<i> the stream randomly stops on that notebook for some reason. ignoring
+</I>&gt;<i> the errors in the callback handler seems to work fine. This especially
+</I>&gt;<i> happens if I disconnect a usb storage device which hangs on the same
+</I>&gt;<i> hub. Maybe adding a module param to ignore those return values as a
+</I>&gt;<i> hack would be acceptable?
+</I>
+Your modifications to uvc_video.c and uvc_queue.c seem to both address this 
+problem. Are they both required ? What error status do you get in the status 
+and video completion handlers ? Does the driver mark some video buffers as 
+erroneous ? If so, why ?
+
+&gt;<i> thanks for all the work,
+</I>
+You're welcome, thanks for the report.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002480.html">[Linux-uvc-devel] RFC: suspend/resume and randomly stopping	stream, latest mplayer
+</A></li>
+	<LI>Next message: <A HREF="002482.html">[Linux-uvc-devel] RFC: suspend/resume and randomly stopping	stream, latest mplayer
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2481">[ date ]</a>
+              <a href="thread.html#2481">[ thread ]</a>
+              <a href="subject.html#2481">[ subject ]</a>
+              <a href="author.html#2481">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

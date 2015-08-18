@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] UVC Non-module patch
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20UVC%20Non-module%20patch&In-Reply-To=%3C200703120105.l2C15EVI014533%40singularity.tronunltd.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001492.html">
+   <LINK REL="Next"  HREF="001493.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] UVC Non-module patch</H1>
+    <B>Ian Latter</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20UVC%20Non-module%20patch&In-Reply-To=%3C200703120105.l2C15EVI014533%40singularity.tronunltd.com%3E"
+       TITLE="[Linux-uvc-devel] UVC Non-module patch">ian.latter at midnightcode.org
+       </A><BR>
+    <I>Mon Mar 12 03:05:14 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001492.html">[Linux-uvc-devel] Compiler Warning with undefined!
+</A></li>
+        <LI>Next message: <A HREF="001493.html">[Linux-uvc-devel] installation error
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1491">[ date ]</a>
+              <a href="thread.html#1491">[ thread ]</a>
+              <a href="subject.html#1491">[ subject ]</a>
+              <a href="author.html#1491">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Hello,
+
+
+  Following up on a mix of comments that I made on and off list last 
+week, and recent understandings;
+
+  1) I've integrated what user-space support I need into 
+      libMidnightCode.  Thus, for future reference and other than
+      luvcview, see libmidnightcode-1.3 via midnightcode-camera.c
+      for basic V4L(v2) UVC Camera control, and see application
+      set libmidnightcode-apps-1.3 via camera.c for a basic grab
+      program using that library code (GNU/ANSI C);
+        <A HREF="http://midnightcode.org/projects/libmidnightcode/">http://midnightcode.org/projects/libmidnightcode/</A>
+
+  2) The Logitec Sphere 2006 USB ID is 046d:08cc, per the console
+      output;
+         uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:08cc)
+
+  3) The MJPG (Motion JPEG) output that comes natively from the
+      camera (that I'm using) can be played back using mplayer *IF*
+      the file has the &quot;mjpg&quot; or &quot;mjpeg&quot; extension.
+
+  4) Also using libavcodec, mencoder can convert the MJPG format
+      into more appropriate formats - here is a DIVX / XVID example;
+        mencoder camera.mjpeg  -ovc lavc -lavcopts vcodec=xvid 
+        -oac copy -o output.divx
+
+
+  Note to other implementors;
+
+  I was doing experiments to see if I could avoid implementing a 
+native/internal transcode function, and was rather hoping to use 
+libavcodec, hence the experiments above.  This looks like it will work,
+however as it turns out, my embedded platform will not have the 
+processing power required to do on-board transcoding, so mencoder
+on another platform will probably suit me in the long run.
+
+  The new library was posted up last night - it is released under
+GPLv2.
+
+
+  I have successfully captured video (and no audio) at 320x240x15,
+320x240x30, 640x480x15 and 640x480x30, on this setup 
+(hardware and software mentioned above), and converted those
+MJPEG streams to DIVX (at about 1/3 the original size).
+
+
+
+
+
+----- Original Message -----
+&gt;<i>From: &quot;Ian Latter&quot; &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">ian.latter at midnightcode.org</A>&gt;
+</I>&gt;<i>To: &quot;Martin Rubli&quot; &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">linux at rubli.info</A>&gt;
+</I>&gt;<i>Subject:  Re: [Linux-uvc-devel] UVC Non-module patch
+</I>&gt;<i>Date: Thu, 08 Mar 2007 01:16:42 +1000
+</I>&gt;<i>
+</I>&gt;<i> 
+</I>&gt;<i> &gt; &gt; library based on the luvcview v4l2 code .. it looks
+</I>&gt;<i> promising.  If I get
+</I>&gt;<i> &gt; &gt; my camera running, I'll give you the USB id's, because
+</I>&gt;<i> it shows up as
+</I>&gt;<i> &gt; &gt; unknown.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; The device showing up as &quot;unknown&quot; is not a problem, it
+</I>&gt;<i> just means that  
+</I>&gt;<i> &gt; you have a generic UVC device that doesn't need any
+</I>&gt;<i> special treatment  
+</I>&gt;<i> &gt; (unlike the few Logitech ones that are hardcoded).
+</I>&gt;<i> Unfortunately the  
+</I>&gt;<i> &gt; driver usually has no way of reading a descriptive name
+</I>&gt;<i> from the device.
+</I>&gt;<i> 
+</I>&gt;<i> Okay, I assumed that all (known) supported devices would be
+</I>&gt;<i> listed, but by the sounds of it, you're only listing exceptions?
+</I>&gt;<i> (as in, the special cases)
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> --
+</I>&gt;<i> Ian Latter
+</I>&gt;<i> Late night coder ..
+</I>&gt;<i> <A HREF="http://midnightcode.org/">http://midnightcode.org/</A>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i> 
+</I>
+
+--
+Ian Latter
+Late night coder ..
+<A HREF="http://midnightcode.org/">http://midnightcode.org/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001492.html">[Linux-uvc-devel] Compiler Warning with undefined!
+</A></li>
+	<LI>Next message: <A HREF="001493.html">[Linux-uvc-devel] installation error
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1491">[ date ]</a>
+              <a href="thread.html#1491">[ thread ]</a>
+              <a href="subject.html#1491">[ subject ]</a>
+              <a href="author.html#1491">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech QuickCam Sphere (PTZ)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20Sphere%20%28PTZ%29&In-Reply-To=%3C4535077A.4060603%40mo.pp.ru%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000878.html">
+   <LINK REL="Next"  HREF="000893.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech QuickCam Sphere (PTZ)</H1>
+    <B>Eugeny Nemo</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20QuickCam%20Sphere%20%28PTZ%29&In-Reply-To=%3C4535077A.4060603%40mo.pp.ru%3E"
+       TITLE="[Linux-uvc-devel] Logitech QuickCam Sphere (PTZ)">n at mo.pp.ru
+       </A><BR>
+    <I>Tue Oct 17 18:40:26 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000878.html">[Linux-uvc-devel] [PATCH] Convert uvcvideo from semaphore to	mutex
+</A></li>
+        <LI>Next message: <A HREF="000893.html">[Linux-uvc-devel] Logitech QuickCam Sphere (PTZ)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#879">[ date ]</a>
+              <a href="thread.html#879">[ thread ]</a>
+              <a href="subject.html#879">[ subject ]</a>
+              <a href="author.html#879">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello.
+
+I'm trying to get a QC Sphere running on Debian Etch and have no result.
+
+Microsoft Windows XP says that this is an &quot;Logitech QuickCam PTZ&quot;.
+Box labeled as &quot;Logitech QuickCam Sphere&quot;.
+
+Today I have compiled uvcvideo from SVN, and load it:
+Oct 17 22:18:48 nemos kernel: uvcvideo: Found UVC 1.00 device &lt;unnamed&gt;
+(046d:08c2)
+Oct 17 22:18:48 nemos kernel: usbcore: registered new driver uvcvideo
+
+Seems good, and xawtv found it:
+/dev/video0: OK                         [ -device /dev/video0 ]
+    type : v4l2
+    name : USB Video Class device
+    flags:  capture
+
+But no one capture it.
+
+Mplayer:
+
+$ mplayer <A HREF="tv://">tv://</A> -tv driver=v4l2
+[some output skipped]
+Playing <A HREF="tv://.">tv://.</A>
+Selected driver: v4l2
+ name: Video 4 Linux 2 input
+ author: Martin Olschewski &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">olschewski at zpr.uni-koeln.de</A>&gt;
+ comment: first try, more to come ;-)
+v4l2: ioctl get standard failed: Invalid argument
+v4l2: ioctl set mute failed: Invalid argument
+v4l2: 0 frames successfully processed, 0 frames dropped.
+Exiting... (End of file)
+
+mplayer's strace say:
+open(&quot;/dev/video0&quot;, O_RDWR|O_LARGEFILE) = 4
+ioctl(4, VIDIOC_QUERYCAP or VT_OPENQRY, 0x84efad4) = 0
+ioctl(4, VIDIOC_G_FMT or VT_SENDSIG, 0x84efb88) = 0
+ioctl(4, VIDIOC_G_STD, 0xafb0d248)      = -1 EINVAL (Invalid argument)
+write(2, &quot;v4l2: ioctl get standard failed:&quot;..., 50v4l2: ioctl get standard
+failed: Invalid argument) = 46
+
+v4lctl:
+
+$ v4lctl list
+ioctl:
+VIDIOC_QUERYCTRL(id=134217730;type=unknown;name=&quot;&quot;;minimum=0;maximum=0;step=0;default_value=0;flags=0):
+Input/output error
+ioctl:
+VIDIOC_QUERYCTRL(id=134217735;type=unknown;name=&quot;&quot;;minimum=0;maximum=0;step=0;default_value=0;flags=0):
+Input/output error
+ioctl: VIDIOC_G_STD(std=0xa7d02880a7c333f6
+[PAL_B1,PAL_G,PAL_I,PAL_D,PAL_D1,PAL_K,PAL_M,PAL_N,NTSC_M,NTSC_M_JP,SECAM_B,SECAM_D,SECAM_L,?ATSC_8_VSB,ATSC_16_VSB,(null),(null),(null),(null),(null),(null),(null),(null),(null),(null),(null),(null),(null),(null),(null)]):
+Invalid argument
+ioctl: VIDIOC_G_CTRL(id=9963792;value=39): Input/output error
+ioctl: VIDIOC_G_CTRL(id=134217736;value=2): Input/output error
+config: invalid value for input: Television
+valid choices for &quot;input&quot;: &quot;Camera&quot;
+config: invalid value for norm: norm
+valid choices for &quot;norm&quot;:
+attribute  | type   | current | default | comment
+-----------+--------+---------+---------+-------------------------------------
+norm       | choice | (null)  | (null)  |
+input      | choice | Camera  | Camera  | Camera
+bright     | int    |     127 |     127 | range is 0 =&gt; 255
+contrast   | int    |      32 |      32 | range is 0 =&gt; 255
+color      | int    |      39 |      39 | range is 0 =&gt; 255
+Gamma      | int    |      39 |     220 | range is 100 =&gt; 220
+Gain       | int    |      16 |       0 | range is 0 =&gt; 255
+Backlight  | int    |       1 |       1 | range is 0 =&gt; 2
+Power Line | choice | 60 Hz   | 60 Hz   | Disabled 50 Hz 60 Hz
+Pan/Tilt ( | int    |       2 |       0 | range is 0 =&gt; 3
+Exposure,  | int    |       8 |       8 | range is 0 =&gt; 0
+Exposure ( | int    |    2527 |     166 | range is 1 =&gt; 10000
+White Bala | bool   | on      | on      |
+White Bala | int    |    4000 |    4000 | range is 2800 =&gt; 6500
+
+
+Ekiga just give me &quot;Your video driver doesn't support the requested video
+format&quot; message.
+
+
+...and while I tried kernel says:
+
+Oct 17 22:24:14 nemos kernel: uvcvideo: Failed to query (132) UVC control 8
+(unit 2) : -32.
+Oct 17 22:24:14 nemos kernel: uvcvideo: Failed to query (135) UVC control 1
+(unit 9) : 1.
+Oct 17 22:24:14 nemos kernel: uvcvideo: Failed to query (129) UVC control 9
+(unit 2) : -32.
+Oct 17 22:24:14 nemos kernel: uvcvideo: Failed to query (129) UVC control 2
+(unit 9) : -32.
+
+
+Some tech info:
+nemos:~# uname -a
+Linux nemos 2.6.17-2-686 #1 SMP Wed Sep 13 16:34:10 UTC 2006 i686 GNU/Linux
+nemos:~# lsmod | grep usb
+usb_storage            70560  0
+scsi_mod              123080  2 sd_mod,usb_storage
+usbkbd                  6784  0
+usbcore               111616  6 uvcvideo,usb_storage,usbkbd,uhci_hcd,ehci_hcd
+ide_core              111016  5 usb_storage,ide_cd,ide_disk,piix,generic
+
+Any ideas how to capture video from this?
+
+Thanks in advance.
+
+-- 
+WBR,
+Eugeny Nemo
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: OpenPGP digital signature
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061017/dcaaffeb/attachment.pgp">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20061017/dcaaffeb/attachment.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000878.html">[Linux-uvc-devel] [PATCH] Convert uvcvideo from semaphore to	mutex
+</A></li>
+	<LI>Next message: <A HREF="000893.html">[Linux-uvc-devel] Logitech QuickCam Sphere (PTZ)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#879">[ date ]</a>
+              <a href="thread.html#879">[ thread ]</a>
+              <a href="subject.html#879">[ subject ]</a>
+              <a href="author.html#879">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

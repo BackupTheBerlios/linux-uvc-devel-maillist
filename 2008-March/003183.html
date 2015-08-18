@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Installation failure with kernel 2.6.24-1-686	under Debian
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Installation%20failure%20with%20kernel%202.6.24-1-686%0A%09under%20Debian&In-Reply-To=%3C1205354478.5234.13.camel%40amd2000bk.kleinedaheim%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003234.html">
+   <LINK REL="Next"  HREF="003184.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Installation failure with kernel 2.6.24-1-686	under Debian</H1>
+    <B>Dr. Bernhard Kleine</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Installation%20failure%20with%20kernel%202.6.24-1-686%0A%09under%20Debian&In-Reply-To=%3C1205354478.5234.13.camel%40amd2000bk.kleinedaheim%3E"
+       TITLE="[Linux-uvc-devel] Installation failure with kernel 2.6.24-1-686	under Debian">bernhard.kleine at gmx.net
+       </A><BR>
+    <I>Wed Mar 12 21:41:18 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003234.html">[Linux-uvc-devel] uvcvideo driver modprobing problem
+</A></li>
+        <LI>Next message: <A HREF="003184.html">[Linux-uvc-devel] Installation failure with kernel	2.6.24-1-686	under Debian
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3183">[ date ]</a>
+              <a href="thread.html#3183">[ thread ]</a>
+              <a href="subject.html#3183">[ subject ]</a>
+              <a href="author.html#3183">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hallo,
+
+I installed the latest debian version from unstable
+
+ apt-cache policy linux-uvc-source
+linux-uvc-source:
+  Installiert:0.1.0.svn120-2
+  M&#246;gliche Pakete:0.1.0.svn120-2
+  Versions-Tabelle:
+ *** 0.1.0.svn120-2 0
+        500 <A HREF="http://ftp.de.debian.org">http://ftp.de.debian.org</A> unstable/main Packages
+        100 /var/lib/dpkg/status
+
+according to the README.Debian
+
+I did 
+m-a prepare
+m-a a-i linux-uvc
+
+This resulted unfortunately in an error:
+I did a protocol using tee
+
+        Daten &#252;ber 1 Pakete aktualisiert.
+        Paketlisten werden gelesen...
+        Abh&#228;ngigkeitsbaum wird aufgebaut...
+        Reading state information...
+        build-essential ist schon die neueste Version.
+        0 aktualisiert, 0 neu installiert, 0 zu entfernen und 0 nicht
+        aktualisiert.
+        Extracting the package tarball, /usr/src/linux-uvc.tar.bz2,
+        please wait...
+
+The buildlog follows. Please let me know what I can do to get a working
+webcam.
+
+Bernhard
+
+BUILDLOG:
+
+        dh_testdir
+        dh_testroot
+        dh_clean
+        /usr/bin/make -C /usr/src/modules/linux-uvc clean \
+                KERNELPATH=/lib/modules/2.6.24-1-686/build
+        KERNELRELEASE=2.6.24-1-686
+        KERNELCONF=/lib/modules/2.6.24-1-686/build/.config 
+        make[1]: Entering directory `/usr/src/modules/linux-uvc'
+        rm -f *.o *.ko .*.cmd .*.flags *.mod.c Module.symvers
+        rm -rf .tmp_versions
+        make[1]: Leaving directory `/usr/src/modules/linux-uvc'
+        /usr/bin/make  -f debian/rules kdist_clean kdist_config
+        binary-modules
+        make[1]: Entering directory `/usr/src/modules/linux-uvc'
+        dh_testdir
+        dh_testroot
+        dh_clean
+        /usr/bin/make -C /usr/src/modules/linux-uvc clean \
+                KERNELPATH=/lib/modules/2.6.24-1-686/build
+        KERNELRELEASE=2.6.24-1-686
+        KERNELCONF=/lib/modules/2.6.24-1-686/build/.config 
+        make[2]: Entering directory `/usr/src/modules/linux-uvc'
+        rm -f *.o *.ko .*.cmd .*.flags *.mod.c Module.symvers
+        rm -rf .tmp_versions
+        make[2]: Leaving directory `/usr/src/modules/linux-uvc'
+        for templ in ; do \
+            cp $templ `echo $templ | sed -e
+        's/_KVERS_/2.6.24-1-686/g'` ; \
+          done
+        for templ in `ls debian/*.modules.in` ; do \
+            test -e ${templ%.modules.in}.backup || cp ${templ
+        %.modules.in} ${templ%.modules.in}.backup 2&gt;/dev/null || true; \
+            sed -e
+        's/##KVERS##/2.6.24-1-686/g ;s/#KVERS#/2.6.24-1-686/g ;
+        s/_KVERS_/2.6.24-1-686/g ; s/##KDREV##/2.6.24-4/g ;
+        s/#KDREV#/2.6.24-4/g ; s/_KDREV_/2.6.24-4/g  ' &lt; $templ &gt;
+        ${templ%.modules.in}; \
+          done
+        dh_testdir
+        dh_testroot
+        dh_clean -k
+        # Build modules
+        /usr/bin/make -C /usr/src/modules/linux-uvc uvcvideo \
+                KERNEL_DIR=/lib/modules/2.6.24-1-686/build
+        KERNEL_VERSION=2.6.24-1-686
+        KERNELCONF=/lib/modules/2.6.24-1-686/build/.config 
+        make[2]: Entering directory `/usr/src/modules/linux-uvc'
+        Building USB Video Class driver...
+        make[3]: Entering directory
+        `/usr/src/linux-headers-2.6.24-1-686'
+          CC [M]  /usr/src/modules/linux-uvc/uvc_driver.o
+        /usr/src/modules/linux-uvc/uvc_driver.c: In function
+        'uvc_register_video':
+        /usr/src/modules/linux-uvc/uvc_driver.c:1451: error: 'struct
+        video_device' has no member named 'hardware'
+        make[4]: *** [/usr/src/modules/linux-uvc/uvc_driver.o] Fehler 1
+        make[3]: *** [_module_/usr/src/modules/linux-uvc] Fehler 2
+        make[3]: Leaving directory `/usr/src/linux-headers-2.6.24-1-686'
+        make[2]: *** [uvcvideo] Fehler 2
+        make[2]: Leaving directory `/usr/src/modules/linux-uvc'
+        make[1]: *** [binary-modules] Fehler 2
+        make[1]: Leaving directory `/usr/src/modules/linux-uvc'
+        make: *** [kdist_build] Fehler 2
+        
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003234.html">[Linux-uvc-devel] uvcvideo driver modprobing problem
+</A></li>
+	<LI>Next message: <A HREF="003184.html">[Linux-uvc-devel] Installation failure with kernel	2.6.24-1-686	under Debian
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3183">[ date ]</a>
+              <a href="thread.html#3183">[ thread ]</a>
+              <a href="subject.html#3183">[ subject ]</a>
+              <a href="author.html#3183">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

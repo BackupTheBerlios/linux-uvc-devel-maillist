@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] can't compile UVC package
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20can%27t%20compile%20UVC%20package&In-Reply-To=%3CAANLkTi%3D6-8qTb%2BrtDASRXjHwv%2BXFikuAS8N2x%3DPBQjh%3D%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006398.html">
+   <LINK REL="Next"  HREF="006400.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] can't compile UVC package</H1>
+    <B>Misc Things</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20can%27t%20compile%20UVC%20package&In-Reply-To=%3CAANLkTi%3D6-8qTb%2BrtDASRXjHwv%2BXFikuAS8N2x%3DPBQjh%3D%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] can't compile UVC package">formisc at gmail.com
+       </A><BR>
+    <I>Sat Mar 26 19:37:38 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006398.html">[Linux-uvc-devel] can't compile UVC package
+</A></li>
+        <LI>Next message: <A HREF="006400.html">[Linux-uvc-devel] Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6399">[ date ]</a>
+              <a href="thread.html#6399">[ thread ]</a>
+              <a href="subject.html#6399">[ subject ]</a>
+              <a href="author.html#6399">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Sat, Mar 26, 2011 at 11:25 AM, Misc Things &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">formisc at gmail.com</A>&gt; wrote:
+&lt;skip&gt;
+&gt;<i> make -C /lib/modules/2.6.18-194.17.1.el5.centos.plus/build
+</I>&gt;<i> SUBDIRS=/home/az/v4l-dvb-abd3aac6644e/v4l &#160;modules
+</I>&gt;<i> make[2]: Entering directory
+</I>&gt;<i> `/usr/src/kernels/2.6.18-194.17.1.el5.centos.plus-i686'
+</I>&gt;<i> &#160;CC [M] &#160;/home/az/v4l-dvb-abd3aac6644e/v4l/tuner-xc2028.o
+</I>&gt;<i> In file included from /home/az/v4l-dvb-abd3aac6644e/v4l/tuner-xc2028.c:19:
+</I>&gt;<i> /home/az/v4l-dvb-abd3aac6644e/v4l/compat.h:133: error: static
+</I>&gt;<i> declaration of 'strict_strtoul' follows non-static declaration
+</I>&gt;<i> include/linux/kernel.h:141: error: previous declaration of
+</I>&gt;<i> 'strict_strtoul' was here
+</I>&gt;<i> make[3]: *** [/home/az/v4l-dvb-abd3aac6644e/v4l/tuner-xc2028.o] Error 1
+</I>&gt;<i> make[2]: *** [_module_/home/az/v4l-dvb-abd3aac6644e/v4l] Error 2
+</I>&gt;<i> make[2]: Leaving directory
+</I>&gt;<i> `/usr/src/kernels/2.6.18-194.17.1.el5.centos.plus-i686'
+</I>&gt;<i> make[1]: *** [default] Error 2
+</I>&gt;<i> make[1]: Leaving directory `/home/az/v4l-dvb-abd3aac6644e/v4l'
+</I>&gt;<i> make: *** [all] Error 2
+</I>&gt;<i>
+</I>&gt;<i> [/code]
+</I>&gt;<i> now i'm completely clueless. I also attached config file for the reference.
+</I>&gt;<i>
+</I>&gt;<i> Please advise.
+</I>&gt;<i> Andrew
+</I>&gt;<i>
+</I>
+One another step - i commented out the declaration of strict_strtoul'
+from compact.h
+[code]
+diff -h ./compat.h ./compat.h0
+132d131
+&lt; /*
+153d151
+&lt; */
+[/code]
+
+but now it's crashing on
+[code]
+CC [M]  /home/az/v4l-dvb-abd3aac6644e/v4l/bttv-driver.o
+In file included from /home/az/v4l-dvb-abd3aac6644e/v4l/bttvp.h:40,
+                 from /home/az/v4l-dvb-abd3aac6644e/v4l/bttv-driver.c:48:
+/home/az/v4l-dvb-abd3aac6644e/v4l/compat.h:66: error: static
+declaration of 'pci_msi_enabled' follows non-static declaration
+include/linux/pci.h:740: error: previous declaration of
+'pci_msi_enabled' was here
+In file included from
+/home/az/v4l-dvb-abd3aac6644e/v4l/../linux/include/media/ir-common.h:29,
+                 from /home/az/v4l-dvb-abd3aac6644e/v4l/bttvp.h:45,
+                 from /home/az/v4l-dvb-abd3aac6644e/v4l/bttv-driver.c:48:
+/home/az/v4l-dvb-abd3aac6644e/v4l/../linux/include/media/ir-core.h: In
+function 'ir_input_register':
+/home/az/v4l-dvb-abd3aac6644e/v4l/../linux/include/media/ir-core.h:121:
+error: implicit declaration of function 'input_get_drv
+ data'
+/home/az/v4l-dvb-abd3aac6644e/v4l/../linux/include/media/ir-core.h:121:
+warning: assignment makes pointer from integer without
+  a cast
+make[3]: *** [/home/az/v4l-dvb-abd3aac6644e/v4l/bttv-driver.o] Error 1
+make[2]: *** [_module_/home/az/v4l-dvb-abd3aac6644e/v4l] Error 2
+make[2]: Leaving directory
+`/usr/src/kernels/2.6.18-194.17.1.el5.centos.plus-i686'
+make[1]: *** [default] Error 2
+make[1]: Leaving directory `/home/az/v4l-dvb-abd3aac6644e/v4l'
+make: *** [all] Error 2
+[/code]
+
+can't move further again...
+ what a pain :(
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006398.html">[Linux-uvc-devel] can't compile UVC package
+</A></li>
+	<LI>Next message: <A HREF="006400.html">[Linux-uvc-devel] Creative VF0700 Live! Cam Chat HD works everywhere, except highly distorted video in Skype
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6399">[ date ]</a>
+              <a href="thread.html#6399">[ thread ]</a>
+              <a href="subject.html#6399">[ subject ]</a>
+              <a href="author.html#6399">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

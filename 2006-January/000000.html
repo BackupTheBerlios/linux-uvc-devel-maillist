@@ -1,0 +1,304 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Comments about the driver
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Comments%20about%20the%20driver&In-Reply-To=%3C20060104113050.GW15519%40sd291.sivit.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000001.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Comments about the driver</H1>
+    <B>Luc Saillard</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Comments%20about%20the%20driver&In-Reply-To=%3C20060104113050.GW15519%40sd291.sivit.org%3E"
+       TITLE="[Linux-uvc-devel] Comments about the driver">luc at saillard.org
+       </A><BR>
+    <I>Wed Jan  4 12:30:51 CET 2006</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000001.html">[Linux-uvc-devel] Comments about the driver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#0">[ date ]</a>
+              <a href="thread.html#0">[ thread ]</a>
+              <a href="subject.html#0">[ subject ]</a>
+              <a href="author.html#0">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Some comments about the current driver.
+I'll try tonight the driver, and thanks for writing the driver.
+
+Luc
+&gt;<i> 
+</I>&gt;<i> /*
+</I>&gt;<i>  *      usbvideo.c  --  USB Video Class driver
+</I>&gt;<i>  *
+</I>&gt;<i>  *      Copyright (C) 2005
+</I>Now you can update the year :-)
+
+&gt;<i>  *          Laurent Pinchart (<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>)
+</I>&gt;<i>  *
+</I>&gt;<i>  *      This program is free software; you can redistribute it and/or modify
+</I>&gt;<i>  *      it under the terms of the GNU General Public License as published by
+</I>&gt;<i>  *      the Free Software Foundation; either version 2 of the License, or
+</I>&gt;<i>  *      (at your option) any later version.
+</I>&gt;<i>  *
+</I>&gt;<i>  */
+</I>
+&gt;<i> * Don't try to open the driver multiple times ! This will crash and make your
+</I>&gt;<i> * computer explode (well, maybe not, but still, don't do it). I plan to fix
+</I>&gt;<i> * that in the very near future. You have been warned.
+</I>
+  You can just put a counter in the uvc_v4l2_open() and when the counter != 0
+don't try to continue.
+  
+&gt;<i> struct uvc_terminal {
+</I>&gt;<i> 	struct list_head list;
+</I>&gt;<i> 
+</I>&gt;<i> 	__u8 id;
+</I>&gt;<i> 	__u16 type;
+</I>&gt;<i> 	char name[64];
+</I>&gt;<i> 
+</I>&gt;<i> 	union {
+</I>&gt;<i> 		struct {
+</I>&gt;<i> 			__u16 wObjectiveFocalLengthMin;
+</I>&gt;<i> 			__u16 wObjectiveFocalLengthMax;
+</I>&gt;<i> 			__u16 wOcularFocalLength;
+</I>&gt;<i> 			__u8  bControlSize;
+</I>&gt;<i> 			__u8  *bmControls;
+</I>&gt;<i> 		} camera;
+</I>&gt;<i> 
+</I>&gt;<i> 		struct {
+</I>&gt;<i> 			__u8  bSourceID;
+</I>&gt;<i> 		} output;
+</I>&gt;<i> 	};
+</I>&gt;<i> };
+</I>
+union without name can't be build with gcc2.95 is it ok ?
+
+&gt;<i> 
+</I>&gt;<i> struct uvc_unit {
+</I>&gt;<i> 	struct list_head list;
+</I>&gt;<i> 
+</I>&gt;<i> 	int id;
+</I>&gt;<i> 	int type;
+</I>&gt;<i> 	char name[64];
+</I>&gt;<i> };
+</I>&gt;<i> 
+</I> 
+&gt;<i> struct uvc_control_desc uvc_ctrls[] = {
+</I>&gt;<i> 	{
+</I>
+ put a static here too.
+
+ 
+&gt;<i> /*
+</I>&gt;<i>  * Allocate the video buffers.
+</I>&gt;<i>  *
+</I>&gt;<i>  * Pages are reserved to make sure they will not be swaped, as they will be
+</I>&gt;<i>  * filled in URB completion handler.
+</I>&gt;<i>  * 
+</I>&gt;<i>  * Buffers will be individually mapped, so they must all be page aligned.
+</I>&gt;<i>  */
+</I>&gt;<i> static int uvc_alloc_buffers(struct uvc_video_queue *queue, unsigned int nbuffers,
+</I>&gt;<i> 		unsigned int buflength)
+</I>&gt;<i> {
+</I>&gt;<i> 	unsigned int bufsize = PAGE_ALIGN(buflength);
+</I>&gt;<i> 	unsigned int i;
+</I>&gt;<i> 	void *mem = NULL;
+</I>&gt;<i> 	int ret;
+</I>&gt;<i> 
+</I>&gt;<i> 	if (nbuffers &gt; UVC_MAX_VIDEO_BUFFERS)
+</I>&gt;<i> 		nbuffers = UVC_MAX_VIDEO_BUFFERS;
+</I>&gt;<i> 
+</I>&gt;<i> 	down(&amp;queue-&gt;lock);
+</I>&gt;<i> 
+</I>&gt;<i> 	if ((ret = uvc_free_buffers(queue)) &lt; 0)
+</I>&gt;<i> 		goto done;
+</I>&gt;<i> 
+</I>&gt;<i> 	/* Decrement the number of buffers until allocation succeeds. */
+</I>&gt;<i> 	for (; nbuffers &gt; 0; --nbuffers) {
+</I>&gt;<i> 		mem = vmalloc_32(nbuffers * bufsize);
+</I>&gt;<i> 		if (mem != NULL)
+</I>&gt;<i> 			break;
+</I>&gt;<i> 	}
+</I>&gt;<i> 
+</I>&gt;<i> 	if (mem == NULL)
+</I>&gt;<i> 		return -ENOMEM;
+</I>
+                ^^^^ return without a up()
+                ret = -ENOMEM;
+                goto done;
+
+&gt;<i> 
+</I>&gt;<i> 	for (i = 0; i &lt; nbuffers; ++i) {
+</I>&gt;<i> 		memset(&amp;queue-&gt;buffer[i], 0, sizeof queue-&gt;buffer[i]);
+</I>&gt;<i> 		queue-&gt;buffer[i].size = bufsize;
+</I>&gt;<i> 		queue-&gt;buffer[i].buf.index = i;
+</I>&gt;<i> 		queue-&gt;buffer[i].buf.m.offset = i * bufsize;
+</I>
+Is any buffersize aligned on a page boudary ?
+
+&gt;<i> 		queue-&gt;buffer[i].buf.length = buflength;
+</I>&gt;<i> 		queue-&gt;buffer[i].buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+</I>&gt;<i> 		queue-&gt;buffer[i].buf.sequence = 0;
+</I>&gt;<i> 		queue-&gt;buffer[i].buf.field = V4L2_FIELD_NONE;
+</I>&gt;<i> 		queue-&gt;buffer[i].buf.memory = V4L2_MEMORY_MMAP;
+</I>&gt;<i> 		queue-&gt;buffer[i].buf.flags = 0;
+</I>&gt;<i> 		init_waitqueue_head(&amp;queue-&gt;buffer[i].wait);
+</I>&gt;<i> 	}
+</I>&gt;<i> 
+</I>&gt;<i> 	queue-&gt;mem = mem;
+</I>&gt;<i> 	queue-&gt;count = nbuffers;
+</I>&gt;<i> 	ret = nbuffers;
+</I>&gt;<i> 
+</I>&gt;<i> done:
+</I>&gt;<i> 	up(&amp;queue-&gt;lock);
+</I>&gt;<i> 	return ret;
+</I>&gt;<i> }
+</I>&gt;<i> 
+</I> 
+&gt;<i> /*
+</I>&gt;<i>  * Dequeue a video buffer. If nonblocking is false, block until a buffer is
+</I>&gt;<i>  * available.
+</I>&gt;<i>  */
+</I>&gt;<i> static int uvc_dequeue_buffer(struct uvc_video_queue *queue,
+</I>&gt;<i> 		struct v4l2_buffer *v4l2_buf, int nonblocking)
+</I>&gt;<i> {
+</I>&gt;<i> 	struct uvc_buffer *buf;
+</I>&gt;<i> 	int ret = 0;
+</I>&gt;<i> 
+</I>&gt;<i> 	if (v4l2_buf-&gt;type != V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+</I>&gt;<i> 	    v4l2_buf-&gt;memory != V4L2_MEMORY_MMAP)
+</I>&gt;<i> 		return -EINVAL;
+</I>&gt;<i> 
+</I>&gt;<i> 	down(&amp;queue-&gt;lock);
+</I>&gt;<i> 	if (list_empty(&amp;queue-&gt;mainqueue)) {
+</I>&gt;<i> 		ret = -EINVAL;
+</I>&gt;<i> 		goto done;
+</I>&gt;<i> 	}
+</I>&gt;<i> 
+</I>&gt;<i> 	buf = list_entry(queue-&gt;mainqueue.next, struct uvc_buffer, stream);
+</I>&gt;<i> 	if ((ret = uvc_queue_waiton(buf, nonblocking)) &lt; 0)
+</I>&gt;<i> 		goto done;
+</I>&gt;<i> 
+</I>&gt;<i> 	switch (buf-&gt;state) {
+</I>&gt;<i> 	case UVC_BUF_STATE_ERROR:
+</I>&gt;<i> 		ret = -EIO;
+</I>                ^^^^ ? need a goto done or is it wanted ?
+
+&gt;<i> 	case UVC_BUF_STATE_DONE:
+</I>&gt;<i> 		buf-&gt;state = UVC_BUF_STATE_IDLE;
+</I>&gt;<i> 		break;
+</I>&gt;<i> 
+</I>&gt;<i> 	case UVC_BUF_STATE_IDLE:
+</I>&gt;<i> 	case UVC_BUF_STATE_QUEUED:
+</I>&gt;<i> 	case UVC_BUF_STATE_ACTIVE:
+</I>&gt;<i> 	default:
+</I>&gt;<i> 		ret = -EINVAL;
+</I>&gt;<i> 		goto done;
+</I>&gt;<i> 	}
+</I>&gt;<i> 
+</I>&gt;<i> 	list_del(&amp;buf-&gt;stream);
+</I>&gt;<i> 	memcpy(v4l2_buf, &amp;buf-&gt;buf, sizeof *v4l2_buf);
+</I>&gt;<i> 
+</I>&gt;<i> done:
+</I>&gt;<i> 	up(&amp;queue-&gt;lock);
+</I>&gt;<i> 	return ret;
+</I>&gt;<i> }
+</I>&gt;<i> 
+</I>&gt;<i> /*
+</I>&gt;<i>  * Queue a video buffer. Attempting to queue a buffer that has already been
+</I>&gt;<i>  * queued will return -EINVAL.
+</I>&gt;<i>  */
+</I>&gt;<i> static int uvc_queue_buffer(struct uvc_video_queue *queue, struct v4l2_buffer *v4l2_buf)
+</I>&gt;<i> {
+</I>&gt;<i> 	struct uvc_buffer *buf;
+</I>&gt;<i> 	unsigned long flags;
+</I>&gt;<i> 	int ret = 0;
+</I>&gt;<i> 
+</I>&gt;<i> 	if (v4l2_buf-&gt;type != V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+</I>&gt;<i> 	    v4l2_buf-&gt;memory != V4L2_MEMORY_MMAP)
+</I>&gt;<i> 		return -EINVAL;
+</I>&gt;<i> 
+</I>&gt;<i> 	down(&amp;queue-&gt;lock);
+</I>&gt;<i> 	if (v4l2_buf-&gt;index &gt;= queue-&gt;count)  {
+</I>&gt;<i> 		ret = -EINVAL;
+</I>&gt;<i> 		goto done;
+</I>&gt;<i> 	}
+</I>&gt;<i> 
+</I>&gt;<i> 	buf = &amp;queue-&gt;buffer[v4l2_buf-&gt;index];
+</I>&gt;<i> 	if (buf-&gt;state != UVC_BUF_STATE_IDLE) {
+</I>&gt;<i> 		ret = -EINVAL;
+</I>&gt;<i> 		goto done;
+</I>&gt;<i> 	}
+</I>&gt;<i> 
+</I>&gt;<i> 	buf-&gt;state = UVC_BUF_STATE_QUEUED;
+</I>&gt;<i> 	buf-&gt;buf.bytesused = 0;
+</I>&gt;<i> 	list_add_tail(&amp;buf-&gt;stream, &amp;queue-&gt;mainqueue);
+</I>&gt;<i> 	spin_lock_irqsave(&amp;queue-&gt;irqlock, flags);
+</I>&gt;<i> 	list_add_tail(&amp;buf-&gt;queue, &amp;queue-&gt;irqqueue);
+</I>&gt;<i> 	spin_unlock_irqrestore(&amp;queue-&gt;irqlock, flags);
+</I>&gt;<i> 
+</I>&gt;<i> done:
+</I>&gt;<i> 	up(&amp;queue-&gt;lock);
+</I>&gt;<i> 	return ret;
+</I>&gt;<i> }
+</I>&gt;<i> 
+</I> 
+ }
+&gt;<i> 
+</I>&gt;<i> static int uvc_set_video_ctrl(struct uvc_video_device *video,
+</I>&gt;<i> 	struct uvc_streaming_control *ctrl, int probe)
+</I>&gt;<i> {
+</I>&gt;<i> 	__u8 data[34];
+</I>        is it not posible to create a structure and access it ?
+        i think it will more readable than data[2] ?
+&gt;<i> 	__u8 size;
+</I>&gt;<i> 
+</I>&gt;<i> 	size = video-&gt;dev-&gt;uvc_version &gt; 0x0100 ? 34 : 26;
+</I>&gt;<i> 	memset(data, 0, sizeof data);
+</I>&gt;<i> 
+</I>&gt;<i> 	*(__le16*)&amp;data[0] = cpu_to_le32(ctrl-&gt;bmHint);
+</I>&gt;<i> 	data[2] = ctrl-&gt;bFormatIndex;
+</I>&gt;<i> 	data[3] = ctrl-&gt;bFrameIndex;
+</I>&gt;<i> 	*(__le32*)&amp;data[4] = cpu_to_le32(ctrl-&gt;dwFrameInterval);
+</I>&gt;<i> 	*(__le16*)&amp;data[8] = cpu_to_le16(ctrl-&gt;wKeyFrameRate);
+</I>&gt;<i> 	*(__le16*)&amp;data[10] = cpu_to_le16(ctrl-&gt;wPFrameRate);
+</I>&gt;<i> 	*(__le16*)&amp;data[12] = cpu_to_le16(ctrl-&gt;wCompQuality);
+</I>&gt;<i> 	*(__le16*)&amp;data[14] = cpu_to_le16(ctrl-&gt;wCompWindowSize);
+</I>&gt;<i> 	*(__le16*)&amp;data[16] = cpu_to_le16(ctrl-&gt;wDelay);
+</I>
+ 
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000001.html">[Linux-uvc-devel] Comments about the driver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#0">[ date ]</a>
+              <a href="thread.html#0">[ thread ]</a>
+              <a href="subject.html#0">[ subject ]</a>
+              <a href="author.html#0">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,318 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel]  suyin crystal eye webcam 064e:a103 not working
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-May/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%20suyin%20crystal%20eye%20webcam%20064e%3Aa103%20not%20working&In-Reply-To=%3Cebff8ece0905281121s258a7f67v25fca34e206d13b%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004809.html">
+   <LINK REL="Next"  HREF="004810.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel]  suyin crystal eye webcam 064e:a103 not working</H1>
+    <B>bruce m beach</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%20suyin%20crystal%20eye%20webcam%20064e%3Aa103%20not%20working&In-Reply-To=%3Cebff8ece0905281121s258a7f67v25fca34e206d13b%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel]  suyin crystal eye webcam 064e:a103 not working">brucembeach at gmail.com
+       </A><BR>
+    <I>Thu May 28 20:21:38 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004809.html">[Linux-uvc-devel] BisonCam, NB Pro (5986:0241)
+</A></li>
+        <LI>Next message: <A HREF="004810.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4801">[ date ]</a>
+              <a href="thread.html#4801">[ thread ]</a>
+              <a href="subject.html#4801">[ subject ]</a>
+              <a href="author.html#4801">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello Laurent
+
+&gt;<i> On Wednesday 20 May 2009 05:29:27 bruce m beach wrote:
+</I> &gt;
+&gt;<i> &gt; Okay. Here's what I have done to the code in luvcview ...
+</I>&gt;<i> &gt; ... ...
+</I>&gt;<i> &gt; ... ...
+</I>&gt;<i> &gt; uvcGrab: ret=ioctl(vd-&gt;fd, VIDIOC_DQBUF, &amp;vd-&gt;buf); (BEFORE THE CALL):
+</I>&gt;<i> &gt; ... ...                                              ^^^^^^ ^^^ ^^^^
+</I>&gt;<i> &gt; camera data by whatever method). The call is completed once, some other
+</I>&gt;<i> &gt; stuff is executed, it is entered again, calls
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;     ret=ioctl(vd-&gt;fd, VIDIOC_DQBUF, &amp;vd-&gt;buf)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; and never returns. It stays in the call until kill -9 luvcview(PID)
+</I>&gt;<i> &gt; is executed.
+</I>&gt;<i> &gt; ... ... One question is why doesn't it time out?
+</I>&gt;<i>
+</I>&gt;<i> The V4L2 specification doesn't specify if and when VIDIOC_DQBUF should
+</I>&gt;<i> timeout. Why would you like it to timeout ?
+</I>&gt;<i>
+</I>  Maybe it shouldn't timeout, but some kind of check should be made
+  in userland. A common complaint on the web is that programs (including
+  luvcview) do not respond to normal program exit or &quot;cntrl-C&quot;. The
+  only way to terminate is &quot;kill -9 pid&quot;. I believe that if something
+  goes wrong and the camera doesn't start streaming then it gets stuck
+  in this ioctl(VIDIOC_DQBUF) and waits forerever. The capture example
+  from the uvc api uses &quot;select&quot; to monitor buffers and dies with
+
+  sh-4.0# capture_example
+             select timeout
+
+  and I believe mplayer also uses the same mechanism
+
+  sh-4.0# mplayer <A HREF="tv://">tv://</A>
+        Starting playback...
+        v4l2: select timeout
+        v4l2: select timeout ??% ??,?% 0 0
+        v4l2: select timeout ??% ??,?% 0 0
+        v4l2: select timeout ??% ??,?% 0 0
+        v4l2: 1 frames successfully processed, 0 frames dropped.
+        Exiting... (Quit)
+
+
+
+&gt;<i> &gt; I have another webcam (0c45:6009 Microdia VideoCAM ExpressII) that uses
+</I>&gt;<i> &gt; &quot;modprobe sn9c102&quot; to work. If I run it with luvcview it is only gives
+</I>&gt;<i> &gt; a green screen but the uvcGrab looping  works and it terminates normally.
+</I>&gt;<i> &gt; I have another program (sn-webcam) where the ExpressII works okay.
+</I>
+&gt;<i> That's a completely different driver, and I'm not familiar with it, sorry.
+</I>
+  My interest in it was that it wasn't getting stalled int the VIDIOC_DQBUF
+  ioctl call. I'm not clear what should work and what shouldn't work with
+  luvcview. Given that everything was working properly and I used a camera
+  using the sn9c102 driver which of the 3 possiblilities would you pick
+
+   1) Definitely should work
+   2) Not in a million years.
+   3) Might work depending on whatever it depends on.
+
+&gt;<i> &gt; By the way doing &quot;make&quot; on luvcview gives a lot of redefinitions like: ...
+</I>&gt;<i> I assume you get those warnings with the deprecated SVN version.
+</I>&gt;<i> Don't use it, it's really deprecated.
+</I>
+  Good thing I mentioned it then. I went to
+
+  <A HREF="http://svn.quickcamteam.net/svn/luvcview/trunk/luvcview/">http://svn.quickcamteam.net/svn/luvcview/trunk/luvcview/</A>
+
+  which I assume is the current version. It compiles without the warnings
+  and seems to work a little bit better.
+
+&gt;<i> The reason why VIDIOC_DQBUF fails to return is probably that the driver
+</I>&gt;<i> doesn't get enough data from the camera to fill a frame (or that it believes
+</I>&gt;<i> it doesn't).
+</I>
+  One question is after the first frame does it get any data at all
+  and is ioctl(VIDIOC_STREAMON) really happening.
+
+&gt;<i>Could you set the trace level to 255, run luvcview for a few
+</I>&gt;<i> seconds, kill it
+</I>&gt;<i>   (ctrl-\ should do the job)
+</I>
+  Never saw this one before but it works. Live and learn.
+
+&gt;<i> and send me the messages printed by the uvcvideo driver to the kernel log ?
+</I>
+  Okay. I insert the following messages in the kernel log at the
+approprate times
+
+        MESSAGE modprobe uvcvideo trace=255
+        MESSAGE starting luvcvideo
+        MESSAGE cntrl backslash
+        MESSAGE done
+
+  here is the output from luvcview
+
+            sh-4.0# luvcview
+                       luvcview 0.2.5
+                       SDL information:
+                       Video driver: x11
+                       A window manager is available
+                       Device information:
+                       Device path:  /dev/video0
+                       Stream settings:
+                       Frame format: MJPG
+                       Frame size:   640x480
+                       Frame rate:   30 fps
+                       ^\Quit
+
+   and below is the output  from the kernel log.
+
+
+  Bruce
+
+MESSAGE modprobe uvcvideo trace=255
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Brightness
+to control 00000000-0000-0000-0000-000000000101/2.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Contrast
+to control 00000000-0000-0000-0000-000000000101/3.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Hue to
+control 00000000-0000-0000-0000-000000000101/6.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Saturation
+to control 00000000-0000-0000-0000-000000000101/7.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Sharpness
+to control 00000000-0000-0000-0000-000000000101/8.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Gamma to
+control 00000000-0000-0000-0000-000000000101/9.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Backlight
+Compensation to control 00000000-0000-0000-0000-000000000101/1.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Gain to
+control 00000000-0000-0000-0000-000000000101/4.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Power Line
+Frequency to control 00000000-0000-0000-0000-000000000101/5.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Hue, Auto
+to control 00000000-0000-0000-0000-000000000101/16.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Exposure,
+Auto to control 00000000-0000-0000-0000-000000000001/2.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Exposure,
+Auto Priority to control 00000000-0000-0000-0000-000000000001/3.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Exposure
+(Absolute) to control 00000000-0000-0000-0000-000000000001/4.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping White
+Balance Temperature, Auto to control
+00000000-0000-0000-0000-000000000101/11.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping White
+Balance Temperature to control
+00000000-0000-0000-0000-000000000101/10.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping White
+Balance Component, Auto to control
+00000000-0000-0000-0000-000000000101/13.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping White
+Balance Blue Component to control
+00000000-0000-0000-0000-000000000101/12.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping White
+Balance Red Component to control
+00000000-0000-0000-0000-000000000101/12.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Focus
+(absolute) to control 00000000-0000-0000-0000-000000000001/6.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Focus,
+Auto to control 00000000-0000-0000-0000-000000000001/8.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Zoom,
+Absolute to control 00000000-0000-0000-0000-000000000001/11.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Zoom,
+Continuous to control 00000000-0000-0000-0000-000000000001/12.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Adding mapping Privacy to
+control 00000000-0000-0000-0000-000000000001/17.
+May 28 10:52:28 lapsystemx kernel: uvcvideo 4-1:1.0: usb_probe_interface
+May 28 10:52:28 lapsystemx kernel: uvcvideo 4-1:1.0:
+usb_probe_interface - got id
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Probing generic UVC device 1
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Found format MJPEG.
+May 28 10:52:28 lapsystemx kernel: uvcvideo: - 640x480 (30.0 fps)
+May 28 10:52:28 lapsystemx kernel: uvcvideo: - 352x288 (30.0 fps)
+May 28 10:52:28 lapsystemx kernel: uvcvideo: - 320x240 (30.0 fps)
+May 28 10:52:28 lapsystemx kernel: uvcvideo: - 176x144 (30.0 fps)
+May 28 10:52:28 lapsystemx kernel: uvcvideo: - 160x120 (30.0 fps)
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Found a Status endpoint (addr 83).
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Found UVC 1.00 device
+Crystal Eye webcam (064e:a103)
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/2 to device 1 entity 3
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/3 to device 1 entity 3
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/6 to device 1 entity 3
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/7 to device 1 entity 3
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/8 to device 1 entity 3
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/9 to device 1 entity 3
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/12 to device 1 entity 3
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/1 to device 1 entity 3
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/5 to device 1 entity 3
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Added control
+00000000-0000-0000-0000-000000000101/13 to device 1 entity 3
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Scanning UVC chain: OT 2
+&lt;- XU 5 &lt;- XU 4 &lt;- PU 3 &lt;- IT 1
+May 28 10:52:28 lapsystemx kernel: uvcvideo: Found a valid video chain (1 -&gt; 2).
+May 28 10:52:28 lapsystemx kernel: input: Crystal Eye webcam as
+/class/input/input8
+May 28 10:52:28 lapsystemx kernel: uvcvideo: UVC device initialized.
+May 28 10:52:28 lapsystemx kernel: usbcore: registered new interface
+driver uvcvideo
+May 28 10:52:28 lapsystemx kernel: USB Video Class driver (v0.1.0)
+MESSAGE starting luvcvideo
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_open
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYCAP)
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FMT)
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_ENUM_FMT)
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_S_FMT)
+May 28 10:53:23 lapsystemx kernel: uvcvideo: Trying format 0x47504a4d
+(MJPG): 640x480.
+May 28 10:53:23 lapsystemx kernel: uvcvideo: Using default frame
+interval 33333.3 us (30.0 fps).
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_S_PARM)
+May 28 10:53:23 lapsystemx kernel: uvcvideo: Setting frame interval to
+1/30 (333333).
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_G_PARM)
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_REQBUFS)
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYBUF)
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_mmap
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYBUF)
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_mmap
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYBUF)
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_mmap
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_QUERYBUF)
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_mmap
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+May 28 10:53:23 lapsystemx kernel: uvcvideo: Queuing buffer 0.
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+May 28 10:53:23 lapsystemx kernel: uvcvideo: Queuing buffer 1.
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+May 28 10:53:23 lapsystemx kernel: uvcvideo: Queuing buffer 2.
+May 28 10:53:23 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+May 28 10:53:23 lapsystemx kernel: uvcvideo: Queuing buffer 3.
+May 28 10:53:26 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_STREAMON)
+May 28 10:53:26 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+May 28 10:53:28 lapsystemx kernel: uvcvideo: Frame complete (overflow).
+May 28 10:53:28 lapsystemx kernel: uvcvideo: Dropping payload (out of sync).
+May 28 10:53:28 lapsystemx last message repeated 18 times
+May 28 10:53:28 lapsystemx kernel: uvcvideo: Dequeuing buffer 0 (3,
+307789 bytes).
+May 28 10:53:28 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_QBUF)
+May 28 10:53:28 lapsystemx kernel: uvcvideo: Queuing buffer 0.
+May 28 10:53:28 lapsystemx kernel: uvcvideo: uvc_v4l2_ioctl(VIDIOC_DQBUF)
+May 28 10:53:28 lapsystemx kernel: uvcvideo: Dropping payload (out of sync).
+May 28 10:53:59 lapsystemx last message repeated 30784 times
+May 28 10:55:00 lapsystemx last message repeated 60992 times
+MESSAGE cntrl backslash
+May 28 10:55:24 lapsystemx last message repeated 24351 times
+May 28 10:55:24 lapsystemx kernel: uvcvideo: uvc_v4l2_release
+MESSAGE done
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004809.html">[Linux-uvc-devel] BisonCam, NB Pro (5986:0241)
+</A></li>
+	<LI>Next message: <A HREF="004810.html">[Linux-uvc-devel] suyin crystal eye webcam 064e:a103 not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4801">[ date ]</a>
+              <a href="thread.html#4801">[ thread ]</a>
+              <a href="subject.html#4801">[ subject ]</a>
+              <a href="author.html#4801">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,2146 @@
+From tante at emptiness.de  Thu Jun  1 00:10:28 2006
+From: tante at emptiness.de (=?ISO-8859-1?Q?J=FCrgen_Geuter?=)
+Date: Thu, 01 Jun 2006 00:10:28 +0200
+Subject: [Linux-uvc-devel] Files
+In-Reply-To: <20060531192141.81950.qmail@web30507.mail.mud.yahoo.com>
+References: <20060531192141.81950.qmail@web30507.mail.mud.yahoo.com>
+Message-ID: <447E1454.6070607@emptiness.de>
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Marcos Garcia Gon?alves wrote:
+
+>   I bought a Logitech Quickcam for Notebooks pro, and
+> I want to try your drivers, but I couldn't find them
+> in the project page.
+
+There has not yet been an official snapshot. So you got two alternatives:
+You can get the current version from the SVN repository like this:
+"svn co http://svn.berlios.de/svnroot/repos/linux-uvc/linux-uvc/trunk/"
+or you can download a snapshot from my Homepage
+(http://the-gay-bar.com/distfiles/).
+
+J?rgen Geuter
+
+- --
+ICQ #81510866 - http://the-gay-bar.com - MSN thanatos at gambit.ath.cx
+"Governments can be useful to the governed only so long as inherent
+tendencies toward tyranny are restrained."
+Frank Herbert, 'God Emperor Of Dune'
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFEfhRTrAehKXTNZasRApaQAJ4pG++1srwekboUK0x9863hFr9L4QCeKwjD
+S7y532tCdVEEOBxJicQV0dM=
+=cJOz
+-----END PGP SIGNATURE-----
+
+
+From martin_rubli at logitech.com  Thu Jun  1 05:00:37 2006
+From: martin_rubli at logitech.com (Martin Rubli)
+Date: Wed, 31 May 2006 20:00:37 -0700
+Subject: [Linux-uvc-devel] problems with video capture
+In-Reply-To: <20060529185624.GA30424@localhost.localdomain>
+References: <20060529150044.GA27128@localhost.localdomain> <op.taboobtjsttmjo@maya> <20060529185624.GA30424@localhost.localdomain>
+Message-ID: <op.taf5bbfzsttmjo@maya>
+
+On Mon, 29 May 2006 11:56:24 -0700, Eduardo P?rez Ureta  
+<eduardo.perez at uc3m.es> wrote:
+
+>> I haven't tried MPlayer or Transcode myself, but I remember having
+>> problems with xawtv.
+>>
+>> I'll try to find out more about why MPlayer and Transcode don't work for
+>> you some time this week. But it's very unlikely to be driver problem ...
+>
+> If MPlayer or Transcode work for you please let me know.
+
+Ok, I did some tests ...
+
+MPlayer: That doesn't work because it uses the VIDIOC_G_STD ioctl, which  
+doesn't make sense for webcams. You should probably file a bug against the  
+MPlayer v4l2 module; it sounds like an easy fix.
+
+Transcode: Transcode's v4l2 source tries the following three image  
+formats: YV12, YU12, UYVY. So unless the camera handles one of these,  
+you're out of luck. The QuickCam Pro 5000 supports compressed MJPG (Motion  
+JPEG) and uncompressed YUY2. Maybe you can get Transcode to accept one of  
+those formats? Please let us know if you succeed ...
+
+xawtv: Are you trying to use xawtv itself? That may not work for similar  
+reasons as MPlayer, i.e. it tries to do ioctls that were designed for use  
+with analog devices. There is a 'webcam' tool as well as a spin-off called  
+camE. I haven't really spent a lot of time trying them but if they don't  
+work with the UVC driver, you should file bugs against those, too.
+
+Cheers,
+Martin
+
+
+From dave.bc at gmail.com  Mon Jun  5 00:40:59 2006
+From: dave.bc at gmail.com (David Cameron)
+Date: Sun, 4 Jun 2006 15:40:59 -0700
+Subject: [Linux-uvc-devel] ubuntu 5.10 install problems and solutions
+Message-ID: <9d7797b40606041540s28c3cdads6b78591bcb38ac77@mail.gmail.com>
+
+I installed uvcvideo-36 on a laptop running ubuntu 5.10 (Breezy
+Badger) today. There were two small hurdles, but I thought I would
+document the solutions here.
+
+Problem 1: make dies with the error
+/usr/src/linux-headers-2.6.12-10-686/scripts/gcc-version.sh: line 11:
+gcc-3.4: command not found
+/usr/src/linux-headers-2.6.12-10-686/scripts/gcc-version.sh: line 12:
+gcc-3.4: command not found
+
+Solution 1: Use Synaptic to install gcc-3.4. I'm not sure why it
+insists on version 3.4. This may be standard for the 2.6.12-10 kernel
+used with ubuntu 5.10.
+
+
+Problem 2: After a seeming successful install the 'modprobe uvcvideo'
+command returns the error
+FATAL: Module uvcvideo not found.
+
+Solution 2: The 'make install' command misplaces the module, so copy
+it to the correct place. Then, rerun depmod. The following commands
+should work.
+
+sudo mkdir /lib/modules/`uname -r`/usb
+sudo mkdir /lib/modules/`uname -r`/usb/media
+sudo cp /lib/modules/2.6.12/usb/media/uvcvideo.ko /lib/modules/`uname
+-r`/usb/media
+sudo depmod -a -e -F /boot/System.map-`uname -r`
+
+Exact paths may differ, but this worked for me. Again, it's not clear
+to me what the problem is. The Makefile appears to be written
+correctly to handle the situation. The depmod command has switches to
+report errors. If the command does anything other than complete
+successfully, you may have a problem that needs more investigation.
+
+
+After that, I got my Quickcam Fusion working wonderfully with LUVCview.
+
+Thanks to the devs for the great work,
+Dave
+
+Now to find something that will stream to disk. Time to check out gstreamer...
+
+
+From martin_rubli at logitech.com  Mon Jun  5 03:23:15 2006
+From: martin_rubli at logitech.com (Martin Rubli)
+Date: Sun, 04 Jun 2006 18:23:15 -0700
+Subject: [Linux-uvc-devel] ubuntu 5.10 install problems and solutions
+In-Reply-To: <9d7797b40606041540s28c3cdads6b78591bcb38ac77@mail.gmail.com>
+References: <9d7797b40606041540s28c3cdads6b78591bcb38ac77@mail.gmail.com>
+Message-ID: <op.tanfg1q6sttmjo@maya>
+
+David,
+
+> Now to find something that will stream to disk. Time to check out  
+> gstreamer...
+
+If you use GStreamer, you may have to use the current CVS version. A few  
+weeks back there was a patch for v4l2src that fixed a few webcam aspects  
+but I don't think they've had a release of the "bad" plugins (which  
+v4l2src belongs to) since.
+
+Cheers,
+Martin
+
+
+From wangbiao at elastos.com.cn  Tue Jun  6 06:51:47 2006
+From: wangbiao at elastos.com.cn (=?gb2312?B?zfWx6w==?=)
+Date: Tue, 6 Jun 2006 12:51:47 +0800
+Subject: [Linux-uvc-devel] questions about uvc 1.0
+Message-ID: <20060606044506.AC9781ADB4E@mail.elastos.com.cn>
+
+Hi,all
+    I am a webcam developer in Shanghai.Now I am developing a UVC 1.0
+compliant device using Intel 's pxa27x processor.Can anybody give me a copy
+of Usb video class specification 1.0 that released in 2003? I cannot find it
+from http://www.usb.org/developers/devclass_docs.
+Thank you advanced!
+ 
+   Best regards!
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20060606/4a1e934b/attachment.html>
+
+From laurent.pinchart at skynet.be  Thu Jun  8 23:39:17 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Thu, 8 Jun 2006 23:39:17 +0200
+Subject: [Linux-uvc-devel] questions about uvc 1.0
+In-Reply-To: <20060606044506.AC9781ADB4E@mail.elastos.com.cn>
+References: <20060606044506.AC9781ADB4E@mail.elastos.com.cn>
+Message-ID: <200606082339.17940.laurent.pinchart@skynet.be>
+
+Hi,
+
+> I am a webcam developer in Shanghai.Now I am developing a UVC 1.0
+> compliant device using Intel 's pxa27x processor.Can anybody give me a copy
+> of Usb video class specification 1.0 that released in 2003? I cannot find
+> it from http://www.usb.org/developers/devclass_docs.
+
+You can find the UVC 1.1 specifications on www.usb.org, but UVC 1.0 specs 
+doesn't seem to be available anymore. Why don't you implement UVC 1.1 ?
+
+Laurent Pinchart
+
+
+From obi at ynet.sk  Sun Jun 11 23:36:54 2006
+From: obi at ynet.sk (Michal Licko)
+Date: Sun, 11 Jun 2006 23:36:54 +0200
+Subject: [Linux-uvc-devel] questions about pan & tilt control
+Message-ID: <448C8CF6.5060303@ynet.sk>
+
+I use Logitech Quickcam Sphere(046d:08c2). To set relative angles I use union from luvcview:
+
+union pantilt {
+	struct {
+		short pan;
+		short tilt;
+	} s16;
+	int value;
+};
+
+...
+control_s.value = pan.value;
+ioctl(dev, VIDIOC_S_CTRL, &control_s)
+
+but webcam seems to be on diffrent position, when I set in two steps 10 degrees instead of 20 degrees in one step :(
+
+So I have a questions if it's possible to get current position, and how webcam knows that it's on marginal position, it has some kind of sensor?
+
+-- 
+oBi
+
+
+
+
+From laurent.pinchart at skynet.be  Wed Jun 14 01:43:44 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Wed, 14 Jun 2006 01:43:44 +0200
+Subject: [Linux-uvc-devel] questions about pan & tilt control
+In-Reply-To: <448C8CF6.5060303@ynet.sk>
+References: <448C8CF6.5060303@ynet.sk>
+Message-ID: <200606140143.45140.laurent.pinchart@skynet.be>
+
+Hi Michal,
+
+> I use Logitech Quickcam Sphere(046d:08c2). To set relative angles I use
+> union from luvcview:
+>
+> union pantilt {
+> 	struct {
+> 		short pan;
+> 		short tilt;
+> 	} s16;
+> 	int value;
+> };
+>
+> ...
+> control_s.value = pan.value;
+> ioctl(dev, VIDIOC_S_CTRL, &control_s)
+
+Please be aware that the control API is being redesigned. The pantilt union is 
+going to disappear in favor of an easier method.
+
+> but webcam seems to be on diffrent position, when I set in two steps 10
+> degrees instead of 20 degrees in one step :(
+>
+> So I have a questions if it's possible to get current position, and how
+> webcam knows that it's on marginal position, it has some kind of sensor?
+
+The Logitech Quickam Sphere only implements relative motion. This means you 
+can't read back the current position. You shouldn't expect the motors to be 
+very accurate. How much difference do you get between a 20 degrees step and 
+two 10 degrees steps ?
+
+Laurent Pinchart
+
+
+From obi at ynet.sk  Wed Jun 14 10:10:09 2006
+From: obi at ynet.sk (Michal Licko)
+Date: Wed, 14 Jun 2006 10:10:09 +0200
+Subject: [Linux-uvc-devel] questions about pan & tilt control
+In-Reply-To: <200606140143.45140.laurent.pinchart@skynet.be>
+References: <448C8CF6.5060303@ynet.sk> <200606140143.45140.laurent.pinchart@skynet.be>
+Message-ID: <448FC461.6010002@ynet.sk>
+
+> The Logitech Quickam Sphere only implements relative motion. This means you 
+> can't read back the current position. You shouldn't expect the motors to be 
+> very accurate. How much difference do you get between a 20 degrees step and 
+> two 10 degrees steps ?
+>
+>   
+I use software motion detector Motion, so it's not good if there is some 
+difference as small, because I have made my own support for absolute 
+angles like in PWC driver. At first I reset webcam and then set range of 
+possible motion. So if webcam moves different, current position(counted 
+in program) differ form real and bounds are moved too.
+
+I forgot one question last, if there must be a "delay" when sending 
+instruction to webcam to move, because when I set for example 5 degrees 
+up and immediately again 5 degrees up, webcam moves not 5 and then 5, 
+but 5 and then to the "marginal position". I set 5 degree in one step, I 
+hope that it's not a problem(luvcview set only one degree in one call of 
+instruction ioctl(...))
+
+-- 
+oBi
+
+
+
+
+From orzad at yahoo.com  Wed Jun 14 14:55:49 2006
+From: orzad at yahoo.com (DUMITRU ORZA)
+Date: Wed, 14 Jun 2006 05:55:49 -0700 (PDT)
+Subject: [Linux-uvc-devel] Logitech Pro 5000
+Message-ID: <20060614125549.71476.qmail@web50515.mail.yahoo.com>
+
+Hello,
+  From where can I download the Linux driver related to Logitech Pro 5000. I intend to use it with ASUS 500G Deluxe.
+  Thank you,
+  Dumitru
+
+ __________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20060614/ffd8b81b/attachment.html>
+
+From tante at emptiness.de  Wed Jun 14 18:36:58 2006
+From: tante at emptiness.de (=?ISO-8859-1?Q?J=FCrgen_Geuter?=)
+Date: Wed, 14 Jun 2006 18:36:58 +0200
+Subject: [Linux-uvc-devel] Logitech Pro 5000
+In-Reply-To: <20060614125549.71476.qmail@web50515.mail.yahoo.com>
+References: <20060614125549.71476.qmail@web50515.mail.yahoo.com>
+Message-ID: <44903B2A.4040200@emptiness.de>
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+DUMITRU ORZA wrote:
+Hossa!
+
+> From where can I download the Linux driver related to Logitech Pro 5000.
+> I intend to use it with ASUS 500G Deluxe.
+
+There has not yet been an official snapshot. So you got two alternatives:
+You can get the current version from the SVN repository like this:
+"svn co http://svn.berlios.de/svnroot/repos/linux-uvc/linux-uvc/trunk/"
+or you can download a snapshot from my Homepage
+(http://the-gay-bar.com/distfiles/).
+
+That all is assuming that you mean the Logitech Quickcam Pro 5000. If
+you use Gentoo, there are ebuilds on my website, too.
+
+J?rgen Geuter
+- --
+ICQ #81510866 - http://the-gay-bar.com - MSN thanatos at gambit.ath.cx
+"Governments can be useful to the governed only so long as inherent
+tendencies toward tyranny are restrained."
+Frank Herbert, 'God Emperor Of Dune'
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFEkDsqrAehKXTNZasRAgyUAJwJHQvrQmjo8mmmw1l88HJseofUNACfXB8+
+9us/KfDoKFsDVhnc+cu5v+M=
+=iAn/
+-----END PGP SIGNATURE-----
+
+
+From roze at roze.mine.nu  Fri Jun 16 16:46:25 2006
+From: roze at roze.mine.nu (Jonas Lihnell)
+Date: Fri, 16 Jun 2006 16:46:25 +0200
+Subject: [Linux-uvc-devel] 046d:08f0 Logitech, Inc. QuickCam Messenger
+Message-ID: <20060616164625.jnmmvupao8skwsgk@roze.mine.nu>
+
+Hi there!
+
+I tried the driver but it didn't register my device. After reading  
+some on this list I saw another person supplying you his id's and  
+descriptors, so I figured I'd do the same. Not expecting anything, but  
+if it helps it helps :)
+
+-- Jonas Lihnell.
+
+Bus 004 Device 006: ID 046d:08f0 Logitech, Inc. QuickCam Messenger
+Device Descriptor:
+   bLength                18
+   bDescriptorType         1
+   bcdUSB               2.00
+   bDeviceClass          255 Vendor Specific Class
+   bDeviceSubClass       255 Vendor Specific Subclass
+   bDeviceProtocol       255 Vendor Specific Protocol
+   bMaxPacketSize0         8
+   idVendor           0x046d Logitech, Inc.
+   idProduct          0x08f0 QuickCam Messenger
+   bcdDevice            1.00
+   iManufacturer           0
+   iProduct                1 Camera
+   iSerial                 0
+   bNumConfigurations      1
+   Configuration Descriptor:
+     bLength                 9
+     bDescriptorType         2
+     wTotalLength          173
+     bNumInterfaces          3
+     bConfigurationValue     1
+     iConfiguration          0
+     bmAttributes         0xa0
+       Remote Wakeup
+     MaxPower              100mA
+     Interface Descriptor:
+       bLength                 9
+       bDescriptorType         4
+       bInterfaceNumber        0
+       bAlternateSetting       0
+       bNumEndpoints           2
+       bInterfaceClass       255 Vendor Specific Class
+       bInterfaceSubClass    255 Vendor Specific Subclass
+       bInterfaceProtocol    255 Vendor Specific Protocol
+       iInterface              0
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x81  EP 1 IN
+         bmAttributes            1
+           Transfer Type            Isochronous
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0000  1x 0 bytes
+         bInterval               1
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x82  EP 2 IN
+         bmAttributes            3
+           Transfer Type            Interrupt
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0001  1x 1 bytes
+         bInterval              16
+     Interface Descriptor:
+       bLength                 9
+       bDescriptorType         4
+       bInterfaceNumber        0
+       bAlternateSetting       1
+       bNumEndpoints           2
+       bInterfaceClass       255 Vendor Specific Class
+       bInterfaceSubClass    255 Vendor Specific Subclass
+       bInterfaceProtocol    255 Vendor Specific Protocol
+       iInterface              0
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x81  EP 1 IN
+         bmAttributes            1
+           Transfer Type            Isochronous
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x03ff  1x 1023 bytes
+         bInterval               1
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x82  EP 2 IN
+         bmAttributes            3
+           Transfer Type            Interrupt
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0001  1x 1 bytes
+         bInterval              16
+     Interface Descriptor:
+       bLength                 9
+       bDescriptorType         4
+       bInterfaceNumber        1
+       bAlternateSetting       0
+       bNumEndpoints           0
+       bInterfaceClass         1 Audio
+       bInterfaceSubClass      1 Control Device
+       bInterfaceProtocol      0
+       iInterface              0
+       AudioControl Interface Descriptor:
+         bLength                 9
+         bDescriptorType        36
+         bDescriptorSubtype      1 (HEADER)
+         bcdADC               2.00
+         wTotalLength           39
+         bInCollection           1
+         baInterfaceNr( 0)       2
+       AudioControl Interface Descriptor:
+         bLength                12
+         bDescriptorType        36
+         bDescriptorSubtype      2 (INPUT_TERMINAL)
+         bTerminalID             1
+         wTerminalType      0x0201 Microphone
+         bAssocTerminal          0
+         bNrChannels             1
+         wChannelConfig     0x0000
+         iChannelNames           0
+         iTerminal               0
+       AudioControl Interface Descriptor:
+         bLength                 9
+         bDescriptorType        36
+         bDescriptorSubtype      6 (FEATURE_UNIT)
+         bUnitID                 2
+         bSourceID               1
+         bControlSize            2
+         bmaControls( 0)      0x43
+         bmaControls( 0)      0x00
+           Mute
+           Volume
+           Automatic Gain
+         iFeature                0
+       AudioControl Interface Descriptor:
+         bLength                 9
+         bDescriptorType        36
+         bDescriptorSubtype      3 (OUTPUT_TERMINAL)
+         bTerminalID             3
+         wTerminalType      0x0101 USB Streaming
+         bAssocTerminal          0
+         bSourceID               2
+         iTerminal               0
+     Interface Descriptor:
+       bLength                 9
+       bDescriptorType         4
+       bInterfaceNumber        2
+       bAlternateSetting       0
+       bNumEndpoints           1
+       bInterfaceClass         1 Audio
+       bInterfaceSubClass      2 Streaming
+       bInterfaceProtocol      0
+       iInterface              0
+       Endpoint Descriptor:
+         bLength                 9
+         bDescriptorType         5
+         bEndpointAddress     0x83  EP 3 IN
+         bmAttributes            1
+           Transfer Type            Isochronous
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0000  1x 0 bytes
+         bInterval               1
+         bRefresh                0
+         bSynchAddress           0
+     Interface Descriptor:
+       bLength                 9
+       bDescriptorType         4
+       bInterfaceNumber        2
+       bAlternateSetting       1
+       bNumEndpoints           1
+       bInterfaceClass         1 Audio
+       bInterfaceSubClass      2 Streaming
+       bInterfaceProtocol      0
+       iInterface              0
+       AudioStreaming Interface Descriptor:
+         bLength                 7
+         bDescriptorType        36
+         bDescriptorSubtype      1 (AS_GENERAL)
+         bTerminalLink           3
+         bDelay                  1 frames
+         wFormatTag              1 PCM
+       AudioStreaming Interface Descriptor:
+         bLength                20
+         bDescriptorType        36
+         bDescriptorSubtype      2 (FORMAT_TYPE)
+         bFormatType             1 (FORMAT_TYPE_I)
+         bNrChannels             1
+         bSubframeSize           2
+         bBitResolution         16
+         bSamFreqType            4 Discrete
+         tSamFreq[ 0]         8000
+         tSamFreq[ 1]        11025
+         tSamFreq[ 2]        16000
+         tSamFreq[ 3]        22050
+       Endpoint Descriptor:
+         bLength                 9
+         bDescriptorType         5
+         bEndpointAddress     0x83  EP 3 IN
+         bmAttributes            1
+           Transfer Type            Isochronous
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0034  1x 52 bytes
+         bInterval               1
+         bRefresh                0
+         bSynchAddress           0
+         AudioControl Endpoint Descriptor:
+           bLength                 7
+           bDescriptorType        37
+           bDescriptorSubtype      1 (EP_GENERAL)
+           bmAttributes         0x01
+             Sampling Frequency
+           bLockDelayUnits         0 Undefined
+           wLockDelay              0 Undefined
+
+
+
+From martin_rubli at logitech.com  Fri Jun 16 19:29:27 2006
+From: martin_rubli at logitech.com (Martin Rubli)
+Date: Fri, 16 Jun 2006 10:29:27 -0700
+Subject: [Linux-uvc-devel] 046d:08f0 Logitech, Inc. QuickCam Messenger
+In-Reply-To: <20060616164625.jnmmvupao8skwsgk@roze.mine.nu>
+References: <20060616164625.jnmmvupao8skwsgk@roze.mine.nu>
+Message-ID: <op.ta81jd0ksttmjo@maya>
+
+The QuickCam Messenger isn't a UVC camera. Try the driver from  
+http://home.mag.cx/messenger/ instead.
+
+Cheers,
+Martin
+
+
+On Fri, 16 Jun 2006 07:46:25 -0700, Jonas Lihnell <roze at roze.mine.nu>  
+wrote:
+
+> Hi there!
+>
+> I tried the driver but it didn't register my device. After reading some  
+> on this list I saw another person supplying you his id's and  
+> descriptors, so I figured I'd do the same. Not expecting anything, but  
+> if it helps it helps :)
+>
+> -- Jonas Lihnell.
+
+
+From durrlema at clipper.ens.fr  Wed Jun 21 21:48:40 2006
+From: durrlema at clipper.ens.fr (durrlema at clipper.ens.fr)
+Date: Wed, 21 Jun 2006 21:48:40 +0200 (CEST)
+Subject: [Linux-uvc-devel] Vimicro VC0321
+Message-ID: <36032.129.10.110.42.1150919320.squirrel@www.mail.ens.fr>
+
+Hi,
+
+I have a Sony VAIO with an integrated webcam. The webcam chip is a Vimicro
+VC0321 which is supposed to follow the UVC 1.0 standard as stated here:
+http://www.vimicro.com/english2/products/digital_ic/p_vc0321/index.html
+
+However I have compiled the uvcvideo module and it does not register my
+webcam.
+
+Do you think ucbvideo will eventually support this webcam ?
+
+Here is the output of lsusb -v :
+
+Bus 005 Device 005: ID 0ac8:c002 Z-Star Microelectronics Corp.
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               2.00
+  bDeviceClass          255 Vendor Specific Class
+  bDeviceSubClass       255 Vendor Specific Subclass
+  bDeviceProtocol       255 Vendor Specific Protocol
+  bMaxPacketSize0        64
+  idVendor           0x0ac8 Z-Star Microelectronics Corp.
+  idProduct          0xc002
+  bcdDevice            1.00
+  iManufacturer           1 Vimicro Corp.
+  iProduct                2 USB2.0 Web Camera
+  iSerial                 0
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength          193
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          0
+    bmAttributes         0x80
+    MaxPower              200mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           2
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceSubClass      0
+      bInterfaceProtocol      0
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval               7
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0000  1x 0 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       1
+      bNumEndpoints           2
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceSubClass      0
+      bInterfaceProtocol      0
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval               7
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0080  1x 128 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       2
+      bNumEndpoints           2
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceSubClass      0
+      bInterfaceProtocol      0
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval               7
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0200  1x 512 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       3
+      bNumEndpoints           2
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceSubClass      0
+      bInterfaceProtocol      0
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval               7
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0400  1x 0 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       4
+      bNumEndpoints           2
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceSubClass      0
+      bInterfaceProtocol      0
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval               7
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0b00  2x 768 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       5
+      bNumEndpoints           2
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceSubClass      0
+      bInterfaceProtocol      0
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval               7
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0c00  2x 0 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       6
+      bNumEndpoints           2
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceSubClass      0
+      bInterfaceProtocol      0
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval               7
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x1380  3x 896 bytes
+        bInterval               1
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       7
+      bNumEndpoints           2
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceSubClass      0
+      bInterfaceProtocol      0
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval               7
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            1
+          Transfer Type            Isochronous
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x1400  3x 0 bytes
+        bInterval               1
+Device Qualifier (for other device speed):
+  bLength                10
+  bDescriptorType         6
+  bcdUSB               2.00
+  bDeviceClass            0 (Defined at Interface level)
+  bDeviceSubClass         0
+  bDeviceProtocol         0
+  bMaxPacketSize0        64
+  bNumConfigurations      1
+can't get debug descriptor: Connection timed out
+
+
+Thanks in advance,
+-- 
+David Durrleman
+PS : Please add me to cc: if you reply, as I'm not subscribed to the list.
+
+
+
+
+From laurent.pinchart at skynet.be  Thu Jun 22 00:38:35 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Thu, 22 Jun 2006 00:38:35 +0200
+Subject: [Linux-uvc-devel] Vimicro VC0321
+In-Reply-To: <36032.129.10.110.42.1150919320.squirrel@www.mail.ens.fr>
+References: <36032.129.10.110.42.1150919320.squirrel@www.mail.ens.fr>
+Message-ID: <200606220038.36593.laurent.pinchart@skynet.be>
+
+Hi David,
+
+> I have a Sony VAIO with an integrated webcam. The webcam chip is a Vimicro
+> VC0321 which is supposed to follow the UVC 1.0 standard as stated here:
+> http://www.vimicro.com/english2/products/digital_ic/p_vc0321/index.html
+
+The chipset might support UVC 1.0, but from its USB descriptors the webcam is 
+definitely not UVC compliant. Even if the chip has the ability to support 
+UVC, the firmware can still implement a proprietary interface, which seems to 
+be the case here.
+
+> However I have compiled the uvcvideo module and it does not register my
+> webcam.
+>
+> Do you think ucbvideo will eventually support this webcam ?
+
+I doubt it, unless there is a way to switch the webcam to UVC mode.
+
+Sorry.
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Thu Jun 22 00:56:51 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Thu, 22 Jun 2006 00:56:51 +0200
+Subject: [Linux-uvc-devel] questions about pan & tilt control
+In-Reply-To: <448FC461.6010002@ynet.sk>
+References: <448C8CF6.5060303@ynet.sk> <200606140143.45140.laurent.pinchart@skynet.be> <448FC461.6010002@ynet.sk>
+Message-ID: <200606220056.51673.laurent.pinchart@skynet.be>
+
+> > The Logitech Quickam Sphere only implements relative motion. This means
+> > you can't read back the current position. You shouldn't expect the motors
+> > to be very accurate. How much difference do you get between a 20 degrees
+> > step and two 10 degrees steps ?
+>
+> I use software motion detector Motion, so it's not good if there is some
+> difference as small, because I have made my own support for absolute
+> angles like in PWC driver. At first I reset webcam and then set range of
+> possible motion. So if webcam moves different, current position(counted
+> in program) differ form real and bounds are moved too.
+
+Please remember that webcams are not high-end motion detection devices, and 
+motor control was probably not designed with such use cases in mind.
+
+> I forgot one question last, if there must be a "delay" when sending
+> instruction to webcam to move, because when I set for example 5 degrees
+> up and immediately again 5 degrees up, webcam moves not 5 and then 5,
+> but 5 and then to the "marginal position". I set 5 degree in one step, I
+> hope that it's not a problem(luvcview set only one degree in one call of
+> instruction ioctl(...))
+
+There is probably some delay. Logitech implemented pan/tilt in a UVC 
+extension, I will ask them for more information.
+
+Laurent Pinchart
+
+
+From m.blizinski at wit.edu.pl  Thu Jun 22 15:12:17 2006
+From: m.blizinski at wit.edu.pl (Maciej =?iso-8859-2?Q?Blizi=F1ski?=)
+Date: Thu, 22 Jun 2006 15:12:17 +0200
+Subject: [Linux-uvc-devel] Logitech QuickCam Pro 5000 hangs
+Message-ID: <1150981937.28645.47.camel@localhost.localnet>
+
+Hello,
+
+I own a Logitech QuickCam Pro 5000, which works with Ekiga softphone.
+I am using the uvcvideo rev.40 driver.
+
+The webcam hangs every now and then. After some period (few minutes) of
+inactivity (i.e. not using the webcam), when I try to start a webcam
+preview in Ekiga, it reports:
+
+----------------------------------------------------------------------
+Error while opening video device USB Video Class device
+
+Your driver doesn't seem to support any of the color formats supported
+by Ekiga. Please check your kernel driver documentation in order to
+determine which Palette is supported.
+----------------------------------------------------------------------
+
+I can't check with any other application becuase Ekiga is currently the
+only one that works with the webcam.
+
+To make the camera run again, I need to:
+
+1. rmmod uvcvideo v4l2_common v4l1_compat videodev
+2. unplug the camera
+3. plug the camera back
+4. modprobe uvcvideo
+
+In my system, the uvcvideo module is loaded automatically because I've
+put a line to modprobe.conf:
+
+alias /dev/video0 uvcvideo
+
+What debug information can I provide you with?
+
+-- 
+Maciej Blizi?ski <m.blizinski at wit.edu.pl>
+http://automatthias.wordpress.com
+
+
+
+From laurent.pinchart at skynet.be  Thu Jun 22 17:56:59 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Thu, 22 Jun 2006 17:56:59 +0200
+Subject: [Linux-uvc-devel] Logitech QuickCam Pro 5000 hangs
+In-Reply-To: <1150981937.28645.47.camel@localhost.localnet>
+References: <1150981937.28645.47.camel@localhost.localnet>
+Message-ID: <200606221756.59780.laurent.pinchart@skynet.be>
+
+Hi Maciej,
+
+> I own a Logitech QuickCam Pro 5000, which works with Ekiga softphone.
+> I am using the uvcvideo rev.40 driver.
+>
+> The webcam hangs every now and then. After some period (few minutes) of
+> inactivity (i.e. not using the webcam), when I try to start a webcam
+> preview in Ekiga, it reports:
+
+What do you mean by "the webcam hangs" ? Does Ekiga's preview freeze while 
+running ? Or does Ekiga only report the below message when you enable the 
+webcam preview ?
+
+> ----------------------------------------------------------------------
+> Error while opening video device USB Video Class device
+>
+> Your driver doesn't seem to support any of the color formats supported
+> by Ekiga. Please check your kernel driver documentation in order to
+> determine which Palette is supported.
+> ----------------------------------------------------------------------
+>
+> I can't check with any other application becuase Ekiga is currently the
+> only one that works with the webcam.
+>
+> To make the camera run again, I need to:
+>
+> 1. rmmod uvcvideo v4l2_common v4l1_compat videodev
+> 2. unplug the camera
+> 3. plug the camera back
+> 4. modprobe uvcvideo
+
+Can you fix the problem by just unplugging and replugging the camera back ?
+
+> In my system, the uvcvideo module is loaded automatically because I've
+> put a line to modprobe.conf:
+>
+> alias /dev/video0 uvcvideo
+>
+> What debug information can I provide you with?
+
+Please have a look at the kernel log (using dmesg) and send me the lines 
+relevant to uvcvideo. If no message are printed in the kernel log, you could 
+try raising the debug level:
+
+echo 15 > /sys/module/uvcvideo/parameters/trace
+
+Laurent Pinchart
+
+
+From m.blizinski at wit.edu.pl  Thu Jun 22 19:02:30 2006
+From: m.blizinski at wit.edu.pl (Maciej =?iso-8859-2?Q?Blizi=F1ski?=)
+Date: Thu, 22 Jun 2006 19:02:30 +0200
+Subject: [Linux-uvc-devel] Logitech QuickCam Pro 5000 hangs
+In-Reply-To: <200606221756.59780.laurent.pinchart@skynet.be>
+References: <1150981937.28645.47.camel@localhost.localnet>
+	 <200606221756.59780.laurent.pinchart@skynet.be>
+Message-ID: <1150995750.28651.100.camel@localhost.localnet>
+
+The anti-spam filter was bouncing my message probably because of the
+content, so the only way to get my message to you was to use the
+rafb.net/paste service. Please read my reply here:
+
+http://rafb.net/paste/results/Y98JC064.html
+
+-- 
+Maciej Blizi?ski <m.blizinski at wit.edu.pl>
+http://automatthias.wordpress.com
+
+
+
+From eduardo.perez at uc3m.es  Thu Jun 22 20:30:29 2006
+From: eduardo.perez at uc3m.es (Eduardo =?iso-8859-1?Q?P=E9rez?= Ureta)
+Date: Thu, 22 Jun 2006 18:30:29 +0000
+Subject: [Linux-uvc-devel] Logitech QuickCam Pro 5000 hangs
+In-Reply-To: <1150995750.28651.100.camel@localhost.localnet>
+References: <1150981937.28645.47.camel@localhost.localnet> <200606221756.59780.laurent.pinchart@skynet.be> <1150995750.28651.100.camel@localhost.localnet>
+Message-ID: <20060622183029.GA26884@localhost.localdomain>
+
+I'm having the same problem.
+I think either uvcvideo is saving status between open(),close() on the device
+or there is definitely a bug somewhere in the driver.
+
+Eduardo
+
+On 2006-06-22 19:02:30 +0200, Maciej Blizi?ski wrote:
+> On Thu, 2006-06-22 at 17:56 +0200, Laurent Pinchart wrote:
+> > What do you mean by "the webcam hangs" ? Does Ekiga's preview freeze
+> > while 
+> > running ? Or does Ekiga only report the below message when you enable
+> > the 
+> > webcam preview ?
+>  
+> It has never frozen when running. It reports the message when I try to
+> enable the webcam preview.
+>  
+> > > To make the camera run again, I need to:
+> > >
+> > > 1. rmmod uvcvideo v4l2_common v4l1_compat videodev
+> > > 2. unplug the camera
+> > > 3. plug the camera back
+> > > 4. modprobe uvcvideo
+> > 
+> > Can you fix the problem by just unplugging and replugging the camera
+> > back ?
+>  
+> I just tried replugging alone and it fixed it, but I believe I've tried
+> it before and it didn't work. Well, the past attempts were more chaotic,
+> so let's stick with "replugging alone fixes it".
+>  
+> > Please have a look at the kernel log (using dmesg) and send me the
+> > lines 
+> > relevant to uvcvideo. If no message are printed in the kernel log, you
+> > could 
+> > try raising the debug level:
+>  
+> I got the dmesg output, please look at it here:
+>  
+> 7:3:3: cannot set freq 16000 to ep 0x86
+> *** (repeated ca. 20 times)
+> 7:3:3: cannot set freq 16000 to ep 0x86
+> usbcore: deregistering driver uvcvideo
+> usb 4-2: USB disconnect, address 7
+> usb 4-1: new high speed USB device using ehci_hcd and address 8
+> usb 4-1: configuration #1 chosen from 1 choice
+> Linux video capture interface: v1.00
+> uvcvideo: Found UVC 1.00 device <unnamed> (046d:08c5)
+> usbcore: registered new driver uvcvideo
+> USB Video Class driver (v0.1.0)
+> uvcvideo: Failed to query (129) UVC control 1 (unit 0) : -32.
+> uvcvideo: Failed to query (135) UVC control 9 (unit 2) : -32.
+> uvcvideo: Failed to query (130) UVC control 9 (unit 2) : -32.
+> uvcvideo: Failed to query (131) UVC control 1 (unit 0) : -32.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> usb 4-1: USB disconnect, address 8
+> usbcore: deregistering driver uvcvideo
+> usb 4-2: new high speed USB device using ehci_hcd and address 9
+> usb 4-2: configuration #1 chosen from 1 choice
+> Linux video capture interface: v1.00
+> uvcvideo: Found UVC 1.00 device <unnamed> (046d:08c5)
+> usbcore: registered new driver uvcvideo
+> USB Video Class driver (v0.1.0)
+> uvcvideo: Failed to query (131) UVC control 2 (unit 2) : -32.
+> uvcvideo: Failed to query (132) UVC control 9 (unit 2) : -32.
+> 9:3:3: cannot get freq at ep 0x86
+> 9:3:3: cannot set freq 16000 to ep 0x86
+> *** (repeated 93 times)
+> 9:3:3: cannot set freq 16000 to ep 0x86
+> uvcvideo: Failed to query (131) UVC control 1 (unit 0) : -32.
+> uvcvideo: Failed to query (129) UVC control 1 (unit 0) : -32.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> usbcore: deregistering driver uvcvideo
+> usb 4-2: USB disconnect, address 9
+> usb 4-2: new high speed USB device using ehci_hcd and address 10
+> usb 4-2: configuration #1 chosen from 1 choice
+> Linux video capture interface: v1.00
+> uvcvideo: Found UVC 1.00 device <unnamed> (046d:08c5)
+> usbcore: registered new driver uvcvideo
+> USB Video Class driver (v0.1.0)
+> uvcvideo: Failed to query (129) UVC control 1 (unit 0) : -32.
+> uvcvideo: Failed to query (135) UVC control 9 (unit 2) : -32.
+> uvcvideo: Failed to query (130) UVC control 9 (unit 2) : -32.
+> uvcvideo: Failed to query (129) UVC control 1 (unit 0) : -32.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+> usbcore: deregistering driver uvcvideo
+> usb 4-2: USB disconnect, address 10
+> usb 4-2: new high speed USB device using ehci_hcd and address 11
+> usb 4-2: configuration #1 chosen from 1 choice
+> Linux video capture interface: v1.00
+> uvcvideo: Found UVC 1.00 device <unnamed> (046d:08c5)
+> usbcore: registered new driver uvcvideo
+> USB Video Class driver (v0.1.0)
+
+
+From m.blizinski at wit.edu.pl  Fri Jun 23 08:21:13 2006
+From: m.blizinski at wit.edu.pl (Maciej =?iso-8859-2?Q?Blizi=F1ski?=)
+Date: Fri, 23 Jun 2006 08:21:13 +0200
+Subject: [Linux-uvc-devel] Logitech QuickCam Pro 5000 hangs
+In-Reply-To: <200606221756.59780.laurent.pinchart@skynet.be>
+References: <1150981937.28645.47.camel@localhost.localnet>
+	 <200606221756.59780.laurent.pinchart@skynet.be>
+Message-ID: <1151043673.17623.3.camel@localhost.localnet>
+
+On Thu, 2006-06-22 at 17:56 +0200, Laurent Pinchart wrote:
+> > To make the camera run again, I need to:
+> >
+> > 1. rmmod uvcvideo v4l2_common v4l1_compat videodev
+> > 2. unplug the camera
+> > 3. plug the camera back
+> > 4. modprobe uvcvideo
+> 
+> Can you fix the problem by just unplugging and replugging the camera back ?
+
+After some testing, the answer is: Sometimes.
+
+But some other times, replugging doesn't fix it. In such case, when I
+rmmod, unplug and plug it back, the modprobe takes a very, very long
+time. It can be few minutes, sometimes over 15 minutes to insert the
+module. Sometimes it takes forever.
+
+-- 
+Maciej Blizi?ski <m.blizinski at wit.edu.pl>
+http://automatthias.wordpress.com
+
+
+
+From sean.bruno at dsl-only.net  Sun Jun 25 23:33:35 2006
+From: sean.bruno at dsl-only.net (Sean Bruno)
+Date: Sun, 25 Jun 2006 14:33:35 -0700
+Subject: [Linux-uvc-devel] SVN repository
+Message-ID: <1151271215.2906.1.camel@home-desk>
+
+If someone get's a chance, can they update the anonymous svn links on:
+
+http://developer.berlios.de/svn/?group_id=5681
+
+To point to the repo.  The page lists:
+
+svn checkout svn://svn.berlios.de/linux-uvc/trunk
+svn checkout http://svn.berlios.de/svnroot/repos/linux-uvc/trunk
+
+For anonymous svn access, but I had to use:
+
+svn co http://svn.berlios.de/svnroot/repos/linux-uvc/linux-uvc/trunk/
+
+to get access.
+
+Thanks!
+
+Sean
+
+
+
+From m.blizinski at wit.edu.pl  Mon Jun 26 00:30:38 2006
+From: m.blizinski at wit.edu.pl (Maciej =?iso-8859-2?Q?Blizi=F1ski?=)
+Date: Mon, 26 Jun 2006 00:30:38 +0200
+Subject: [Linux-uvc-devel] Logitech QuickCam Pro 5000 hangs
+In-Reply-To: <1150995750.28651.100.camel@localhost.localnet>
+References: <1150981937.28645.47.camel@localhost.localnet>
+	 <200606221756.59780.laurent.pinchart@skynet.be>
+	 <1150995750.28651.100.camel@localhost.localnet>
+Message-ID: <1151274639.22254.3.camel@localhost.localnet>
+
+Hi Laurent,
+
+On Thu, 2006-06-22 at 17:56 +0200, Laurent Pinchart wrote:
+> > webcam hangs every now and then. After some period (few minutes) of
+> > inactivity (i.e. not using the webcam), when I try to start a webcam
+> > preview in Ekiga, it reports:
+> 
+> What do you mean by "the webcam hangs" ? Does Ekiga's preview freeze
+while 
+> running ? Or does Ekiga only report the below message when you enable
+the 
+> webcam preview ?
+
+It has never frozen when running. It reports the message when I try to
+enable the webcam preview.
+
+> > To make the camera run again, I need to:
+> >
+> > 1. rmmod uvcvideo v4l2_common v4l1_compat videodev
+> > 2. unplug the camera
+> > 3. plug the camera back
+> > 4. modprobe uvcvideo
+> 
+> Can you fix the problem by just unplugging and replugging the camera
+back ?
+
+I just tried replugging alone and it fixed it, but I believe I've tried
+it before and it didn't work. Well, the past attempts were more chaotic,
+so let's stick with "replugging fixes it".
+
+> Please have a look at the kernel log (using dmesg) and send me the
+lines 
+> relevant to uvcvideo. If no message are printed in the kernel log, you
+could 
+> try raising the debug level:
+
+There are some, I decided to include them in the email for convenience:
+
+7:3:3: cannot set freq 16000 to ep 0x86
+*** (repeated ca. 20 times)
+7:3:3: cannot set freq 16000 to ep 0x86
+usbcore: deregistering driver uvcvideo
+usb 4-2: USB disconnect, address 7
+usb 4-1: new high speed USB device using ehci_hcd and address 8
+usb 4-1: configuration #1 chosen from 1 choice
+Linux video capture interface: v1.00
+uvcvideo: Found UVC 1.00 device <unnamed> (046d:08c5)
+usbcore: registered new driver uvcvideo
+USB Video Class driver (v0.1.0)
+uvcvideo: Failed to query (129) UVC control 1 (unit 0) : -32.
+uvcvideo: Failed to query (135) UVC control 9 (unit 2) : -32.
+uvcvideo: Failed to query (130) UVC control 9 (unit 2) : -32.
+uvcvideo: Failed to query (131) UVC control 1 (unit 0) : -32.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+usb 4-1: USB disconnect, address 8
+usbcore: deregistering driver uvcvideo
+usb 4-2: new high speed USB device using ehci_hcd and address 9
+usb 4-2: configuration #1 chosen from 1 choice
+Linux video capture interface: v1.00
+uvcvideo: Found UVC 1.00 device <unnamed> (046d:08c5)
+usbcore: registered new driver uvcvideo
+USB Video Class driver (v0.1.0)
+uvcvideo: Failed to query (131) UVC control 2 (unit 2) : -32.
+uvcvideo: Failed to query (132) UVC control 9 (unit 2) : -32.
+9:3:3: cannot get freq at ep 0x86
+9:3:3: cannot set freq 16000 to ep 0x86
+*** (repeated 93 times)
+9:3:3: cannot set freq 16000 to ep 0x86
+uvcvideo: Failed to query (131) UVC control 1 (unit 0) : -32.
+uvcvideo: Failed to query (129) UVC control 1 (unit 0) : -32.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+usbcore: deregistering driver uvcvideo
+usb 4-2: USB disconnect, address 9
+usb 4-2: new high speed USB device using ehci_hcd and address 10
+usb 4-2: configuration #1 chosen from 1 choice
+Linux video capture interface: v1.00
+uvcvideo: Found UVC 1.00 device <unnamed> (046d:08c5)
+usbcore: registered new driver uvcvideo
+USB Video Class driver (v0.1.0)
+uvcvideo: Failed to query (129) UVC control 1 (unit 0) : -32.
+uvcvideo: Failed to query (135) UVC control 9 (unit 2) : -32.
+uvcvideo: Failed to query (130) UVC control 9 (unit 2) : -32.
+uvcvideo: Failed to query (129) UVC control 1 (unit 0) : -32.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+usbcore: deregistering driver uvcvideo
+usb 4-2: USB disconnect, address 10
+usb 4-2: new high speed USB device using ehci_hcd and address 11
+usb 4-2: configuration #1 chosen from 1 choice
+Linux video capture interface: v1.00
+uvcvideo: Found UVC 1.00 device <unnamed> (046d:08c5)
+usbcore: registered new driver uvcvideo
+USB Video Class driver (v0.1.0)
+
+Best regards,
+Maciej Blizi?ski
+
+-- 
+Maciej Blizi?ski <m.blizinski at wit.edu.pl>
+http://automatthias.wordpress.com
+
+
+
+From diaxen at free.fr  Mon Jun 26 00:52:54 2006
+From: diaxen at free.fr (Alexandre Becoulet)
+Date: Mon, 26 Jun 2006 00:52:54 +0200
+Subject: [Linux-uvc-devel] Logitech QuickCam Pro 5000 hangs
+In-Reply-To: <1151274639.22254.3.camel@localhost.localnet>
+References: <1150981937.28645.47.camel@localhost.localnet> <1150995750.28651.100.camel@localhost.localnet> <1151274639.22254.3.camel@localhost.localnet>
+Message-ID: <200606260052.54636.diaxen@free.fr>
+
+On Monday 26 June 2006 00:30, Maciej Blizi?ski wrote:
+
+> uvcvideo: Failed to query (129) UVC control 1 (unit 0) : -32.
+> uvcvideo: Failed to query (135) UVC control 9 (unit 2) : -32.
+> uvcvideo: Failed to query (130) UVC control 9 (unit 2) : -32.
+> uvcvideo: Failed to query (131) UVC control 1 (unit 0) : -32.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32.
+> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110.
+
+I had the same problem and already posted about it a few months ago. It's 
+seems like the camera internal state sometimes become corrupted for an 
+unknown reason. I posted a patch to reset the USB device on error. It solved 
+the problem.
+
+-- 
+Alexandre
+
+
+From m.blizinski at wit.edu.pl  Mon Jun 26 08:48:19 2006
+From: m.blizinski at wit.edu.pl (Maciej =?iso-8859-2?Q?Blizi=F1ski?=)
+Date: Mon, 26 Jun 2006 08:48:19 +0200
+Subject: [Linux-uvc-devel] Logitech QuickCam Pro 5000 hangs
+In-Reply-To: <200606260052.54636.diaxen@free.fr>
+References: <1150981937.28645.47.camel@localhost.localnet>
+	 <1150995750.28651.100.camel@localhost.localnet>
+	 <1151274639.22254.3.camel@localhost.localnet>
+	 <200606260052.54636.diaxen@free.fr>
+Message-ID: <1151304499.17307.13.camel@localhost.localnet>
+
+On Mon, 2006-06-26 at 00:52 +0200, Alexandre Becoulet wrote:
+> I had the same problem and already posted about it a few months ago. It's 
+> seems like the camera internal state sometimes become corrupted for an 
+> unknown reason. I posted a patch to reset the USB device on error. It solved 
+> the problem.
+
+I browsed all the mailing list archives (from all months, looking for
+posts from Alexandre):
+https://lists.berlios.de/pipermail/linux-uvc-devel/
+And ?patches? on the BerliOS project page:
+http://developer.berlios.de/patch/?group_id=5681
+...but I couldn't find the patch. Where to find it?
+
+-- 
+Maciej Blizi?ski <m.blizinski at wit.edu.pl>
+http://automatthias.wordpress.com
+
+
+
+From diaxen at free.fr  Mon Jun 26 14:05:31 2006
+From: diaxen at free.fr (Alexandre Becoulet)
+Date: Mon, 26 Jun 2006 14:05:31 +0200
+Subject: [Linux-uvc-devel] Logitech QuickCam Pro 5000 hangs
+In-Reply-To: <1151304499.17307.13.camel@localhost.localnet>
+References: <1150981937.28645.47.camel@localhost.localnet> <200606260052.54636.diaxen@free.fr> <1151304499.17307.13.camel@localhost.localnet>
+Message-ID: <200606261405.31378.diaxen@free.fr>
+
+On Monday 26 June 2006 08:48, Maciej Blizi?ski wrote:
+
+> I browsed all the mailing list archives (from all months, looking for
+> posts from Alexandre):
+> https://lists.berlios.de/pipermail/linux-uvc-devel/
+> And ???patches??? on the BerliOS project page:
+> http://developer.berlios.de/patch/?group_id=5681
+> ...but I couldn't find the patch. Where to find it?
+
+https://lists.berlios.de/pipermail/linux-uvc-devel/2006-February/000210.html
+
+I don't know if it can be applied directly on the current driver revision.
+
+-- 
+Alexandre
+
+
+From francisg at gmail.com  Mon Jun 26 22:25:28 2006
+From: francisg at gmail.com (Francis Giannaros)
+Date: Mon, 26 Jun 2006 21:25:28 +0100
+Subject: [Linux-uvc-devel] which logitech pro notebook is supported?
+Message-ID: <200606262125.28862.francisg@gmail.com>
+
+Hi,
+
+Looking around, I see two different pro logitech quickcam notebooks ( i.e. see 
+http://www.amazon.com/gp/search/ref=nb_ss_e/103-2150407-6880620?url=search-alias%3Delectronics-aps&field-keywords=logitech+quickcam+pro+notebook&Go.x=0&Go.y=0&Go=Go )
+
+Just wondering, which of those is the supported one?
+"Logitech Quickcam for Notebooks Pro" or "Logitech QuickCam Pro for 
+Notebooks"?
+
+I only ask because many websites seem to muddle up the name, and I just want 
+to be absolutely sure before I purchase the cam.
+
+Kind thoughts,
+Francis Giannaros.
+
+
+From twisted at bastardoperatorfromhell.org  Tue Jun 27 03:43:31 2006
+From: twisted at bastardoperatorfromhell.org (twisted the BOFH)
+Date: Tue, 27 Jun 2006 03:43:31 +0200
+Subject: [Linux-uvc-devel] Webcam not supported
+Message-ID: <3fbaad1b0606261843p47c7e901sa8c8012e87045281@mail.gmail.com>
+
+Hi,
+
+I am not sure if I'm reporting this properly or not... or if I was
+looking at the wrong project page... but here it goes anyways.
+
+Today I bought a new webcam, since my old one broke (_old_ Logitech
+Quickcam Express '98-'99), a Logitech Quickcam Express, this one
+wasn't supported by the original driver for the old Logitech, and
+since I dont see any real updates on that page I decided to look
+around and found this project on http://linux-uvc.berlios.de/, too bad
+it isn't supported either.
+
+Here is an output that lsusb gives me: Bus 001 Device 003: ID
+046d:092f Logitech, Inc.
+
+I am not sure what info you would all need, or if this webcam is
+planned to be supported ever (I hope so... kinda ;))
+
+Thanks a lot in advance, and please drop me back an email so I know
+you did receive it (even if you don't plan to do anything about it.)
+
+-- 
+Yorick "twisted" Terweijden
+twisted at bastardoperatorfromhell.org
+
+http://www.bastardoperatorfromhell.org/
+http://pimpmylinux.bastardoperatorfromhell.org/
+
+
+From m.blizinski at wit.edu.pl  Tue Jun 27 08:50:01 2006
+From: m.blizinski at wit.edu.pl (Maciej =?iso-8859-2?Q?Blizi=F1ski?=)
+Date: Tue, 27 Jun 2006 08:50:01 +0200
+Subject: [Linux-uvc-devel] Logitech QuickCam Pro 5000 hangs
+In-Reply-To: <200606261405.31378.diaxen@free.fr>
+References: <1150981937.28645.47.camel@localhost.localnet>
+	 <200606260052.54636.diaxen@free.fr>
+	 <1151304499.17307.13.camel@localhost.localnet>
+	 <200606261405.31378.diaxen@free.fr>
+Message-ID: <1151391001.17474.5.camel@localhost.localnet>
+
+On Mon, 2006-06-26 at 14:05 +0200, Alexandre Becoulet wrote:
+> https://lists.berlios.de/pipermail/linux-uvc-devel/2006-February/000210.html
+> 
+> I don't know if it can be applied directly on the current driver revision.
+
+Thanks Alexandre, I applied it with one trivial fix, it works and solves
+my problem. And probably Eduardo's, too.
+
+I vote for merging this patch with the trunk.
+
+Here's the updated patch against revision 40.
+
+Index: uvcvideo.c
+===================================================================
+--- uvcvideo.c	(revision 40)
++++ uvcvideo.c	(working copy)
+@@ -331,6 +331,7 @@
+ 
+ enum uvc_device_state {
+ 	UVC_DEV_DISCONNECTED = 1,
++	UVC_DEV_IOERROR = 2,
+ };
+ 
+ struct uvc_device {
+@@ -1577,6 +1578,29 @@
+  * UVC Controls
+  */
+ 
++static int uvc_usb_reset(struct uvc_device *dev)
++{
++	int l, ret;
++
++	l = usb_lock_device_for_reset(dev->udev, dev->intf);
++
++	if (l >= 0) {
++		ret = usb_reset_device(dev->udev);
++		if (l)
++			usb_unlock_device(dev->udev);
++	}
++	else
++		ret = -EBUSY;
++
++	if (ret)
++		uvc_printk(KERN_DEBUG, "uvc_usb_reset: Unable to reset usb device"
++			   "(%d).\n", ret);
++	else
++		dev->state &= ~UVC_DEV_IOERROR;
++
++	return ret;
++}
++
+ static int uvc_query_ctrl(struct uvc_device *dev, __u8 query, __u8
+unit,
+ 			  __u8 intfnum, __u8 cs, void *data, __u16 size)
+ {
+@@ -1594,6 +1618,7 @@
+ 	if (ret != size) {
+ 		uvc_printk(KERN_ERR, "Failed to query (%u) UVC control %u "
+ 			"(unit %u) : %d.\n", query, cs, unit, ret);
++		dev->state |= UVC_DEV_IOERROR;
+ 		return -EIO;
+ 	}
+ 
+@@ -1913,6 +1938,25 @@
+  * Video device
+  */
+ 
++/* 
++ * Reset and Re-Initialize video device
++ */
++static int uvc_video_reinit(struct uvc_video_device *video)
++{
++	int ret;
++
++	if ((ret = uvc_usb_reset(video->dev)) < 0)
++		return ret;
++
++	if ((ret = uvc_set_video_ctrl(video, &video->streaming->ctrl, 0)) < 0)
+{
++		uvc_printk(KERN_DEBUG, "uvc_video_reinit: Unable to commit format "
++			   "(%d).\n", ret);
++		return ret;
++	}
++
++	return 0;
++}
++
+ /*
+  * Initialize the UVC video device.
+  *
+@@ -2331,6 +2375,10 @@
+ 		uvc_printk(KERN_ERR, "uvc_v4l2_release: Unable to free buffers.\n");
+ 	up(&video->queue.lock);
+ 
++	/* leave usb device in a clean state */
++	if (video->dev->state & UVC_DEV_IOERROR)
++		uvc_video_reinit(video);
++
+ 	atomic_inc(&video->count);
+ 	kref_put(&video->dev->kref, uvc_delete);
+ 	return 0;
+@@ -3516,9 +3564,18 @@
+ 	 * parameters.
+ 	 */
+ 	if ((ret = uvc_video_init(&dev->video)) < 0) {
+-		uvc_printk(KERN_ERR, "Failed to initialize the device "
+-			"(%d).\n", ret);
+-		return ret;
++
++		uvc_printk(KERN_ERR, "Failed to initialize the device, "
++			   "(%d). trying to reset ...\n", ret);
++
++		if ((ret = uvc_usb_reset(dev)))
++			return ret;
++
++		if ((ret = uvc_video_init(&dev->video)) < 0) {
++			uvc_printk(KERN_ERR, "Failed to initialize the device "
++				   "(%d).\n", ret);
++			return ret;
++		}
+ 	}
+ 
+ 	/* Register the device with V4L. */
+
+
+-- 
+Maciej Blizi?ski <m.blizinski at wit.edu.pl>
+http://automatthias.wordpress.com
+
+
+
+From laurent.pinchart at skynet.be  Tue Jun 27 10:04:13 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 27 Jun 2006 10:04:13 +0200
+Subject: [Linux-uvc-devel] which logitech pro notebook is supported?
+In-Reply-To: <200606262125.28862.francisg@gmail.com>
+References: <200606262125.28862.francisg@gmail.com>
+Message-ID: <200606271004.14130.laurent.pinchart@skynet.be>
+
+Hi Francis,
+
+> Looking around, I see two different pro logitech quickcam notebooks ( i.e.
+> see
+> http://www.amazon.com/gp/search/ref=nb_ss_e/103-2150407-6880620?url=search-
+>alias%3Delectronics-aps&field-keywords=logitech+quickcam+pro+notebook&Go.x=0
+>&Go.y=0&Go=Go )
+>
+> Just wondering, which of those is the supported one?
+> "Logitech Quickcam for Notebooks Pro" or "Logitech QuickCam Pro for
+> Notebooks"?
+
+This one:
+http://www.amazon.com/gp/product/B000BBYH8O/sr=1-1/qid=1151395130/ref=sr_1_1/104-0034869-3987126?ie=UTF8&s=electronics
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Tue Jun 27 17:40:08 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 27 Jun 2006 17:40:08 +0200
+Subject: [Linux-uvc-devel] SVN repository
+In-Reply-To: <1151271215.2906.1.camel@home-desk>
+References: <1151271215.2906.1.camel@home-desk>
+Message-ID: <200606271740.08355.laurent.pinchart@skynet.be>
+
+Hi Sean,
+
+> If someone get's a chance, can they update the anonymous svn links on:
+>
+> http://developer.berlios.de/svn/?group_id=5681
+>
+> To point to the repo.  The page lists:
+>
+> svn checkout svn://svn.berlios.de/linux-uvc/trunk
+> svn checkout http://svn.berlios.de/svnroot/repos/linux-uvc/trunk
+>
+> For anonymous svn access, but I had to use:
+>
+> svn co http://svn.berlios.de/svnroot/repos/linux-uvc/linux-uvc/trunk/
+>
+> to get access.
+
+Thank you for reporting this. This is a known problem, but I have no way to 
+change the SVN links, as the page on which you found them is not editable. I 
+will add SVN informations on the main page on the next update.
+
+Best regards,
+
+Laurent Pinchart
+
+
+From laurent.pinchart at skynet.be  Tue Jun 27 17:45:30 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Tue, 27 Jun 2006 17:45:30 +0200
+Subject: [Linux-uvc-devel] Webcam not supported
+In-Reply-To: <3fbaad1b0606261843p47c7e901sa8c8012e87045281@mail.gmail.com>
+References: <3fbaad1b0606261843p47c7e901sa8c8012e87045281@mail.gmail.com>
+Message-ID: <200606271745.30627.laurent.pinchart@skynet.be>
+
+Hi Yorick,
+
+> I am not sure if I'm reporting this properly or not... or if I was
+> looking at the wrong project page... but here it goes anyways.
+>
+> Today I bought a new webcam, since my old one broke (_old_ Logitech
+> Quickcam Express '98-'99), a Logitech Quickcam Express, this one
+> wasn't supported by the original driver for the old Logitech, and
+> since I dont see any real updates on that page I decided to look
+> around and found this project on http://linux-uvc.berlios.de/, too bad
+> it isn't supported either.
+>
+> Here is an output that lsusb gives me: Bus 001 Device 003: ID
+> 046d:092f Logitech, Inc.
+>
+> I am not sure what info you would all need, or if this webcam is
+> planned to be supported ever (I hope so... kinda ;))
+>
+> Thanks a lot in advance, and please drop me back an email so I know
+> you did receive it (even if you don't plan to do anything about it.)
+
+Your webcam doesn't support the UVC standard (only the newer Logitech webcams 
+- Pro 5000 and the three 1.3MPixel ones - support UVC), and thus will not be 
+supported by the linux-uvc driver.
+
+Sorry,
+
+Laurent Pinchart
+
+
+From nickc027 at hotmail.com  Wed Jun 28 19:19:55 2006
+From: nickc027 at hotmail.com (nick carter)
+Date: Wed, 28 Jun 2006 19:19:55 +0200
+Subject: [Linux-uvc-devel] Logitech QuickCam Pro 5000 & Ubuntu Dapper
+Message-ID: <BAY121-F34DF72D63BF1E358476431967F0@phx.gbl>
+
+Hello,
+
+I am using the standard kernel but the driver doesnt work under Ubuntu 
+Dapper on my computer:
+
+If i plugging in the camera dmesg says:
+
+Jun 28 18:57:55 laptop kernel: [17179682.064000] usb 4-4: new high speed USB 
+device using ehci_hcd and address 4
+Jun 28 18:57:55 laptop kernel: [17179682.572000] Linux video capture 
+interface: v1.00
+Jun 28 18:57:55 laptop kernel: [17179682.696000] uvcvideo: Unknown symbol 
+v4l2_ioctl_names
+Jun 28 18:57:56 laptop kernel: [17179683.176000] usbcore: registered new 
+driver snd-usb-audio
+
+lsusb says:
+Bus 004 Device 005: ID 046d:08c5 Logitech, Inc.
+
+Someone has a soution?
+
+Nick
+
+_________________________________________________________________
+FREE pop-up blocking with the new MSN Toolbar - get it now! 
+http://toolbar.msn.click-url.com/go/onm00200415ave/direct/01/
+
+
+
+From laurent.pinchart at skynet.be  Thu Jun 29 00:06:11 2006
+From: laurent.pinchart at skynet.be (Laurent Pinchart)
+Date: Thu, 29 Jun 2006 00:06:11 +0200
+Subject: [Linux-uvc-devel] Logitech QuickCam Pro 5000 & Ubuntu Dapper
+In-Reply-To: <BAY121-F34DF72D63BF1E358476431967F0@phx.gbl>
+References: <BAY121-F34DF72D63BF1E358476431967F0@phx.gbl>
+Message-ID: <200606290006.12339.laurent.pinchart@skynet.be>
+
+> I am using the standard kernel but the driver doesnt work under Ubuntu
+> Dapper on my computer:
+>
+> If i plugging in the camera dmesg says:
+>
+> Jun 28 18:57:55 laptop kernel: [17179682.064000] usb 4-4: new high speed
+> USB device using ehci_hcd and address 4
+> Jun 28 18:57:55 laptop kernel: [17179682.572000] Linux video capture
+> interface: v1.00
+> Jun 28 18:57:55 laptop kernel: [17179682.696000] uvcvideo: Unknown symbol
+> v4l2_ioctl_names
+> Jun 28 18:57:56 laptop kernel: [17179683.176000] usbcore: registered new
+> driver snd-usb-audio
+>
+> lsusb says:
+> Bus 004 Device 005: ID 046d:08c5 Logitech, Inc.
+>
+> Someone has a soution?
+
+Ubuntu probably applied patches to the kernel which are not compatible with 
+the linux-uvc driver. Try to remove the following code around line 2346:
+
+        if (trace & UVC_TRACE_IOCTL) {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,16)
+                switch (_IOC_TYPE(cmd)) {
+                case 'v':
+                        uvc_printk(KERN_DEBUG, "ioctl 0x%x (V4L1)\n", cmd);
+                        break;
+                case 'V':
+                        uvc_printk(KERN_DEBUG, "ioctl 0x%x (%s)\n",
+                                cmd, v4l2_ioctl_names[_IOC_NR(cmd)]);
+                        break;
+                default:
+                        uvc_printk(KERN_DEBUG, "ioctl 0x%x (???)\n", cmd);
+                        break;
+                }
+#else
+                v4l_printk_ioctl(cmd);
+#endif
+        }
+
+Laurent Pinchart
+
+
+From m.blizinski at wit.edu.pl  Thu Jun 29 10:28:33 2006
+From: m.blizinski at wit.edu.pl (Maciej =?iso-8859-2?Q?Blizi=F1ski?=)
+Date: Thu, 29 Jun 2006 10:28:33 +0200
+Subject: [Linux-uvc-devel] Capture from UVC with MPlayer
+Message-ID: <1151569713.17381.19.camel@localhost.localnet>
+
+I've tried to capture image from my webcam with MPlayer, but its v4l2
+driver displays only a green rectangle. I've discussed it with v4l2
+driver's creator, Martin Olschewski, but no success so far.
+
+I tried to invoke it like this:
+mplayer -v tv:// -tv device=/dev/video0:driver=v4l2:outfmt=yuy2 \
+-vc rawyuy2 -fps 15 -vo x11
+
+Here's an excerpt from MPlayer's log:
+
+(...)
+Starting playback...
+v4l2: going to capture
+v4l2: ioctl dequeue buffer failed: Invalid argument, idx = 0
+v4l2: ioctl dequeue buffer failed: Invalid argument, idx = 0
+v4l2: ioctl dequeue buffer failed: Invalid argument, idx = 0
+v4l2: ioctl dequeue buffer failed: Invalid argument, idx = 0
+(...)
+
+Martin asks, if this can be an issue with fps setting. Without fps being
+set, MPlayer doesn't want to start and says:
+
+[V] filefmt:9  fourcc:0x32595559  size:640x480  fps:  nan  ftime:=   nan
+FPS not specified in the header or invalid, use the -fps option.
+
+So I've set fps explicitly to some value not too high value. I know that
+my webcam can deliver about 20 or 30 fps, so I've used 15.
+
+Do you have any more experience with capturing video with MPlayer and
+uvcvideo driver?
+
+-- 
+Maciej Blizi?ski <m.blizinski at wit.edu.pl>
+http://automatthias.wordpress.com
+
+
+
+From martin_rubli at logitech.com  Thu Jun 29 18:22:18 2006
+From: martin_rubli at logitech.com (Martin Rubli)
+Date: Thu, 29 Jun 2006 09:22:18 -0700
+Subject: [Linux-uvc-devel] Capture from UVC with MPlayer
+In-Reply-To: <1151569713.17381.19.camel@localhost.localnet>
+References: <1151569713.17381.19.camel@localhost.localnet>
+Message-ID: <op.tbw03gensttmjo@maya>
+
+Maciej,
+
+The last time I checked out MPlayer, I saw that it tried to use the  
+VIDIOC_G_STD ioctl, one that is not supported by the UVC driver (because  
+it doesn't make sense with digital devices).
+
+Can you try to set the 'trace' parameter to a higher value (i.e. by  
+setting /sys/module/uvcvideo/parameters/trace to 64; see the source for  
+how the bitmask works) and see if any messages about unsupported ioctls  
+turn up?
+
+Cheers,
+Martin
+
+
+On Thu, 29 Jun 2006 01:28:33 -0700, Maciej Blizi?ski  
+<m.blizinski at wit.edu.pl> wrote:
+
+> I've tried to capture image from my webcam with MPlayer, but its v4l2
+> driver displays only a green rectangle. I've discussed it with v4l2
+> driver's creator, Martin Olschewski, but no success so far.
+>
+> I tried to invoke it like this:
+> mplayer -v tv:// -tv device=/dev/video0:driver=v4l2:outfmt=yuy2 \
+> -vc rawyuy2 -fps 15 -vo x11
+>
+> Here's an excerpt from MPlayer's log:
+>
+> (...)
+> Starting playback...
+> v4l2: going to capture
+> v4l2: ioctl dequeue buffer failed: Invalid argument, idx = 0
+> v4l2: ioctl dequeue buffer failed: Invalid argument, idx = 0
+> v4l2: ioctl dequeue buffer failed: Invalid argument, idx = 0
+> v4l2: ioctl dequeue buffer failed: Invalid argument, idx = 0
+> (...)
+>
+> Martin asks, if this can be an issue with fps setting. Without fps being
+> set, MPlayer doesn't want to start and says:
+>
+> [V] filefmt:9  fourcc:0x32595559  size:640x480  fps:  nan  ftime:=   nan
+> FPS not specified in the header or invalid, use the -fps option.
+>
+> So I've set fps explicitly to some value not too high value. I know that
+> my webcam can deliver about 20 or 30 fps, so I've used 15.
+>
+> Do you have any more experience with capturing video with MPlayer and
+> uvcvideo driver?
+>
+
+
+From m.blizinski at wit.edu.pl  Thu Jun 29 19:23:31 2006
+From: m.blizinski at wit.edu.pl (Maciej =?iso-8859-2?Q?Blizi=F1ski?=)
+Date: Thu, 29 Jun 2006 19:23:31 +0200
+Subject: [Linux-uvc-devel] Capture from UVC with MPlayer
+In-Reply-To: <op.tbw03gensttmjo@maya>
+References: <1151569713.17381.19.camel@localhost.localnet>
+	 <op.tbw03gensttmjo@maya>
+Message-ID: <1151601811.17381.77.camel@localhost.localnet>
+
+Martin,
+
+Thanks for answering.
+
+On Thu, 2006-06-29 at 09:22 -0700, Martin Rubli wrote:
+> Can you try to set the 'trace' parameter to a higher value (i.e. by  
+> setting /sys/module/uvcvideo/parameters/trace to 64; see the source for  
+> how the bitmask works) and see if any messages about unsupported ioctls  
+> turn up?
+
+I've set the trace parameter:
+# echo 64 > /sys/module/uvcvideo/parameters/trace
+
+Then I ran MPlayer and checked dmesg, which was only two repeating
+lines:
+
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0445611)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0445611)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0445611)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+
+I compared it with Ekiga. After running Ekiga, dmesg showed:
+
+v4l2 ioctl VIDIOC_STREAMOFF, dir=-w (0x40045613)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+
+...and after luvcview by Michael Xhaard:
+
+v4l2 ioctl VIDIOC_S_FMT, dir=rw (0xc0cc5605)
+v4l2 ioctl VIDIOC_REQBUFS, dir=rw (0xc0145608)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_STREAMON, dir=-w (0x40045612)
+v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0445611)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+
+I'm also attaching output from MPlayer, maybe it'll contain something
+useful.
+
+Regards,
+Maciej
+
+-- 
+Maciej Blizi?ski <m.blizinski at wit.edu.pl>
+http://automatthias.wordpress.com
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: logitech-pro-5000.log.gz
+Type: application/x-gzip
+Size: 2059 bytes
+Desc: not available
+URL: <https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20060629/60d637bd/attachment.bin>
+
+From arekjan at yahoo.com  Thu Jun 29 19:55:00 2006
+From: arekjan at yahoo.com (Arek Jankowski)
+Date: Thu, 29 Jun 2006 10:55:00 -0700 (PDT)
+Subject: [Linux-uvc-devel] Capture from UVC with MPlayer
+In-Reply-To: <1151601811.17381.77.camel@localhost.localnet>
+Message-ID: <20060629175500.78533.qmail@web84109.mail.dcn.yahoo.com>
+
+Hej Maciej, I was able to run mplayer using one of the older driver versions but I had to patch the driver using the "tuner.patch" and "noformatcheck.patch" patches found elsewhere on the list. Not sure if this is still the case with the newest driver.
+Arek
+
+
+----- Original Message ----
+From: Maciej Blizi?ski <m.blizinski at wit.edu.pl>
+To: Martin Rubli <martin_rubli at logitech.com>
+Cc: linux-uvc-devel at lists.berlios.de
+Sent: Thursday, June 29, 2006 1:23:31 PM
+Subject: Re: [Linux-uvc-devel] Capture from UVC with MPlayer
+
+Martin,
+
+Thanks for answering.
+
+On Thu, 2006-06-29 at 09:22 -0700, Martin Rubli wrote:
+> Can you try to set the 'trace' parameter to a higher value (i.e. by  
+> setting /sys/module/uvcvideo/parameters/trace to 64; see the source for  
+> how the bitmask works) and see if any messages about unsupported ioctls  
+> turn up?
+
+I've set the trace parameter:
+# echo 64 > /sys/module/uvcvideo/parameters/trace
+
+Then I ran MPlayer and checked dmesg, which was only two repeating
+lines:
+
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0445611)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0445611)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0445611)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+
+I compared it with Ekiga. After running Ekiga, dmesg showed:
+
+v4l2 ioctl VIDIOC_STREAMOFF, dir=-w (0x40045613)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+
+...and after luvcview by Michael Xhaard:
+
+v4l2 ioctl VIDIOC_S_FMT, dir=rw (0xc0cc5605)
+v4l2 ioctl VIDIOC_REQBUFS, dir=rw (0xc0145608)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QUERYBUF, dir=rw (0xc0445609)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+v4l2 ioctl VIDIOC_STREAMON, dir=-w (0x40045612)
+v4l2 ioctl VIDIOC_DQBUF, dir=rw (0xc0445611)
+v4l2 ioctl VIDIOC_QBUF, dir=rw (0xc044560f)
+
+I'm also attaching output from MPlayer, maybe it'll contain something
+useful.
+
+Regards,
+Maciej
+
+-- 
+Maciej Blizi?ski <m.blizinski at wit.edu.pl>
+http://automatthias.wordpress.com
+
+
+
+
+

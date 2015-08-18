@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Bison webcam: the patch doesn't work
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Bison%20webcam%3A%20the%20patch%20doesn%27t%20work&In-Reply-To=%3CBAY123-W127D78018CC22DC6245231AD1A0%40phx.gbl%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001831.html">
+   <LINK REL="Next"  HREF="001793.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Bison webcam: the patch doesn't work</H1>
+    <B>D G</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Bison%20webcam%3A%20the%20patch%20doesn%27t%20work&In-Reply-To=%3CBAY123-W127D78018CC22DC6245231AD1A0%40phx.gbl%3E"
+       TITLE="[Linux-uvc-devel] Bison webcam: the patch doesn't work">davidgalv at hotmail.com
+       </A><BR>
+    <I>Mon Jun 11 21:49:23 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001831.html">[Linux-uvc-devel] using 'read' method for device access
+</A></li>
+        <LI>Next message: <A HREF="001793.html">[Linux-uvc-devel] Bison webcam: the patch doesn't work
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1792">[ date ]</a>
+              <a href="thread.html#1792">[ thread ]</a>
+              <a href="subject.html#1792">[ subject ]</a>
+              <a href="author.html#1792">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+I tried your patch (add a few lines to uvc_driver.c for Bison, and recompile). dmesg does not complain at boot time:
+
+uvcvideo: Found UVC 1.00 device USB2.0 Camera (5986:0100)
+usbcore: registered new interface driver uvcvideo
+USB Video Class driver (v0.1.0)
+
+But it does not work. Examples with three applications:
+
+* Camorama: A window with &quot;Could not connect to video device (/dev/video0)&quot; (although /dev/video0 does exist). No output on the terminal
+
+* amsn: 
+
+Type: IP-Restrict-NAT, Listening: false , the same if I completely disconnect the firewall.
+
+If I do &quot;change video settings&quot;, dmesg says  uvcvideo: Button event (0). (I think it is at that moment, but not sure).
+
+Surprisingly, when I change a video setting in amsn, the led on the webcam lights and stays lit. But the message Type: IP-Restrict-NAT, Listening: false is still the same.
+
+* With xawtv . The led lights for a second and then stops. The capture screen is black.
+
+The output on the terminal:
+
+# xawtv
+This is xawtv-3.95.dfsg.1, running on Linux/i686 (2.6.21-1-686)
+xinerama 0: 1280x800+0+0
+/dev/video0 [v4l2]: no overlay support
+v4l-conf had some trouble, trying to continue anyway
+Warning: Cannot convert string &quot;-*-ledfixed-medium-r-*--39-*-*-*-c-*-*-*&quot; to type FontStruct
+ioctl: VIDIOC_G_STD(std=0xbfbe3bb4 [PAL_G,PAL_I,PAL_D,PAL_K,PAL_M,PAL_N,PAL_60,NTSC_M,NTSC_M_JP,SECAM_D,SECAM_G,SECAM_H,SECAM_K,SECAM_K1,?ATSC_8_VSB,ATSC_16_VSB,(null),(null),(null),(null),(null),(null)]): Invalid argument
+ioctl: VIDIOC_S_STD(std=0x0 []): Invalid argument
+libGL warning: 3D driver claims to not support visual 0x66
+ioctl: VIDIOC_REQBUFS(count=1;type=VIDEO_CAPTURE;memory=MMAP): Invalid argument
+ioctl: VIDIOC_DQBUF(index=0;type=VIDEO_CAPTURE;bytesused=0;flags=0x0 [];field=ANY;;timecode.type=0;timecode.flags=0;timecode.frames=0;timecode.seconds=0;timecode.minutes=0;timecode.hours=0;timecode.userbits=&quot;&quot;;sequence=0;memory=unknown): Invalid argument
+ioctl: VIDIOC_REQBUFS(count=2;type=VIDEO_CAPTURE;memory=MMAP): Device or resource busy
+ioctl: VIDIOC_QBUF(index=0;type=unknown;bytesused=0;flags=0x0 [];field=ANY;;timecode.type=0;timecode.flags=0;timecode.frames=0;timecode.seconds=0;timecode.minutes=0;timecode.hours=0;timecode.userbits=&quot;&quot;;sequence=0;memory=unknown): Invalid argument
+v4l2: oops: select timeout
+munmap: Invalid argument
+ioctl: VIDIOC_REQBUFS(count=1;type=VIDEO_CAPTURE;memory=MMAP): Device or resource busy
+X Error of failed request:  BadWindow (invalid Window parameter)
+  Major opcode of failed request:  2 (X_ChangeWindowAttributes)
+  Resource id in failed request:  0x1c0005c
+  Serial number of failed request:  1537
+  Current serial number in output stream:  1537
+
+and dmesg stays the same.
+
+Hope it helps,
+
+David
+_________________________________________________________________
+Play free games, earn tickets, get cool prizes! Join Live Search Club.&#160;
+<A HREF="http://club.live.com/home.aspx?icid=CLUB_wlmailtextlink">http://club.live.com/home.aspx?icid=CLUB_wlmailtextlink</A>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001831.html">[Linux-uvc-devel] using 'read' method for device access
+</A></li>
+	<LI>Next message: <A HREF="001793.html">[Linux-uvc-devel] Bison webcam: the patch doesn't work
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1792">[ date ]</a>
+              <a href="thread.html#1792">[ thread ]</a>
+              <a href="subject.html#1792">[ subject ]</a>
+              <a href="author.html#1792">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

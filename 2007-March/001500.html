@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Uvcvideo =&gt; tool for check control Logitech	Sphere MP?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Uvcvideo%20%3D%3E%20tool%20for%20check%20control%20Logitech%0A%09Sphere%20MP%3F&In-Reply-To=%3C200703200920.l2K9Ks5G017920%40singularity.tronunltd.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001499.html">
+   <LINK REL="Next"  HREF="001501.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Uvcvideo =&gt; tool for check control Logitech	Sphere MP?</H1>
+    <B>Ian Latter</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Uvcvideo%20%3D%3E%20tool%20for%20check%20control%20Logitech%0A%09Sphere%20MP%3F&In-Reply-To=%3C200703200920.l2K9Ks5G017920%40singularity.tronunltd.com%3E"
+       TITLE="[Linux-uvc-devel] Uvcvideo =&gt; tool for check control Logitech	Sphere MP?">ian.latter at midnightcode.org
+       </A><BR>
+    <I>Tue Mar 20 11:20:54 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001499.html">[Linux-uvc-devel] Uvcvideo =&gt; tool for check control Logitech	Sphere MP?
+</A></li>
+        <LI>Next message: <A HREF="001501.html">[Linux-uvc-devel] Logitech Quick Cam Ultra Vision: USB Analyzer Log
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1500">[ date ]</a>
+              <a href="thread.html#1500">[ thread ]</a>
+              <a href="subject.html#1500">[ subject ]</a>
+              <a href="author.html#1500">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Hello Dirk,
+
+
+  The controls that you are looking for a V4L2 (Video
+for Linux version 2), and not UVC specific.
+
+  There are two places that you can get programming
+examples from.  You can try luvcview;
+  <A HREF="http://mxhaard.free.fr/spca50x/Investigation/uvc/">http://mxhaard.free.fr/spca50x/Investigation/uvc/</A>
+
+  Or you can try my camera code from libmidnightcode,
+which is based on the luvcview code above;
+  <A HREF="http://midnightcode.org/projects/libmidnightcode/">http://midnightcode.org/projects/libmidnightcode/</A>
+
+
+
+  What you need to do is perform an &quot;ioctl&quot; on the
+file descriptor (fd) of the camera device (eg: /dev/video0)
+
+  enum midnightcode_camera_cid_t
+  {
+    MIDNIGHTCODE_CAMERA_CID_BACKLIGHT_COMPENSATION =
+V4L2_CID_PRIVATE_BASE,
+    MIDNIGHTCODE_CAMERA_CID_POWER_LINE_FREQUENCY,
+    MIDNIGHTCODE_CAMERA_CID_SHARPNESS,
+    MIDNIGHTCODE_CAMERA_CID_HUE_AUTO,
+    MIDNIGHTCODE_CAMERA_CID_FOCUS_AUTO,
+    MIDNIGHTCODE_CAMERA_CID_FOCUS_ABSOLUTE,
+    MIDNIGHTCODE_CAMERA_CID_FOCUS_RELATIVE,
+    MIDNIGHTCODE_CAMERA_CID_PAN_RELATIVE,
+    MIDNIGHTCODE_CAMERA_CID_TILT_RELATIVE,
+    MIDNIGHTCODE_CAMERA_CID_PANTILT_RESET,
+    MIDNIGHTCODE_CAMERA_CID_EXPOSURE_AUTO,
+    MIDNIGHTCODE_CAMERA_CID_EXPOSURE_ABSOLUTE,
+    MIDNIGHTCODE_CAMERA_CID_WHITE_BALANCE_TEMPERATURE_AUTO,
+    MIDNIGHTCODE_CAMERA_CID_WHITE_BALANCE_TEMPERATURE
+  };
+
+  struct v4l2_control v4l_control;
+  int value;
+
+  [...]
+
+  v4l_control.id = MIDNIGHTCODE_CAMERA_CID_PAN_RELATIVE;
+  v4l_control.value = (unsigned char)value;
+  if(ioctl(fd, VIDIOC_S_CTRL, &amp;v4l_control) &lt; 0)
+    // error
+  // success
+
+
+  The code is all GPL, so feel free to borrow heavily
+from it.
+
+  For your reference, my Sphere 2006 returns the
+following &quot;value&quot; range for Pan and Tilt;
+  Pan (relative)  min:-4480 max:4480
+  Tilt (relative)  min:-1920 max:1920
+
+
+
+----- Original Message -----
+&gt;<i>From: &quot;Dirk Wesenberg&quot; &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Privat_one at gmx.de</A>&gt;
+</I>&gt;<i>To: &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>&gt;
+</I>&gt;<i>Subject:  [Linux-uvc-devel] Uvcvideo =&gt; tool for check
+</I>control Logitech	Sphere MP?
+&gt;<i>Date: Tue, 20 Mar 2007 16:22:56 +0100
+</I>&gt;<i>
+</I>&gt;<i> Hello,
+</I>&gt;<i> I have a little question: I use the uvcvideo module in the
+</I>kernel 2.6.20 in 
+&gt;<i> combination with Motion.
+</I>&gt;<i> My problem, and not only my is:
+</I>&gt;<i> The controll for the webcam Pan and Tilt are not working
+</I>well. Pan is just 
+&gt;<i> working a little. I have also contact with the developer
+</I>from motion, but its 
+&gt;<i> look likes difficult to set the right value to the Webcam
+</I>to controll the Pan 
+&gt;<i> and Tilt.
+</I>&gt;<i> My question is :
+</I>&gt;<i> 
+</I>&gt;<i> 1) How must the commt to the uvcvideo look likes to use
+</I>the Pan and Tilt from 
+&gt;<i> another Programm ( like Motion)?
+</I>&gt;<i> 
+</I>&gt;<i> 2) Is there a small tool available to check, if the Pan
+</I>and Tilt unction 
+&gt;<i> working well ? Because it makes no sense, that
+</I>thedeveloper from Motion are 
+&gt;<i> sarching a solution and maybe there is problem in the
+</I>uvcvideo.
+&gt;<i> 
+</I>&gt;<i> The Pan and TIlt was working nice before the API was
+</I>change from uvcvideo ( I 
+&gt;<i> hear this one from other user) .
+</I>&gt;<i> 
+</I>&gt;<i> Thanks a lot for your assistant!
+</I>&gt;<i> Dirk 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Linux-uvc-devel mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+</I>&gt;<i> 
+</I>
+
+--
+Ian Latter
+Late night coder ..
+<A HREF="http://midnightcode.org/">http://midnightcode.org/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001499.html">[Linux-uvc-devel] Uvcvideo =&gt; tool for check control Logitech	Sphere MP?
+</A></li>
+	<LI>Next message: <A HREF="001501.html">[Linux-uvc-devel] Logitech Quick Cam Ultra Vision: USB Analyzer Log
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1500">[ date ]</a>
+              <a href="thread.html#1500">[ thread ]</a>
+              <a href="subject.html#1500">[ subject ]</a>
+              <a href="author.html#1500">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Laptop Integrated Webcam video chain wonkiness?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Laptop%20Integrated%20Webcam%20video%20chain%20wonkiness%3F&In-Reply-To=%3C20071108174551.GJ27818%40wilmington.dreamhost.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002421.html">
+   <LINK REL="Next"  HREF="002429.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Laptop Integrated Webcam video chain wonkiness?</H1>
+    <B>Josh Myer</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Laptop%20Integrated%20Webcam%20video%20chain%20wonkiness%3F&In-Reply-To=%3C20071108174551.GJ27818%40wilmington.dreamhost.com%3E"
+       TITLE="[Linux-uvc-devel] Laptop Integrated Webcam video chain wonkiness?">jbm9 at wilmington.dreamhost.com
+       </A><BR>
+    <I>Thu Nov  8 18:45:51 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002421.html">[Linux-uvc-devel] 0c45:624f Microdia web cam
+</A></li>
+        <LI>Next message: <A HREF="002429.html">[Linux-uvc-devel] Laptop Integrated Webcam video chain	wonkiness?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2424">[ date ]</a>
+              <a href="thread.html#2424">[ thread ]</a>
+              <a href="subject.html#2424">[ subject ]</a>
+              <a href="author.html#2424">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I've got a Dell 1520 with the &quot;Omnivision Laptop Integrated Webcam&quot;
+(0x05a9/0x2640).  Adding the standard block gets the camera recognized
+and mostly initialized, but then it bombs out with &quot;Failed to query
+(135) UVC control 1 (unit 0) : -32 (exp. 26).&quot;  As far as I can tell,
+that's from the URB layer trying to talk to a closed/missing endpoint
+(not totally certain, it's been a long time since I worked with the USB
+guts and the APIs might be different).
+
+Does anyone have any ideas about this?  I'm pretty stumped, though it 
+doesn't help that I only have a vague idea how UVC works =)
+
+This is an Ubuntu Gutsy Gibbon system with the default kernel.
+
+Thanks for any help you can offer!
+-josh
+
+(System info follows)
+
+$ uname -a
+Linux density 2.6.22-14-generic #1 SMP Sun Oct 14 23:05:12 GMT 2007 i686 
+GNU/Linux
+
+
+The diff between current trunk and what I'm running:
+$ svn diff
+Index: uvc_driver.c
+===================================================================
+--- uvc_driver.c        (revision 141)
++++ uvc_driver.c        (working copy)
+@@ -1656,6 +1656,16 @@
+          .bInterfaceSubClass   = 1,
+          .bInterfaceProtocol   = 0,
+          .driver_info          = UVC_QUIRK_PROBE_MINMAX },
++/* OmniVision OEM Dell Notebook */
++       { .match_flags          = USB_DEVICE_ID_MATCH_DEVICE
++                               | USB_DEVICE_ID_MATCH_INT_INFO,
++         .idVendor             = 0x05a9,
++         .idProduct            = 0x2640,
++         .bInterfaceClass      = USB_CLASS_VIDEO,
++         .bInterfaceSubClass   = 1,
++         .bInterfaceProtocol   = 0,
++         .driver_info          = UVC_QUIRK_PROBE_MINMAX },
++
+        /* Logitech Quickcam Fusion */
+        { .match_flags          = USB_DEVICE_ID_MATCH_DEVICE
+                                | USB_DEVICE_ID_MATCH_INT_INFO,
+
+
+
+dmesg output from 'insmod ./uvcvideo.ko trace=15'
+[  400.076000] uvcvideo: Adding mapping Brightness to control 00000000-0000-0000-0000-000000000101/2.
+[  400.076000] uvcvideo: Adding mapping Contrast to control 00000000-0000-0000-0000-000000000101/3.
+[  400.076000] uvcvideo: Adding mapping Hue to control 00000000-0000-0000-0000-000000000101/6.
+[  400.076000] uvcvideo: Adding mapping Saturation to control 00000000-0000-0000-0000-000000000101/7.
+[  400.076000] uvcvideo: Adding mapping Sharpness to control 00000000-0000-0000-0000-000000000101/8.
+[  400.076000] uvcvideo: Adding mapping Gamma to control 00000000-0000-0000-0000-000000000101/9.
+[  400.076000] uvcvideo: Adding mapping Backlight Compensation to control 00000000-0000-0000-0000-000000000101/1.
+[  400.076000] uvcvideo: Adding mapping Gain to control 00000000-0000-0000-0000-000000000101/4.
+[  400.076000] uvcvideo: Adding mapping Power Line Frequency to control 00000000-0000-0000-0000-000000000101/5.
+[  400.076000] uvcvideo: Adding mapping Hue, Auto to control 00000000-0000-0000-0000-000000000101/16.
+[  400.076000] uvcvideo: Adding mapping Exposure, Auto to control 00000000-0000-0000-0000-000000000001/2.
+[  400.076000] uvcvideo: Adding mapping Exposure (Absolute) to control 00000000-0000-0000-0000-000000000001/4.
+[  400.076000] uvcvideo: Adding mapping White Balance Temperature, Auto to control 00000000-0000-0000-0000-000000000101/11.
+[  400.076000] uvcvideo: Adding mapping White Balance Temperature to control 00000000-0000-0000-0000-000000000101/10.
+[  400.076000] uvcvideo: Adding mapping Focus (absolute) to control 00000000-0000-0000-0000-000000000001/6.
+[  400.076000] uvcvideo: Adding mapping Focus, Auto to control 00000000-0000-0000-0000-000000000001/8.
+[  400.076000] uvcvideo: Probing known UVC device 6 (05a9:2640)
+[  400.076000] uvcvideo: Found format MJPEG.
+[  400.076000] uvcvideo: - 640x480 (30.0 fps)
+[  400.076000] uvcvideo: - 160x120 (30.0 fps)
+[  400.076000] uvcvideo: - 176x144 (30.0 fps)
+[  400.076000] uvcvideo: - 320x240 (30.0 fps)
+[  400.076000] uvcvideo: - 352x288 (30.0 fps)
+[  400.076000] uvcvideo: - 800x600 (30.0 fps)
+[  400.076000] uvcvideo: - 1024x768 (10.0 fps)
+[  400.076000] uvcvideo: - 1280x1024 (10.0 fps)
+[  400.076000] uvcvideo: - 1600x1200 (10.0 fps)
+[  400.076000] uvcvideo: Found format YUV 4:2:2 (YUYV).
+[  400.076000] uvcvideo: - 640x480 (10.0 fps)
+[  400.076000] uvcvideo: - 160x120 (30.0 fps)
+[  400.076000] uvcvideo: - 176x144 (30.0 fps)
+[  400.076000] uvcvideo: - 320x240 (30.0 fps)
+[  400.076000] uvcvideo: - 352x288 (30.0 fps)
+[  400.076000] uvcvideo: Found a Status endpoint (addr 83).
+[  400.076000] uvcvideo: Found UVC 1.00 device Laptop Integrated Webcam (05a9:2640)
+[  400.076000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/2 to device 6 entity 5
+[  400.076000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/3 to device 6 entity 5
+[  400.076000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/6 to device 6 entity 5
+[  400.076000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/7 to device 6 entity 5
+[  400.076000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/8 to device 6 entity 5
+[  400.076000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/9 to device 6 entity 5
+[  400.076000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/1 to device 6 entity 5
+[  400.076000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/5 to device 6 entity 5
+[  400.076000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/11 to device 6 entity 5
+[  400.076000] uvcvideo: Added control 00000000-0000-0000-0000-000000000101/10 to device 6 entity 5
+[  400.076000] uvcvideo: Scanning UVC chain: OT 3 &lt;- PU 5 (-&gt; XU 6) &lt;- SU 4 &lt;- IT 1
+[  400.076000]  (-&gt; XU 7)&lt;6&gt;uvcvideo: Found a valid video chain (1 -&gt; 3).
+[  400.076000] uvcvideo: Failed to query (135) UVC control 1 (unit 0) : -32 (exp. 26).
+[  400.080000] uvcvideo: UVC device initialized.
+[  400.080000] usbcore: registered new interface driver uvcvideo
+
+-- 
+/jbm, but you can call me Josh.  Really, you can!
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002421.html">[Linux-uvc-devel] 0c45:624f Microdia web cam
+</A></li>
+	<LI>Next message: <A HREF="002429.html">[Linux-uvc-devel] Laptop Integrated Webcam video chain	wonkiness?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2424">[ date ]</a>
+              <a href="thread.html#2424">[ thread ]</a>
+              <a href="subject.html#2424">[ subject ]</a>
+              <a href="author.html#2424">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

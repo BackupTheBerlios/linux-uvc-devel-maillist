@@ -1,0 +1,212 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Invitation for testers of mjpg-streamer
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Invitation%20for%20testers%20of%20mjpg-streamer&In-Reply-To=%3C20071021115019.GA7715%40vilya%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002328.html">
+   <LINK REL="Next"  HREF="002338.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Invitation for testers of mjpg-streamer</H1>
+    <B>Richard Atterer</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Invitation%20for%20testers%20of%20mjpg-streamer&In-Reply-To=%3C20071021115019.GA7715%40vilya%3E"
+       TITLE="[Linux-uvc-devel] Invitation for testers of mjpg-streamer">richard at 2007.atterer.net
+       </A><BR>
+    <I>Sun Oct 21 13:50:19 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002328.html">[Linux-uvc-devel] Invitation for testers of mjpg-streamer
+</A></li>
+        <LI>Next message: <A HREF="002338.html">[Linux-uvc-devel] How to record audio and video from a webcam?	(VLC almost there)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2339">[ date ]</a>
+              <a href="thread.html#2339">[ thread ]</a>
+              <a href="subject.html#2339">[ subject ]</a>
+              <a href="author.html#2339">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed, Oct 17, 2007 at 12:03:53PM +0200, Tom St wrote:
+&gt;<i> I am looking for testers of the uvc-streamer successor, called
+</I>&gt;<i> &quot;mjpg-streamer&quot; [1].
+</I>
+Hi! First of all, congratulations on the nice, clean code! It works well 
+with my QuickCam 9000 Pro. :-)
+
+There is a problem when I view the stream using VLC 0.8.6c: The video is 
+displayed, but with wrong colours. For each JPEG, the luma part is 
+displayed correctly, but the chroma parts are stretched vertically to twice 
+their proper size, which results in a colour &quot;ghost image&quot; behind the 
+actual picture. I suspect the camera uses an unusual chroma subsampling 
+variant which VLC doesn't understand.
+
+In firefox, the MJPEG stream sometimes seems to hang, IIRC you also noticed 
+this.
+
+I have written an AJAX-based web page to view the stream - IMHO, it's 
+better than the Java applet. It requests snapshot images from the server as 
+fast as it can. A patch is attached - the web server must return the images 
+as non-cacheable, otherwise you will get a recording of the image stream 
+when you visit the page a second time. This code works fine with Firefox, 
+Konqueror, Opera and MSIE 6!
+
+This is a first try, some more work is probably required to get this to 
+work well. One problem: The web server sometimes seems to get into an 
+infinite loop, consuming 100% CPU even though the browser no longer 
+requests images. This happens more with some browsers than with others. - 
+Could it be that the server will have trouble serving multiple clients at 
+the same time? E.g., what happens if there is one fast client and one slow 
+client who can only fetch every n-th frame?
+
+Furthermore, it may be possible to increase performance a *lot* by 
+implementing HTTP/1.1 persistent connections. However, I don't know whether 
+this would work with the current JavaScript code, as the the browser might 
+close the connection once one JPEG has been fetched, and open another one 
+when the JavaScript requests the next one. If this is the case, some extra 
+logic would be required at the server side to &quot;force&quot; HTTP pipelining to 
+take place: The JavaScript would always need to keep _two_ image requests 
+active at any time, and the server would have to delay responses and only 
+deliver each webcam frame to each IP at most once. With HTTP pipelining, 
+performance should be comparable to that of an MJPEG stream!
+
+Nitpick mode: HTTP requires that the name in the &quot;Server:&quot; header is 
+followed by a version number. Also, isn't &quot;MJPEG&quot; more correct than &quot;MJPG&quot;?
+
+Oh, and one wishlist item: It would be cool to have an &quot;input_http&quot; plugin. 
+That way, I could run one instance of mjpg-streamer at home, stream from 
+there to another instance on a server with more bandwidth, and finally use 
+that server to feed multiple clients.
+
+Thanks for starting this nice project! :)
+Cheers,
+
+  Richard
+
+-- 
+  __   _
+  |_) /|  Richard Atterer     |  GnuPG key: 888354F7
+  | \/&#175;|  <A HREF="http://atterer.net">http://atterer.net</A>  |  08A9 7B7D 3D13 3EF2 3D25  D157 79E6 F6DC 8883 54F7
+  &#175; '` &#175;
+diff --minimal --unified -urN mjpg-streamer.orig/Makefile mjpg-streamer/Makefile
+--- mjpg-streamer.orig/Makefile	2007-10-18 13:36:22.000000000 +0200
++++ mjpg-streamer/Makefile	2007-10-20 21:24:37.181712079 +0200
+@@ -21,7 +21,7 @@
+ clean:
+ 	@echo &quot;Cleaning up directory.&quot;
+ 	rm -f *.a *.o $(APP_BINARY) core *~ *.so *.lo
+-	rm -f plugins/*/*.a plugins/*/*.o plugins/*/core plugins/*/*~ plugins/*/*.so
++	rm -f plugins/*/*.a plugins/*/*.o plugins/*/core plugins/*/*~ plugins/*/*.so plugins/*/*.lo
+ 
+ # Applications:
+ uga_buga: $(OBJECTS) input_uvc.so output_http.so output_file.so
+diff --minimal --unified -urN mjpg-streamer.orig/plugins/output_http/httpd.c mjpg-streamer/plugins/output_http/httpd.c
+--- mjpg-streamer.orig/plugins/output_http/httpd.c	2007-10-13 10:42:31.000000000 +0200
++++ mjpg-streamer/plugins/output_http/httpd.c	2007-10-21 01:18:02.479828534 +0200
+@@ -242,8 +242,11 @@
+   /* write the response */
+   sprintf(buffer, &quot;HTTP/1.0 200 OK\r\n&quot; \
+                   &quot;Connection: close\r\n&quot; \
+-                  &quot;Server: MJPG-Streamer\r\n&quot; \
++                  &quot;Server: MJPG-Streamer/0.1\r\n&quot; \
+                   &quot;Content-type: image/jpeg\r\n&quot; \
++                  &quot;Cache-Control: no-store, no-cache, must-revalidate\r\n&quot; \
++                  &quot;Pragma: no-cache\r\n&quot; \
++                  &quot;Expires: Mon, 31 Jan 2000 05:00:00 GMT\r\n&quot; \
+                   &quot;\r\n&quot;);
+ 
+   /* send header and image now */
+Binary files mjpg-streamer.orig/plugins/output_http/httpd.lo and mjpg-streamer/plugins/output_http/httpd.lo differ
+diff --minimal --unified -urN mjpg-streamer.orig/www/javascript.html mjpg-streamer/www/javascript.html
+--- mjpg-streamer.orig/www/javascript.html	1970-01-01 01:00:00.000000000 +0100
++++ mjpg-streamer/www/javascript.html	2007-10-21 12:40:48.528501962 +0200
+@@ -0,0 +1,51 @@
++&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot;
++    &quot;<A HREF="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd</A>&quot;&gt;
++&lt;html xmlns=&quot;<A HREF="http://www.w3.org/1999/xhtml">http://www.w3.org/1999/xhtml</A>&quot;&gt;
++&lt;head&gt;
++&lt;title&gt;MJPEG-Streamer&lt;/title&gt;
++&lt;/head&gt;
++&lt;script type=&quot;text/javascript&quot;&gt;
++
++/* Copyright (C) 2007 Richard Atterer, richard&#169;atterer.net
++   This program is free software; you can redistribute it and/or modify it
++   under the terms of the GNU General Public License, version 2. See the file
++   COPYING for details. */
++
++var imageNr = 0; // Serial number of current image
++var finished = new Array(); // References to img objects which have finished downloading
++var paused = false;
++
++function createImageLayer() {
++  var img = new Image();
++  img.style.position = &quot;absolute&quot;;
++  img.style.zIndex = -1;
++  img.onload = imageOnload;
++  img.onclick = imageOnclick;
++  img.src = &quot;/?action=snapshot&amp;n=&quot; + (++imageNr);
++  var webcam = document.getElementById(&quot;webcam&quot;);
++  webcam.insertBefore(img, webcam.firstChild);
++}
++
++// Two layers are always present (except at the very beginning), to avoid flicker
++function imageOnload() {
++  this.style.zIndex = imageNr; // Image finished, bring to front!
++  while (1 &lt; finished.length) {
++    var del = finished.shift(); // Delete old image(s) from document
++    del.parentNode.removeChild(del);
++  }
++  finished.push(this);
++  if (!paused) createImageLayer();
++}
++
++function imageOnclick() { // Clicking on the image will pause the stream
++  paused = !paused;
++  if (!paused) createImageLayer();
++}
++
++&lt;/script&gt;
++&lt;body onload=&quot;createImageLayer();&quot;&gt;
++
++&lt;div id=&quot;webcam&quot;&gt;&lt;noscript&gt;&lt;img src=&quot;/?action=snapshot&quot; /&gt;&lt;/noscript&gt;&lt;/div&gt;
++
++&lt;/body&gt;
++&lt;/html&gt;
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: Digital signature
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20071021/6c07a66e/attachment.pgp">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20071021/6c07a66e/attachment.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002328.html">[Linux-uvc-devel] Invitation for testers of mjpg-streamer
+</A></li>
+	<LI>Next message: <A HREF="002338.html">[Linux-uvc-devel] How to record audio and video from a webcam?	(VLC almost there)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2339">[ date ]</a>
+              <a href="thread.html#2339">[ thread ]</a>
+              <a href="subject.html#2339">[ subject ]</a>
+              <a href="author.html#2339">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

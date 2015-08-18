@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Quanta integrated webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quanta%20integrated%20webcam&In-Reply-To=%3C1308037187.5663.10.camel%40mini%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006602.html">
+   <LINK REL="Next"  HREF="006677.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Quanta integrated webcam</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quanta%20integrated%20webcam&In-Reply-To=%3C1308037187.5663.10.camel%40mini%3E"
+       TITLE="[Linux-uvc-devel] Quanta integrated webcam">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Tue Jun 14 09:39:47 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006602.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+        <LI>Next message: <A HREF="006677.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6603">[ date ]</a>
+              <a href="thread.html#6603">[ thread ]</a>
+              <a href="subject.html#6603">[ subject ]</a>
+              <a href="author.html#6603">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Am Montag, den 13.06.2011, 22:48 -0700 schrieb Carl Michal:
+&gt;<i> &gt;&gt; 
+</I>&gt;<i> &gt; Hi,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I think you nailed it.  Every frame looks perfect now.  The trace shows a few 
+</I>&gt;<i> &gt; of these:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Jun 13 09:24:24 uvcvideo: Dropping payload (error bit set)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; but I don't see corrupt frames any more in either MJPG or YUYV (at 640x480 
+</I>&gt;<i> &gt; anyway) - in MJPG all the frames have the right size.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; There is a some weirdness with frame rates depending on the exposure setting: 
+</I>&gt;<i> &gt; 1) Exposure, auto gives 4 options: auto priority mode, manual mode, shutter 
+</I>&gt;<i> &gt; priority mode, and aperture priority mode.  Auto and shutter don't seem to be 
+</I>&gt;<i> &gt; settable (errors from guvcview when chosen). There is also an &quot;Exposure, auto 
+</I>&gt;<i> &gt; priority&quot; checkbox.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Frame rates drop dramatically in manual mode (to 10-15fps from 30).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; But I can't really complain at this point - the corrupt frames are gone.
+</I>&gt;<i> &gt; Will that quirk be added to the driver (usb id is: 0408:2fb1)?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thanks,
+</I>&gt;<i> &gt;
+</I>&gt;<i> 
+</I>&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> it seems like I am much better off by fully disabling FID (with your 
+</I>&gt;<i> patch) than before.  With the patch, YUYV frames are _always_ the right 
+</I>&gt;<i> size.  There are still some problems:
+</I>&gt;<i> 
+</I>&gt;<i> 1) corrupt frames - with part of the image missing or the image displaced. 
+</I>&gt;<i> Sometimes (but definitely not always) these occur at the same time as a 
+</I>&gt;<i> trace message saying the error bit is set.
+</I>&gt;<i> 
+</I>&gt;<i> 2) sometimes the camera just won't start.  when guvcview (or luvcview) is 
+</I>&gt;<i> started, no frames come back from the camera.  There is a light next to 
+</I>&gt;<i> the camera that comes on to indicate it should be active, but no frames 
+</I>&gt;<i> arrive.  There seems to be a fairly strong correlation with using luvcview 
+</I>&gt;<i> (which from the traces seems to use some different mechanism to get frames from 
+</I>&gt;<i> the driver from guvcview.  guvcview polls, luvcview doesn't).  Sometimes 
+</I>&gt;<i> just restarting guvcview several times will work and the camera eventually 
+</I>&gt;<i> starts.  Sometimes just changing resolution or frame rates succeeds in 
+</I>&gt;<i> starting the camera.  I haven't found anything reproducible.  I do not 
+</I>&gt;<i> think this is related to your patch, as it did happen once before your 
+</I>&gt;<i> patch was applied. Unloading and reloading the uvcvideo and ehci_hcd 
+</I>&gt;<i> modules does not consistently solve it. guvcview just lists:
+</I>&gt;<i> 
+</I>&gt;<i>   Could not grab image (select timeout): Resource temporarily unavailable
+</I>&gt;<i> 
+</I>&gt;<i> and the trace shows guvcview polling, but nothing else going on.
+</I>&gt;<i> 
+</I>&gt;<i> I have tried adding the other quirks to the FID quirk, but haven't seen 
+</I>&gt;<i> any improvement with any others.
+</I>&gt;<i> 
+</I>&gt;<i> Thanks for you help -
+</I>&gt;<i> 
+</I>&gt;<i> Carl
+</I>
+Webcam returns error in the middle of some frame, theoretically we
+should drop complete frame. But current uvcvideo just gather data and
+assume the cam will resend previous parts to complete the frame.
+
+Try attached patch additionally to my previous one.
+-- 
+Regards,
+        Alexey
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: uvc2.diff
+Type: text/x-patch
+Size: 464 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110614/c0058848/attachment.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110614/c0058848/attachment.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006602.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+	<LI>Next message: <A HREF="006677.html">[Linux-uvc-devel] Quanta integrated webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6603">[ date ]</a>
+              <a href="thread.html#6603">[ thread ]</a>
+              <a href="subject.html#6603">[ subject ]</a>
+              <a href="author.html#6603">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

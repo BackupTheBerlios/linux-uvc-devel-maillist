@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] V4L1 backwards compatibility
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20V4L1%20backwards%20compatibility&In-Reply-To=%3C20060213124741.GA12287%40localhost.localdomain%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000243.html">
+   <LINK REL="Next"  HREF="000278.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] V4L1 backwards compatibility</H1>
+    <B>Eduardo P&#233;rez Ureta</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20V4L1%20backwards%20compatibility&In-Reply-To=%3C20060213124741.GA12287%40localhost.localdomain%3E"
+       TITLE="[Linux-uvc-devel] V4L1 backwards compatibility">eduardo.perez at uc3m.es
+       </A><BR>
+    <I>Mon Feb 13 13:47:41 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000243.html">[Linux-uvc-devel] V4L1 backwards compatibility
+</A></li>
+        <LI>Next message: <A HREF="000278.html">[Linux-uvc-devel] V4L1 backwards compatibility
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#267">[ date ]</a>
+              <a href="thread.html#267">[ thread ]</a>
+              <a href="subject.html#267">[ subject ]</a>
+              <a href="author.html#267">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I'm trying to make this driver work with applications like mplayer,
+xawtv, vic, gnomemeeting but I can't get it working with any of these
+applications.
+
+I think the patch suggested by Mikael should be applied to support v4l1
+only applications.
+
+I'm attaching a patch that get some of the applications mentioned get
+more ioctls working but still no luck.
+
+Has anybody made this driver work with the mentioned applications?
+
+I'm using a Logitech QuickCam Pro 5000
+
+On 2006-02-06 22:59:08 +0100, Mikael Nilsson wrote:
+&gt;<i> If I understand the kernel API correctly, something like this patch
+</I>&gt;<i> *should* bring V4L1 compatibility to the uvc driver. However, I don't
+</I>&gt;<i> get a picture in gnomemeeting (old version, not ekiga), and not in the
+</I>&gt;<i> proprietary app I talked about.
+</I>&gt;<i> 
+</I>&gt;<i> I suppose there might be a reson why this cannot work. Can anyone
+</I>&gt;<i> enlighten me?
+</I>&gt;<i> 
+</I>&gt;<i> Index: uvcvideo.c
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvcvideo.c  (revision 17)
+</I>&gt;<i> +++ uvcvideo.c  (working copy)
+</I>&gt;<i> @@ -2139,7 +2139,8 @@
+</I>&gt;<i> 
+</I>&gt;<i>         default:
+</I>&gt;<i>                 uvc_trace(UVC_TRACE_IOCTL, &quot;Unknown ioctl 0x%08x\n&quot;, cmd);
+</I>&gt;<i> -               return -ENOIOCTLCMD;
+</I>&gt;<i> +               return v4l_compat_translate_ioctl(inode,file,cmd,arg,
+</I>&gt;<i> +                                                 uvc_v4l2_do_ioctl);
+</I>&gt;<i>         }
+</I>&gt;<i> 
+</I>&gt;<i>         return 0;
+</I>&gt;<i> 
+</I>&gt;<i> l&#246;r 2006-02-04 klockan 23:23 +0100 skrev Mikael Nilsson:
+</I>&gt;<i> &gt; l&#246;r 2006-02-04 klockan 23:05 +0100 skrev michel Xhaard:
+</I>&gt;<i> &gt; &gt; Mikael
+</I>&gt;<i> &gt; &gt; This driver design is v4l2 only . The v4L1 compat only works for old driver to 
+</I>&gt;<i> &gt; &gt; the new interface, but a young driver, like uvcvideo works directly on v4l2.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Hmmm? Are you sure? This is the text in v4l1-compat.c:
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;  *      Video for Linux Two
+</I>&gt;<i> &gt;  *      Backward Compatibility Layer
+</I>&gt;<i> &gt;  *
+</I>&gt;<i> &gt;  *      Support subroutines for providing V4L2 drivers with backward
+</I>&gt;<i> &gt;  *      compatibility with applications using the old API.
+</I>&gt;<i> &gt;  *
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I read this as support for *new* drivers and *old* applications, not the
+</I>&gt;<i> &gt; other way around. But then again, I'm no expert...
+</I>-------------- next part --------------
+--- uvcvideo.c
++++ uvcvideo.c
+@@ -2148,12 +2148,34 @@
+ 		return uvc_video_enable(video, 0);
+ 	}
+ 
+-	/* Analog video standards make no sense for digital cameras. */
+-	case VIDIOC_ENUMSTD:
+-	case VIDIOC_QUERYSTD:
+ 	case VIDIOC_G_STD:
++	{
++		v4l2_std_id *std = arg;
++		*std = V4L2_STD_UNKNOWN;
++		return 0;
++	}
++
+ 	case VIDIOC_S_STD:
++	{
++		v4l2_std_id *std = arg;
++		if (*std != V4L2_STD_UNKNOWN)
++			return -EINVAL;
++		return 0;
++	}
+ 
++	case VIDIOC_ENUMSTD:
++	{
++		struct v4l2_standard *std = arg;
++		if (std-&gt;index != 0)
++			return -EINVAL;
++		std-&gt;id = V4L2_STD_UNKNOWN;
++		strncpy(std-&gt;name, &quot;webcam&quot;, sizeof(std-&gt;name));
++		return 0;
++	}
++
++	/* Analog video standards make no sense for digital cameras. */
++	case VIDIOC_QUERYSTD:
++
+ 	case VIDIOC_OVERLAY:
+ 
+ 	case VIDIOC_ENUMAUDIO:
+@@ -2164,8 +2186,7 @@
+ 		return -EINVAL;
+ 
+ 	default:
+-		uvc_trace(UVC_TRACE_IOCTL, &quot;Unknown ioctl 0x%08x\n&quot;, cmd);
+-		return -ENOIOCTLCMD;
++		return v4l_compat_translate_ioctl(inode,file,cmd,arg, uvc_v4l2_do_ioctl);
+ 	}
+ 
+ 	return 0;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000243.html">[Linux-uvc-devel] V4L1 backwards compatibility
+</A></li>
+	<LI>Next message: <A HREF="000278.html">[Linux-uvc-devel] V4L1 backwards compatibility
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#267">[ date ]</a>
+              <a href="thread.html#267">[ thread ]</a>
+              <a href="subject.html#267">[ subject ]</a>
+              <a href="author.html#267">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

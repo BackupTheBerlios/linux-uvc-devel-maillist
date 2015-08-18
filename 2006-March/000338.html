@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Support for Interface Association Descriptors
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Support%20for%20Interface%20Association%20Descriptors&In-Reply-To=%3C440A9E6F.8050901%40nadler.us%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000336.html">
+   <LINK REL="Next"  HREF="000339.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Support for Interface Association Descriptors</H1>
+    <B>Craig Nadler</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Support%20for%20Interface%20Association%20Descriptors&In-Reply-To=%3C440A9E6F.8050901%40nadler.us%3E"
+       TITLE="[Linux-uvc-devel] Support for Interface Association Descriptors">craig at nadler.us
+       </A><BR>
+    <I>Sun Mar  5 09:16:47 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000336.html">[Linux-uvc-devel] Support for Interface Association Descriptors
+</A></li>
+        <LI>Next message: <A HREF="000339.html">[Linux-uvc-devel] Problems compiling trunk on rawhide
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#338">[ date ]</a>
+              <a href="thread.html#338">[ thread ]</a>
+              <a href="subject.html#338">[ subject ]</a>
+              <a href="author.html#338">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>    I've put together a patch demonstrating how Interface Association
+Descriptors could be supported with a minimal amount of changes the
+current USB stack. When a USB device is enumerated the descriptors are
+parsed by the code in drivers/usb/core/config.c. A list of IADs for a
+given configuration would be stored in the usb_host_config struct for
+that configuration. If an interface is referenced by an IAD then a
+pointer to the IAD will be stored in the usb_host_interface struct for
+that interface.
+    The probe entry point of a class driver could check if the interface
+it's probing is referenced by an IAD. If it is then configure the driver
+to handle the other associated interfaces as well. The probe function
+could also check the &quot;extra&quot; and &quot;extralen&quot; fields in the
+usb_host_interface struct for each interface to get the class specific
+descriptors.
+
+The code that displays descriptor information in /proc/bus/usb/devices
+will show IADs in the following format:
+
+A:  1stIf= 0 IfCount= 2 Cls=ff(vend.) Sub=03 Prot=00
+
+
+With the patch the descriptors for the Logitech QuickCam Pro 5000 are
+shown in /proc/bus/usb/devices as:
+
+T:  Bus=03 Lev=01 Prnt=01 Port=04 Cnt=01 Dev#=  3 Spd=480 MxCh= 0
+D:  Ver= 2.00 Cls=00(&gt;ifc ) Sub=00 Prot=01 MxPS=64 #Cfgs=  1
+P:  Vendor=046d ProdID=08c5 Rev= 0.05
+C:* #Ifs= 4 Cfg#= 1 Atr=80 MxPwr=500mA
+A:  1stIf= 0 IfCount= 2 Cls=ff(vend.) Sub=03 Prot=00
+A:  1stIf= 2 IfCount= 2 Cls=01(audio) Sub=02 Prot=00
+I:  If#= 0 Alt= 0 #EPs= 1 Cls=ff(vend.) Sub=01 Prot=00 Driver=(none)
+E:  Ad=87(I) Atr=03(Int.) MxPS=  16 Ivl=16ms
+I:  If#= 1 Alt= 0 #EPs= 0 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+I:  If#= 1 Alt= 1 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS= 192 Ivl=125us
+I:  If#= 1 Alt= 2 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS= 384 Ivl=125us
+I:  If#= 1 Alt= 3 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS= 512 Ivl=125us
+I:  If#= 1 Alt= 4 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS= 640 Ivl=125us
+I:  If#= 1 Alt= 5 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS= 800 Ivl=125us
+I:  If#= 1 Alt= 6 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS= 944 Ivl=125us
+I:  If#= 1 Alt= 7 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS=1280 Ivl=125us
+I:  If#= 1 Alt= 8 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS=1600 Ivl=125us
+I:  If#= 1 Alt= 9 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS=1984 Ivl=125us
+I:  If#= 1 Alt=10 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS=2688 Ivl=125us
+I:  If#= 1 Alt=11 #EPs= 1 Cls=ff(vend.) Sub=02 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=01(Isoc) MxPS=3060 Ivl=125us
+I:  If#= 2 Alt= 0 #EPs= 0 Cls=01(audio) Sub=01 Prot=00 Driver=(none)
+I:  If#= 3 Alt= 0 #EPs= 0 Cls=01(audio) Sub=02 Prot=00 Driver=(none)
+I:  If#= 3 Alt= 1 #EPs= 1 Cls=01(audio) Sub=02 Prot=00 Driver=(none)
+E:  Ad=86(I) Atr=05(Isoc) MxPS=  16 Ivl=1ms
+I:  If#= 3 Alt= 2 #EPs= 1 Cls=01(audio) Sub=02 Prot=00 Driver=(none)
+E:  Ad=86(I) Atr=05(Isoc) MxPS=  32 Ivl=1ms
+I:  If#= 3 Alt= 3 #EPs= 1 Cls=01(audio) Sub=02 Prot=00 Driver=(none)
+E:  Ad=86(I) Atr=05(Isoc) MxPS=  48 Ivl=1ms
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: iad.patch
+Type: text/x-patch
+Size: 4714 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20060305/ae62d7a2/attachment.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20060305/ae62d7a2/attachment.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000336.html">[Linux-uvc-devel] Support for Interface Association Descriptors
+</A></li>
+	<LI>Next message: <A HREF="000339.html">[Linux-uvc-devel] Problems compiling trunk on rawhide
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#338">[ date ]</a>
+              <a href="thread.html#338">[ thread ]</a>
+              <a href="subject.html#338">[ subject ]</a>
+              <a href="author.html#338">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

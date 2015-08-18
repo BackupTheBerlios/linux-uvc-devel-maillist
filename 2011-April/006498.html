@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Input/Output error setting V4L2_CID_EXPOSURE_AUTO	values
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-April/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Input/Output%20error%20setting%20V4L2_CID_EXPOSURE_AUTO%0A%09values&In-Reply-To=%3C920349.12053.qm%40web161304.mail.bf1.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006493.html">
+   <LINK REL="Next"  HREF="006512.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Input/Output error setting V4L2_CID_EXPOSURE_AUTO	values</H1>
+    <B>Ben Mesander</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Input/Output%20error%20setting%20V4L2_CID_EXPOSURE_AUTO%0A%09values&In-Reply-To=%3C920349.12053.qm%40web161304.mail.bf1.yahoo.com%3E"
+       TITLE="[Linux-uvc-devel] Input/Output error setting V4L2_CID_EXPOSURE_AUTO	values">ben at cardinalpeak.com
+       </A><BR>
+    <I>Sat Apr 23 00:13:27 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006493.html">[Linux-uvc-devel] [PATCH] Add support for Creative VF0700 Live!	Cam Chat HD.
+</A></li>
+        <LI>Next message: <A HREF="006512.html">[Linux-uvc-devel] Input/Output error setting	V4L2_CID_EXPOSURE_AUTO values
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6498">[ date ]</a>
+              <a href="thread.html#6498">[ thread ]</a>
+              <a href="subject.html#6498">[ subject ]</a>
+              <a href="author.html#6498">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I'm porting an application which uses the uvc video driver for a logitech webcam 
+from Ubuntu 8.04 LTS to Ubuntu 10.04 LTS.
+
+In the 8.04 release, there was some mismatch in the UVC driver from the V4L2 
+driver for a few of the ioctl values. The V4L2 headers had:
+
+#define V4L2_CID_EXPOSURE_AUTO (V4L2_CID_CAMERA_CLASS_BASE+1)
+#define V4L2_CID_EXPOSURE_ABSOLUTE (V4L2_CID_CAMERA_CLASS_BASE+2)
+#define V4L2_CID_EXPOSURE_AUTO_PRIORITY (V4L2_CID_CAMERA_CLASS_BASE+3)
+
+But the uvcvideo driver expected:
+
+#define V4L2_CID_EXPOSURE_AUTO (V4L2_CID_PRIVATE_BASE+10)
+#define V4L2_CID_EXPOSURE_ABSOLUTE (V4L2_CID_PRIVATE_BASE + 11)
+#define V4L2_CID_EXPOSURE_AUTO_PRIORITY (V4L2_CID_PRIVATE_BASE+14)
+
+I found these values in the private header files that came with the luvcview 
+software, and similar defines in the logitech libwebcam source, which also had a 
+comment &quot;Old uvcvideo pre-r178 control IDs&quot;
+See 
+here: <A HREF="http://svn.quickcamteam.net/svn/qct/webcam-tools/trunk/libwebcam/compat.h">http://svn.quickcamteam.net/svn/qct/webcam-tools/trunk/libwebcam/compat.h</A>
+
+My desired camera behavior is to allow the camera to control aperture as 
+necessary to handle lighting conditions, but my application must run at a fixed 
+frame rate (30fps, set elsewhere), so it must not change the frame rate. By 
+experimenting &amp; reading sources mentioned above, I finally found that if I did:
+
+request.id = (V4L2_CID_PRIVATE_BASE+10);
+request.value = 8;
+if (ioctl(fd, VIDIOC_S_CTRL, &amp;request) &lt; 0) {
+...
+}
+
+request.id = (V4L2_CID_PRIVATE_BASE+14);
+request.value = 0;
+if (ioctl(fd, VIDIOC_S_CTRL, &amp;request) &lt; 0 {
+...
+}
+
+I achieved the desired effect. Note that 8 is not defined in 
+v4l2_exposure_auto_type, but I'm not the only person who's used it, 
+see <A HREF="http://forums.quickcamteam.net/showthread.php?tid=1227">http://forums.quickcamteam.net/showthread.php?tid=1227</A> for an example of 
+where it seems to mean aperture priority.
+
+OK, fine, but under Ubuntu 10.04, the ioctls above return EINVAL. So I figured 
+it was time to use the correct request values in the requests. So I tried:
+
+request.id = V4L2_CID_EXPOSURE_AUTO;
+request.value = V4L2_EXPOSURE_APERTURE_PRIORITY;
+if (ioctl(fd, VIDIOC_S_CTRL, &amp;request) &lt; 0) {
+... I end up here with &quot;Input / Output Error&quot; errno ...
+}
+
+request.id = V4L2_CID_EXPOSURE_AUTO_PRIORITY;
+request.value = 0;
+if (ioctl(fd, VIDIOC_S_CTRL, &amp;request) &lt; 0 {
+...
+}
+
+No luck - initially I thought it worked, but after trying in a darkened room and 
+bright sunlight and rebooting to clear out the current values in the driver, I 
+see that it is no longer adapting to the lighting conditions, although it does 
+seem to be correctly pinned to the framerate I set. Also, the 
+V4L2_CID_EXPOSURE_AUTO ioctl() always returns &quot;I/O error&quot; - I have tried various 
+values for the request.value - 0, 1, 3, 8, etc. without any success.
+
+I see other people have reported similar issues in the past, but I see no 
+resolution, for 
+example: <A HREF="../2008-March/003251.html">http://lists.berlios.de/pipermail/linux-uvc-devel/2008-March/003251.html</A> -
+ for example in that thread this is mentioned:
+enum  v4l2_exposure_auto_type {         V4L2_EXPOSURE_MANUAL = 0,         
+V4L2_EXPOSURE_AUTO = 1,         V4L2_EXPOSURE_SHUTTER_PRIORITY = 2,         
+V4L2_EXPOSURE_APERTURE_PRIORITY = 3 };
+But in my V4L2 headers, MANUAL = 1, and AUTO = 0.
+I also tried the VIDIOC_S_EXT_CTRLS flavor of setting the exposure values, but 
+no luck - same I/O error.
+Any idea on how I can set V4L2_CID_EXPOSURE_AUTO on uvcvideo driver in Ubuntu 
+10.04 LTS without getting an Input/Output error?
+Thanks,
+Ben
+ 
+Ben Mesander
+   (303) 570-1606      | Email | vCard | Web | Company Blog | LinkedIn
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110422/d49062e4/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20110422/d49062e4/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006493.html">[Linux-uvc-devel] [PATCH] Add support for Creative VF0700 Live!	Cam Chat HD.
+</A></li>
+	<LI>Next message: <A HREF="006512.html">[Linux-uvc-devel] Input/Output error setting	V4L2_CID_EXPOSURE_AUTO values
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6498">[ date ]</a>
+              <a href="thread.html#6498">[ thread ]</a>
+              <a href="subject.html#6498">[ subject ]</a>
+              <a href="author.html#6498">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

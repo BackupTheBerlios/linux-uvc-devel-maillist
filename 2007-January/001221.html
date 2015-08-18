@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Asus W7J laptop built-in webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Asus%20W7J%20laptop%20built-in%20webcam&In-Reply-To=%3C20070113114348.GA16656%40suse.cz%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001218.html">
+   <LINK REL="Next"  HREF="001222.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Asus W7J laptop built-in webcam</H1>
+    <B>Vojtech Pavlik</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Asus%20W7J%20laptop%20built-in%20webcam&In-Reply-To=%3C20070113114348.GA16656%40suse.cz%3E"
+       TITLE="[Linux-uvc-devel] Asus W7J laptop built-in webcam">vojtech at suse.cz
+       </A><BR>
+    <I>Sat Jan 13 12:43:48 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001218.html">[Linux-uvc-devel] Asus W7J laptop built-in webcam
+</A></li>
+        <LI>Next message: <A HREF="001222.html">[Linux-uvc-devel] Asus W7J laptop built-in webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1221">[ date ]</a>
+              <a href="thread.html#1221">[ thread ]</a>
+              <a href="subject.html#1221">[ subject ]</a>
+              <a href="author.html#1221">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Sat, Jan 13, 2007 at 12:06:32AM +0100, Luca Risolia wrote:
+
+&gt;<i> Alle 22:38, venerd&#236; 12 gennaio 2007, Vojtech Pavlik ha scritto:
+</I>&gt;<i> &gt; &gt; I hope you won't include all the decoding stuff in the driver..!? This
+</I>&gt;<i> &gt; &gt; would not make any sense.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; Actually, for vendor-specific obscure encoding modes it does make sense.
+</I>&gt;<i> &gt; Yes, V4L2 is built around the fact that no processing is done on the
+</I>&gt;<i> &gt; actual data, but then, this is a huge pain with all the applications
+</I>&gt;<i> &gt; having to support every quirk of every device.
+</I>&gt;<i> 
+</I>&gt;<i> That's why we need a low-level library.
+</I>
+Yes, and port all the applications to it. Not a small effort. Still the
+raw+library approach doesn't convince me entirely. ALSA has used it, and
+still a lot of people prefer the legacy /dev/dsp interface.
+
+The reason being that too much of the complexity is still visible.
+
+&gt;<i> &gt; And, in many cases, the driver ends up having to COPY the data from
+</I>&gt;<i> &gt; the USB transfer buffers to the application buffers. It doesn't cost
+</I>&gt;<i> &gt; much to do a simple transformation on top of the copy, in the same
+</I>&gt;<i> &gt; way that copy_and_checksum is nearly as fast as just a copy.
+</I>&gt;<i> 
+</I>&gt;<i> One reason (not the only one) to do postprocessing in userspace
+</I>&gt;<i> involves CPU optimizations.  They are discouraged at kernel level but
+</I>&gt;<i> can be implemented fine in a user library.  One example from my past
+</I>&gt;<i> experiences: MMX code for converting  from YUV to RGB24, 640x480 25
+</I>&gt;<i> fps could save up to 25% CPU on a PIII 550Mhz, compared to the
+</I>&gt;<i> solution with convertion in the driver (but without optimization).
+</I>
+I'm all for forcing a couple of sane formats onto userspace, MJPEG,
+MPEG, RGB24, Bayer and some of the YUV formats fitting that description.
+But I don't think hardware-specific compression schemes make sense to
+export to userspace.
+
+These compression schemes will change with further revisions of the
+bridges, and it's a pain enough to have to update the kernel driver,
+adding the need to update the library (or, worse, all applications),
+doesn't make sense IMO.
+
+&gt;<i> &gt; Btw, I would like to ask driver writers to really think for a while
+</I>&gt;<i> &gt; and consider how many copies of the video stream need to be made
+</I>&gt;<i> &gt; before it reaches the userspace application. In many cases I believe
+</I>&gt;<i> &gt; the number can be zero.
+</I>&gt;<i> 
+</I>&gt;<i> One copy, from USB transfer buffers to the frame buffers in the
+</I>&gt;<i> driver, which can be mmap()'ed to the user application. How can the
+</I>&gt;<i> number of copies be zero (or did i misunderstand your question)?.
+</I>
+You can make the USB controller do DMA directly to the user space
+buffers, by using them as the transfer buffers. This is what V4L was
+designed for, because some years ago, there wasn't much chance that the
+PC would be able to handle all the streaming PAL video from a bttv card
+if it were to be copied around.
+
+Of course, some bridges (or standards) supply the video data in a stupid
+format with headers, which need to be removed to concatenate the
+individual chunks into a continuous picture. Then, most likely,
+zero-copy is not possible.
+
+But those that deliver the whole frame in a Bulk transfer without any
+interfering headers, it's trivially possible to avoid the copy. (Yes,
+I've done that. I needed it to be able to reach 60fps with a
+ovfx2/ov7620 camera. Not using V4L2 yet, though.)
+
+-- 
+Vojtech Pavlik
+Director SuSE Labs
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001218.html">[Linux-uvc-devel] Asus W7J laptop built-in webcam
+</A></li>
+	<LI>Next message: <A HREF="001222.html">[Linux-uvc-devel] Asus W7J laptop built-in webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1221">[ date ]</a>
+              <a href="thread.html#1221">[ thread ]</a>
+              <a href="subject.html#1221">[ subject ]</a>
+              <a href="author.html#1221">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

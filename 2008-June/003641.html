@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] SOLVED: upside-down image from	SONIXlaptop	embedded webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20SOLVED%3A%20upside-down%20image%20from%0A%09SONIXlaptop%09embedded%20webcam&In-Reply-To=%3CB202DF071955462B9DC44EC468278323%40core2%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003640.html">
+   <LINK REL="Next"  HREF="003654.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] SOLVED: upside-down image from	SONIXlaptop	embedded webcam</H1>
+    <B>Adrian Sergiu DARABANT</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20SOLVED%3A%20upside-down%20image%20from%0A%09SONIXlaptop%09embedded%20webcam&In-Reply-To=%3CB202DF071955462B9DC44EC468278323%40core2%3E"
+       TITLE="[Linux-uvc-devel] SOLVED: upside-down image from	SONIXlaptop	embedded webcam">asergiu at yahoo.co.uk
+       </A><BR>
+    <I>Wed Jun 18 14:41:46 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003640.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX	laptop	embedded webcam
+</A></li>
+        <LI>Next message: <A HREF="003654.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIXlaptop	embedded webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3641">[ date ]</a>
+              <a href="thread.html#3641">[ thread ]</a>
+              <a href="subject.html#3641">[ subject ]</a>
+              <a href="author.html#3641">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Yes - what I've been thinking about either. I wonder isn't there a control
+on the camera that switches the image vertically. There are cameras that do
+that. Otherwise it means that the Windows driver does the same and that is
+quite expensive doing memory copies on video flows buffers (what will that
+do at 1600x1200 for example on a 2MP camera ??
+
+Adrian Sergiu DARABANT
+
+
+
+Nice to see that you've got yourself a fix. But you are leaking your
+temp buffer -- you'll need to free it somewhere.
+
+But it does seem expensive to copy the data 3 times. Could you do
+something like this instead? 
+
+int *src = (int*) data + len;
+int *dst = (int*) buffer;
+
+for ( int i= 0; i &lt; len /sizeof(int); i++) {
+	src--;
+	*dst++ = *src;
+}
+
+that way you only have to copy the data once and you don't need a
+temporary buffer.
+
+Cheers
+Richard
+
+
+
+_______________________________________________
+Linux-uvc-devel mailing list
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">Linux-uvc-devel at lists.berlios.de</A>
+<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">https://lists.berlios.de/mailman/listinfo/linux-uvc-devel</A>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003640.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX	laptop	embedded webcam
+</A></li>
+	<LI>Next message: <A HREF="003654.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIXlaptop	embedded webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3641">[ date ]</a>
+              <a href="thread.html#3641">[ thread ]</a>
+              <a href="subject.html#3641">[ subject ]</a>
+              <a href="author.html#3641">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

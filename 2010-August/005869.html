@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [RESOLVED] Re: [RFC] Discard overrun	(corrupted) RX images
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-August/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRESOLVED%5D%20Re%3A%20%5BRFC%5D%20Discard%20overrun%0A%09%28corrupted%29%20RX%20images&In-Reply-To=%3C201008072334.37387.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005871.html">
+   <LINK REL="Next"  HREF="005887.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [RESOLVED] Re: [RFC] Discard overrun	(corrupted) RX images</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BRESOLVED%5D%20Re%3A%20%5BRFC%5D%20Discard%20overrun%0A%09%28corrupted%29%20RX%20images&In-Reply-To=%3C201008072334.37387.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] [RESOLVED] Re: [RFC] Discard overrun	(corrupted) RX images">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Sat Aug  7 23:34:36 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005871.html">[Linux-uvc-devel] Philips SPC900NC
+</A></li>
+        <LI>Next message: <A HREF="005887.html">[Linux-uvc-devel] [RESOLVED] Re: [RFC] Discard overrun	(corrupted) RX images
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5869">[ date ]</a>
+              <a href="thread.html#5869">[ thread ]</a>
+              <a href="subject.html#5869">[ subject ]</a>
+              <a href="author.html#5869">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Saturday 31 July 2010 01:49:09 P F wrote:
+&gt;<i> Hi again Laurent,
+</I>&gt;<i> 
+</I>&gt;<i> --- On Fri, 7/23/10, P F &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">public_filter at yahoo.com</A>&gt; wrote:
+</I>&gt;<i> &gt; Adding:
+</I>&gt;<i> &gt; vma-&gt;vm_page_prot =
+</I>&gt;<i> &gt; pgprot_noncached(vma-&gt;vm_page_prot);
+</I>&gt;<i> &gt; to uvc_v4l2_mmap.  This resolved the corruption. 
+</I>&gt;<i> &gt; gspca_zc3xx has the same
+</I>&gt;<i> &gt; issue, and this patch worked there as well.
+</I>&gt;<i> 
+</I>&gt;<i> I am happy to report that all instances of UVC JPEG corruption on my
+</I>&gt;<i> platform have been resolved.  There were actually two sources of
+</I>&gt;<i> corruption, and I was encountering both of them.  This may explain why
+</I>&gt;<i> debugging was so bewildering.
+</I>
+Congratulations :-)
+
+&gt;<i> One form of corruption was due to CPU starvation and not properly handling
+</I>&gt;<i> lost isochronous packets.  Your patch here:
+</I>&gt;<i> <A HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-July/005824.html">http://lists.berlios.de/pipermail/linux-uvc-devel/2010-July/005824.html</A>
+</I>&gt;<i> definitely resolved this for me.
+</I>&gt;<i> 
+</I>&gt;<i> The other form of corruption is less well understood, but it was resolved
+</I>&gt;<i> by the change I described above.
+</I>&gt;<i> 
+</I>&gt;<i> I have two pathological test cases which triggered these bugs.
+</I>&gt;<i> Unfortunately, the causes are totally independent, and I was seeing the
+</I>&gt;<i> &quot;caching bug&quot; when trying your isochronous patch, and thus saw no
+</I>&gt;<i> improvement.  However, after resolving the &quot;caching bug,&quot; I moved on to a
+</I>&gt;<i> different test case which revealed corruption again, and here your patch
+</I>&gt;<i> was the solution.
+</I>&gt;<i> 
+</I>&gt;<i> I would like to ask you to push your patch upstream,
+</I>
+Done. The patch has been queued for 2.6.36.
+
+&gt;<i> and to investigate the efficacy of mine. I don't know anything about VMAs,
+</I>&gt;<i> but I know this works for me.
+</I>
+I can't accept that patch as-is, for several reasons.
+
+First of all, the patch maps V4L2 buffers to userspace in non-cacheable mode. 
+This will potentially degrade performances. Platforms that have a PIPT or non-
+aliasing VIPT cache (x86 comes to mind, as well as several ARM processors) 
+don't require this patch, so there will be a performance impact for the vast 
+majority of uvcvideo users with no added benefit (I'm thinking about the x86 
+desktop).
+
+Then, even on ARM platforms with a VIVT or aliasing VIPT cache, the patch is 
+not correct. The V4L2 buffers are mapped once in kernel space using a normal 
+mapping. Your patch makes the second (userspace) mapping uncacheable, and the 
+ARM specification clearly forbids different mappings with different attributes 
+for the same memory region.
+
+The only correct fix I can think of at the moment is to munmap() buffers 
+before queuing them, and mmap()ing them after dequeuing them. There's 
+obviously a performance hit, but that's the price to pay for correctness. 
+Other solutions might be possible, but they won't be straightforward and will 
+require changes to the ARM memory management core. Maybe this should be 
+explored on the linux-arm-kernel mailing list.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005871.html">[Linux-uvc-devel] Philips SPC900NC
+</A></li>
+	<LI>Next message: <A HREF="005887.html">[Linux-uvc-devel] [RESOLVED] Re: [RFC] Discard overrun	(corrupted) RX images
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5869">[ date ]</a>
+              <a href="thread.html#5869">[ thread ]</a>
+              <a href="subject.html#5869">[ subject ]</a>
+              <a href="author.html#5869">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

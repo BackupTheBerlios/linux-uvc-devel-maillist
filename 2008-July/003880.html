@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] syntek 174f:8a12 unsupported?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20syntek%20174f%3A8a12%20unsupported%3F&In-Reply-To=%3C48820C62.6030900%40martufone.info%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003874.html">
+   <LINK REL="Next"  HREF="003886.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] syntek 174f:8a12 unsupported?</H1>
+    <B>martuf1</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20syntek%20174f%3A8a12%20unsupported%3F&In-Reply-To=%3C48820C62.6030900%40martufone.info%3E"
+       TITLE="[Linux-uvc-devel] syntek 174f:8a12 unsupported?">tempo at martufone.info
+       </A><BR>
+    <I>Sat Jul 19 17:46:42 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003874.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+        <LI>Next message: <A HREF="003886.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3880">[ date ]</a>
+              <a href="thread.html#3880">[ thread ]</a>
+              <a href="subject.html#3880">[ subject ]</a>
+              <a href="author.html#3880">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+&gt;<i>
+</I>&gt;<i> Yes, please use luvcview and run it with
+</I>&gt;<i>
+</I>&gt;<i> luvcview -f yuv
+</I>&gt;<i>
+</I>&gt;<i> Don't forget to report luvcview error messages as well as driver messages 
+</I>&gt;<i> printed to the kernel log.
+</I>&gt;<i>
+</I>&gt;<i> Best regards,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>Hi Laurent,
+I will write what I did:
+
+$&gt; svn checkout <A HREF="svn://svn.berlios.de/linux-uvc/linux-uvc/trunk">svn://svn.berlios.de/linux-uvc/linux-uvc/trunk</A>
+$&gt; cd trunk
+$&gt; patch -p0 &lt; a.diff    (your patch)
+$&gt; make
+$&gt; sudo make install
+$&gt; sudo depmod -a
+$&gt; sudo modprobe uvcvideo
+$&gt; dmesg
+[  680.144146] Linux video capture interface: v2.00
+[  680.150335] uvcvideo: Found UVC 1.00 device USB2.0 UVC PC Camera 
+(174f:8a12)
+[  680.685512] uvcvideo: Failed to query (1) UVC control 2 (unit 0) : 
+-110 (exp. 26).
+[  680.685521] uvcvideo: Failed to initialize the device (-5).
+[  680.686972] usbcore: registered new interface driver uvcvideo
+[  680.687252] USB Video Class driver (SVN r232)
+
+nb: no /dev/video0 device created
+
+$&gt; sudo rmmod uvcvideo
+$&gt; sudo modprobe uvcvideo
+$&gt; dmesg
+[  694.869837] usbcore: deregistering interface driver uvcvideo
+[  697.376885] uvcvideo: Found UVC 1.00 device USB2.0 UVC PC Camera 
+(174f:8a12)
+[  697.637572] usbcore: registered new interface driver uvcvideo
+[  697.637581] USB Video Class driver (SVN r232)
+
+nb: ok /dev/video0 device created
+
+$&gt; luvcview -f yuv
+luvcview version 0.2.1
+Video driver: x11
+A window manager is available
+video /dev/video0
+^C
+Stop asked
+^Z
+[1]+  Stopped                 luvcview -f yuv
+
+$&gt; kill -9 %1
+$&gt; dmesg
+[  717.306510] uvcvideo: Failed to query (130) UVC control 1 (unit 0) : 
+-110 (exp. 26).
+
+nb: Appear a black windows and as you can see I had to kill-9 the process
+to exit.
+
+
+$&gt; sudo luvcview -f yuv
+luvcview version 0.2.1
+Video driver: x11
+A window manager is available
+video /dev/video0
+Unable to set format: 5.
+ Init v4L2 failed !! exit fatal
+
+$&gt; dmesg
+[  726.914113] uvcvideo: Failed to query (129) UVC control 1 (unit 0) : 
+-110 (exp. 26).
+
+
+What can I use to sniff usb traffic in windows vista?... There the cam 
+is working...
+May that help you?
+
+Thank you, regards
+  martuf1
+
+
+
+ps: I forget to report a piece of information:
+
+$&gt; lsb_release -a
+No LSB modules are available.
+Distributor ID:    Ubuntu
+Description:    Ubuntu 8.04.1
+Release:    8.04
+Codename:    hardy
+
+$&gt; uname -a
+Linux martuf1-laptop 2.6.24-19-generic #1 SMP Fri Jul 11 23:41:49 UTC 
+2008 i686 GNU/Linux
+
+$&gt; cat /proc/cpuinfo
+processor    : 0
+vendor_id    : AuthenticAMD
+cpu family    : 15
+model        : 72
+model name    : AMD Turion(tm) 64 X2 Mobile Technology TL-52
+stepping    : 2
+cpu MHz        : 800.000
+[...]
+
+The laptop is a:  Packard Bell MX52-B-057
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003874.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+	<LI>Next message: <A HREF="003886.html">[Linux-uvc-devel] syntek 174f:8a12 unsupported?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3880">[ date ]</a>
+              <a href="thread.html#3880">[ thread ]</a>
+              <a href="subject.html#3880">[ subject ]</a>
+              <a href="author.html#3880">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

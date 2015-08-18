@@ -1,0 +1,174 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20QC%20Fusion%20%28046d%3A08c1%29%20inconsistent%20buggyness%3F&In-Reply-To=%3C200801152049.22942.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002777.html">
+   <LINK REL="Next"  HREF="002715.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20QC%20Fusion%20%28046d%3A08c1%29%20inconsistent%20buggyness%3F&In-Reply-To=%3C200801152049.22942.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Jan 15 20:49:22 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002777.html">[Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?
+</A></li>
+        <LI>Next message: <A HREF="002715.html">[Linux-uvc-devel] Powering off 046d:08c6
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2786">[ date ]</a>
+              <a href="thread.html#2786">[ thread ]</a>
+              <a href="subject.html#2786">[ subject ]</a>
+              <a href="author.html#2786">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Tuesday 15 January 2008, RUMI Szabolcs wrote:
+&gt;<i> On Fri, 11 Jan 2008 21:38:56 +0100
+</I>&gt;<i> Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+</I>&gt;<i> &gt; &gt; &gt; I plan to fix it, probably by disallowing frame rate changes while
+</I>&gt;<i> &gt; &gt; &gt; streaming.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I'd be more than happy to test that fix you are planning... ;-)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Then grab the latest SVN version. I've just committed a patch that
+</I>&gt;<i> &gt; disallows changing the frame format or the frame size while streaming.
+</I>&gt;<i>
+</I>&gt;<i> I have tested svn version 166. The results are the following:
+</I>&gt;<i>
+</I>&gt;<i> - luvcview works after proper detection as almost always.
+</I>&gt;<i>
+</I>&gt;<i> - Skype turned on camera but failed to get picture when started after
+</I>&gt;<i> luvcview.
+</I>&gt;<i>
+</I>&gt;<i> - luvcview failed when started again after Skype failed as above.
+</I>&gt;<i>
+</I>&gt;<i> luvcview stderr: &quot;unable to set format: 5.&quot;
+</I>&gt;<i> dmesg:
+</I>&gt;<i> uvcvideo: Failed to query (130) UVC control 3 (unit 2) : -32 (exp. 2).
+</I>&gt;<i> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>&gt;<i> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>&gt;<i> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -75 (exp. 26).
+</I>&gt;<i> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+</I>&gt;<i> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+</I>&gt;<i> uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+</I>
+Good old Logitech firmware bug :-/
+
+To be completely fair we should rename it the Logitech+SPCA bug as that part 
+of the firmware was provided by the chip vendor. Logitech is &quot;only&quot; 
+responsible for not testing the devices enough with Linux.
+
+&gt;<i> - after some rmmod/insmod cycles and proper redetection I've started
+</I>&gt;<i> Skype without starting any other programs in between. It started to
+</I>&gt;<i> work but the picture was distorted, to be more exact, it was stretched
+</I>&gt;<i> to about 120% of the original in the Y (vertical) direction from the
+</I>&gt;<i> center of the image but basically your code change seems to work! :)
+</I>
+I'm pretty sure that's not the driver's fault :-) Skype might be stretching 
+the picture to fit the fixed-size window.
+
+&gt;<i> I have also tested what luvcview controls work and how:
+</I>&gt;<i>
+</I>&gt;<i> brightness - works
+</I>&gt;<i> contrast - works
+</I>&gt;<i> saturation - works
+</I>&gt;<i> gain - works
+</I>&gt;<i> sharpness - setting works but no apparent effect
+</I>&gt;<i> gamma - adjusted down with effect but then could not be adjusted up anymore
+</I>&gt;<i> reset to default - works sometimes (only when camera is in a workable
+</I>&gt;<i> state?) pan - ioctl querycontrol error 22
+</I>&gt;<i> tilt - ioctl querycontrol error 22
+</I>&gt;<i> pan/tilt reset - ioctl querycontrol error 22
+</I>
+pan/tilt only work if the camera isn't streaming at a resolution higher than 
+640x480. Don't ask me why.
+
+&gt;<i> switch light freq filter - works
+</I>&gt;<i> exposure - ioctl set control error
+</I>&gt;<i> auto exposure - setting works but apparently always remains on
+</I>&gt;<i> white balance - ioctl set control error
+</I>&gt;<i> auto white balance - setting works but apparently always remains on
+</I>
+As you experienced the firmware bug, error might be caused by communication 
+issues with the camera.
+
+&gt;<i> &gt; The driver already includes workarounds for various broken devices.
+</I>&gt;<i> &gt; Have a look at the UVC_QUIRK_* macros in uvcvideo.h and how they are
+</I>&gt;<i> &gt; associated with devices in uvc_driver.c.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; For early Logitech devices, however, no satisfying workaround has
+</I>&gt;<i> &gt; been find so far.
+</I>&gt;<i>
+</I>&gt;<i> I see, what I was suggesting wasn't device specific: it's about not having
+</I>&gt;<i> to dig up the sources to enable/disable a hack but to be able to control
+</I>&gt;<i> them on the module parameter level.
+</I>&gt;<i>
+</I>&gt;<i> I don't have a clue but what I can imagine as a solution for the QC Fusion
+</I>&gt;<i> in particular is that it should be detected somehow when the camera gets
+</I>&gt;<i> into an unworkable state (failed uvc control queries or failed
+</I>&gt;<i> initialization) and then it should be reset or reenumerated. Basically
+</I>&gt;<i> doing automatically what one is doing by hand using rmmod/insmod cycles
+</I>&gt;<i> when it's apparent from the dmesg that the camera is probably unworkable...
+</I>
+If there was an easy way to detect and fix those situations I would include a 
+workaround in the driver. Unfortunately, all the proposed workarounds often 
+fail and they are too intrusive. I don't want to mess the code with a very 
+intrusive workaround that don't even work well.
+
+The real problem is that we have no idea today why the camera fails. There is 
+a known firmware bug, but there is no explanation as to why the bug isn't 
+triggered by Windows and is triggered by Linux.
+
+&gt;<i> By the way recently I have seen various cameras working under
+</I>&gt;<i> Windows and apparently several of them are buggy enough to freeze
+</I>&gt;<i> or get unworkable within a certain amount of time of submitting
+</I>&gt;<i> video. Even original OEM Windows drivers seem to reset these cams
+</I>&gt;<i> repeatedly (at least it seems like it) as a solution which results
+</I>&gt;<i> in temporary video breakages in a video enabled Skype connection.
+</I>&gt;<i> So it's not unique to the QC Fusion and Linux I guess...
+</I>
+I hope those are not UVC cameras. I'd rather have other drivers implement all 
+kind of hacks to get them working :-)
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002777.html">[Linux-uvc-devel] QC Fusion (046d:08c1) inconsistent buggyness?
+</A></li>
+	<LI>Next message: <A HREF="002715.html">[Linux-uvc-devel] Powering off 046d:08c6
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2786">[ date ]</a>
+              <a href="thread.html#2786">[ thread ]</a>
+              <a href="subject.html#2786">[ subject ]</a>
+              <a href="author.html#2786">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

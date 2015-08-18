@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] getting vid:pid
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20getting%20vid%3Apid&In-Reply-To=%3C200903030025.43470.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004615.html">
+   <LINK REL="Next"  HREF="004611.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] getting vid:pid</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20getting%20vid%3Apid&In-Reply-To=%3C200903030025.43470.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] getting vid:pid">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Mar  3 00:25:43 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004615.html">[Linux-uvc-devel] getting vid:pid
+</A></li>
+        <LI>Next message: <A HREF="004611.html">[Linux-uvc-devel] Video/Audio recording issues with a Philips	SPC1300NC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4618">[ date ]</a>
+              <a href="thread.html#4618">[ thread ]</a>
+              <a href="subject.html#4618">[ subject ]</a>
+              <a href="author.html#4618">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Paulo,
+
+On Monday 02 March 2009 10:55:18 Paulo Assis wrote:
+&gt;<i> Laurent,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart escreveu:
+</I>&gt;<i> &gt; Hi Paulo,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Thursday 26 February 2009 21:53:58 Paulo Assis wrote:
+</I>&gt;<i> &gt;&gt; Hi,
+</I>&gt;<i> &gt;&gt; In order to proper add dynamic controls to the uvc driver, I need at
+</I>&gt;<i> &gt;&gt; least the vid string for the selected device.
+</I>&gt;<i> &gt;&gt; I tried libwebcam approach  by using /sys/class/video4linux, but this
+</I>&gt;<i> &gt;&gt; proved highly distribution dependent and has caused a lot of trouble,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Really ? The /sys tree shouldn't be distribution dependent. What kind of
+</I>&gt;<i> &gt; problems have you run into ?
+</I>&gt;<i>
+</I>&gt;<i> Here is a little example for video0:
+</I>&gt;<i>
+</I>&gt;<i> In Ubuntu I can get the values from:
+</I>&gt;<i>      /sys/class/video4linux/video0/device/input/   &lt;-(here I list the
+</I>&gt;<i> contents and there is always only one dir with some index lets say input6)
+</I>&gt;<i> so vid I can get from input6/id/vendor and pid from input6/id/product
+</I>&gt;<i>
+</I>&gt;<i> In Mandriva 2009 vid:pid is set in:
+</I>&gt;<i>     /sys/class/video4linux/video0/device/input/event6
+</I>&gt;<i>
+</I>&gt;<i> libwebcam (not sure what distro was used for development) gets this
+</I>&gt;<i> values from:
+</I>&gt;<i>     /sys/class/video4linux/video0/device/idVendor and
+</I>&gt;<i>     /sys/class/video4linux/video0/device/idProduct
+</I>
+Those methods are definitely not portable. Here is what you should do.
+
+1. Read the /sys/class/video4linux/video0 link and store its target.
+2. In the link target read from 1, read the device link and store its target.
+3. If the video device is a USB device, the parent directory of the link 
+target read from 2 will contain two files called idVendor and idProduct that 
+store the device vendor and product IDs.
+
+&gt;<i> &gt;&gt; so no I'm parsing the values passed in the device card field of
+</I>&gt;<i> &gt;&gt; v4l2_capability struct. UVC sets this to &quot;UVC Camera (vid:pid)&quot; and
+</I>&gt;<i> &gt;&gt; since I only need these fields for the uvc driver there shouldn't be a
+</I>&gt;<i> &gt;&gt; problem, right?
+</I>&gt;<i> &gt;&gt; Or are there any plans to change this field in the future ?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; There are no plans, but the card field isn't meant to convey that
+</I>&gt;<i> &gt; information. The format might change in the future without notice.
+</I>&gt;<i>
+</I>&gt;<i> This may prove to be a problem, but for now it seems my best option.
+</I>&gt;<i> I've set the code so that in case parsing these values fails, dynamic
+</I>&gt;<i> controls are added anyway, since you need to run the process with root user
+</I>&gt;<i> so that it can succeed, only logitech owners will bother doing with it
+</I>&gt;<i> (although it produces a really ugly output :-) ).
+</I>
+Please try the above method, it should work properly across distributions.
+
+&gt;<i> The best solution for users is setting a udev script so that these
+</I>&gt;<i> controls are added upon device connection, but this seems to be a bit
+</I>&gt;<i> difficult for a lot of people, so they rather start guvcview with root
+</I>&gt;<i> privileges once.
+</I>
+The udev script should really be packaged by distributors (probably part of a 
+libwebcam or uvcdynctrl package).
+
+Best regards,
+
+Laurent Pinchart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004615.html">[Linux-uvc-devel] getting vid:pid
+</A></li>
+	<LI>Next message: <A HREF="004611.html">[Linux-uvc-devel] Video/Audio recording issues with a Philips	SPC1300NC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4618">[ date ]</a>
+              <a href="thread.html#4618">[ thread ]</a>
+              <a href="subject.html#4618">[ subject ]</a>
+              <a href="author.html#4618">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

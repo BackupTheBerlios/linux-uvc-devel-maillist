@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] &quot;make menuconfig&quot; problem
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2010-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%22make%20menuconfig%22%20problem&In-Reply-To=%3C22424776.59504.1280070003050.JavaMail.www%40wwinf8222%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005845.html">
+   <LINK REL="Next"  HREF="005850.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] &quot;make menuconfig&quot; problem</H1>
+    <B>oc-spam65</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%22make%20menuconfig%22%20problem&In-Reply-To=%3C22424776.59504.1280070003050.JavaMail.www%40wwinf8222%3E"
+       TITLE="[Linux-uvc-devel] &quot;make menuconfig&quot; problem">oc-spam65 at laposte.net
+       </A><BR>
+    <I>Sun Jul 25 17:00:03 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005845.html">[Linux-uvc-devel] asus laptop U52F
+</A></li>
+        <LI>Next message: <A HREF="005850.html">[Linux-uvc-devel] luvcview - problem with digital microscope
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5847">[ date ]</a>
+              <a href="thread.html#5847">[ thread ]</a>
+              <a href="subject.html#5847">[ subject ]</a>
+              <a href="author.html#5847">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Hello,
+
+I am running Debian with linux-image-2.6.32-5-amd64 version 2.6.32-18 and I can't use my webcam. So, I wanted to compile the uvcvideo module myself, but the configuration process (&quot;make menuconfig&quot;) didn't work. I reported that bug against Debian (bugs.debian.org/590189) and the maintainer answered that you are not using the kernel build system correctly.
+
+I don't understand enough what's going on, but I am still interested in being able to compile the module myself. It would help a lot if you could clarify the situation.
+
+Best regards,
+
+O.C.
+
+---------------------------------------------------------
+---------------------------------------------------------
+What I did:
+hg clone <A HREF="http://linuxtv.org/hg/v4l-dvb/">http://linuxtv.org/hg/v4l-dvb/</A>
+cd v4l-dvb
+cp /boot/config-`uname -r` v4l/.config
+make menuconfig
+
+---------------------------------------------------------
+The probem:
+$ make menuconfig
+make -C /home/me/v4l-dvb/v4l menuconfig
+make[1]: entrant dans le r&#233;pertoire &#171; /home/me/v4l-dvb/v4l &#187;
+make -C /lib/modules/2.6.32-5-amd64/build -f /home/me/v4l-dvb/v4l/Makefile.kernel config-targets=1 mixed-targets=0 dot-config=0 SRCDIR=/lib/modules/2.6.32-5-amd64/source v4l-mconf
+make[2]: Entering directory `/usr/src/linux-headers-2.6.32-5-amd64'
+/lib/modules/2.6.32-5-amd64/source/scripts/Makefile.build:44: /lib/modules/2.6.32-5-amd64/source/scripts/basic/Makefile: No such file or directory
+make[3]: *** No rule to make target `/lib/modules/2.6.32-5-amd64/source/scripts/basic/Makefile'. Stop.
+make[2]: *** [scripts_basic] Error 2
+make[2]: Leaving directory `/usr/src/linux-headers-2.6.32-5-amd64'
+make[1]: *** [/lib/modules/2.6.32-5-amd64/build/scripts/kconfig/mconf] Erreur 2
+make[1]: quittant le r&#233;pertoire &#171; /home/me/v4l-dvb/v4l &#187;
+make: *** [menuconfig] Erreur 2
+
+
+---------------------------------------------------------
+---------------------------------------------------------
+Details :
+---------------------------------------------------------
+$ lsusb
+Bus 001 Device 005: ID 5986:0241 Acer, Inc BisonCam, NB Pro
+
+---------------------------------------------------------
+In the kernel logs, I have:
+[14199.717043] usb 1-1: new high speed USB device using ehci_hcd and address 5
+[14200.168885] usb 1-1: New USB device found, idVendor=5986, idProduct=0241
+[14200.168891] usb 1-1: New USB device strings: Mfr=3, Product=1, SerialNumber=0
+[14200.168895] usb 1-1: Product: BisonCam, NB Pro
+[14200.168898] usb 1-1: Manufacturer: BISON Corporation
+[14200.169053] usb 1-1: configuration #1 chosen from 1 choice
+[14200.193090] uvcvideo: Found UVC 1.00 device BisonCam, NB Pro (5986:0241)
+[14200.193110] uvcvideo: No streaming interface found for terminal 3.
+[14200.193216] input: BisonCam, NB Pro as /devices/pci0000:00/0000:00:1a.7/usb1/1-1/1-1:1.0/input/input14
+---------------------------------------------------------
+$ luvcview
+luvcview 0.2.6
+
+SDL information:
+Video driver: x11
+A window manager is available
+Device information:
+Device path: /dev/video0
+ERROR opening V4L interface: No such file or directory
+---------------------------------------------------------
+
+
+
+Une messagerie gratuite, garantie &#224; vie et des services en plus, &#231;a vous tente ?
+Je cr&#233;e ma bo&#238;te mail www.laposte.net
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005845.html">[Linux-uvc-devel] asus laptop U52F
+</A></li>
+	<LI>Next message: <A HREF="005850.html">[Linux-uvc-devel] luvcview - problem with digital microscope
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5847">[ date ]</a>
+              <a href="thread.html#5847">[ thread ]</a>
+              <a href="subject.html#5847">[ subject ]</a>
+              <a href="author.html#5847">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Solved: (was // low QuickCam Pro 9000 fps //)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Solved%3A%20%28was%20//%20low%20QuickCam%20Pro%209000%20fps%20//%29&In-Reply-To=%3C20080114102846.GB26386%40selectparks.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002760.html">
+   <LINK REL="Next"  HREF="002717.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Solved: (was // low QuickCam Pro 9000 fps //)</H1>
+    <B>Julian Oliver</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Solved%3A%20%28was%20//%20low%20QuickCam%20Pro%209000%20fps%20//%29&In-Reply-To=%3C20080114102846.GB26386%40selectparks.net%3E"
+       TITLE="[Linux-uvc-devel] Solved: (was // low QuickCam Pro 9000 fps //)">julian at selectparks.net
+       </A><BR>
+    <I>Mon Jan 14 11:28:46 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002760.html">[Linux-uvc-devel] // low QuickCam Pro 9000 fps //
+</A></li>
+        <LI>Next message: <A HREF="002717.html">[Linux-uvc-devel] Better support for FRAME_BASED formats
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2762">[ date ]</a>
+              <a href="thread.html#2762">[ thread ]</a>
+              <a href="subject.html#2762">[ subject ]</a>
+              <a href="author.html#2762">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>please ignore the below post. 
+
+it seems i had an old debian package of luvcview on board this system i
+didn't remember installing.. using a freshly compiled luvcview and the
+latest uvcvideo module fixes the aforementioned problems. 
+
+frame rate is excellent again.
+
+thanks for your time.
+
+julian
+
+..on or around Sun, Jan 13, 2008 at 11:56:04PM +0100, Laurent Pinchart said:
+&gt;<i> Hi Julian,
+</I>&gt;<i> 
+</I>&gt;<i> On Sunday 13 January 2008, Julian Oliver wrote:
+</I>&gt;<i> &gt; hi list,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; while i'm very happy with the Quickcam Pro 9000 on the current (checked
+</I>&gt;<i> &gt; out yesterday) uvcvideo driver, i'm a little disappointed with the frame
+</I>&gt;<i> &gt; rate: luvcview never reports a higher rate than 15fps for this device,
+</I>&gt;<i> &gt; regardless of capture size: 320x240 is as slow as 960x720.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; also, on the current version i can't seem to set the autoexposure to off
+</I>&gt;<i> &gt; using the luvcvideo interface. previously i was using uvcdynctrl from
+</I>&gt;<i> &gt; Logitech's own libwebcam, but now that reports an error:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; 	$./uvcdynctrl --clist
+</I>&gt;<i> &gt; 	[libwebcam] Unable to refresh device list. (error 12: A Video4Linux2 API
+</I>&gt;<i> &gt; call returned an unexpected error)
+</I>&gt;<i> 
+</I>&gt;<i> uvcdynctrl isn't needed to control auto-exposure. It shouldn't fail though.
+</I>&gt;<i> 
+</I>&gt;<i> If you used an old version of the UVC driver, control identifiers might have 
+</I>&gt;<i> changed. Recompiling luvcview might help.
+</I>
+i took your advice and compiled luvcview-20070512 (the latest i could
+find) against yesterday's uvcvideo trunk, but still have no luck turning
+off auto-exposure. i see the stdout:
+
+	Auto Exposure set to 1
+	Auto Exposure set to 8 
+
+when clicking the On/Off buttons accordingly, but the settings are not applied.
+
+in half-light this means the camera will pass about 5 frames a second over USB.
+
+looking at the luvcvideo source i see a case definition for that particular
+button event:
+
+	case A_EXPOSURE_OFF:
+		control.id    =V4L2_CID_EXPOSURE_AUTO;
+		control.value =8;
+		if ((value = ioctl(videoIn-&gt;fd, VIDIOC_S_CTRL, &amp;control)) &lt; 0)
+		  printf(&quot;Set Auto Exposure off error\n&quot;);
+		else
+		  printf(&quot;Auto Exposure set to %d \n&quot;, control.value);
+	break;
+
+it seems the control value is being changed but strangely not set by the ioctl
+call.
+
+in the source i see definition for a switch so that i load settings from a
+'luvcview.cfg'.  is this actually supposed to work? if so, is there an example
+cfg around for me to look at?
+
+cheers,
+
+-- 
+<A HREF="http://julianoliver.com">http://julianoliver.com</A>
+<A HREF="http://selectparks.net">http://selectparks.net</A>
+
+messages containing HTML will not be read.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002760.html">[Linux-uvc-devel] // low QuickCam Pro 9000 fps //
+</A></li>
+	<LI>Next message: <A HREF="002717.html">[Linux-uvc-devel] Better support for FRAME_BASED formats
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2762">[ date ]</a>
+              <a href="thread.html#2762">[ thread ]</a>
+              <a href="subject.html#2762">[ subject ]</a>
+              <a href="author.html#2762">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

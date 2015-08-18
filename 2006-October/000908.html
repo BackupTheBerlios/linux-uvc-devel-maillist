@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-October/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%0A%09%3D%3Futf-8%3Fq%3Fuvcvideo_-_Unable_to_allocate_buffers%3F%3D%0A%09%3D%3Futf-8%3Fq%3F%3D3A_22%3D2E%3D09Init_v4L2_failed%3F%3D&In-Reply-To=%3Cloom.20061031T124510-89%40post.gmane.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000905.html">
+   <LINK REL="Next"  HREF="000877.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed</H1>
+    <B>Noble Pepper</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%0A%09%3D%3Futf-8%3Fq%3Fuvcvideo_-_Unable_to_allocate_buffers%3F%3D%0A%09%3D%3Futf-8%3Fq%3F%3D3A_22%3D2E%3D09Init_v4L2_failed%3F%3D&In-Reply-To=%3Cloom.20061031T124510-89%40post.gmane.org%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed">noblepepper at bellsouth.net
+       </A><BR>
+    <I>Tue Oct 31 12:53:54 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000905.html">[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+</A></li>
+        <LI>Next message: <A HREF="000877.html">[Linux-uvc-devel] [PATCH] Fix endianness issues with uvcvideo
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#908">[ date ]</a>
+              <a href="thread.html#908">[ thread ]</a>
+              <a href="subject.html#908">[ subject ]</a>
+              <a href="author.html#908">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Laurent Pinchart &lt;laurent.pinchart &lt;at&gt; skynet.be&gt; writes:
+
+&gt;<i> The 32 bits ioctl number are made of 4 fields, one of them being the size of 
+</I>&gt;<i> the parameter in bytes. It seems your kernel and userspace tools don't agree 
+</I>&gt;<i> on the number of bytes an enumeration should take.
+</I>&gt;<i> 
+</I>&gt;<i> This is a known problem. Search the v4l mailing list archives for a thread 
+</I>&gt;<i> started on 13/04/2006 which subject was
+</I>&gt;<i> 
+</I>&gt;<i> [PATCH] [RFC] videodev2.h: ARM's old ABI support on EABI kernels
+</I>&gt;<i> 
+</I>&gt;<i> If this helps, please report the problem on the v4l mailing list and bug them 
+</I>&gt;<i> until a valid solution is found and applied to the kernel.
+</I>&gt;<i> 
+</I>&gt;<i> Cheers,
+</I>&gt;<i> 
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i> 
+</I>
+I read through most of the thread and it seems they got to a patch for the
+makefile after the one you mention. I tried the makefile patch and got segfault
+when I ran the userspace program. I still need to try the one for videodev2.h.
+
+I was thinking about this and it seems that the problem is between uvcvideo and
+the userspace app so I tried setting the values manually like this:
+
+ /* Buffers &amp; streaming */
+        /* case VIDIOC_REQBUFS:*/
+        case 0xc0145608:
+        {
+                printk(KERN_DEBUG &quot;In reqbuf\n&quot;);
+                struct v4l2_requestbuffers *rb = arg;
+                unsigned int bufsize = 
+video-&gt;streaming-&gt;ctrl.dwMaxVideoFrameSize;
+                rb-&gt;memory = V4L2_MEMORY_MMAP;
+                if (rb-&gt;type != V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+                    rb-&gt;memory != V4L2_MEMORY_MMAP)
+                        return -EINVAL;
+                if ((ret = uvc_alloc_buffers(&amp;video-&gt;queue, rb-&gt;count,
+ bufsize)) &lt; 0)
+                        return ret;
+
+                rb-&gt;count = ret;
+        }
+Since uvcvideo only does MMAP what the heck. Luvcview now works on the device.
+Picture, pan, tilt, all looks good. 
+
+I'll report back if the videodev2.h patch works, of course the hack above is
+very crude and not the way to go overall, it just works for me.
+
+
+Thanks for all your help!!
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000905.html">[Linux-uvc-devel] uvcvideo - Unable to allocate buffers: 22.	Init v4L2 failed
+</A></li>
+	<LI>Next message: <A HREF="000877.html">[Linux-uvc-devel] [PATCH] Fix endianness issues with uvcvideo
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#908">[ date ]</a>
+              <a href="thread.html#908">[ thread ]</a>
+              <a href="subject.html#908">[ subject ]</a>
+              <a href="author.html#908">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

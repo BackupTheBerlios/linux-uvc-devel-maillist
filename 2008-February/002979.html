@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] AMSN crashes (Was: xawtv crashes)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20AMSN%20crashes%20%28Was%3A%20xawtv%20crashes%29&In-Reply-To=%3C200802120013.50998.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002943.html">
+   <LINK REL="Next"  HREF="002945.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] AMSN crashes (Was: xawtv crashes)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20AMSN%20crashes%20%28Was%3A%20xawtv%20crashes%29&In-Reply-To=%3C200802120013.50998.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] AMSN crashes (Was: xawtv crashes)">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Feb 12 00:13:50 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002943.html">[Linux-uvc-devel] AMSN crashes (Was: xawtv crashes)
+</A></li>
+        <LI>Next message: <A HREF="002945.html">[Linux-uvc-devel] xawtv crash
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2979">[ date ]</a>
+              <a href="thread.html#2979">[ thread ]</a>
+              <a href="subject.html#2979">[ subject ]</a>
+              <a href="author.html#2979">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wednesday 06 February 2008, Jean-Christophe Jice Cardot wrote:
+&gt;<i> Le dimanche 3 f&#233;vrier 2008, vous avez &#233;crit :
+</I>&gt;<i> &gt; Hi,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Saturday 26 January 2008, Jice wrote:
+</I>&gt;<i> &gt; &gt; Hi Laurent
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I'm using version 173 or the driver now and it works perfectly with
+</I>&gt;<i> &gt; &gt; luvcview, and I just managed to have ekiga display the webcam also 5
+</I>&gt;<i> &gt; &gt; minutes ago.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Unfortunately I'm trying to use the webcam to chat with people using
+</I>&gt;<i> &gt; &gt; skype (forget it) or msn. Nor Amsn or Kopete are willing to display
+</I>&gt;<i> &gt; &gt; anything. Amsn crashes, and Kopete only display garbage :-(
+</I>&gt;<i> &gt; &gt; I tried xawtv (which always worked with my old cam and my old tv card)
+</I>&gt;<i> &gt; &gt; but it also segfaults (I'm using the 3.95-7mdv version from Mandriva).
+</I>&gt;<i> &gt; &gt; Did you hear something about xawtv crashing with uvcvideo? And the 2
+</I>&gt;<i> &gt; &gt; above?
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Sorry to bother you but I'm searching for a few weeks and cannot find
+</I>&gt;<i> &gt; &gt; anything.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Check the kernel log (dmesg) after aMsn/Kopete/xaxtv failures to see if
+</I>&gt;<i> &gt; the driver prints any error/warning message. If so, please report them on
+</I>&gt;<i> &gt; the linux-uvc-devel mailing list.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Best regards,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Laurent Pinchart
+</I>&gt;<i>
+</I>&gt;<i> Hi Laurent
+</I>&gt;<i>
+</I>&gt;<i> For kopete I already reported the problem on the ml, for xawtv I've
+</I>&gt;<i> isolated the crash (thanks gdb ;) and will post another email.
+</I>&gt;<i>
+</I>&gt;<i> For AMSN crash, nothing in the kernel log, just the following output:
+</I>&gt;<i>
+</I>&gt;<i> ioctl: VIDIOC_QUERYMENU(id=134217738;index=0;name=&quot;60
+</I>&gt;<i> Hz&quot;;reserved=3081900320): Invalid argument
+</I>&gt;<i> ioctl: VIDIOC_QUERYMENU(id=134217738;index=0;name=&quot;60
+</I>&gt;<i> Hz&quot;;reserved=3081900320): Invalid argument
+</I>&gt;<i> Corrupt JPEG data: premature end of data segment
+</I>&gt;<i> Invalid JPEG file structure: two SOI markers
+</I>&gt;<i> Oops: malloc_video_bufs is 1 (expected 0)
+</I>&gt;<i> [utils/linux/capture/libng/grab-ng.c:malloc_bufs_check:235]
+</I>&gt;<i> Oops: processes is 1 (expected 0)
+</I>&gt;<i> [utils/linux/capture/libng/convert.c:process_check:179]
+</I>&gt;<i>
+</I>&gt;<i> Must be a bug in Amsn (?), or could it be a problem with the webcam (as it
+</I>&gt;<i> says that the jpeg stream is corrupted) ?
+</I>
+Data corruption can occur, as isochronous USB transfers offer no guarantee. 
+The application shouldn't crash, it's definitely a bug. Unfortunately there 
+is no way for the driver to detect data corruption when transfering 
+compressed (MJPEG) streams, so I can't drop corrupted compressed frames.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002943.html">[Linux-uvc-devel] AMSN crashes (Was: xawtv crashes)
+</A></li>
+	<LI>Next message: <A HREF="002945.html">[Linux-uvc-devel] xawtv crash
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2979">[ date ]</a>
+              <a href="thread.html#2979">[ thread ]</a>
+              <a href="subject.html#2979">[ subject ]</a>
+              <a href="author.html#2979">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

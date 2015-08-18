@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Why can't set format after	VIDIOC_STREAMINGOFF?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%0A%20%3D%3Fiso-8859-15%3Fq%3FWhy_can%3D27t_set_format_after%3D09%3F%3D%0A%20%3D%3Fiso-8859-15%3Fq%3FVIDIOC%3D5FSTREAMINGOFF%3D3F%3F%3D&In-Reply-To=%3C200909301759.04436.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005171.html">
+   <LINK REL="Next"  HREF="005182.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Why can't set format after	VIDIOC_STREAMINGOFF?</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%0A%20%3D%3Fiso-8859-15%3Fq%3FWhy_can%3D27t_set_format_after%3D09%3F%3D%0A%20%3D%3Fiso-8859-15%3Fq%3FVIDIOC%3D5FSTREAMINGOFF%3D3F%3F%3D&In-Reply-To=%3C200909301759.04436.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Why can't set format after	VIDIOC_STREAMINGOFF?">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Wed Sep 30 17:59:04 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005171.html">[Linux-uvc-devel] Why can't set format after	VIDIOC_STREAMINGOFF ?
+</A></li>
+        <LI>Next message: <A HREF="005182.html">[Linux-uvc-devel] Why can't set format after	VIDIOC_STREAMINGOFF?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5181">[ date ]</a>
+              <a href="thread.html#5181">[ thread ]</a>
+              <a href="subject.html#5181">[ subject ]</a>
+              <a href="author.html#5181">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Hans,
+
+On Tuesday 29 September 2009 09:04:04 Hans de Goede wrote:
+&gt;<i> On 09/29/2009 12:55 AM, Laurent Pinchart wrote:
+</I>[snip]
+&gt;<i> &gt; That's the right way to do it, and it should work.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; ioctl(VIDIOC_S_FMT)
+</I>&gt;<i> &gt; ioctl(VIDIOC_REQBUFS - n buffers)
+</I>&gt;<i> &gt; mmap()
+</I>&gt;<i> &gt; ioctl(VIDIOC_QBUF)
+</I>&gt;<i> &gt; ioctl(VIDIOC_STREAMON)
+</I>&gt;<i> &gt; ioctl(VIDIOC_DQBUF)
+</I>&gt;<i> &gt; ioctl(VIDIOC_QBUF)
+</I>&gt;<i> &gt; ...
+</I>&gt;<i> &gt; ioctl(VIDIOC_STREAMOFF)
+</I>&gt;<i> &gt; munmap()
+</I>&gt;<i> &gt; ioctl(VIDIOC_REQBUFS - 0 buffers)
+</I>&gt;<i> 
+</I>&gt;<i> Note that the need for this last call (VIDIOC_REQBUFS - 0 buffers), also
+</I>&gt;<i> known as unrequesting the buffers, is a bit ambiguous. Not all drivers
+</I>&gt;<i> need this, and some even return an EINVAL if the number of requested
+</I>&gt;<i> buffers &lt; 0.
+</I>
+The number of buffers can't be &lt; 0 as it's a __u32. Drivers will see a huge 
+integer, and should lower the number of requested buffers instead of returning 
+-EINVAL.
+
+Or did you mean they return EINVAL when the number of buffers is == 0 ? In 
+that case they should really be fixed to free the buffers.
+
+&gt;<i> I think we need to clarify the V4L2 API specification on this point.
+</I>
+I agree. v4l2_requestbuffers::count is documented as being used for 
+V4L2_MEMORY_MMAP only, and drivers use it for V4L2_MEMORY_USERPTR as well. 
+This needs to be fixed in the spec too.
+
+&gt;<i> libv4l currently does do the unrequest the buffers thingie (when it is
+</I>&gt;<i>  managing the buffers itself), but ignores the return value.
+</I>
+Do you know which drivers fail to free the buffers when the requested value is 
+equal to zero ?
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005171.html">[Linux-uvc-devel] Why can't set format after	VIDIOC_STREAMINGOFF ?
+</A></li>
+	<LI>Next message: <A HREF="005182.html">[Linux-uvc-devel] Why can't set format after	VIDIOC_STREAMINGOFF?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5181">[ date ]</a>
+              <a href="thread.html#5181">[ thread ]</a>
+              <a href="subject.html#5181">[ subject ]</a>
+              <a href="author.html#5181">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

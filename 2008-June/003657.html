@@ -1,0 +1,233 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] iSight problem
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20iSight%20problem&In-Reply-To=%3C20080621232848.08393af6%40kylae%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003676.html">
+   <LINK REL="Next"  HREF="003662.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] iSight problem</H1>
+    <B>Mildred</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20iSight%20problem&In-Reply-To=%3C20080621232848.08393af6%40kylae%3E"
+       TITLE="[Linux-uvc-devel] iSight problem">ml.mildred593 at online.fr
+       </A><BR>
+    <I>Sat Jun 21 23:28:48 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003676.html">[Linux-uvc-devel] Vendor support in linux-uvc development
+</A></li>
+        <LI>Next message: <A HREF="003662.html">[Linux-uvc-devel] iSight problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3657">[ date ]</a>
+              <a href="thread.html#3657">[ thread ]</a>
+              <a href="subject.html#3657">[ subject ]</a>
+              <a href="author.html#3657">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I'm writing here since it seems that now, iSight code seems to be part
+of UVC. And I'm having a problem with it (/dev/video0 not created).
+
+So I built the uvcvideo driver (trunk r217) and built iSight Firmware
+Tools 1.2 (and restarted HAL). When I load the driver, dmesg only tells
+me:
+
+usbcore: registered new interface driver uvcvideo
+
+Nothing else.
+if I modprobe uvcvideo race=255, I get:
+
+uvcvideo: Adding mapping Brightness to control 00000000-0000-0000-0000-000000000101/2.
+uvcvideo: Adding mapping Contrast to control 00000000-0000-0000-0000-000000000101/3.
+uvcvideo: Adding mapping Hue to control 00000000-0000-0000-0000-000000000101/6.
+uvcvideo: Adding mapping Saturation to control 00000000-0000-0000-0000-000000000101/7.
+uvcvideo: Adding mapping Sharpness to control 00000000-0000-0000-0000-000000000101/8.
+uvcvideo: Adding mapping Gamma to control 00000000-0000-0000-0000-000000000101/9.
+uvcvideo: Adding mapping Backlight Compensation to control 00000000-0000-0000-0000-000000000101/1.
+uvcvideo: Adding mapping Gain to control 00000000-0000-0000-0000-000000000101/4.
+uvcvideo: Adding mapping Power Line Frequency to control 00000000-0000-0000-0000-000000000101/5.
+uvcvideo: Adding mapping Hue, Auto to control 00000000-0000-0000-0000-000000000101/16.
+uvcvideo: Adding mapping Exposure, Auto to control 00000000-0000-0000-0000-000000000001/2.
+uvcvideo: Adding mapping Exposure, Auto Priority to control 00000000-0000-0000-0000-000000000001/3.
+uvcvideo: Adding mapping Exposure (Absolute) to control 00000000-0000-0000-0000-000000000001/4.
+uvcvideo: Adding mapping White Balance Temperature, Auto to control 00000000-0000-0000-0000-000000000101/11.
+uvcvideo: Adding mapping White Balance Temperature to control 00000000-0000-0000-0000-000000000101/10.
+uvcvideo: Adding mapping White Balance Component, Auto to control 00000000-0000-0000-0000-000000000101/13.
+uvcvideo: Adding mapping White Balance Blue Component to control 00000000-0000-0000-0000-000000000101/12.
+uvcvideo: Adding mapping White Balance Red Component to control 00000000-0000-0000-0000-000000000101/12.
+uvcvideo: Adding mapping Focus (absolute) to control 00000000-0000-0000-0000-000000000001/6.
+uvcvideo: Adding mapping Focus, Auto to control 00000000-0000-0000-0000-000000000001/8.
+usbcore: registered new interface driver uvcvideo
+
+The problem is that no device /dev/video0 is created, so gstreamer
+fails with a message like
+
+Error running pipeline 'Video for Linux 2 (v4l2)': Cannot identify device '/dev/video0'. [v4l2_calls.c(429): gst_v4l2_open (): /pipeline0/v4l2src3:
+system error: No such file or directory]
+
+
+I don't think that's a problem regarding the firmware loading since I
+used an old binary called 'extract' that worked back in time. It tells
+me that the iSight firmware is loaded:
+
+Apple iSight with firmware already loaded found
+Apple iSight with firmware already loaded found
+
+
+There is an output of lsusb:
+
+$ sudo lsusb -d 05ac:8501 -v
+
+Bus 002 Device 003: ID 05ac:8501 Apple Computer, Inc. Built-in iSight [Micron]
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               2.00
+  bDeviceClass          255 Vendor Specific Class
+  bDeviceSubClass       255 Vendor Specific Subclass
+  bDeviceProtocol       255 Vendor Specific Protocol
+  bMaxPacketSize0        64
+  idVendor           0x05ac Apple Computer, Inc.
+  idProduct          0x8501 Built-in iSight [Micron]
+  bcdDevice            1.84
+  iManufacturer           1 Micron
+  iProduct                2 Built-in iSight
+  iSerial                 0 
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength          267
+    bNumInterfaces          2
+    bConfigurationValue     1
+    iConfiguration          0 
+    bmAttributes         0x80
+      (Bus Powered)
+    MaxPower              100mA
+    ** UNRECOGNIZED:  08 24 00 02 ff ff ff 00
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           1
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceSubClass    255 Vendor Specific Subclass
+      bInterfaceProtocol    255 Vendor Specific Protocol
+      iInterface              0 
+      ** UNRECOGNIZED:  0d 24 01 00 01 31 00 60 fe cd 00 01 01
+      ** UNRECOGNIZED:  10 24 02 01 01 02 00 00 00 00 00 00 00 00 01 00
+      ** UNRECOGNIZED:  0b 24 05 02 01 00 00 02 39 00 00
+      ** UNRECOGNIZED:  09 24 03 03 01 01 00 02 00
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval              10
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       0
+      bNumEndpoints           0
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceSubClass    255 Vendor Specific Subclass
+      bInterfaceProtocol    255 Vendor Specific Protocol
+      iInterface              0 
+      ** UNRECOGNIZED:  0e 24 01 01 9b 00 82 00 03 00 00 00 01 00
+      ** UNRECOGNIZED:  1b 24 04 01 03 55 59 56 59 00 00 10 00 80 00 00 aa 00 38 9b 71 10 01 00 00 00 00
+      ** UNRECOGNIZED:  26 24 05 01 00 80 02 e0 01 00 06 e3 16 00 06 e3 16 00 60 09 00 15 16 05 00 00 15 16 05 00 15 16 05 00 00 00 00 00
+      ** UNRECOGNIZED:  26 24 05 02 00 60 01 20 01 00 06 e3 16 00 06 e3 16 00 18 03 00 15 16 05 00 00 15 16 05 00 15 16 05 00 00 00 00 00
+      ** UNRECOGNIZED:  26 24 05 03 00 40 01 f0 00 00 06 e3 16 00 06 e3 16 00 58 02 00 15 16 05 00 00 15 16 05 00 15 16 05 00 00 00 00 00
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       1
+      bNumEndpoints           1
+      bInterfaceClass        14 Video
+      bInterfaceSubClass      2 Video Streaming
+      bInterfaceProtocol      0 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            5
+          Transfer Type            Isochronous
+          Synch Type               Asynchronous
+          Usage Type               Data
+        wMaxPacketSize     0x1400  3x 1024 bytes
+        bInterval               1
+Device Qualifier (for other device speed):
+  bLength                10
+  bDescriptorType         6
+  bcdUSB               2.00
+  bDeviceClass          255 Vendor Specific Class
+  bDeviceSubClass       255 Vendor Specific Subclass
+  bDeviceProtocol       255 Vendor Specific Protocol
+  bMaxPacketSize0         8
+  bNumConfigurations      1
+Device Status:     0x0000
+  (Bus Powered)
+
+
+
+
+Do you have any ideas about this problem ?
+Some months ago, my webcam worked with a driver derived from uvcvideo.
+but that was with the previous kernel. Now it no longer compiles.
+
+
+Thanks
+
+Mildred
+-- 
+Mildred Ki'lya
+E-Mail:	mildred593(at)online.fr
+
+Site:	&lt;<A HREF="http://mildred632.free.fr/">http://mildred632.free.fr/</A>&gt;
+XMPP:	&lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">mildred at jabber.fr</A>&gt; (GoogleTalk, Jabber)
+
+GPG:	197C A7E6 645B 4299 6D37 684B 6F9D A8D6 [9A7D 2E2B]
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003676.html">[Linux-uvc-devel] Vendor support in linux-uvc development
+</A></li>
+	<LI>Next message: <A HREF="003662.html">[Linux-uvc-devel] iSight problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3657">[ date ]</a>
+              <a href="thread.html#3657">[ thread ]</a>
+              <a href="subject.html#3657">[ subject ]</a>
+              <a href="author.html#3657">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

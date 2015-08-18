@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-June/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20SOLVED%3A%20upside-down%20image%20from%20SONIX%20laptop%0A%09embedded%20webcam&In-Reply-To=%3C879e1f2b0806191351u6859e04fv85eeb7c92071ac87%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003645.html">
+   <LINK REL="Next"  HREF="003655.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam</H1>
+    <B>Marco Argiolas</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20SOLVED%3A%20upside-down%20image%20from%20SONIX%20laptop%0A%09embedded%20webcam&In-Reply-To=%3C879e1f2b0806191351u6859e04fv85eeb7c92071ac87%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam">arjos85 at gmail.com
+       </A><BR>
+    <I>Thu Jun 19 22:51:36 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003645.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+        <LI>Next message: <A HREF="003655.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3648">[ date ]</a>
+              <a href="thread.html#3648">[ thread ]</a>
+              <a href="subject.html#3648">[ subject ]</a>
+              <a href="author.html#3648">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>WOW...
+I think to have solved all my doubts and problems!!!
+In fact just making some experiments with my modded uvcvideo driver, mplayer
+and printing messages with printk(), I have found that also if mplayer
+requests a 1280x960 or 1280x1024 image, the camera sends back a 640x480 one,
+with all the resolutions supported with my camera (Sonix 1.3 Mpx -
+174f:5a35) the bpp is constant and equal to 16 (2 bytes). I've also tried to
+see the uvcvideo behaviour with skype and kopete video request from my
+webcam.
+At the end I've just modified again my modded function in &quot;uvc_video.c&quot;file:
+static void uvc_video_decode_data(struct uvc_video_device *video,
+        struct uvc_buffer *buf, const __u8 *data, int len)
+
+I've simply changed the declaration of &quot;pixel_size&quot; variable:
+I don't give any more a constant value:
+- pixel_size=2 was perfect with any resolutions, but colours (I don't know
+why) were really pour (red and blue were exchanged each other);
+- pixel_size=1280 gave back a perfect mirrored images, but with resolutions
+lower than 640x480 there where problems in the consistancy of the image;
+
+Now I've solved all my problem just using definig pixel_size in a dynamic
+way:
+
+pixel_size=video-&gt;streaming-&gt;cur_frame-&gt;wWidth *
+video-&gt;streaming-&gt;format-&gt;bpp / 8;
+
+each time pixel_size depens on the required width of the images, and I can
+copy just line by line the whole image: in this way I got a mirrored image
+with perfect colours.
+The important thing is that this solutions DOES NOT DEPEND on the webcam you
+are using or on the program you are running to use your webcam!!!!
+
+So...just have fun with your camera!!!
+Please report me any error!!! Thank you!!
+
+Marco Argiolas
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080619/f3520a6b/attachment.html">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20080619/f3520a6b/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003645.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+	<LI>Next message: <A HREF="003655.html">[Linux-uvc-devel] SOLVED: upside-down image from SONIX laptop	embedded webcam
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3648">[ date ]</a>
+              <a href="thread.html#3648">[ thread ]</a>
+              <a href="subject.html#3648">[ subject ]</a>
+              <a href="author.html#3648">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

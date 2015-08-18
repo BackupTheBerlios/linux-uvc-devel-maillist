@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] How to 'quirk' more than 3 same &quot;YUYV&quot; streaming web-cams
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20How%20to%20%27quirk%27%20more%20than%203%20same%20%22YUYV%22%0A%20streaming%20web-cams&In-Reply-To=%3C1301576622.6425.17.camel%40zwerg%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006424.html">
+   <LINK REL="Next"  HREF="006426.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] How to 'quirk' more than 3 same &quot;YUYV&quot; streaming web-cams</H1>
+    <B>Alexey Fisher</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20How%20to%20%27quirk%27%20more%20than%203%20same%20%22YUYV%22%0A%20streaming%20web-cams&In-Reply-To=%3C1301576622.6425.17.camel%40zwerg%3E"
+       TITLE="[Linux-uvc-devel] How to 'quirk' more than 3 same &quot;YUYV&quot; streaming web-cams">bug-track at fisher-privat.net
+       </A><BR>
+    <I>Thu Mar 31 15:03:42 CEST 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006424.html">[Linux-uvc-devel] How to 'quirk' more than 3 same &quot;YUYV&quot;	streaming web-cams
+</A></li>
+        <LI>Next message: <A HREF="006426.html">[Linux-uvc-devel] How to 'quirk' more than 3 same &quot;YUYV&quot;	streaming web-cams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6425">[ date ]</a>
+              <a href="thread.html#6425">[ thread ]</a>
+              <a href="subject.html#6425">[ subject ]</a>
+              <a href="author.html#6425">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Am Donnerstag, den 31.03.2011, 15:04 +0400 schrieb &quot;&#1050;&#1083;&#1080;&#1077;&#1085;&#1090;&#1089;&#1082;&#1080;&#1081; &#1086;&#1090;&#1076;&#1077;&#1083;
+\&quot;&#1050;&#1080;&#1073;&#1077;&#1088;&#1085;&#1077;&#1090;\&quot;&quot;:
+&gt;<i> Thanks to all for your answers.
+</I>&gt;<i> 
+</I>&gt;<i> Current disposition:
+</I>&gt;<i> 
+</I>&gt;<i> Gentoo linux: 2.6.36-r8 (kernel uvcvideo driver). I'm testing
+</I>&gt;<i> 2.6.37.5-zen patched kernel (zen-kernel.org). It slightly reduce total
+</I>&gt;<i> cpu utilisation.
+</I>&gt;<i> But in embedded usb-bus and uvc drivers I found no changes.
+</I>&gt;<i> Yesterday I installed ZoneMinder 1.24.3 (trunk).
+</I>&gt;<i> I'm loading uvcvideo as module with quirks=128. This is allow me to use
+</I>&gt;<i> 4 webcams A4Tech PK-836MJ on each usb-root hub with 352x288 YUYV 30FPS
+</I>&gt;<i> streaming at the same time.
+</I>&gt;<i> 
+</I>&gt;<i> I'm using asus AT5MN10-I with Atom-330 (dual-core). It has only 1 root
+</I>&gt;<i> usb2.0 hub (4 embedded usb connectors) and 1 PCI slot with VIA VT6212L
+</I>&gt;<i> chip - another usb 2.0 root hub with 5 additional usb connectors.
+</I>&gt;<i> 
+</I>&gt;<i> When I attempt to change streaming resolution of any camera in the hub
+</I>&gt;<i> to 640x480 - other three cameras stop streaming with an error - &quot;no
+</I>&gt;<i> space on left device&quot;. As I understood this error means that whole
+</I>&gt;<i> bandwith of usb-bus related to the user utilised. 8 streaming cameras
+</I>&gt;<i> with apache, ffmpeg, zoneminder and other processes itilizin less than
+</I>&gt;<i> 60% of my CPUs. How can I tweak uvcvideo driver or maybe usb-bus to
+</I>&gt;<i> recalculate the bandwith of my cameras to start working with 640x480
+</I>&gt;<i> resolution.
+</I>&gt;<i> 
+</I>&gt;<i> This worksation doesn't have X and other non-server environment. I'm
+</I>&gt;<i> using p/s2 keyboard and ssh. There is no plans to use any other usb-type
+</I>&gt;<i> devices, web-cams only.
+</I>&gt;<i> 
+</I>&gt;<i> Camera information from luvcview. Zoneminder can work with cameras only
+</I>&gt;<i> when I use YUYV. When I attempt to change streaming to RGB3 - only one
+</I>&gt;<i> camera streaming, 3 other stop responding. I think this happens bacause
+</I>&gt;<i> &quot;quirk&quot; parametr belong only to YUYV stareaming.
+</I>
+uvcvideo recalculate all uncompressed pixel formats. 
+
+RGB3 consume more band width than YUYV.
+
+RGB3 and BGR3 use 3 Bytes, also 24 bits.
+640 * 480 * 24bit * 30fps / 8 = 26 MByte/s  (max 2 cams)
+YUYV - 16 bit
+... = 17 MByte/s
+YU12, YV12 - 12 bit
+... = 13 MByte/s
+
+YU12 or YV12 should be the best solution.
+
+&gt;<i> Theoretical calculations tells me that 4 cameras with 640x480 YUYV with
+</I>&gt;<i> 25-30fps can stream at the same time...
+</I>
+YOur calculation is over optemistic. In my previous email i told you
+maximal 3.4 cams, the 0.4 do not count. 
+
+Sebastian pointed &quot;Don't forget that the 480Mbit/s is the theoretical
+maximum speed&quot;. In real live it is less.
+
+
+&gt;<i> SDL information:
+</I>&gt;<i>   Video driver: x11
+</I>&gt;<i>   A window manager is available
+</I>&gt;<i> Device information:
+</I>&gt;<i>   Device path:  /dev/video0
+</I>&gt;<i> { pixelformat = 'YUYV', description = 'YUV 4:2:2 (YUYV)' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 352, height = 288 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 176, height = 144 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 160, height = 120 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { pixelformat = 'RGB3', description = 'RGB3' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 352, height = 288 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 176, height = 144 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 160, height = 120 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { pixelformat = 'BGR3', description = 'BGR3' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 352, height = 288 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 176, height = 144 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 160, height = 120 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { pixelformat = 'YU12', description = 'YU12' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 352, height = 288 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 176, height = 144 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 160, height = 120 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { pixelformat = 'YV12', description = 'YV12' }
+</I>&gt;<i> { discrete: width = 640, height = 480 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 352, height = 288 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 320, height = 240 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 176, height = 144 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>&gt;<i> { discrete: width = 160, height = 120 }
+</I>&gt;<i>     Time interval between frame: 1/30,
+</I>
+I do not need this information. I need result of &quot;lsusb -vd xxxx:xxxx&quot;,
+xxxx - is the usb id of your webcam.
+
+
+-- 
+Regards,
+        Alexey
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006424.html">[Linux-uvc-devel] How to 'quirk' more than 3 same &quot;YUYV&quot;	streaming web-cams
+</A></li>
+	<LI>Next message: <A HREF="006426.html">[Linux-uvc-devel] How to 'quirk' more than 3 same &quot;YUYV&quot;	streaming web-cams
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6425">[ date ]</a>
+              <a href="thread.html#6425">[ thread ]</a>
+              <a href="subject.html#6425">[ subject ]</a>
+              <a href="author.html#6425">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

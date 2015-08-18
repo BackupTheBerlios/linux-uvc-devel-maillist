@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Pan and Tilt of Quickcam Orbit MP
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Pan%20and%20Tilt%20of%20Quickcam%20Orbit%20MP&In-Reply-To=%3C200707170006.56342.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001885.html">
+   <LINK REL="Next"  HREF="001891.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Pan and Tilt of Quickcam Orbit MP</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Pan%20and%20Tilt%20of%20Quickcam%20Orbit%20MP&In-Reply-To=%3C200707170006.56342.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Pan and Tilt of Quickcam Orbit MP">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Tue Jul 17 00:06:56 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001885.html">[Linux-uvc-devel] Pan and Tilt of Quickcam Orbit MP
+</A></li>
+        <LI>Next message: <A HREF="001891.html">[Linux-uvc-devel] unsubscribe
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1888">[ date ]</a>
+              <a href="thread.html#1888">[ thread ]</a>
+              <a href="subject.html#1888">[ subject ]</a>
+              <a href="author.html#1888">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Rich,
+
+On Monday 16 July 2007, Rich Kemp wrote:
+&gt;<i> Hi, I'm using uvc with a logitech quickcam orbit mp, and I was wondering if
+</I>&gt;<i> there are any utilities similar to the setpwc utility that allows you to
+</I>&gt;<i> change the pan or tilt of an old orbit webcam from the command line. I've
+</I>&gt;<i> played with luvcview and can pan and tilt the camera from that
+</I>&gt;<i> application's gui controls, but I wondered if anything exists similar to
+</I>&gt;<i> setpwc. I know I read a post from Laurent last September that mentioned
+</I>&gt;<i> updates to IOCTL for panning and tilting.
+</I>
+I'm not aware of any command line tool that controls device pan/tilt motion 
+(although there might be one I'm not aware of).
+
+Here is a code sample from a very simple test program I use when hacking the 
+driver. Its arguments are:
+
+- dev: the device file descriptor
+- pan: pan angle in 1/64th of degree
+- tilt: tilt angle in 1/64th of degree
+- reset: set to 1 to reset pan/tilt to the device origin, set to 0 otherwise
+
+#include &quot;uvcvideo.h&quot;
+
+void pantilt(int dev, int pan, int tilt, int reset)
+{
+        struct v4l2_ext_control xctrls[2];
+        struct v4l2_ext_controls ctrls;
+
+        if (reset) {
+                xctrls[0].id = V4L2_CID_PANTILT_RESET;
+                xctrls[0].value = 3;
+
+                ctrls.count = 1;
+                ctrls.controls = xctrls;
+        } else {
+                xctrls[0].id = V4L2_CID_PAN_RELATIVE;
+                xctrls[0].value = pan;
+                xctrls[1].id = V4L2_CID_TILT_RELATIVE;
+                xctrls[1].value = tilt;
+
+                ctrls.count = 2;
+                ctrls.controls = xctrls;
+        }
+
+        ioctl(dev, VIDIOC_S_EXT_CTRLS, &amp;ctrls);
+}
+
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001885.html">[Linux-uvc-devel] Pan and Tilt of Quickcam Orbit MP
+</A></li>
+	<LI>Next message: <A HREF="001891.html">[Linux-uvc-devel] unsubscribe
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1888">[ date ]</a>
+              <a href="thread.html#1888">[ thread ]</a>
+              <a href="subject.html#1888">[ subject ]</a>
+              <a href="author.html#1888">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

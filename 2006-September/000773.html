@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Unknown symbol v4l2_ioctl_names ?
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Unknown%20symbol%20v4l2_ioctl_names%20%3F&In-Reply-To=%3C200609112355.08554.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000762.html">
+   <LINK REL="Next"  HREF="000765.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Unknown symbol v4l2_ioctl_names ?</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Unknown%20symbol%20v4l2_ioctl_names%20%3F&In-Reply-To=%3C200609112355.08554.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Unknown symbol v4l2_ioctl_names ?">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Sep 11 23:55:08 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000762.html">[Linux-uvc-devel] Unknown symbol v4l2_ioctl_names ?
+</A></li>
+        <LI>Next message: <A HREF="000765.html">[Linux-uvc-devel] Quickcam Go 046d:092f
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#773">[ date ]</a>
+              <a href="thread.html#773">[ thread ]</a>
+              <a href="subject.html#773">[ subject ]</a>
+              <a href="author.html#773">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+&gt;<i> Hi everyone,
+</I>&gt;<i>
+</I>&gt;<i> I try to install uvc modules on kernel 2.6.15-26-k7 #1 SMP PREEMPT Thu Aug
+</I>&gt;<i> 3 03:40:32 UTC 2006 i686 GNU/Linux using gcc 4.0.
+</I>&gt;<i>
+</I>&gt;<i> Compilation is ok but when I try to modprobe, I have this message :
+</I>&gt;<i>
+</I>&gt;<i> uvcvideo: Unknown symbol v4l2_ioctl_names
+</I>&gt;<i>
+</I>&gt;<i> modinfo uvcvideo
+</I>&gt;<i>
+</I>&gt;<i> filename:       /lib/modules/2.6.15-26-k7/usb/media/uvcvideo.ko
+</I>&gt;<i> author:         Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt;
+</I>&gt;<i> description:    USB Video Class driver
+</I>&gt;<i> license:        GPL
+</I>&gt;<i> vermagic:       2.6.15-26-k7 SMP preempt K7 gcc-4.0
+</I>&gt;<i> depends:        usbcore,videodev,v4l2-common,v4l1-compat
+</I>&gt;<i> alias:          usb:v046Dp08C1d*dc*dsc*dp*icFFisc01ip00*
+</I>&gt;<i> alias:          usb:v046Dp08C2d*dc*dsc*dp*icFFisc01ip00*
+</I>&gt;<i> alias:          usb:v046Dp08C3d*dc*dsc*dp*icFFisc01ip00*
+</I>&gt;<i> alias:          usb:v046Dp08C5d*dc*dsc*dp*icFFisc01ip00*
+</I>&gt;<i> alias:          usb:v046Dp08C6d*dc*dsc*dp*icFFisc01ip00*
+</I>&gt;<i> alias:          usb:v046Dp08C7d*dc*dsc*dp*icFFisc01ip00*
+</I>&gt;<i> alias:          usb:v*p*d*dc*dsc*dp*ic0Eisc01ip00*
+</I>&gt;<i> srcversion:     94C8222F703B3D4C291E4FC
+</I>&gt;<i> parm:           trace:uint
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> I have  usbcore,videodev,v4l2-common,v4l1-compat already loaded when I try
+</I>&gt;<i> to load uvcvideo. Any tips ?
+</I>
+You're using a kernel patched by your distribution. Some changes from 2.6.16 
+made their way into your kernel, and one of them was to remove the symbol 
+v4l2_ioctl_names. For 2.6.16 kernels the UVC driver handles that change 
+gracefully, but not for 2.6.15.
+
+I advice you to upgrade to 2.6.16 or newer, or patch the driver by changing 
+the
+
+#if LINUX_VERSION_CODE &lt; KERNEL_VERSION(2,6,16)
+
+a few lines before v4l2_ioctl_names to
+
+#if 0
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000762.html">[Linux-uvc-devel] Unknown symbol v4l2_ioctl_names ?
+</A></li>
+	<LI>Next message: <A HREF="000765.html">[Linux-uvc-devel] Quickcam Go 046d:092f
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#773">[ date ]</a>
+              <a href="thread.html#773">[ thread ]</a>
+              <a href="subject.html#773">[ subject ]</a>
+              <a href="author.html#773">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

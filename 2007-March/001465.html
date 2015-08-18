@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] control query fails
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20control%20query%20fails&In-Reply-To=%3C1173098277.3483.26.camel%40localhost.localdomain%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001483.html">
+   <LINK REL="Next"  HREF="001467.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] control query fails</H1>
+    <B>richard</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20control%20query%20fails&In-Reply-To=%3C1173098277.3483.26.camel%40localhost.localdomain%3E"
+       TITLE="[Linux-uvc-devel] control query fails">richard at rsk.demon.co.uk
+       </A><BR>
+    <I>Mon Mar  5 13:37:57 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001483.html">[Linux-uvc-devel] Logitech Orbit apply patch Howto
+</A></li>
+        <LI>Next message: <A HREF="001467.html">[Linux-uvc-devel] control query fails
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1465">[ date ]</a>
+              <a href="thread.html#1465">[ thread ]</a>
+              <a href="subject.html#1465">[ subject ]</a>
+              <a href="author.html#1465">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+I've got a logitech pro 5000 working with ekiga on fedora fc6 64 on an
+AMD 64X2.
+
+This driver loads ok :-
+
+&gt;<i> uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:08c5)
+</I>
+and will work ok for a while but if I close a call or stop then
+(quickly) restart displaying the video it fails with usb errors
+
+&gt;<i>uvcvideo: Failed to query (129) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>&gt;<i>uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>&gt;<i>uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -32 (exp. 26).
+</I>&gt;<i>uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -75 (exp. 26).
+</I>&gt;<i>uvcvideo: Failed to query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+</I>
+and then it gets stuck in this state, even reloading the uvcvideo module
+does not clear this error, I have to unplug the camera.
+
+I think that there is race between uvc_v4l2_open &amp; uvc_v4l2_release, so
+I've patched release to take the same mutex as open. 
+It seems to be working as I've not seen any problems since adding in
+this extra locking.
+
+I'm not sure if this is really a ekiga problem rather than a driver
+problem, but the patch is pretty simple and isn't going to be called
+very often so won't affect performance.
+
+Should uvc_v4l2_do_ioctl also take the lock to stop close removing the
+structures while an ioctl is in progress ? 
+
+HTH
+cheers
+richard
+
+
+Index: uvc_v4l2.c
+===================================================================
+--- uvc_v4l2.c  (revision 89)
++++ uvc_v4l2.c  (working copy)
+@@ -418,11 +418,15 @@
+ 
+ static int uvc_v4l2_release(struct inode *inode, struct file *file)
+ {
+-       struct video_device *vdev = video_devdata(file);
+-       struct uvc_video_device *video = video_get_drvdata(vdev);
+-       struct uvc_fh *handle = (struct uvc_fh *)file-&gt;private_data;
++       struct video_device *vdev;
++       struct uvc_video_device *video;
++       struct uvc_fh *handle;
+ 
+        uvc_trace(UVC_TRACE_CALLS, &quot;uvc_v4l2_release\n&quot;);
++       mutex_lock(&amp;uvc_driver.open_mutex);
++       vdev = video_devdata(file);
++       video = video_get_drvdata(vdev);
++       handle = (struct uvc_fh *)file-&gt;private_data;
+ 
+        /* Only free resources if this is a privileged handle. */
+        if (uvc_has_privileges(handle)) {
+@@ -439,6 +443,7 @@
+        uvc_dismiss_privileges(handle);
+        kfree(handle);
+        file-&gt;private_data = NULL;
++       mutex_unlock(&amp;uvc_driver.open_mutex);
+ 
+        kref_put(&amp;video-&gt;dev-&gt;kref, uvc_delete);
+        return 0;
+ 
+ 
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001483.html">[Linux-uvc-devel] Logitech Orbit apply patch Howto
+</A></li>
+	<LI>Next message: <A HREF="001467.html">[Linux-uvc-devel] control query fails
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1465">[ date ]</a>
+              <a href="thread.html#1465">[ thread ]</a>
+              <a href="subject.html#1465">[ subject ]</a>
+              <a href="author.html#1465">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

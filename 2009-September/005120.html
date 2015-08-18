@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Multiple camera USB bandwidth calculation	question
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-September/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multiple%20camera%20USB%20bandwidth%20calculation%0A%09question&In-Reply-To=%3C200909181257.05438.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005119.html">
+   <LINK REL="Next"  HREF="005121.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Multiple camera USB bandwidth calculation	question</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Multiple%20camera%20USB%20bandwidth%20calculation%0A%09question&In-Reply-To=%3C200909181257.05438.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] Multiple camera USB bandwidth calculation	question">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Fri Sep 18 12:57:05 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005119.html">[Linux-uvc-devel] Omnivision integrated into Dell Inspiron -	Garbled Video
+</A></li>
+        <LI>Next message: <A HREF="005121.html">[Linux-uvc-devel] 18ec:3290 doesnt work (no subject)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5120">[ date ]</a>
+              <a href="thread.html#5120">[ thread ]</a>
+              <a href="subject.html#5120">[ subject ]</a>
+              <a href="author.html#5120">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Friday 28 August 2009 01:44:43 Tim Harvey wrote:
+&gt;<i> Laurent Pinchart wrote:
+</I>&gt;<i> &gt; On Thursday 13 August 2009 01:32:22 Tim Harvey wrote:
+</I>&gt;<i> &gt; &gt; I'm looking at using multiple UVC cameras which likely will not support
+</I>&gt;<i> &gt; &gt; MJPEG.  I'm curious how to calculate my max framerate for a given
+</I>&gt;<i> &gt; &gt; resolution and number of cameras based on a single USB 2.0 bus and thus
+</I>&gt;<i> &gt; &gt; am trying to understand the calculation and the architecture of UVC and
+</I>&gt;<i> &gt; &gt; the uvcvideo driver.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I recall reading somewhere (perhaps the uvccapture source) the uvcvideo
+</I>&gt;<i> &gt; &gt; driver (or perhaps UVC itself, or perhaps a limitation of uvccapture)
+</I>&gt;<i> &gt; &gt; was not able to capture still images from cameras and instead it would
+</I>&gt;<i> &gt; &gt; put the camera in streaming mode and grab frames as directed.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; UVC specifies 3 different methods to support still capture. The most
+</I>&gt;<i> &gt; simple one (method 1) is to just take the next frame from a video stream.
+</I>&gt;<i> &gt; There's nothing required on the camera side for this, making it a very
+</I>&gt;<i> &gt; simple and popular method among camera developers.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Two other methods are also possible. One of them (method 2) involves
+</I>&gt;<i> &gt; temporarily stopping the video stream, negotiating still image capture
+</I>&gt;<i> &gt; parameters, get a still image from the camera through the video stream
+</I>&gt;<i> &gt; and then resuming video streaming. The other (method 3) uses a separate
+</I>&gt;<i> &gt; bulk endpoint to stream the still image.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I've never seen any camera implementing the last method. Method 2 is
+</I>&gt;<i> &gt; supported by several webcams, but not by the UVC driver. One main
+</I>&gt;<i> &gt; obstacle to getting that supported by the driver is the lack of a still
+</I>&gt;<i> &gt; image capture API in v4l2.
+</I>&gt;<i> 
+</I>&gt;<i> Great explanation - thanks!
+</I>&gt;<i> 
+</I>&gt;<i> What would the risks be in using method 1 but turning streaming on/off
+</I>&gt;<i> on a device that may support a min framerate of 30fps fast enough to
+</I>&gt;<i> grab say 1fps and thus conserve USB bus bandwidth?  Is there a rather
+</I>&gt;<i> long latency in being able to start/stop streaming from the current UVC
+</I>&gt;<i> devices?
+</I>
+It really depends on the device. For instance, on the Logitech Quickcam Pro 
+for Notebooks that I use as my primary testing device, turning streaming on 
+the first time after plugging the device in takes a few seconds.
+
+&gt;<i> How can I determine what the USB bus utilization is for a specific
+</I>&gt;<i> device that I'm testing?  I'm not quite clear if there is anything in
+</I>&gt;<i> /proc/bus/usb/devices that can be decrypted to provide this
+</I>&gt;<i> information.  I'm up for hacking in some printk's into usbcore if thats
+</I>&gt;<i> what it would take.
+</I>
+If you apply the following patch just set the module trace parameter to 1024. 
+The driver will print the bandwidth requested by the device (in bytes per 
+microframe) when you start video streaming.
+
+<A HREF="http://linuxtv.org/hg/~pinchartl/uvcvideo/rev/4533a406fddb">http://linuxtv.org/hg/~pinchartl/uvcvideo/rev/4533a406fddb</A>
+
+There are 8000 microframes per second for USB high speed devices, and periodic 
+(isochronous+interrupt) transfers are limited to 80% of the overall USB 
+bandwidth.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005119.html">[Linux-uvc-devel] Omnivision integrated into Dell Inspiron -	Garbled Video
+</A></li>
+	<LI>Next message: <A HREF="005121.html">[Linux-uvc-devel] 18ec:3290 doesnt work (no subject)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5120">[ date ]</a>
+              <a href="thread.html#5120">[ thread ]</a>
+              <a href="subject.html#5120">[ subject ]</a>
+              <a href="author.html#5120">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

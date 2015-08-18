@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Logitech Ultra Vision - Failed to query
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20Ultra%20Vision%20-%20Failed%20to%20query&In-Reply-To=%3C200701032204.57754.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001139.html">
+   <LINK REL="Next"  HREF="001141.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Logitech Ultra Vision - Failed to query</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Logitech%20Ultra%20Vision%20-%20Failed%20to%20query&In-Reply-To=%3C200701032204.57754.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Logitech Ultra Vision - Failed to query">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Jan  3 22:04:57 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001139.html">[Linux-uvc-devel] Logitech Ultra Vision - Failed to query
+</A></li>
+        <LI>Next message: <A HREF="001141.html">[Linux-uvc-devel] Logitech Ultra Vision - Failed to query
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1140">[ date ]</a>
+              <a href="thread.html#1140">[ thread ]</a>
+              <a href="subject.html#1140">[ subject ]</a>
+              <a href="author.html#1140">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+&gt;<i> &gt; Just bought a Logitech Ultra Vision (Bus 005 Device 003: ID 046d:08c9
+</I>&gt;<i> &gt; Logitech, Inc.) and fetched the latest SVN code and compiled and
+</I>&gt;<i> &gt; installed it. When I plug my camera to the computer, dmesg says the
+</I>&gt;<i> &gt; following:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; [31812.967386] usbcore: registered new interface driver uvcvideo
+</I>&gt;<i> &gt; [31812.967392] USB Video Class driver (v0.1.0)
+</I>&gt;<i> &gt; [80416.916669] usb 5-4: new high speed USB device using ehci_hcd and
+</I>&gt;<i> &gt; address 2 [80417.209159] usb 5-4: configuration #1 chosen from 1 choice
+</I>&gt;<i> &gt; [80417.209349] uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:08c9)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; (I loaded the module manually beforehand)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; The /dev/video and /dev/video0 devices are created when camera is plugged
+</I>&gt;<i> &gt; in.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; But now when I try to capture images from it, I get the following
+</I>&gt;<i> &gt; error in dmesg:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; [81559.905342] uvcvideo: Failed to query (1) UVC control 1 (unit 0) :
+</I>&gt;<i> &gt; -110 (exp. 26).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; First I tried &quot;motion&quot;, it said:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; [0] Processing thread 0 - config file /etc/motion/motion.conf
+</I>&gt;<i> &gt; [1] Thread is from /etc/motion/motion.conf
+</I>&gt;<i> &gt; [1] Thread started
+</I>&gt;<i> &gt; [1] motion-httpd/3.2.3 running, accepting connections
+</I>&gt;<i> &gt; [1] motion-httpd: waiting for data on port TCP 82
+</I>&gt;<i> &gt; [1] No mmap falling back on read
+</I>&gt;<i> &gt; [1] ioctl (VIDIOCSWIN): Input/output error
+</I>&gt;<i> &gt; [1] Capture error calling vid_start
+</I>&gt;<i> &gt; [1] Thread finishing...
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Then I falled back to uvccapture-0.4, compiled it and tried to start:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Unable to set format: 5.
+</I>&gt;<i> &gt;  Init v4L2 failed !! exit fatal
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Both tries results in the same error in dmesg.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Machine is a Intel D945GNT board with integrated USB2 controller.
+</I>&gt;<i> &gt; Linux is Ubuntu 6.10 Edgy with custom 2.6.19.1 i386 kernel.
+</I>&gt;<i>
+</I>&gt;<i> Timo,
+</I>&gt;<i>
+</I>&gt;<i> My experience with the Logitech Ultra Vision is the same except that I
+</I>&gt;<i> used Ekiga to view the video. I have found that if you load the
+</I>&gt;<i> module with trace set to 15, then Ekiga is able to show the picture.
+</I>
+There are known timing-related hardware issues with Logitech webcams. The 
+problem doesn't affect all users. Nobody has been able to find a workaround 
+so far (neither developers at Logitech or Linux UVC users). This might change 
+in the future, but I don't want to give anyone false hope. I'm not working on 
+this, as I tried everything I could think of. We haven't been able to find 
+what exactly triggers the hardware bug.
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001139.html">[Linux-uvc-devel] Logitech Ultra Vision - Failed to query
+</A></li>
+	<LI>Next message: <A HREF="001141.html">[Linux-uvc-devel] Logitech Ultra Vision - Failed to query
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1140">[ date ]</a>
+              <a href="thread.html#1140">[ thread ]</a>
+              <a href="subject.html#1140">[ subject ]</a>
+              <a href="author.html#1140">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

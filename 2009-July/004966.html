@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] MediaTek MT6227 on Philips 9 at 9U is now	working with uvc
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-July/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20MediaTek%20MT6227%20on%20Philips%209%409U%20is%20now%0A%09working%20with%20uvc&In-Reply-To=%3C200907110155.34900.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004962.html">
+   <LINK REL="Next"  HREF="004967.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] MediaTek MT6227 on Philips 9 at 9U is now	working with uvc</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20MediaTek%20MT6227%20on%20Philips%209%409U%20is%20now%0A%09working%20with%20uvc&In-Reply-To=%3C200907110155.34900.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] MediaTek MT6227 on Philips 9 at 9U is now	working with uvc">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sat Jul 11 01:55:34 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004962.html">[Linux-uvc-devel] MediaTek MT6227 on Philips 9 at 9U is now working	with uvc
+</A></li>
+        <LI>Next message: <A HREF="004967.html">[Linux-uvc-devel] Camera Selection\Settings Options
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4966">[ date ]</a>
+              <a href="thread.html#4966">[ thread ]</a>
+              <a href="subject.html#4966">[ subject ]</a>
+              <a href="author.html#4966">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Tuesday 07 July 2009 15:24:19 fsulima wrote:
+&gt;<i> Hi all.
+</I>&gt;<i>
+</I>&gt;<i> MediaTek MT6227 on Philips <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">9 at 9U</A> do not work. It looks like this:
+</I>&gt;<i>
+</I>&gt;<i> $ dmesg | tail
+</I>&gt;<i> [94425.741948] uvcvideo: Failed to query (135) UVC control 1 (unit 0) :
+</I>&gt;<i> -110 (exp. 26).
+</I>&gt;<i> [94425.743941] uvcvideo: Failed to query (129) UVC control 1 (unit 0) :
+</I>&gt;<i> -71 (exp. 26).
+</I>&gt;<i> [94425.743946] uvcvideo: Failed to initialize the device (-5).
+</I>&gt;<i> [94429.128037] usb 7-2: USB disconnect, address 8
+</I>&gt;<i> [94436.384010] usb 7-2: new full speed USB device using uhci_hcd and
+</I>&gt;<i> address 9
+</I>&gt;<i> [94436.849070] usb 7-2: configuration #1 chosen from 7 choices
+</I>&gt;<i> [94436.859998] uvcvideo: Found UVC 1.00 device <A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">9 at 9U</A>    (0e8d:0004)
+</I>&gt;<i> [94437.861939] uvcvideo: Failed to query (135) UVC control 1 (unit 0) :
+</I>&gt;<i> -110 (exp. 26).
+</I>&gt;<i> [94437.863947] uvcvideo: Failed to query (129) UVC control 1 (unit 0) :
+</I>&gt;<i> -71 (exp. 26).
+</I>&gt;<i> [94437.863952] uvcvideo: Failed to initialize the device (-5).
+</I>
+That's weird. The camera seem to crash when queried with GET_DEF. Could you 
+please try the attached patch ? It might require some tweaking if you don't 
+apply it on top of the latest driver version.
+
+&gt;<i> $ lsusb -d 0e8d:0004 -v
+</I>
+[snip]
+
+The device descriptors look *really* weird. The device exposes 7 
+configurations, and the only difference between them is the power consumption. 
+Are you sure you haven't received a development prototype ? :-)
+
+&gt;<i> It looks I'm not the only one having this problem:
+</I>&gt;<i> <A HREF="http://ubuntuforums.org/showthread.php?t=1164520">http://ubuntuforums.org/showthread.php?t=1164520</A>
+</I>&gt;<i>
+</I>&gt;<i> Is there any remedy for this?
+</I>
+Try the attached patch and let me know if it helps.
+
+Best regards,
+
+Laurent Pinchart
+
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: probe-def.diff
+Type: text/x-patch
+Size: 1613 bytes
+Desc: not available
+URL: &lt;<A HREF="https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090711/c4ad336a/attachment.bin">https://lists.berlios.de/pipermail/linux-uvc-devel/attachments/20090711/c4ad336a/attachment.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004962.html">[Linux-uvc-devel] MediaTek MT6227 on Philips 9 at 9U is now working	with uvc
+</A></li>
+	<LI>Next message: <A HREF="004967.html">[Linux-uvc-devel] Camera Selection\Settings Options
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4966">[ date ]</a>
+              <a href="thread.html#4966">[ thread ]</a>
+              <a href="subject.html#4966">[ subject ]</a>
+              <a href="author.html#4966">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

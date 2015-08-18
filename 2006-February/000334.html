@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Small fix and help offered
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Small%20fix%20and%20help%20offered&In-Reply-To=%3C200602271450.40646.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000324.html">
+   <LINK REL="Next"  HREF="000325.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Small fix and help offered</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Small%20fix%20and%20help%20offered&In-Reply-To=%3C200602271450.40646.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Small fix and help offered">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Feb 27 14:50:40 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000324.html">[Linux-uvc-devel] Small fix and help offered
+</A></li>
+        <LI>Next message: <A HREF="000325.html">[Linux-uvc-devel] Fusion Resolution
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#334">[ date ]</a>
+              <a href="thread.html#334">[ thread ]</a>
+              <a href="subject.html#334">[ subject ]</a>
+              <a href="author.html#334">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Per,
+
+&gt;<i> Great work on this driver! Let's just hope that more manufacturers start
+</I>&gt;<i> using the standard.
+</I>&gt;<i>
+</I>&gt;<i> Looking through the code I found whan I think is an error. Se patch below.
+</I>&gt;<i>
+</I>&gt;<i> --- uvcvideo.c  (revision 22)
+</I>&gt;<i> +++ uvcvideo.c  (working copy)
+</I>&gt;<i> @@ -1327,7 +1327,7 @@
+</I>&gt;<i>
+</I>&gt;<i>                 video-&gt;iso_buffer[i] = usb_buffer_alloc(video-&gt;dev-&gt;udev,
+</I>&gt;<i>                         size, GFP_KERNEL, &amp;urb-&gt;transfer_dma);
+</I>&gt;<i> -               if (video == NULL) {
+</I>&gt;<i> +               if (video-&gt;iso_buffer[i] == NULL) {
+</I>&gt;<i>                         usb_free_urb(urb);
+</I>&gt;<i>                         uvc_uninit_isoc(video);
+</I>&gt;<i>                         return -ENOMEM;
+</I>
+Thanks. Applied.
+
+&gt;<i> I have experience of driver development and video systems, and I'd
+</I>&gt;<i> really like to help develop this driver furter. What needs to be done? Bulk
+</I>&gt;<i> transfer? Maybe I can try to get hold of one of those Fuji cameras....
+</I>
+If you can get hold of one of those cameras, bulk transfers shouldn't be very 
+difficult to implement.
+
+You could also implement the V4L2 read() method as it's currently not 
+supported. Another area of the driver that could do with some improvements is 
+video controls handling (VIDIOC_{GS}_CTRL). A few controls are currently 
+mapped directly from V4L2 to UVC, but complex controls can't be easily 
+supported this way. I can give you more information if you're interested.
+
+Best regards, and thank you for your help.
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000324.html">[Linux-uvc-devel] Small fix and help offered
+</A></li>
+	<LI>Next message: <A HREF="000325.html">[Linux-uvc-devel] Fusion Resolution
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#334">[ date ]</a>
+              <a href="thread.html#334">[ thread ]</a>
+              <a href="subject.html#334">[ subject ]</a>
+              <a href="author.html#334">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

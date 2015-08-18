@@ -1,0 +1,338 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] Apple Built-in iSight
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Apple%20Built-in%20iSight&In-Reply-To=%3C1197237095.12516.7.camel%40thilivren%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002563.html">
+   <LINK REL="Next"  HREF="002570.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] Apple Built-in iSight</H1>
+    <B>&#201;tienne Bersac</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Apple%20Built-in%20iSight&In-Reply-To=%3C1197237095.12516.7.camel%40thilivren%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] Apple Built-in iSight">bersace03 at gmail.com
+       </A><BR>
+    <I>Sun Dec  9 22:51:35 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002563.html">[Linux-uvc-devel] [PATCH] Apple Built-in iSight
+</A></li>
+        <LI>Next message: <A HREF="002570.html">[Linux-uvc-devel] [PATCH] Apple Built-in iSight
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2568">[ date ]</a>
+              <a href="thread.html#2568">[ thread ]</a>
+              <a href="subject.html#2568">[ subject ]</a>
+              <a href="author.html#2568">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+Follows the cleaned up patch. Thanks for te comments, the patch now
+weight less than 8K !
+
+Signed-off-by: &#201;tienne Bersac &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">bersace03 at gmail.com</A>&gt;
+---
+Add built-in isight support to uvcvideo driver. Add a decode function
+member to struct uvc_video_queue. The decode function has three
+implementation yet : isoc, bulk and isight. uvc_isight.c contains the
+the isight decode function implementation.
+
+A BUILTIN_ISIGHT quirk is added allowing to determine wether to use
+isight decode function or not.
+
+Index: uvc_video.c
+===================================================================
+--- uvc_video.c	(r&#233;vision 149)
++++ uvc_video.c	(copie de travail)
+@@ -452,7 +452,7 @@
+ /*
+  * Completion handler for video URBs.
+  */
+-static void uvc_video_complete_isoc(struct urb *urb,
++static void uvc_video_decode_isoc(struct urb *urb,
+ 	struct uvc_video_queue *queue, struct uvc_buffer *buf)
+ {
+ 	u8 *mem;
+@@ -490,7 +490,7 @@
+ 	}
+ }
+ 
+-static void uvc_video_complete_bulk(struct urb *urb,
++static void uvc_video_decode_bulk(struct urb *urb,
+ 	struct uvc_video_queue *queue, struct uvc_buffer *buf)
+ {
+ 	u8 *mem;
+@@ -585,10 +585,7 @@
+ 		buf = list_entry(queue-&gt;irqqueue.next, struct uvc_buffer, queue);
+ 	spin_unlock_irqrestore(&amp;queue-&gt;irqlock, flags);
+ 
+-	if (urb-&gt;number_of_packets)
+-		uvc_video_complete_isoc(urb, queue, buf);
+-	else
+-		uvc_video_complete_bulk(urb, queue, buf);
++	queue-&gt;decode(urb, queue, buf);
+ 
+ 	if ((ret = usb_submit_urb(urb, GFP_ATOMIC)) &lt; 0) {
+ 		uvc_printk(KERN_ERR, &quot;Failed to resubmit video URB (%d).\n&quot;,
+@@ -937,6 +934,14 @@
+ 	video-&gt;streaming-&gt;cur_frame = frame;
+ 	atomic_set(&amp;video-&gt;active, 1);
+ 
++	/* Select the video decoding function */
++	if (video-&gt;dev-&gt;quirks &amp; UVC_QUIRK_BUILTIN_ISIGHT)
++		video-&gt;queue.decode = uvc_video_decode_isight;
++	else if (video-&gt;streaming-&gt;intf-&gt;num_altsetting &gt; 1)
++		video-&gt;queue.decode = uvc_video_decode_isoc;
++	else 
++		video-&gt;queue.decode = uvc_video_decode_bulk;
++
+ 	return 0;
+ }
+ 
+Index: uvc_isight.c
+===================================================================
+--- uvc_isight.c	(r&#233;vision 0)
++++ uvc_isight.c	(r&#233;vision 0)
+@@ -0,0 +1,140 @@
++/*
++ * Copyright (C) 2006-2007 Ivan N. Zlatev &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">contact at i-nz.net</A>&gt;
++ *
++ * Based on extract.c by Ronald S. Bultje &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">rbultje at ronald.bitfreak.net</A>&gt;.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
++ * MA 02110-1301, USA
++ */
++
++#include &lt;linux/usb.h&gt;
++#include &lt;linux/kernel.h&gt;
++#include &lt;linux/mm.h&gt;
++
++#include &quot;uvcvideo.h&quot;
++
++/* Built-in iSight webcams implements most of UVC 1.0 except a
++ * different packet format. Instead of sending a header at the
++ * beginning of each isochronous transfer payload, the webcam sends a
++ * single header per image (on its own in a packet), followed by
++ * packets containing data only.
++ *
++ * Offset   Size (bytes)	Description
++ * ------------------------------------------------------------------
++ * 0x00 	1   	Header length
++ * 0x01 	1   	Flags (UVC-compliant)
++ * 0x02 	4   	Always equal to '11223344'
++ * 0x06 	8   	Always equal to 'deadbeefdeadface'
++ * 0x0e 	16  	Unknown
++ *
++ * The header can be prefixed by an optional, unknown-purpose byte.
++ */
++
++static int isight_decode (struct uvc_video_queue *queue, struct uvc_buffer *buf,
++		const __u8 *data, unsigned int len)
++{
++	static const __u8 hdr[] = {
++		0x11, 0x22, 0x33, 0x44,
++		0xde, 0xad, 0xbe, 0xef,
++		0xde, 0xad, 0xfa, 0xce
++	};
++
++	unsigned int maxlen, nbytes;
++	__u8 *mem;
++	int is_header = 0;
++
++	if (buf == NULL)
++		return 0;
++
++	if ((len &gt;= 14 &amp;&amp; memcmp (&amp;data[2], hdr, 12) == 0) ||
++	    (len &gt;= 15 &amp;&amp; memcmp (&amp;data[3], hdr, 12) == 0)) {
++		uvc_trace(UVC_TRACE_FRAME, &quot;iSight header found\n&quot;);
++		is_header = 1;
++	}
++
++	/* Synchronize to the input stream by waiting for a header packet. */
++	if (buf-&gt;state != UVC_BUF_STATE_ACTIVE) {
++		if (!is_header) {
++			uvc_trace(UVC_TRACE_FRAME, &quot;Dropping packet (out of &quot;
++				  &quot;sync).\n&quot;);
++			return 0;
++		}
++
++		buf-&gt;state = UVC_BUF_STATE_ACTIVE;
++	}
++
++	/* Mark the buffer as done if we're at the beginning of a new frame.
++	 *
++	 * Empty buffers (bytesused == 0) don't trigger end of frame detection
++	 * as it doesn't make sense to return an empty buffer.
++	 */
++	if (is_header &amp;&amp; buf-&gt;buf.bytesused != 0) {
++		buf-&gt;state = UVC_BUF_STATE_DONE;
++		return -EAGAIN;
++	}
++
++	/* Copy the video data to the buffer. Skip header packets, as they
++	 * contain no data.
++	 */
++	if (!is_header) {
++		maxlen = buf-&gt;buf.length - buf-&gt;buf.bytesused;
++		mem = queue-&gt;mem + buf-&gt;buf.m.offset + buf-&gt;buf.bytesused;
++		nbytes = min(len, maxlen);
++		memcpy(mem, data, nbytes);
++		buf-&gt;buf.bytesused += nbytes;
++
++		if (len &gt; maxlen || buf-&gt;buf.bytesused == buf-&gt;buf.length) {
++			uvc_trace(UVC_TRACE_FRAME, &quot;Frame complete (overflow).\n&quot;);
++			buf-&gt;state = UVC_BUF_STATE_DONE;
++		}
++	}
++
++	return 0;
++}
++
++void uvc_video_decode_isight (struct urb *urb, struct uvc_video_queue *queue,
++		struct uvc_buffer *buf)
++{
++	int ret, i;
++
++	for (i = 0; i &lt; urb-&gt;number_of_packets; ++i) {
++		if (urb-&gt;iso_frame_desc[i].status &lt; 0) {
++			uvc_trace(UVC_TRACE_FRAME, &quot;USB isochronous frame &quot;
++				  &quot;lost (%d).\n&quot;,
++				  urb-&gt;iso_frame_desc[i].status);
++		}
++
++		/* Decode the payload packet.
++		 * uvc_video_decode is entered twice when a frame transition
++		 * has been detected because the end of frame can only be
++		 * reliably detected when the first packet of the new frame
++		 * is processed. The first pass detects the transition and
++		 * closes the previous frame's buffer, the second pass
++		 * processes the data of the first payload of the new frame.
++		 */
++		do {
++			ret = isight_decode(queue, buf,
++					    urb-&gt;transfer_buffer + urb-&gt;iso_frame_desc[i].offset,
++					    urb-&gt;iso_frame_desc[i].actual_length);
++
++			if (buf == NULL)
++				break;
++
++			if (buf-&gt;state == UVC_BUF_STATE_DONE ||
++			    buf-&gt;state == UVC_BUF_STATE_ERROR)
++				buf = uvc_queue_next_buffer(queue, buf);
++		} while (ret == -EAGAIN);
++	}
++}
+Index: uvc_driver.c
+===================================================================
+--- uvc_driver.c	(r&#233;vision 149)
++++ uvc_driver.c	(copie de travail)
+@@ -1667,6 +1667,13 @@
+ 	  .bInterfaceProtocol	= 0,
+ 	  .driver_info		= UVC_QUIRK_PROBE_MINMAX
+ 	},
++	/* Apple Built-In iSight */
++	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE,
++	  .idVendor		= 0x05ac,
++	  .idProduct		= 0x8501,
++	  .driver_info 		= UVC_QUIRK_PROBE_MINMAX
++	                        | UVC_QUIRK_BUILTIN_ISIGHT
++	},
+ 	/* Microsoft Lifecam NX-6000 */
+ 	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE
+ 				| USB_DEVICE_ID_MATCH_INT_INFO,
+Index: uvcvideo.h
+===================================================================
+--- uvcvideo.h	(r&#233;vision 149)
++++ uvcvideo.h	(copie de travail)
+@@ -311,6 +311,7 @@
+ #define UVC_QUIRK_STATUS_INTERVAL	0x00000001
+ #define UVC_QUIRK_PROBE_MINMAX		0x00000002
+ #define UVC_QUIRK_PROBE_EXTRAFIELDS	0x00000004
++#define UVC_QUIRK_BUILTIN_ISIGHT	0x00000008
+ 
+ /* Format flags */
+ #define UVC_FMT_FLAG_COMPRESSED		0x00000001
+@@ -576,6 +577,9 @@
+ 
+ 	struct list_head mainqueue;
+ 	struct list_head irqqueue;
++
++	void (*decode) (struct urb *urb, struct uvc_video_queue *queue,
++			struct uvc_buffer *buf);
+ };
+ 
+ struct uvc_video_device {
+@@ -764,6 +768,10 @@
+ extern struct usb_host_endpoint *uvc_find_endpoint(
+ 		struct usb_host_interface *alts, __u8 epaddr);
+ 
++/* Quirks support */
++void uvc_video_decode_isight (struct urb *urb, struct uvc_video_queue *queue, 
++		struct uvc_buffer *buf);
++
+ #endif /* __KERNEL__ */
+ 
+ #endif
+Index: Makefile
+===================================================================
+--- Makefile	(r&#233;vision 149)
++++ Makefile	(copie de travail)
+@@ -5,7 +5,7 @@
+ PWD		:= $(shell pwd)
+ 
+ obj-m		:= uvcvideo.o
+-uvcvideo-objs   := uvc_driver.o uvc_queue.o uvc_v4l2.o uvc_video.o uvc_ctrl.o
++uvcvideo-objs   := uvc_driver.o uvc_queue.o uvc_v4l2.o uvc_video.o uvc_ctrl.o uvc_isight.o
+ 
+ all: uvcvideo
+ 
+
+ 
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002563.html">[Linux-uvc-devel] [PATCH] Apple Built-in iSight
+</A></li>
+	<LI>Next message: <A HREF="002570.html">[Linux-uvc-devel] [PATCH] Apple Built-in iSight
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2568">[ date ]</a>
+              <a href="thread.html#2568">[ thread ]</a>
+              <a href="subject.html#2568">[ subject ]</a>
+              <a href="author.html#2568">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

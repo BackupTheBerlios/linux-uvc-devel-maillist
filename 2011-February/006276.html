@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo problem when changing grab size in a	WebCam SCB-0370N (Samsung SF510)
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2011-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20problem%20when%20changing%20grab%20size%20in%20a%0A%09WebCam%20SCB-0370N%20%28Samsung%20SF510%29&In-Reply-To=%3C201102151958.12348.laurent.pinchart%40ideasonboard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006273.html">
+   <LINK REL="Next"  HREF="006285.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo problem when changing grab size in a	WebCam SCB-0370N (Samsung SF510)</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20problem%20when%20changing%20grab%20size%20in%20a%0A%09WebCam%20SCB-0370N%20%28Samsung%20SF510%29&In-Reply-To=%3C201102151958.12348.laurent.pinchart%40ideasonboard.com%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo problem when changing grab size in a	WebCam SCB-0370N (Samsung SF510)">laurent.pinchart at ideasonboard.com
+       </A><BR>
+    <I>Tue Feb 15 19:58:12 CET 2011</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006273.html">[Linux-uvc-devel] [new cam] Success with Rosewill RCM-8163
+</A></li>
+        <LI>Next message: <A HREF="006285.html">[Linux-uvc-devel] Missing Webcam in device list
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6276">[ date ]</a>
+              <a href="thread.html#6276">[ thread ]</a>
+              <a href="subject.html#6276">[ subject ]</a>
+              <a href="author.html#6276">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Gabriel,
+
+On Wednesday 26 January 2011 11:20:35 Gabriel Huecas wrote:
+&gt;<i> Hi Laurent,
+</I>&gt;<i> 
+</I>&gt;<i> thank you for your attention,
+</I>&gt;<i> 
+</I>&gt;<i> I enclose as a file the output of &quot;lsusb -v -d 2232:1001&quot; (a bit long).
+</I>
+You forgot to attach the files.
+
+&gt;<i> There are nothing (in the execution of my program) printed in
+</I>&gt;<i> &quot;/var/log/messages/&quot;.
+</I>&gt;<i> Also, the command &quot;dmesg&quot; gives no additional information ( I run it
+</I>&gt;<i> before executing my program and after it).  (anyway, I copy the last
+</I>&gt;<i> lines of dmesg) output:
+</I>&gt;<i> 
+</I>&gt;<i> [ 2909.989414] tun0: Disabled Privacy Extensions
+</I>&gt;<i> [ 2910.281249] nf_conntrack version 0.5.0 (16384 buckets, 65536 max)
+</I>&gt;<i> [ 2910.281749] CONFIG_NF_CT_ACCT is deprecated and will be removed soon.
+</I>&gt;<i> Please use
+</I>&gt;<i> [ 2910.281752] nf_conntrack.acct=1 kernel parameter, acct=1 nf_conntrack
+</I>&gt;<i> module option or
+</I>&gt;<i> [ 2910.281754] sysctl net.netfilter.nf_conntrack_acct=1 to enable it.
+</I>&gt;<i> [ 2928.462797] hda-intel: IRQ timing workaround is activated for card
+</I>&gt;<i> #0. Suggest a bigger bdl_pos_adj.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> BTW, I also enclose the output of my program (called &quot;isabel_video&quot;)
+</I>&gt;<i> with debug information activated (which prints all ioctls send to the
+</I>&gt;<i> driver). There is a pretty good bunch of information, but the last grab
+</I>&gt;<i> size change is at line 788 (you can see other previous changes searching
+</I>&gt;<i> for the &quot;setGrabSize&quot; string).
+</I>&gt;<i> 
+</I>&gt;<i> The schema is:
+</I>&gt;<i> VIDIOC_STREAMOFF(mode=1)
+</I>&gt;<i> VIDIOC_REQBUFS (count=0,type=1,memory=1)        # CARE HERE: I introduce
+</I>&gt;<i> it because some drivers requires to ask
+</I>&gt;<i>                                                                            
+</I>&gt;<i>           # for zero buffer to release memory. # I found this idea came in
+</I>&gt;<i> the &quot;lucview&quot; program then, some VIDIOC_ENUM_FRAMESIZES to poll for gram
+</I>&gt;<i> sizes (again),
+</I>&gt;<i> VIDIOC_G_FMT      # get current values
+</I>&gt;<i> VIDIOC_TRY_FMT  # sanity check
+</I>&gt;<i> VIDIOC_S_FMT      # set the new values
+</I>&gt;<i> 
+</I>&gt;<i> finally,
+</I>&gt;<i> VIDIOC_REQBUFS(count=2,type=1,memory=1)
+</I>&gt;<i> VIDIOC_QUERYBUF(0, ...
+</I>&gt;<i> VIDIOC_QBUF(0, ...
+</I>&gt;<i> VIDIOC_QUERYBUF(1,...
+</I>&gt;<i> VIDIOC_QBUF(1,...
+</I>&gt;<i> VIDIOC_STREAMON(mode=1)
+</I>&gt;<i> 
+</I>&gt;<i> and no further evolution... Note that all ioctl return value &gt;= 0 (are ok).
+</I>
+Is it the change of resolution that makes it hang, or is it the resolution ? 
+What happen if you try to capture images in the problematic resolution with a 
+test software such as yavta (git.ideasonboard.com) ?
+
+&gt;<i> Should you need any further information, or something I can do at my
+</I>&gt;<i> laptop, just ask for it ,
+</I>
+-- 
+Regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006273.html">[Linux-uvc-devel] [new cam] Success with Rosewill RCM-8163
+</A></li>
+	<LI>Next message: <A HREF="006285.html">[Linux-uvc-devel] Missing Webcam in device list
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6276">[ date ]</a>
+              <a href="thread.html#6276">[ thread ]</a>
+              <a href="subject.html#6276">[ subject ]</a>
+              <a href="author.html#6276">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

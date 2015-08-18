@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] OmniVision webcam, error -45
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20OmniVision%20webcam%2C%20error%20-45&In-Reply-To=%3C200712122320.32115.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002591.html">
+   <LINK REL="Next"  HREF="002594.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] OmniVision webcam, error -45</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20OmniVision%20webcam%2C%20error%20-45&In-Reply-To=%3C200712122320.32115.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] OmniVision webcam, error -45">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Wed Dec 12 23:20:32 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002591.html">[Linux-uvc-devel] OmniVision webcam, error -45
+</A></li>
+        <LI>Next message: <A HREF="002594.html">[Linux-uvc-devel] [PATCH] uvcvideo: usb power management
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2593">[ date ]</a>
+              <a href="thread.html#2593">[ thread ]</a>
+              <a href="subject.html#2593">[ subject ]</a>
+              <a href="author.html#2593">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Lambros,
+
+On Wednesday 12 December 2007, Lambros Lambrou wrote:
+&gt;<i> Dear all,
+</I>&gt;<i>
+</I>&gt;<i> I have a Dell Inspiron 1720 laptop, running Ubuntu 7.10, x86_64.  The
+</I>&gt;<i> webcam, according to 'lsusb' is:
+</I>&gt;<i>
+</I>&gt;<i> 05a9:2640 OmniVision Technologies, Inc.
+</I>&gt;<i>
+</I>&gt;<i> My problem is, the webcam appears to work fine for about 1 minute, and
+</I>&gt;<i> then the picture freezes.  I have tested this using Ekiga, skype (beta
+</I>&gt;<i> version 2.0.0.27), luvcview and gstreamer-properties.  In all
+</I>&gt;<i> applications except Ekiga, the camera functions for about 1 minute then
+</I>&gt;<i> the picture is frozen, until I restart the test, when the camera runs
+</I>&gt;<i> for a further 1 minute.. ad nauseam.  With Ekiga, all tests seem to run
+</I>&gt;<i> fine, until I attempt an actual VoIP call with a real person, when the
+</I>&gt;<i> video and sound are garbled, and the application becomes generally
+</I>&gt;<i> unstable, with random segfaults (see
+</I>&gt;<i> <A HREF="https://bugs.launchpad.net/ubuntu/+source/ekiga/+bug/164942">https://bugs.launchpad.net/ubuntu/+source/ekiga/+bug/164942</A> ).
+</I>&gt;<i>
+</I>&gt;<i> I have tried the latest uvcvideo driver from the SVN trunk (revision
+</I>&gt;<i> 151) but the behaviour is no different.  I have also tried various
+</I>&gt;<i> patches that I found, with no luck (either the patches failed to apply,
+</I>&gt;<i> or there was no difference in behaviour).
+</I>&gt;<i>
+</I>&gt;<i> Whenever the problem occurs, I always get this in my 'dmesg' output:
+</I>&gt;<i> [ 6045.133998] uvcvideo: Failed to resubmit video URB (-45).
+</I>&gt;<i> [ 6045.134047] uvcvideo: Failed to resubmit video URB (-45).
+</I>&gt;<i> [ 6045.134088] uvcvideo: Failed to resubmit video URB (-45).
+</I>&gt;<i> [ 6045.134131] uvcvideo: Failed to resubmit video URB (-45).
+</I>
+I don't like that :-(
+
+&gt;<i> I get the same diagnostics if I use 'trace=15' when loading the module -
+</I>&gt;<i> it doesn't seem to give any more information (I use the command 'sudo
+</I>&gt;<i> modprobe uvcvideo trace=15').  Would I need to configure
+</I>&gt;<i> 'CONFIG_USB_DEBUG=y' to get more helpful debug information?  Would I
+</I>&gt;<i> need to recompile the Ubuntu kernel to do this?
+</I>
+I don't think CONFIG_USB_DEBUG would help, except maybe by slowing the kernel 
+down a bit. You will have to recompile the Ubuntu kernel, or at least the USB 
+modules if the USB subsystem is built as a module.
+
+&gt;<i> I notice that the problem is not permanent.  In Skype, I can simply stop
+</I>&gt;<i> and start my video to get the camera running for another minute or so.
+</I>&gt;<i> Is there some way I could modify the driver to automatically reset the
+</I>&gt;<i> device when this error-condition occurs?  Obviously this wouldn't be a
+</I>&gt;<i> proper solution, but it would meet my needs.
+</I>&gt;<i>
+</I>&gt;<i> I have tried modifying the driver, to resubmit the video URB when the
+</I>&gt;<i> particular error-code &quot;-45&quot; is returned.  This does not help - it simply
+</I>&gt;<i> fails again with the same error code.
+</I>
+Was worth a shot as a workaround.
+
+&gt;<i> From looking around the 'net, it appears that -45 refers to -EL2NSYNC,
+</I>&gt;<i> which is reportedly only used by ehci_hcd, and is perhaps audio-related.
+</I>&gt;<i> I disabled my audio driver &quot;snd_hda_intel&quot;, but this did not help.
+</I>
+EL2NSYNC is returned by the EHCI HCD driver when it has trouble scheduling an 
+isochronous URB. I'm not sure if this is caused by a wrong behaviour of the 
+uvcvideo driver or by a bug in the ehci_hcd driver itself.
+
+&gt;<i> Would it be helpful for me to try the 32-bit version of Ubuntu instead
+</I>&gt;<i> of the 64-bit version?  I don't want to try this if it would be wasted
+</I>&gt;<i> effort.
+</I>
+I doubt it would help, but that's always worth a shot if everything else 
+fails.
+
+&gt;<i> I did some searching on the &quot;OmniVision&quot; webcam but I could find very
+</I>&gt;<i> little information.  By all accounts, this camera is supposed to work
+</I>&gt;<i> perfectly with Free Software (but sadly, not for me).  It is built into
+</I>&gt;<i> the screen of my laptop, so I really would like to get it working,
+</I>&gt;<i> instead of just buying another cheap webcam to plug into the side.
+</I>&gt;<i>
+</I>&gt;<i> Any help debugging this would be much appreciated.  Please let me know
+</I>&gt;<i> what further info would be useful.
+</I>
+I would start by trying a vanilla kernel instead of the Ubuntu kernel. Ubuntu 
+might ship patches that affect the ehci scheduler.
+
+If it still fails, we should raise the problem on the linux-usb mailing list 
+to find out who is to blame. I don't have enough knowledge of the ehci driver 
+to understand its scheduling policy.
+
+Best regards,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002591.html">[Linux-uvc-devel] OmniVision webcam, error -45
+</A></li>
+	<LI>Next message: <A HREF="002594.html">[Linux-uvc-devel] [PATCH] uvcvideo: usb power management
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2593">[ date ]</a>
+              <a href="thread.html#2593">[ thread ]</a>
+              <a href="subject.html#2593">[ subject ]</a>
+              <a href="author.html#2593">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

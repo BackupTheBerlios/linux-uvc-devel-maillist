@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] LQC Pro 5000 picture quality settings
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20LQC%20Pro%205000%20picture%20quality%20settings&In-Reply-To=%3C200703241123.06744.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001505.html">
+   <LINK REL="Next"  HREF="001511.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] LQC Pro 5000 picture quality settings</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20LQC%20Pro%205000%20picture%20quality%20settings&In-Reply-To=%3C200703241123.06744.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] LQC Pro 5000 picture quality settings">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Sat Mar 24 11:23:06 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001505.html">[Linux-uvc-devel] LQC Pro 5000 picture quality settings
+</A></li>
+        <LI>Next message: <A HREF="001511.html">[Linux-uvc-devel] LQC Pro 5000 picture quality settings
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1517">[ date ]</a>
+              <a href="thread.html#1517">[ thread ]</a>
+              <a href="subject.html#1517">[ subject ]</a>
+              <a href="author.html#1517">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Martijn,
+
+&gt;<i> &gt; I have a Logitch Quickcam Pro 5000 which runs fine with linux-uvc
+</I>&gt;<i> &gt; drivers, but I was wondering on how to set the JPEG quality it gives.
+</I>&gt;<i> &gt; What I'd like is to have uncompressed output, and compress it myself,
+</I>&gt;<i> &gt; but according to luvcview, the YUYV output has size limitations. Is
+</I>&gt;<i> &gt; there any other way to grab a good quality, full-size image? The
+</I>&gt;<i> &gt; bandwidth must be a bottleneck, but the framerate can be low, as I am
+</I>&gt;<i> &gt; only interested in still images.
+</I>&gt;<i>
+</I>&gt;<i> Hate to reply to my own post, but after some googling I found that
+</I>&gt;<i> v4l2 has an ioctl called VIDIOC_[GS]_JPEGCOMP to get/set the JPEG
+</I>&gt;<i> compression level. However, this is not implemented in the linux-uvc
+</I>&gt;<i> driver. I tried reading the UVC documentation, but this information
+</I>&gt;<i> is a bit too complicated for me. I am willing to test and implement
+</I>&gt;<i> this ioctl, but I need help/directions on how to implement this.
+</I>&gt;<i> Anyone knows?
+</I>
+You're right, the driver doesn't implement VIDIOC_[GS]_JPEGCOMP yet. Luckily 
+for you, it shouldn't be difficult to support those ioctls :-)
+
+The relevant part of the spec is section 4.3.1.1 (UVC 1.1). The compression 
+quality is stored in the wCompQuality field, ranging from 0 to 10000. The 
+resolution (step) is reported by the device but is currently not retrieved by 
+the driver.
+
+The driver negotiates video streaming parameters in uvc_probe_video() 
+(uvc_video.c). Have a look at uvc_v4l2_set_streamparm() (uvc_v4l2.c) to see 
+how the function is used to set the frame rate. It should be quite easy to 
+copy the function and modify it to set the compression quality. You should of 
+course add some sanity checks: setting the JPEG compression quality doesn't 
+make sense for YUYV.
+
+On a side note, the driver currently sets the quality to the highest value 
+supported by the device. If your quality issues come from the JPEG 
+compression, you will have to use YUYV. The first generation Logitech webcams 
+only supported YUYV streaming at high resolutions. The new ones (2006 and 
+later) suport YUYV at all resolutions.
+
+Feel free to ask for more information if you run into any problem. Looking 
+forward for your patch :-)
+
+Cheers,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001505.html">[Linux-uvc-devel] LQC Pro 5000 picture quality settings
+</A></li>
+	<LI>Next message: <A HREF="001511.html">[Linux-uvc-devel] LQC Pro 5000 picture quality settings
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1517">[ date ]</a>
+              <a href="thread.html#1517">[ thread ]</a>
+              <a href="subject.html#1517">[ subject ]</a>
+              <a href="author.html#1517">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

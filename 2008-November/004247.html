@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Quickam E 3500 plus and auto exposure
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2008-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quickam%20E%203500%20plus%20and%20auto%20exposure&In-Reply-To=%3Cbc6dd08a0811160829p1b7566a7y75c3d89ec329b5c5%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004244.html">
+   <LINK REL="Next"  HREF="004249.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Quickam E 3500 plus and auto exposure</H1>
+    <B>Mauro Grauso</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Quickam%20E%203500%20plus%20and%20auto%20exposure&In-Reply-To=%3Cbc6dd08a0811160829p1b7566a7y75c3d89ec329b5c5%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] Quickam E 3500 plus and auto exposure">maurograuso at gmail.com
+       </A><BR>
+    <I>Sun Nov 16 17:29:14 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004244.html">[Linux-uvc-devel] Quickam E 3500 plus and auto exposure
+</A></li>
+        <LI>Next message: <A HREF="004249.html">[Linux-uvc-devel] Kernel messages (Was: Re: Quickam E 3500 plus and	auto exposure)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4247">[ date ]</a>
+              <a href="thread.html#4247">[ thread ]</a>
+              <a href="subject.html#4247">[ subject ]</a>
+              <a href="author.html#4247">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi again Laurent,
+
+Right after writing to you I started playing with uvcdynctrl controls
+and I've found out that setting  'Exposure (Absolute)' to a lower
+value solves my problem.
+
+Now what remains to understand is how come the settings are changed.
+
+&gt;&gt;<i> I compiled the latest uvcdynctrl (0.2) and here is some output:
+</I>&gt;<i>
+</I>&gt;<i> I'm afraid that's outdated :-/ Could you please check the last version out
+</I>&gt;<i> from the SVN repository ?
+</I>
+As I wrote before I identified the setting that gave me problems, but
+on your request I tried also the SVN version and I can confirm you
+that the 0.20 is the latest.
+
+&gt;<i> Please try to modify the exposure controls using the -s option to uvcdynctrl.
+</I>
+That's exactly what I did and got me a smooth stream (the 'Exposure
+(Absolute)' control).
+
+&gt;<i> Set the driver trace parameter to 64 before plugging the camera (echo 64
+</I>&gt;&gt;<i> /sys/modules/uvcvideo/parameters/trace). The driver will then log a message
+</I>&gt;<i> when an ioctl is called. Plug the camera and check if a userspace application
+</I>&gt;<i> invokes VIDIOC_S_CTRL to restore controls.
+</I>
+This is the syslog after enabling the trace when I plug the camera:
+Nov 16 17:22:02 greywolf kernel: [24925.857046] usb 2-1: new high
+speed USB device using ehci_hcd and address 10
+Nov 16 17:22:02 greywolf kernel: [24926.102991] usb 2-1: configuration
+#1 chosen from 1 choice
+Nov 16 17:22:02 greywolf kernel: [24926.103473] uvcvideo: Found UVC
+1.00 device &lt;unnamed&gt; (046d:09a4)
+Nov 16 17:22:02 greywolf kernel: [24926.135418] input: UVC Camera
+(046d:09a4) as /devices/pci0000:00/0000:00:02.1/usb2/2-1/2-1:1.0/input/input11
+Nov 16 17:22:03 greywolf kernel: [24926.397739]
+VIDIOC_QUERYCAPVIDIOCGCAPVIDIOC_QUERYCAPVIDIOC_ENUMINPUTVIDIOC_ENUMINPUTVIDIOC_ENUM_FMTVIDIOC_TRY_FMT&lt;3&gt;10:3:1:
+cannot set freq 16000 to ep 0x86
+Nov 16 17:22:03 greywolf kernel: [24927.400217] uvcvideo: Failed to
+query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+Nov 16 17:22:04 greywolf kernel: [24927.515251]
+VIDIOC_QUERYCAPVIDIOC_G_FMTVIDIOC_S_FMT&lt;3&gt;uvcvideo: Failed to query
+(1) UVC control 1 (unit 0) : -32 (exp. 26).
+Nov 16 17:22:05 greywolf kernel: [24927.849383]
+VIDIOC_G_FMTVIDIOC_S_FMT&lt;3&gt;uvcvideo: Failed to query (1) UVC control 1
+(unit 0) : -110 (exp. 26).
+Nov 16 17:22:05 greywolf kernel: [24928.848506]
+VIDIOC_ENUMINPUTVIDIOC_G_INPUTVIDIOC_ENUMINPUTVIDIOC_ENUMSTD&lt;7&gt;uvcvideo:
+Unsupported ioctl 0xc0405619
+Nov 16 17:22:06 greywolf kernel: [24928.848769]
+VIDIOC_ENUMINPUTVIDIOC_ENUM_FMTVIDIOC_ENUM_FMTVIDIOC_ENUM_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMT&lt;3&gt;uvcvideo:
+Failed to query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+Nov 16 17:22:07 greywolf kernel: [24929.849271]
+VIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMT&lt;3&gt;uvcvideo:
+Failed to query (1) UVC control 1 (unit 0) : -110 (exp. 26).
+
+&gt;&gt;<i> If I click on &quot;auto exposure off&quot; I still get &quot;Set Auto Exposure off
+</I>&gt;&gt;<i> error&quot; in stderr.
+</I>&gt;<i>
+</I>&gt;<i> Please try to set the auto exposure control with uvcdynctrl.
+</I>
+Setting auto exposure fails even with uvcdynctrl. It's on by default
+and doesn't seen to be changable (Even if the control is correcrly
+identified).
+
+  Exposure, Auto
+    ID      : 0x00000000,
+    Type    : Choice,
+    Flags   : { CAN_READ, CAN_WRITE },
+    Values  : { 'Auto Mode'[0], 'Manual Mode'[1], 'Shutter Priority
+Mode'[2], 'Aperture Priority Mode'[3] },
+    Default : 3
+
+but:
+/uvcdynctrl-0.2 --get='Exposure, Auto'
+[libwebcam] Unknown V4L2 control ID encountered: 10094849
+[libwebcam] Unknown V4L2 control ID encountered: 10094850
+[libwebcam] Unknown V4L2 control ID encountered: 10094851
+ERROR: Unknown control specified.
+
+and:
+./uvcdynctrl-0.2 --set='Exposure, Auto' 0
+[libwebcam] Unknown V4L2 control ID encountered: 10094849
+[libwebcam] Unknown V4L2 control ID encountered: 10094850
+[libwebcam] Unknown V4L2 control ID encountered: 10094851
+ERROR: Unknown control specified.
+
+When I do that the syslog shows:
+Nov 16 17:24:46 greywolf kernel: [24930.848233]
+VIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_G_FMTVIDIOC_S_FMTVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_CROPCAPVIDIOC_S_CROPVIDIOC_S_INPUTVIDIOC_QUERYCTRLVIDIOC_S_CTRLVIDIOC_QUERYCTRLVIDIOC_S_CTRLVIDIOC_QUERYCTRLVIDIOC_S_CTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_STREAMOFFVIDIOC_QUERYCAPVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYC
+Nov 16 17:25:29 greywolf kernel:
+RLVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCAPVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCAPVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYMENUVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCAPVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDIOC_QUERYCTRLVIDI
+
+
+&gt;<i> I really doubt the camera includes an EEPROM to store control values (but I
+</I>&gt;<i> might of course be wrong). Please try to set auto-exposure off with
+</I>&gt;<i> uvcdynctrl. If it works the problem is probably in luvcview. If it doesn't
+</I>&gt;<i> we'll have a look somewhere else.
+</I>
+As told, the auto exposure can't be set with any software. Maybe I
+open the camera to see if there's an EPROM?
+
+Thanks
+
+Ciao,
+Mauro
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004244.html">[Linux-uvc-devel] Quickam E 3500 plus and auto exposure
+</A></li>
+	<LI>Next message: <A HREF="004249.html">[Linux-uvc-devel] Kernel messages (Was: Re: Quickam E 3500 plus and	auto exposure)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4247">[ date ]</a>
+              <a href="thread.html#4247">[ thread ]</a>
+              <a href="subject.html#4247">[ subject ]</a>
+              <a href="author.html#4247">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

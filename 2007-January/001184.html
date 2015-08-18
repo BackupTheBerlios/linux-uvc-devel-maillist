@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Automatic Gain Control
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Automatic%20Gain%20Control&In-Reply-To=%3Cop.tlyzhqf242iof8%40nb-mrublixp.am.logitech.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001178.html">
+   <LINK REL="Next"  HREF="001185.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Automatic Gain Control</H1>
+    <B>Martin Rubli</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Automatic%20Gain%20Control&In-Reply-To=%3Cop.tlyzhqf242iof8%40nb-mrublixp.am.logitech.com%3E"
+       TITLE="[Linux-uvc-devel] Automatic Gain Control">linux at rubli.info
+       </A><BR>
+    <I>Thu Jan 11 04:21:58 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001178.html">[Linux-uvc-devel] Automatic Gain Control
+</A></li>
+        <LI>Next message: <A HREF="001185.html">[Linux-uvc-devel] Automatic Gain Control
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1184">[ date ]</a>
+              <a href="thread.html#1184">[ thread ]</a>
+              <a href="subject.html#1184">[ subject ]</a>
+              <a href="author.html#1184">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Michel,
+
+On Wed, 10 Jan 2007 01:49:31 -0800, Michel Xhaard &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">mxhaard at magic.fr</A>&gt; wrote:
+
+&gt;&gt;<i> &gt; Seem strange that we cannot change the exposure in manuel
+</I>&gt;&gt;<i> &gt; mode ?
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> There should be a control to set the absolute exposure time ...
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> &gt; Is there a way to set/reset the autowhite balance too ? a lot of
+</I>&gt;&gt;<i> &gt; robotic project need these features
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> ... and one for white balance temperature. I'll double check tomorrow on
+</I>&gt;&gt;<i> my Linux machine but those are standard UVC controls that our cameras
+</I>&gt;&gt;<i> support.
+</I>&gt;<i> I have try to used it (look at the last luvcview release) but that did  
+</I>&gt;<i> not work on my orbit. luvcview use the same code for all control, each  
+</I>&gt;<i> control can be up or down from the v4l2 step parameter luvcview test if  
+</I>&gt;<i> we are
+</I>&gt;<i> between min and max and then apply the needed change. For some strange  
+</I>&gt;<i> reason exposure and white balance always return a value outside the  
+</I>&gt;<i> range ? maybe i am wrong here, but i don't see the reason :( Help are  
+</I>&gt;<i> welcome !!
+</I>
+I've just tested it and both controls work for me. Here's what they look  
+like on my Fusion (2006 model):
+
+Listing available controls for device video0:
+   White Balance Temperature
+     ID      : 8,
+     Type    : Dword,
+     Flags   : { CAN_READ, CAN_WRITE, IS_CUSTOM },
+     Values  : [ 0 .. 10000, step size: 10 ],
+     Default : 4000
+   White Balance Temperature, Auto
+     ID      : 9,
+     Type    : Boolean,
+     Flags   : { CAN_READ, CAN_WRITE, IS_CUSTOM },
+     Values  : [ 0 .. 9984, step size: 0 ],
+     Default : 1
+   Exposure (Absolute)
+     ID      : 17,
+     Type    : Dword,
+     Flags   : { CAN_READ, CAN_WRITE, IS_CUSTOM },
+     Values  : [ 0 .. 9984, step size: 0 ],
+     Default : 0
+   Auto-exposure mode
+     ID      : 15,
+     Type    : Choice,
+     Flags   : { CAN_READ, CAN_WRITE },
+     Values  : { 'Manual'[1], 'Aperture priority'[8] },
+     Default : 8
+[...]
+
+The zero step size for the absolute exposure time is obviously wrong. I  
+don't currently have my USB analyzer to check what's going on there. Also,  
+I get errors when I try to read these controls. This seems to be why the  
+controls don't work in luvcview.
+
+Apart from that everything seems okay. Both controls, white balance and  
+exposure time, do what they should in my test application. I'll post an  
+update as soon as I find out what's going on there.
+
+Cheers,
+Martin
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001178.html">[Linux-uvc-devel] Automatic Gain Control
+</A></li>
+	<LI>Next message: <A HREF="001185.html">[Linux-uvc-devel] Automatic Gain Control
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1184">[ date ]</a>
+              <a href="thread.html#1184">[ thread ]</a>
+              <a href="subject.html#1184">[ subject ]</a>
+              <a href="author.html#1184">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

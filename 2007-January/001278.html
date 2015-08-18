@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Microsoft NX-6000
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20NX-6000&In-Reply-To=%3C200701221727.55221.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001277.html">
+   <LINK REL="Next"  HREF="001279.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Microsoft NX-6000</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Microsoft%20NX-6000&In-Reply-To=%3C200701221727.55221.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Microsoft NX-6000">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Mon Jan 22 17:27:54 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001277.html">[Linux-uvc-devel] Microsoft NX-6000
+</A></li>
+        <LI>Next message: <A HREF="001279.html">[Linux-uvc-devel] Microsoft NX-6000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1278">[ date ]</a>
+              <a href="thread.html#1278">[ thread ]</a>
+              <a href="subject.html#1278">[ subject ]</a>
+              <a href="author.html#1278">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi James,
+
+&gt;<i>  see attached for a svn diff. Be aware that I've not much idea what I'm
+</I>&gt;<i> doing with this code, blindly fumbling in the dark at the moment, so I'm
+</I>&gt;<i> certainly not advocating what I've changed! The changes do make the
+</I>&gt;<i> camera load though.
+</I>&gt;<i>
+</I>&gt;<i> &gt; Having a look at the descriptors, the device shouldn't require an entry
+</I>&gt;<i> &gt; in the USB IDs list.
+</I>&gt;<i>
+</I>&gt;<i> I added it to the list so it would have the UVC_QUIRK_PROBE_MINMAX,
+</I>&gt;<i> without it it doesn't get far at all. It seems the camera just doesn't
+</I>&gt;<i> support GET_DEF.
+</I>
+Nice to know. The Apple iSight was high on the list of broken cams, but it 
+seems the Microsoft ones might beat it :-)
+
+&gt;<i> &gt; There is a command line capture program called uvccapture, you could try
+</I>&gt;<i> &gt; it.
+</I>&gt;<i>
+</I>&gt;<i> Excellent, that's just the kind of thing I was looking for. So the light
+</I>&gt;<i> on the camera comes on and stays on but it seems like uvccapture is
+</I>&gt;<i> hanging. Ctrl-c doesn't kill it but disconnecting the camera does. This
+</I>&gt;<i> is the command line and the error I get, before pulling out the cable:
+</I>&gt;<i> ./uvccapture -x640 -y480 -t0
+</I>&gt;<i> ioctl querycontrol error 22
+</I>&gt;<i>
+</I>&gt;<i> This is the dmesg output up to the disconnect:
+</I>&gt;<i>
+</I>&gt;<i> [17260296.440000] uvcvideo: Trying format 0x47504a4d (MJPG): 10000x10000.
+</I>&gt;<i> [17260296.440000] uvcvideo: Using default frame interval 133333.3 us (7.5
+</I>&gt;<i> fps). [17260298.644000] uvcvideo: Trying format 0x47504a4d (MJPG):
+</I>&gt;<i> 10000x10000. [17260298.644000] uvcvideo: Using default frame interval
+</I>&gt;<i> 133333.3 us (7.5 fps). [17260826.716000] uvcvideo: Trying format 0x47504a4d
+</I>&gt;<i> (MJPG): 640x480. [17260826.716000] uvcvideo: Using default frame interval
+</I>&gt;<i> 33333.3 us (30.0 fps). [17260826.772000] uvcvideo: Control 0x00980913 not
+</I>&gt;<i> found.
+</I>&gt;<i> [17260849.252000] usb 5-2: USB disconnect, address 33
+</I>&gt;<i>
+</I>&gt;<i> I've not had a chance to look into the ioctl error or the control error
+</I>&gt;<i> yet. I can't really play too much with this at work. I'll look into it
+</I>&gt;<i> soon though.
+</I>
+The control shouldn't be an issue. It just means the camera doesn't implement 
+V4L2_CID_GAIN.
+
+&gt;<i> &gt; What happens when you run Ekiga ? The dmesg log doesn't show anything
+</I>&gt;<i> &gt; wrong. I assume it fails, but you didn't give any error message or
+</I>&gt;<i> &gt; failure description.
+</I>&gt;<i>
+</I>&gt;<i> Nothing really. No errors anywhere I can find. No video either, just the
+</I>&gt;<i> icon moving up and down in the video panel. Basically it's not too
+</I>&gt;<i> helpful at all.
+</I>&gt;<i>
+</I>&gt;<i> &gt; However, the camera supports MJPEG only. It can't stream YUV images.
+</I>&gt;<i>
+</I>&gt;<i> So I'm guessing that means it won't work with that gstreamer line then?
+</I>&gt;<i> I'll stick to uvccapture for now, it's simple and I like that. I'll look
+</I>&gt;<i> at other programs once that works.
+</I>
+Could you raise the trace level to 255 (modprobe uvcvideo trace=255) ? The 
+driver should get much more verbose then.
+
+&gt;<i> By the way, the button on the camera is found and I get messages in
+</I>&gt;<i> dmesg when it's pressed. The mic works well too.
+</I>
+So the only working features are either unusable (the button currently logs a 
+message but doesn't do anything else) or out of the Linux UVC driver scope 
+(audio is handled by the USB audio driver). Nice :-)
+
+Cheers,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001277.html">[Linux-uvc-devel] Microsoft NX-6000
+</A></li>
+	<LI>Next message: <A HREF="001279.html">[Linux-uvc-devel] Microsoft NX-6000
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1278">[ date ]</a>
+              <a href="thread.html#1278">[ thread ]</a>
+              <a href="subject.html#1278">[ subject ]</a>
+              <a href="author.html#1278">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

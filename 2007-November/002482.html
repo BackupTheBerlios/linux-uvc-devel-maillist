@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] RFC: suspend/resume and randomly stopping	stream, latest mplayer
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20RFC%3A%20suspend/resume%20and%20randomly%20stopping%0A%09stream%2C%20latest%20mplayer&In-Reply-To=%3Cd9def9db0711211430m4c5465d5r6a29bf355a909ef0%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002481.html">
+   <LINK REL="Next"  HREF="002488.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] RFC: suspend/resume and randomly stopping	stream, latest mplayer</H1>
+    <B>Markus Rechberger</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20RFC%3A%20suspend/resume%20and%20randomly%20stopping%0A%09stream%2C%20latest%20mplayer&In-Reply-To=%3Cd9def9db0711211430m4c5465d5r6a29bf355a909ef0%40mail.gmail.com%3E"
+       TITLE="[Linux-uvc-devel] RFC: suspend/resume and randomly stopping	stream, latest mplayer">mrechberger at gmail.com
+       </A><BR>
+    <I>Wed Nov 21 23:30:43 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002481.html">[Linux-uvc-devel] RFC: suspend/resume and randomly stopping	stream, latest mplayer
+</A></li>
+        <LI>Next message: <A HREF="002488.html">[Linux-uvc-devel] RFC: suspend/resume and randomly stopping	stream, latest mplayer
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2482">[ date ]</a>
+              <a href="thread.html#2482">[ thread ]</a>
+              <a href="subject.html#2482">[ subject ]</a>
+              <a href="author.html#2482">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+On 11/21/07, Laurent Pinchart &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+&gt;<i> Hi Markus,
+</I>&gt;<i>
+</I>&gt;<i> On Wednesday 21 November 2007, Markus Rechberger wrote:
+</I>&gt;<i> &gt; Hi,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; 1.)
+</I>&gt;<i> &gt; I had a closer look at susend/resuming and the uvcdriver on my notebook.
+</I>&gt;<i> &gt; After resuming the driver is unable to read some registers, the
+</I>&gt;<i> &gt; usbsubsystem always returns -EPROTO (-71).
+</I>&gt;<i> &gt; Adding a softreset to the resume handler fixes this issue.
+</I>&gt;<i> &gt; The system still doesn't resume if a videoapplication is open (I'll do
+</I>&gt;<i> &gt; some further work on that).
+</I>&gt;<i> &gt; (the msleep isn't required)
+</I>&gt;<i>
+</I>&gt;<i> This is a hack to solve a problem you ran into with specific hardware.
+</I>&gt;<i> Before
+</I>&gt;<i> applying it I'd like to know which hardware requires this hack (I suspect
+</I>&gt;<i> you're using the EM2760 chipset in an EeePC) and why the USB subsystem
+</I>&gt;<i> returns -EPROTO. Either the hardware is buggy and don't implement suspend,
+</I>&gt;<i> in
+</I>&gt;<i> which case we need a quirk, or the USB subsystem has some issue, in which
+</I>&gt;<i> case it should be fixed.
+</I>&gt;<i>
+</I>
+I'm very sure it's not the device it's the usb controller which
+doesn't follow the USB standards (surpricingly not the first time.. we
+already had some other non standard usb controllers..)
+It's up to you if you want to add it if those controllers would do
+what they should it wouldn't be necessary.
+
+&gt;<i> &gt; 2.)
+</I>&gt;<i> &gt; mplayer requires an ENUMSTD ioctl, afterwards mplayer <A HREF="tv://">tv://</A> -tv
+</I>&gt;<i> &gt; driver=v4l2 just works fine.
+</I>&gt;<i>
+</I>&gt;<i> mplayer <A HREF="tv://">tv://</A> -tv driver=v4l2:fps=25
+</I>&gt;<i>
+</I>&gt;<i> should already work. As mentioned numerous times, VIDIOC_ENUMSTD don't make
+</I>&gt;<i> sense for webcams.
+</I>&gt;<i>
+</I>
+I took the latest svn uvcvideo driver and the latest mplayer svn sources.
+
+&gt;<i> &gt; 3.)
+</I>&gt;<i> &gt; the stream randomly stops on that notebook for some reason. ignoring
+</I>&gt;<i> &gt; the errors in the callback handler seems to work fine. This especially
+</I>&gt;<i> &gt; happens if I disconnect a usb storage device which hangs on the same
+</I>&gt;<i> &gt; hub. Maybe adding a module param to ignore those return values as a
+</I>&gt;<i> &gt; hack would be acceptable?
+</I>&gt;<i>
+</I>&gt;<i> Your modifications to uvc_video.c and uvc_queue.c seem to both address this
+</I>&gt;<i> problem. Are they both required ? What error status do you get in the status
+</I>&gt;<i> and video completion handlers ? Does the driver mark some video buffers as
+</I>&gt;<i> erroneous ?
+</I>
+yes
+
+&gt;<i> If so, why ?
+</I>&gt;<i>
+</I>
+it happens under load or if someone unplugs other usb devices (eg. usb
+storage). It seems to be usb controller related again... finally the
+idea of resetting the device came from the usb bulk storage driver
+because it seems to work to connect 2 devices to that notebook. I
+wouldn't mind to bind that specific quirk to that device although it
+will happen with other devices too very likely since it's usb
+controller dependent (also please note that this reset quirk is not
+available for older kernels).
+
+thanks,
+Markus
+
+&gt;<i> &gt; thanks for all the work,
+</I>&gt;<i>
+</I>&gt;<i> You're welcome, thanks for the report.
+</I>&gt;<i>
+</I>&gt;<i> Best regards,
+</I>&gt;<i>
+</I>&gt;<i> Laurent Pinchart
+</I>&gt;<i>
+</I>
+
+-- 
+<A HREF="http://www.couchsurfing.com/people/mrec">http://www.couchsurfing.com/people/mrec</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002481.html">[Linux-uvc-devel] RFC: suspend/resume and randomly stopping	stream, latest mplayer
+</A></li>
+	<LI>Next message: <A HREF="002488.html">[Linux-uvc-devel] RFC: suspend/resume and randomly stopping	stream, latest mplayer
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2482">[ date ]</a>
+              <a href="thread.html#2482">[ thread ]</a>
+              <a href="subject.html#2482">[ subject ]</a>
+              <a href="author.html#2482">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

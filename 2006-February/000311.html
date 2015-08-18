@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] [PATCH] Fake a TV tuner for MPlayer and TV apps
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2006-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Fake%20a%20TV%20tuner%20for%20MPlayer%20and%20TV%20apps&In-Reply-To=%3C20060222074250.GA11515%40localhost.localdomain%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000309.html">
+   <LINK REL="Next"  HREF="000310.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] [PATCH] Fake a TV tuner for MPlayer and TV apps</H1>
+    <B>Eduardo P&#233;rez Ureta</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20%5BPATCH%5D%20Fake%20a%20TV%20tuner%20for%20MPlayer%20and%20TV%20apps&In-Reply-To=%3C20060222074250.GA11515%40localhost.localdomain%3E"
+       TITLE="[Linux-uvc-devel] [PATCH] Fake a TV tuner for MPlayer and TV apps">eduardo.perez at uc3m.es
+       </A><BR>
+    <I>Wed Feb 22 08:42:50 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000309.html">[Linux-uvc-devel] [PATCH] Fake a TV tuner for MPlayer and TV apps
+</A></li>
+        <LI>Next message: <A HREF="000310.html">[Linux-uvc-devel] [PATCH] Support for kernel 2.6.16
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#311">[ date ]</a>
+              <a href="thread.html#311">[ thread ]</a>
+              <a href="subject.html#311">[ subject ]</a>
+              <a href="author.html#311">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I submitted a patch a while ago that has some of the changes you submitted.
+Maybe we need svn access to prevent this from happen again.
+Anyway, I think hardcoding NTSC support may not be the best idea. I
+copied my changes from:
+<A HREF="http://www.saillard.org/linux/pwc/">http://www.saillard.org/linux/pwc/</A>
+And they are not hardcoding NTSC.
+We need a standard API among drivers and applications to make v4l
+a good standard otherwise only some applications will work correctly.
+
+On 2006-02-21 23:55:37 +0100, Luca Barbieri wrote:
+&gt;<i> This patch makes uvcvideo claim it supports the NTSC standard and makes
+</I>&gt;<i> it accept configuration to any TV standards.
+</I>&gt;<i> 
+</I>&gt;<i> Some programs like MPlayer will fail without this.
+</I>&gt;<i> 
+</I>
+&gt;<i> Index: uvcvideo.c
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- uvcvideo.c	(revision 19)
+</I>&gt;<i> +++ uvcvideo.c	(working copy)
+</I>&gt;<i> @@ -2148,12 +2167,37 @@
+</I>&gt;<i>  		return uvc_video_enable(video, 0);
+</I>&gt;<i>  	}
+</I>&gt;<i>  
+</I>&gt;<i> +	case VIDIOC_G_STD:
+</I>&gt;<i> +	{
+</I>&gt;<i> +		v4l2_std_id *std = arg;
+</I>&gt;<i> +		*std = V4L2_STD_NTSC;
+</I>&gt;<i> +		return 0;
+</I>&gt;<i> +	}
+</I>&gt;<i> +
+</I>&gt;<i> +	case VIDIOC_S_STD:
+</I>&gt;<i> +		return 0;
+</I>&gt;<i> +		
+</I>&gt;<i>  	/* Analog video standards make no sense for digital cameras. */
+</I>&gt;<i>  	case VIDIOC_ENUMSTD:
+</I>&gt;<i> +	{
+</I>&gt;<i> +		struct v4l2_standard *std = arg;
+</I>&gt;<i> +		if(std-&gt;index != 0)
+</I>&gt;<i> +			return -EINVAL;
+</I>&gt;<i> +
+</I>&gt;<i> +		v4l2_video_std_construct(std, V4L2_STD_NTSC, &quot;NTSC&quot;);
+</I>&gt;<i> +		return 0;
+</I>&gt;<i> +	}
+</I>&gt;<i> +		
+</I>&gt;<i>  	case VIDIOC_QUERYSTD:
+</I>&gt;<i> -	case VIDIOC_G_STD:
+</I>&gt;<i> -	case VIDIOC_S_STD:
+</I>&gt;<i> +	{
+</I>&gt;<i> +		//v4l2_std_id *std = arg;
+</I>&gt;<i> +		return 0;
+</I>&gt;<i> +		//if(*std == V4L2_STD_ALL || *std == V4L2_STD_NTSC)
+</I>&gt;<i> +		//	return 0;
+</I>&gt;<i>  
+</I>&gt;<i> +		//return -EINVAL;
+</I>&gt;<i> +	}
+</I>&gt;<i> +
+</I>&gt;<i>  	case VIDIOC_OVERLAY:
+</I>&gt;<i>  
+</I>&gt;<i>  	case VIDIOC_ENUMAUDIO:
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000309.html">[Linux-uvc-devel] [PATCH] Fake a TV tuner for MPlayer and TV apps
+</A></li>
+	<LI>Next message: <A HREF="000310.html">[Linux-uvc-devel] [PATCH] Support for kernel 2.6.16
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#311">[ date ]</a>
+              <a href="thread.html#311">[ thread ]</a>
+              <a href="subject.html#311">[ subject ]</a>
+              <a href="author.html#311">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

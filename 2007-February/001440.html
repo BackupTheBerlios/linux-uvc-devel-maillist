@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] Still Image Capture
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2007-February/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Still%20Image%20Capture&In-Reply-To=%3C200702231327.14175.laurent.pinchart%40skynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001426.html">
+   <LINK REL="Next"  HREF="001405.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] Still Image Capture</H1>
+    <B>Laurent Pinchart</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20Still%20Image%20Capture&In-Reply-To=%3C200702231327.14175.laurent.pinchart%40skynet.be%3E"
+       TITLE="[Linux-uvc-devel] Still Image Capture">laurent.pinchart at skynet.be
+       </A><BR>
+    <I>Fri Feb 23 13:27:13 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001426.html">[Linux-uvc-devel] Still Image Capture
+</A></li>
+        <LI>Next message: <A HREF="001405.html">[Linux-uvc-devel] cannot install linux-uvc on Fedora Core 6
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1440">[ date ]</a>
+              <a href="thread.html#1440">[ thread ]</a>
+              <a href="subject.html#1440">[ subject ]</a>
+              <a href="author.html#1440">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> &gt;&gt; The good news is the QC notebook pro can capture video at 1.3 megapixel
+</I>&gt;<i> &gt;&gt; as well :-) All UVC webcams I am aware of implement still image capture
+</I>&gt;<i> &gt;&gt; method 1, which means they don't implement still image capture at all
+</I>&gt;<i> &gt;&gt; (method 1
+</I>&gt;<i> &gt;&gt; emulates still image capture in software).
+</I>&gt;<i>
+</I>&gt;<i> Laurent is right for the first part, all our Logitech QuickCam UVC cameras
+</I>&gt;<i> (except the QuickCam Pro 5000, which has a VGA sensor) can indeed stream
+</I>&gt;<i> at 1.3 MP. It's done without interpolation.
+</I>&gt;<i>
+</I>&gt;<i> However, they have method 2 still image capture support. Here's the
+</I>&gt;<i> corresponding section from the UVC descriptor: (This happens to be from a
+</I>&gt;<i> Pro 5000, but the others should be the same.)
+</I>&gt;<i>
+</I>&gt;<i>            ===&gt;Video Class-Specific VS Video Input Header Descriptor&lt;===
+</I>&gt;<i> bLength:                           0x10
+</I>&gt;<i> bDescriptorType:                   0x24
+</I>&gt;<i> bDescriptorSubtype:                0x01
+</I>&gt;<i> bNumFormats:                       0x03
+</I>&gt;<i> wTotalLength:                    0x0270  -&gt; Validated
+</I>&gt;<i> bEndpointAddress:                  0x81  -&gt; Direction: IN - EndpointID: 1
+</I>&gt;<i> bmInfo:                            0x00  -&gt; Dynamic Format Change not
+</I>&gt;<i> Supported
+</I>&gt;<i> bTerminalLink:                     0x05
+</I>&gt;<i> bStillCaptureMethod:               0x02  -&gt; Still Capture Method 2
+</I>&gt;<i> bTriggerSupport:                   0x01  -&gt; Hardware Triggering Support
+</I>&gt;<i> bTriggerUsage:                     0x00  -&gt; Host will initiate still image
+</I>&gt;<i> capture
+</I>
+You're right. My UVC parsing code in usb-utils has a small bug which reported 
+invalid values for bStillCaptureMethod.
+
+&gt;<i> &gt; I seem to remember reading that the QC notebook pro interpolates
+</I>&gt;<i> &gt; frames when streaming at resolutions greater than 640x480, but does
+</I>&gt;<i> &gt; a non-interpolated still capture.  This is easy enough to test.  I can do
+</I>&gt;<i> &gt; some capturing and compare image quality.  I also have a log of usb
+</I>&gt;<i> &gt; traffic.  I can look at the transfer frames and see if the snap sends
+</I>&gt;<i> &gt; more data.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Not sure if I'll get to that today... I'm currently neck deep in an
+</I>&gt;<i> &gt; embedded linux driver project.  Then again, if my new variable power
+</I>&gt;<i> &gt; supply doesn't show up soon, I'll be spinning my tires and have plenty
+</I>&gt;<i> &gt; of free time... :(
+</I>&gt;<i>
+</I>&gt;<i> I don't want to be unsupportive, but in the name of the Linux webcam
+</I>&gt;<i> community, let's hope for some shipping delay on your power supply. ;-)
+</I>
+I'll try to work on still image capture in the near future. I'm quite busy 
+with another project right now, so there might be some delay. Still image 
+capture method 2 requires the driver to suspend video streaming, so I might 
+have to change some code deep in the driver. Hopefully I'll find a not too 
+intrusive way.
+
+Cheers,
+
+Laurent Pinchart
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001426.html">[Linux-uvc-devel] Still Image Capture
+</A></li>
+	<LI>Next message: <A HREF="001405.html">[Linux-uvc-devel] cannot install linux-uvc on Fedora Core 6
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1440">[ date ]</a>
+              <a href="thread.html#1440">[ thread ]</a>
+              <a href="subject.html#1440">[ subject ]</a>
+              <a href="author.html#1440">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>

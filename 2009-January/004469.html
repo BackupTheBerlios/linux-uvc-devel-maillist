@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Linux-uvc-devel] uvcvideo module crashes on load attempt
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/linux-uvc-devel/2009-January/index.html" >
+   <LINK REL="made" HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20module%20crashes%20on%20load%20attempt&In-Reply-To=%3CC58ACA63.281CC%25jmk%40foofus.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004467.html">
+   <LINK REL="Next"  HREF="004474.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Linux-uvc-devel] uvcvideo module crashes on load attempt</H1>
+    <B>jmk</B> 
+    <A HREF="mailto:linux-uvc-devel%40lists.berlios.de?Subject=Re%3A%20%5BLinux-uvc-devel%5D%20uvcvideo%20module%20crashes%20on%20load%20attempt&In-Reply-To=%3CC58ACA63.281CC%25jmk%40foofus.net%3E"
+       TITLE="[Linux-uvc-devel] uvcvideo module crashes on load attempt">jmk at foofus.net
+       </A><BR>
+    <I>Thu Jan  8 04:08:51 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004467.html">[Linux-uvc-devel] uvcvideo module crashes on load attempt
+</A></li>
+        <LI>Next message: <A HREF="004474.html">[Linux-uvc-devel] uvcvideo module crashes on load attempt
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4469">[ date ]</a>
+              <a href="thread.html#4469">[ thread ]</a>
+              <a href="subject.html#4469">[ subject ]</a>
+              <a href="author.html#4469">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+On 1/7/09 9:05 AM, &quot;Laurent Pinchart&quot; &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">laurent.pinchart at skynet.be</A>&gt; wrote:
+&gt;<i> Where did you get the source from ? I had a look at the
+</I>&gt;<i> <A HREF="http://hg.jannau.net/hdpvr/">http://hg.jannau.net/hdpvr/</A> repository, and v4l2-dev.c:261 tests for
+</I>&gt;<i> vdev-&gt;release being on NULL. This is quite unlikely, as the uvcvideo driver
+</I>&gt;<i> provides a release callback.
+</I>&gt;<i> 
+</I>&gt;<i> Could you please try the latest uvcvideo sources available from the
+</I>&gt;<i> linuxtv.org/hg/~pinchartl/uvcvideo repository ?
+</I>
+You are correct, the version I was running came from hg.jannau.net. I
+performed a &quot;rminstall&quot; on that version and built and installed a checkout
+from linuxtv.org/hg/~pinchart1/uvcvideo. I've attached the dmesg output from
+the module load: 
+
+---
+Linux video capture interface: v2.00
+uvcvideo: Found UVC 1.00 device &lt;unnamed&gt; (046d:0990)
+WARNING: at /h/downloads/multimedia/myth/hd-pvr/uvcvideo/v4l/v4l2-dev.c:423
+video_register_device_index()
+Pid: 1455, comm: modprobe Not tainted 2.6.24-gentoo-r8 #3
+ [&lt;f0fb8643&gt;] video_register_device_index+0x4b3/0x500 [videodev]
+ [&lt;f0fb869f&gt;] video_register_device+0xf/0x20 [videodev]
+ [&lt;f0ff4ad1&gt;] uvc_simplify_fraction+0x6f1/0x790 [uvcvideo]
+ [&lt;f0ff57bf&gt;] uvc_delete+0xc4f/0x1eb0 [uvcvideo]
+ [&lt;c02fa01a&gt;] idr_get_empty_slot+0xea/0x270
+ [&lt;c02fa227&gt;] ida_get_new_above+0x87/0x180
+ [&lt;c03e5d65&gt;] usb_probe_interface+0x75/0x100
+ [&lt;c037f598&gt;] driver_sysfs_add+0x58/0x80
+ [&lt;c037f6ce&gt;] driver_probe_device+0x8e/0x190
+ [&lt;c04ccc3d&gt;] klist_next+0x5d/0xa0
+ [&lt;c037f910&gt;] __driver_attach+0x80/0x90
+ [&lt;c037eaaa&gt;] bus_for_each_dev+0x3a/0x60
+ [&lt;c037f536&gt;] driver_attach+0x16/0x20
+ [&lt;c037f890&gt;] __driver_attach+0x0/0x90
+ [&lt;c037ee5b&gt;] bus_add_driver+0x8b/0x1e0
+ [&lt;c03e5cf0&gt;] usb_probe_interface+0x0/0x100
+ [&lt;c03e58e5&gt;] usb_register_driver+0x95/0x110
+ [&lt;f0fcf06f&gt;] init_module+0x6f/0x86 [uvcvideo]
+ [&lt;c014a28b&gt;] sys_init_module+0x16b/0x1930
+ [&lt;f0fe4000&gt;] fw_dev_release+0x0/0x20 [firmware_class]
+ [&lt;c010437e&gt;] sysenter_past_esp+0x5f/0x85
+ =======================
+usbcore: registered new interface driver uvcvideo
+USB Video Class driver (v0.1.0)
+---
+
+Would seeing my v4l .config be useful? It's pretty minimal, enabling the V4L
+module, V4L API1, IVTV, and UVC. I'm not sure if I'm missing something
+critical or not.
+
+Thanks for you help on this.
+
+Joe
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004467.html">[Linux-uvc-devel] uvcvideo module crashes on load attempt
+</A></li>
+	<LI>Next message: <A HREF="004474.html">[Linux-uvc-devel] uvcvideo module crashes on load attempt
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4469">[ date ]</a>
+              <a href="thread.html#4469">[ thread ]</a>
+              <a href="subject.html#4469">[ subject ]</a>
+              <a href="author.html#4469">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/linux-uvc-devel">More information about the Linux-uvc-devel
+mailing list</a><br>
+</body></html>
